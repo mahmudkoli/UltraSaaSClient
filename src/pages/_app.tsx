@@ -61,6 +61,8 @@ import 'react-perfect-scrollbar/dist/css/styles.css'
 
 // ** Global css styles
 import '../../styles/globals.css'
+import { Provider } from 'react-redux'
+import { store } from '../store';
 
 // ** Extend App Props with Emotion
 type ExtendedAppProps = AppProps & {
@@ -136,7 +138,9 @@ const App = (props: ExtendedAppProps) => {
                     <WindowWrapper>
                       <Guard authGuard={authGuard} guestGuard={guestGuard}>
                         <AclGuard aclAbilities={aclAbilities} guestGuard={guestGuard}>
+                          <Provider store={store}>
                           {getLayout(<Component {...pageProps} />)}
+                          </Provider>
                         </AclGuard>
                       </Guard>
                     </WindowWrapper>
