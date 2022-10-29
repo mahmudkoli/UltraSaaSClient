@@ -1,4 +1,5 @@
 import axios, { AxiosError, AxiosResponse } from "axios";
+import { SingleValueTypeConfig } from "src/common/Entity/SingleValueTypeConfig";
 
 axios.defaults.baseURL = "http://localhost:5000/api";
 
@@ -17,6 +18,14 @@ const Example = {
   add: (payload: any) => request.post<any>("url", payload),
   update: (id: string, payload: any) => request.put<any>(`url/${id}`, payload),
   delete: (id: any) => request.delete<any>(`url/${id}`),
+}
+
+
+const singleValueTypeConfig = {
+  get: () => request.get<SingleValueTypeConfig[]>("/SingleValueTypeConfig"),
+  add: (payload: SingleValueTypeConfig) => request.post<string>("SingleValueTypeConfig", payload),
+  update: (id: string, payload: SingleValueTypeConfig) => request.put<string>(`SingleValueTypeConfig/${id}`, payload),
+  delete: (id: string) => request.delete<string>(`SingleValueTypeConfig/${id}`),
 }
 
 /*
@@ -51,7 +60,8 @@ const Experience = {
 
 */
 const api = {
-  Example
+  Example,
+  singleValueTypeConfig
 }
 
 export default api;

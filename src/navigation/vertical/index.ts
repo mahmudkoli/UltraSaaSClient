@@ -5,6 +5,7 @@ import ShieldOutline from 'mdi-material-ui/ShieldOutline'
 
 // ** Type import
 import { VerticalNavItemsType } from 'src/@core/layouts/types'
+import { CarSettings } from 'mdi-material-ui'
 
 const navigation = (): VerticalNavItemsType => {
   return [
@@ -24,6 +25,38 @@ const navigation = (): VerticalNavItemsType => {
       path: '/acl',
       action: 'read',
       subject: 'acl-page'
+    },
+    {
+      title: 'Configs',
+      icon: CarSettings,
+      children: [
+        {
+          title: 'Mail',
+          path: '/Config/mailConfig'
+        },
+
+        {
+          title: 'SMS',
+          path: '/Config/smsConfig'
+        },
+        // {
+        //   title: 'Cards',
+        //   children: [
+        //     {
+        //       title: 'Basic',
+        //       path: '/components/cards/basic'
+        //     },
+        //     {
+        //       title: 'Advanced',
+        //       path: '/components/cards/advanced'
+        //     }
+        //   ]
+        // },
+        {
+          title: 'Single Value Type',
+          path: '/Config/singleValueTypeConfig'
+        }
+      ]
     }
   ]
 }
