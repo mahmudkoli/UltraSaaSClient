@@ -1,7 +1,6 @@
 import { TextField } from "@mui/material";
 import React from "react";
 import { Formik, Form, useField } from "formik";
-import style from "./customInput.module";
 
 interface Props {
   label: string;
@@ -17,9 +16,9 @@ function MyTextInput(props: Props) {
 
   return (
     <>
-      <TextField className={style["text-field"]} {...field} {...props} />
+      <TextField className="input-field" {...field} {...props} />
       {meta.touched && meta.error ? (
-        <div className={style["error"]}>{meta.error}</div>
+        <div className="input-field-error">{meta.error}</div>
       ) : null}
     </>
   );
