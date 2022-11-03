@@ -5,7 +5,11 @@ import ShieldOutline from 'mdi-material-ui/ShieldOutline'
 
 // ** Type import
 import { VerticalNavItemsType } from 'src/@core/layouts/types'
-import { CarSettings } from 'mdi-material-ui'
+
+//** material icon
+import SettingsSuggestIcon from '@mui/icons-material/SettingsSuggest';
+import PermDataSettingIcon from '@mui/icons-material/PermDataSetting';
+
 
 const navigation = (): VerticalNavItemsType => {
   return [
@@ -28,7 +32,7 @@ const navigation = (): VerticalNavItemsType => {
     },
     {
       title: 'Configs',
-      icon: CarSettings,
+      icon: PermDataSettingIcon,
       children: [
         {
           title: 'Mail',
@@ -51,11 +55,21 @@ const navigation = (): VerticalNavItemsType => {
         //       path: '/components/cards/advanced'
         //     }
         //   ]
-        // },
+        // }
+      ]
+    },
+    {
+      title: 'Setup',
+      icon: SettingsSuggestIcon,
+      children: [
         {
           title: 'Single Value Type',
-          path: '/Config/singleValueTypeConfig'
-        }
+          path: '/setup/singleValueTypeConfig'
+        },
+        {
+          title: 'Test 1',
+          path: '/Config/mailConfig'
+        },        
       ]
     }
   ]

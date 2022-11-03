@@ -13,9 +13,12 @@ export const modalSlice = createSlice({
   name: 'counter',
   initialState,
   reducers: {
-    handleModalFlag: (state) => {
-      state.flag = !state.flag
+    openModal: (state) => {
+      state.flag = true;
     },
+    closeModal : (state) => {
+      state.flag = false;
+    }
   },
 })
 
@@ -23,6 +26,5 @@ export const modalSlice = createSlice({
 export const modalFlagState  = (state : RootState) => state.modal.flag;
 
 
-export const { handleModalFlag } = modalSlice.actions
-
+export const { openModal, closeModal } = modalSlice.actions
 export default modalSlice;
