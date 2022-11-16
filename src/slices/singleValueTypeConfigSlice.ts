@@ -8,7 +8,10 @@ export interface SingleValueTypeConfigState {
 }
 
 const initialState: SingleValueTypeConfigState = {
-    items: []
+    items:  [
+        { id: "1", name: "Test 1", code: "code 1", description: "Dest 1" },
+        { id: "2", name: "Test 2", code: "code 2", description: "Dest 2" },
+      ]
 }
 
 const SingleValueTypeConfigSlice = createSlice({
@@ -73,8 +76,8 @@ export const updateSingleValueTypeConfig = createAsyncThunk('singleValueTypeConf
 //delete SingleValueTypeConfig
 export const deleteSingleValueTypeConfig = createAsyncThunk('singleValueTypeConfig/delete', async (id: string, thunk) => {
     try {
+        debugger;
         await api.singleValueTypeConfig.delete(id);
-        // thunk.dispatch(handleModalFlag());
         thunk.dispatch(fetchSingleValueTypeConfig());
     } catch (error) {
 

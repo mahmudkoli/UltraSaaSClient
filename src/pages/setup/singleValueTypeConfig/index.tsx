@@ -1,4 +1,4 @@
-import { Box } from "@mui/material";
+import { Box, Button } from "@mui/material";
 import { useState } from "react";
 import SingleValueTypeConfigForm from "src/AdminForms/SingleValueTypeConfigForm";
 import Banner from "src/common/Components/banner";
@@ -6,15 +6,17 @@ import CommonDialog from "src/common/Components/dialog";
 import { SingleValueTypeConfig } from "src/common/Entity/SingleValueTypeConfig";
 import { useAppDispatch, useAppSelector } from "src/hooks/reduxHooks";
 import { openModal, closeModal } from "src/slices/modalSlice";
+import { deleteSingleValueTypeConfig, singleValueTypeConfigList } from "src/slices/singleValueTypeConfigSlice";
 
-//dummy Data
-const data: SingleValueTypeConfig[] = [
-  { id: "1", name: "Test 1", code: "code 1", description: "Dest 1" },
-  { id: "2", name: "Test 2", code: "code 2", description: "Dest 2" },
-];
+//icon
+import AddIcon from '@mui/icons-material/Add';
+import DeleteIcon from '@mui/icons-material/Delete';
+import EditIcon from '@mui/icons-material/Edit';
+
 
 const SingleValueTypeConfig = () => {
   const dispatch = useAppDispatch();
+  const data = useAppSelector(singleValueTypeConfigList);
 
   const [formData, setFormData] = useState(null);
   const [dialogFlag, setDialogFlag] = useState(false);
@@ -28,6 +30,10 @@ const SingleValueTypeConfig = () => {
   const handleDialogClose = () => {
     dispatch(closeModal());
     setDialogFlag(false);
+  }
+
+  const handleDelete = (id:any) => {
+    dispatch(deleteSingleValueTypeConfig(id));
   }
   const singleValueTypeConfigForm = (
     <SingleValueTypeConfigForm singleValueTypeData={formData} />
@@ -43,6 +49,7 @@ const SingleValueTypeConfig = () => {
       )}
       <Box>
         <Banner title="Test Config" />
+        <Button variant="outlined" startIcon={<AddIcon />} onClick={handleFormDialog}>Add</Button>
         <Box>
           <ul>
             {data.map((item: SingleValueTypeConfig) => (
@@ -50,8 +57,8 @@ const SingleValueTypeConfig = () => {
                 <p>
                   {item.name} | {item.code} | {item.description}
                 </p>
-                <button>Delete</button>
-                <button onClick={() => handleFormDialog(item)}>Edit</button>
+                <Button variant="outlined" color="error" endIcon={<DeleteIcon />} onClick={() => handleDelete(item.id)}>Delete</Button>
+                <Button variant="outlined" endIcon={<EditIcon />} onClick={() => handleFormDialog(item)}>Edit</Button>
               </li>
             ))}
           </ul>

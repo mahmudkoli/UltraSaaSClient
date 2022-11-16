@@ -10,6 +10,7 @@ import MyTextInput from "src/common/Components/FormInputField/MytextInput";
 import { SingleValueTypeConfigFormValidation } from "./FormValidations/SingleValueTypeConfigFormValidation";
 //Entity
 import { SingleValueTypeConfig } from "src/common/Entity/SingleValueTypeConfig";
+import { addSingleValueTypeConfig, updateSingleValueTypeConfig } from "src/slices/singleValueTypeConfigSlice";
 
 
 interface Props {
@@ -24,9 +25,11 @@ const SingleValueTypeConfigForm = ({singleValueTypeData} : Props) => {
         console.log(data);
         if(data.id) {
           //update
+          dispatch(updateSingleValueTypeConfig(data));
         }
         else {
           //create new
+          dispatch(addSingleValueTypeConfig(data));
         }
   };
   return (
@@ -66,7 +69,7 @@ const SingleValueTypeConfigForm = ({singleValueTypeData} : Props) => {
               />
 
               <Button
-                sx={{ margin: "10px 8px" }}
+                sx={{ margin: "10px 8px", float: 'right' }}
                 variant="outlined"
                 type="submit"
                 disabled={isSubmitting}

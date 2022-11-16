@@ -6,7 +6,7 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
 import { useAppSelector } from "src/hooks/reduxHooks";
 import { modalFlagState } from "src/slices/modalSlice";
-import { IconButton } from "@mui/material";
+import { IconButton, useMediaQuery, useTheme } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 interface Props {
@@ -20,6 +20,9 @@ export default function CommonDialog({
   form,
   handleDialogClose,
 }: Props) {
+  const theme = useTheme();
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
+  
   const modalFlag = useAppSelector(modalFlagState);
   const [open, setOpen] = React.useState(modalFlag);
 
@@ -28,7 +31,7 @@ export default function CommonDialog({
   };
 
   return (
-    <Dialog open={open} onClose={handleClose}>
+    <Dialog fullScreen={fullScreen} open={open} onClose={handleClose}>
       <DialogTitle>
         {title}
         <IconButton
