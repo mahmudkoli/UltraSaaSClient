@@ -31,4 +31,16 @@ export type AuthValuesType = {
   setIsInitialized: (value: boolean) => void
   login: (params: LoginParams, errorCallback?: ErrCallbackType) => void
   register: (params: RegisterParams, errorCallback?: ErrCallbackType) => void
+  refreshToken: (errorCallback?: ErrCallbackType) => void
+}
+
+export type RefreshTokenParams = {
+  token : string
+  refreshToken : string
+}
+
+export type LoginResponse = {
+  token : string
+  refreshToken : string
+  refreshTokenExpiryTime : string
 }

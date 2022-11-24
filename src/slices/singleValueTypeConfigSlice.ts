@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import api from "src/API/api";
+import { QueryObject } from "src/common/Entity/QueryObject";
 import { SingleValueTypeConfig } from "src/common/Entity/SingleValueTypeConfig";
 import { RootState } from "src/store";
 
@@ -8,10 +9,10 @@ export interface SingleValueTypeConfigState {
 }
 
 const initialState: SingleValueTypeConfigState = {
-    items:  [
+    items: [
         { id: "1", name: "Test 1", code: "code 1", description: "Dest 1" },
         { id: "2", name: "Test 2", code: "code 2", description: "Dest 2" },
-      ]
+    ]
 }
 
 const SingleValueTypeConfigSlice = createSlice({
@@ -19,43 +20,39 @@ const SingleValueTypeConfigSlice = createSlice({
     initialState,
     reducers: {
         handleSingleValueTypeConfig: (state, action) => {
-            //const skills = state.items;
-            console.log(state);
-            console.log(action);
             state.items = [...action.payload];
             return state;
         }
     },
     extraReducers: (builder) => {
-        builder.addCase(fetchSingleValueTypeConfig.fulfilled, (state, action) => {
-            console.log(action);
+        builder.addCase(fetchSingleValueTypeConfigList.fulfilled, (state, action) => {
             state.items = action.payload
         }),
-            builder.addCase(addSingleValueTypeConfig.fulfilled, (state, action) => {
+        builder.addCase(addSingleValueTypeConfig.fulfilled, (state, action) => {
 
-            }),
+        }),
+        builder.addCase(updateSingleValueTypeConfig.fulfilled, (state, action) => {
 
-            builder.addCase(updateSingleValueTypeConfig.fulfilled, (state, action) => {
-
-            })
+        })
     },
 })
 
 //fetch SingleValueTypeConfig list
-export const fetchSingleValueTypeConfig = createAsyncThunk('/skill', async () => {
+export const fetchSingleValueTypeConfigList = createAsyncThunk('/singleValueTypeConfig', async (queryObject: QueryObject) => {
     try {
-        const res = await api.singleValueTypeConfig.get();
+        const res = await api.singleValueTypeConfigApi.get(queryObject);
         return res;
     } catch (error) {
-        return [];
+        // return [];
+        return initialState.items;
     }
 });
 
 //create SingleValueTypeConfig
 export const addSingleValueTypeConfig = createAsyncThunk('singleValueTypeConfig/add', async (payload: SingleValueTypeConfig, thunk) => {
     try {
-        await api.singleValueTypeConfig.add(payload);
-        thunk.dispatch(fetchSingleValueTypeConfig());
+        await api.singleValueTypeConfigApi.add(payload);
+        thunk.dispatch(fetchSingleValueTypeConfigList(new QueryObject()));
 
     } catch (error) {
 
@@ -65,8 +62,8 @@ export const addSingleValueTypeConfig = createAsyncThunk('singleValueTypeConfig/
 //update SingleValueTypeConfig
 export const updateSingleValueTypeConfig = createAsyncThunk('singleValueTypeConfig/update', async (payload: SingleValueTypeConfig, thunk) => {
     try {
-        await api.singleValueTypeConfig.update(payload.id!, payload);
-        thunk.dispatch(fetchSingleValueTypeConfig());
+        await api.singleValueTypeConfigApi.update(payload.id!, payload);
+        thunk.dispatch(fetchSingleValueTypeConfigList(new QueryObject()));
     }
     catch (error) {
 
@@ -76,9 +73,8 @@ export const updateSingleValueTypeConfig = createAsyncThunk('singleValueTypeConf
 //delete SingleValueTypeConfig
 export const deleteSingleValueTypeConfig = createAsyncThunk('singleValueTypeConfig/delete', async (id: string, thunk) => {
     try {
-        debugger;
-        await api.singleValueTypeConfig.delete(id);
-        thunk.dispatch(fetchSingleValueTypeConfig());
+        await api.singleValueTypeConfigApi.delete(id);
+        thunk.dispatch(fetchSingleValueTypeConfigList(new QueryObject()));
     } catch (error) {
 
     }

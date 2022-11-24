@@ -1,31 +1,41 @@
-import axios, { AxiosError, AxiosResponse } from "axios";
+import axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from "axios";
 import { SingleValueTypeConfig } from "src/common/Entity/SingleValueTypeConfig";
+import { singleValueTypeSetupUrl } from "src/configs/setup";
+import authConfig from 'src/configs/auth'
+import { QueryObject } from "src/common/Entity/QueryObject";
+import { LoginParams, LoginResponse } from "src/context/types";
+import { commonHelperService } from "src/common/helper/common.helper";
 
-axios.defaults.baseURL = "http://localhost:5000/api";
+axios.defaults.baseURL = "http://localhost:5000/api/v1";
 
 const responseBody = <T>(response: AxiosResponse<T>) => response.data;
 
+axios.interceptors.request.use((config:AxiosRequestConfig) => {
+  const token = window.localStorage.getItem(authConfig.storageTokenKeyName)!
+  if (token) 
+    config.headers = {Authorization : `Bearer ${token}`}
+  return config;
+});
+
+
 const request = {
-  get: <T>(url: string) => axios.get<T>(url).then(responseBody),
-  post: <T>(url: string, body: {}) =>
+  get: <T>(url: string, body : QueryObject) => axios.get<T>(`${url}?${commonHelperService.convertToQueryString(body)}`).then(responseBody),
+  post: <T>(url: string, body: object) =>
     axios.post<T>(url, body).then(responseBody),
   put: <T>(url: string, body: {}) => axios.put<T>(url, body).then(responseBody),
   delete: <T>(url: string) => axios.delete<T>(url).then(responseBody),
 };
 
-const Example = {
-  get: () => request.get<any>("/skill"),
-  add: (payload: any) => request.post<any>("url", payload),
-  update: (id: string, payload: any) => request.put<any>(`url/${id}`, payload),
-  delete: (id: any) => request.delete<any>(`url/${id}`),
+const singleValueTypeConfigApi = {
+  get: (searchParam: QueryObject) => request.get<SingleValueTypeConfig[]>(singleValueTypeSetupUrl, searchParam),
+  add: (payload: SingleValueTypeConfig) => request.post<string>(singleValueTypeSetupUrl, payload),
+  update: (id: string, payload: SingleValueTypeConfig) => request.put<string>(`${singleValueTypeSetupUrl}/${id}`, payload),
+  delete: (id: string) => request.delete<string>(`${singleValueTypeSetupUrl}/${id}`),
 }
 
-
-const singleValueTypeConfig = {
-  get: () => request.get<SingleValueTypeConfig[]>("/SingleValueTypeConfig"),
-  add: (payload: SingleValueTypeConfig) => request.post<string>("SingleValueTypeConfig", payload),
-  update: (id: string, payload: SingleValueTypeConfig) => request.put<string>(`SingleValueTypeConfig/${id}`, payload),
-  delete: (id: string) => request.delete<string>(`SingleValueTypeConfig/${id}`),
+const auth = {
+  login : (loginParam :LoginParams) => request.post<LoginResponse>(authConfig.loginEndpoint, loginParam),
+  refreshToken : (payload:any) => request.post<LoginResponse>(authConfig.refreshTokenEndpoint, payload) 
 }
 
 /*
@@ -60,8 +70,8 @@ const Experience = {
 
 */
 const api = {
-  Example,
-  singleValueTypeConfig
+  singleValueTypeConfigApi,
+  
 }
 
 export default api;

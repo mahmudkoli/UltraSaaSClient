@@ -113,7 +113,7 @@ mock.onGet('/auth/me').reply(config => {
     // @ts-ignore
     const { id: userId } = decoded.payload
 
-    const userData = JSON.parse(JSON.stringify(users.find((u: UserDataType) => u.id === userId)))
+    const userData = JSON.parse(JSON.stringify(users.find((u: UserDataType) => u.id === 1)))
 
     delete userData.password
 
