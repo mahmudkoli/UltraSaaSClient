@@ -5,17 +5,38 @@ import authConfig from 'src/configs/auth'
 import { QueryObject } from "src/common/Entity/QueryObject";
 import { LoginParams, LoginResponse } from "src/context/types";
 import { commonHelperService } from "src/common/helper/common.helper";
+import { toast } from "react-toastify";
 
 axios.defaults.baseURL = "http://localhost:5000/api/v1";
 
 const responseBody = <T>(response: AxiosResponse<T>) => response.data;
 
-axios.interceptors.request.use((config:AxiosRequestConfig) => {
-  const token = window.localStorage.getItem(authConfig.storageTokenKeyName)!
-  if (token) 
-    config.headers = {Authorization : `Bearer ${token}`}
-  return config;
-});
+
+axios.interceptors.response.use(
+  async (response) => {
+    return response;
+  },
+  (error: AxiosError) => {
+    console.log("error")
+    const { data, status, config } = error.response!;
+    switch (status) {
+      case 400:
+        console.log(data);
+        break;
+      case 404:
+        toast.error("server error");
+        break;
+      case 500:
+        toast.error("server error");
+        break;
+
+      default:
+        toast.error("an unknown error occurred");
+        break;
+    }
+    return Promise.reject(error);
+  }
+);
 
 
 const request = {
@@ -27,15 +48,15 @@ const request = {
 };
 
 const singleValueTypeConfigApi = {
-  get: (searchParam: QueryObject) => request.get<SingleValueTypeConfig[]>(singleValueTypeSetupUrl, searchParam),
-  add: (payload: SingleValueTypeConfig) => request.post<string>(singleValueTypeSetupUrl, payload),
-  update: (id: string, payload: SingleValueTypeConfig) => request.put<string>(`${singleValueTypeSetupUrl}/${id}`, payload),
+  get: (searchParam: QueryObject) => request.get<any>(singleValueTypeSetupUrl, searchParam),
+  add: (payload: any) => request.post<string>(singleValueTypeSetupUrl, payload),
+  update: (id: string, payload: any) => request.put<string>(`${singleValueTypeSetupUrl}/${id}`, payload),
   delete: (id: string) => request.delete<string>(`${singleValueTypeSetupUrl}/${id}`),
 }
 
 const auth = {
-  login : (loginParam :LoginParams) => request.post<LoginResponse>(authConfig.loginEndpoint, loginParam),
-  refreshToken : (payload:any) => request.post<LoginResponse>(authConfig.refreshTokenEndpoint, payload) 
+  login : (loginParam :LoginParams) => request.post<any>(authConfig.loginEndpoint, loginParam),
+  refreshToken : (payload:any) => request.post<any>(authConfig.refreshTokenEndpoint, payload) 
 }
 
 /*
@@ -71,7 +92,7 @@ const Experience = {
 */
 const api = {
   singleValueTypeConfigApi,
-  
+  auth  
 }
 
 export default api;

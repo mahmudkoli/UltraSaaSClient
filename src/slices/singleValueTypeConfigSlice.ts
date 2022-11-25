@@ -3,6 +3,7 @@ import api from "src/API/api";
 import { QueryObject } from "src/common/Entity/QueryObject";
 import { SingleValueTypeConfig } from "src/common/Entity/SingleValueTypeConfig";
 import { RootState } from "src/store";
+import { closeModal } from "./modalSlice";
 
 export interface SingleValueTypeConfigState {
     items: SingleValueTypeConfig[];
@@ -41,10 +42,9 @@ const SingleValueTypeConfigSlice = createSlice({
 export const fetchSingleValueTypeConfigList = createAsyncThunk('/singleValueTypeConfig', async (queryObject: QueryObject) => {
     try {
         const res = await api.singleValueTypeConfigApi.get(queryObject);
-        return res;
+        return res.data;
     } catch (error) {
-        // return [];
-        return initialState.items;
+        return [];
     }
 });
 
@@ -53,6 +53,7 @@ export const addSingleValueTypeConfig = createAsyncThunk('singleValueTypeConfig/
     try {
         await api.singleValueTypeConfigApi.add(payload);
         thunk.dispatch(fetchSingleValueTypeConfigList(new QueryObject()));
+        thunk.dispatch(closeModal());
 
     } catch (error) {
 
@@ -64,6 +65,7 @@ export const updateSingleValueTypeConfig = createAsyncThunk('singleValueTypeConf
     try {
         await api.singleValueTypeConfigApi.update(payload.id!, payload);
         thunk.dispatch(fetchSingleValueTypeConfigList(new QueryObject()));
+        thunk.dispatch(closeModal());
     }
     catch (error) {
 

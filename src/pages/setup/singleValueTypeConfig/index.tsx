@@ -5,7 +5,7 @@ import Banner from "src/common/Components/banner";
 import CommonDialog from "src/common/Components/dialog";
 import { singleValueTypeColumns } from "src/common/Entity/SingleValueTypeConfig";
 import { useAppDispatch, useAppSelector } from "src/hooks/reduxHooks";
-import { openModal, closeModal } from "src/slices/modalSlice";
+import { openModal, modalFlagState } from "src/slices/modalSlice";
 import {
   deleteSingleValueTypeConfig,
   singleValueTypeConfigList,
@@ -19,17 +19,26 @@ import DataTable from "src/common/Components/table/dataTable";
 
 const Index = () => {
   const dispatch = useAppDispatch();
+  const [formData, setFormData] = useState(null);
+  const [dialogFlag, setDialogFlag] = useState(false);
+  const [pageNo, setPageNo] = useState(1);
+  const [rowNumbers, setRoWNumbers] = useState(10);
+  const flagState = useAppSelector(modalFlagState)
+
   const queryObject = new QueryObject();
 
   useEffect(() => {
+    queryObject.pageNumber = pageNo;
+    queryObject.pageSize = rowNumbers;
     dispatch(fetchSingleValueTypeConfigList(queryObject));
-    return () => {};
-  }, []);
+    return () => { };
+  }, [pageNo, rowNumbers]);
+
+  useEffect(() => {
+    setDialogFlag(flagState);
+  }, [flagState])
 
   const data = useAppSelector(singleValueTypeConfigList);
-
-  const [formData, setFormData] = useState(null);
-  const [dialogFlag, setDialogFlag] = useState(false);
 
   const handleFormDialog = (data: any) => {
     setDialogFlag((prevState) => !prevState);
@@ -37,17 +46,17 @@ const Index = () => {
     dispatch(openModal());
   };
 
-  const handleDialogClose = () => {
-    dispatch(closeModal());
-    setDialogFlag(false);
-  };
-
   const handleDelete = (id: any) => {
     dispatch(deleteSingleValueTypeConfig(id));
   };
 
-  const handleRowChange = () => {};
-  const handlePageChange = () => {};
+  const handleRowChange = (rows: any = 10) => {
+    setPageNo(1);
+    setRoWNumbers(rows);
+  };
+  const handlePageChange = () => {
+    setPageNo((prevstate) => prevstate++);
+  };
   const singleValueTypeConfigForm = (
     <SingleValueTypeConfigForm singleValueTypeData={formData} />
   );
@@ -57,7 +66,6 @@ const Index = () => {
         <CommonDialog
           title="Single Value Type Config"
           form={singleValueTypeConfigForm}
-          handleDialogClose={handleDialogClose}
         />
       )}
       <Box>

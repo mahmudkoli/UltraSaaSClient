@@ -1,33 +1,29 @@
 import * as React from "react";
-import Button from "@mui/material/Button";
 import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
 import DialogContent from "@mui/material/DialogContent";
 import DialogTitle from "@mui/material/DialogTitle";
-import { useAppSelector } from "src/hooks/reduxHooks";
-import { modalFlagState } from "src/slices/modalSlice";
+import { useAppDispatch, useAppSelector } from "src/hooks/reduxHooks";
+import { closeModal, modalFlagState } from "src/slices/modalSlice";
 import { IconButton, useMediaQuery, useTheme } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 
 interface Props {
   title: string;
   form: JSX.Element;
-  handleDialogClose: Function;
 }
 
 export default function CommonDialog({
   title,
   form,
-  handleDialogClose,
 }: Props) {
   const theme = useTheme();
-  const fullScreen = useMediaQuery(theme.breakpoints.down('md'));
-  
+  const fullScreen = useMediaQuery(theme.breakpoints.down('md')); 
   const modalFlag = useAppSelector(modalFlagState);
   const [open, setOpen] = React.useState(modalFlag);
+  const dispatch = useAppDispatch();
 
   const handleClose = () => {
-    handleDialogClose();
+    dispatch(closeModal())
   };
 
   return (
