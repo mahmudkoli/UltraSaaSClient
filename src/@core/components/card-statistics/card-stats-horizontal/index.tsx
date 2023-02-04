@@ -9,9 +9,8 @@ import CardContent from '@mui/material/CardContent'
 // ** Custom Components Imports
 import CustomAvatar from 'src/@core/components/mui/avatar'
 
-// ** Icons Imports
-import ChevronUp from 'mdi-material-ui/ChevronUp'
-import ChevronDown from 'mdi-material-ui/ChevronDown'
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
 // ** Types Imports
 import { CardStatsHorizontalProps } from 'src/@core/components/card-statistics/types'
@@ -25,9 +24,7 @@ const Avatar = styled(CustomAvatar)<AvatarProps>(({ theme }) => ({
 
 const CardStatsHorizontal = (props: CardStatsHorizontalProps) => {
   // ** Props
-  const { title, color, icon, stats, trend, trendNumber } = props
-
-  const TrendIcon = trend === 'positive' ? ChevronUp : ChevronDown
+  const { title, icon, stats, trendNumber, color = 'primary', trend = 'positive' } = props
 
   return (
     <Card>
@@ -40,7 +37,9 @@ const CardStatsHorizontal = (props: CardStatsHorizontalProps) => {
             <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
               <Typography variant='h6'>{stats}</Typography>
               <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                <TrendIcon sx={{ color: trend === 'positive' ? 'success.main' : 'error.main' }} />
+                <Box sx={{ display: 'inline-flex', color: trend === 'positive' ? 'success.main' : 'error.main' }}>
+                  <Icon icon={trend === 'positive' ? 'mdi:chevron-up' : 'mdi:chevron-down'} />
+                </Box>
                 <Typography variant='caption' sx={{ color: trend === 'positive' ? 'success.main' : 'error.main' }}>
                   {trendNumber}
                 </Typography>
@@ -55,8 +54,3 @@ const CardStatsHorizontal = (props: CardStatsHorizontalProps) => {
 }
 
 export default CardStatsHorizontal
-
-CardStatsHorizontal.defaultProps = {
-  color: 'primary',
-  trend: 'positive'
-}

@@ -1,9 +1,9 @@
 export type PricingPlanType = {
   title: string
   imgSrc: string
-  imgWidth: number
   subtitle: string
-  imgHeight: number
+  imgWidth?: number
+  imgHeight?: number
   currentPlan: boolean
   popularPlan: boolean
   monthlyPrice: number
@@ -25,7 +25,15 @@ export type PricingFaqType = {
   question: string
 }
 
+export type PricingTableRowType = { feature: string; starter: boolean; pro: boolean | string; enterprise: boolean }
+
+export type PricingTableType = {
+  header: { title: string; subtitle: string; isPro?: boolean }[]
+  rows: PricingTableRowType[]
+}
+
 export type PricingDataType = {
   faq: PricingFaqType[]
+  pricingTable: PricingTableType
   pricingPlans: PricingPlanType[]
 }

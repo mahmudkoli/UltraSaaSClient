@@ -1,7 +1,7 @@
 // ** React Imports
 import { ReactNode, ReactElement, useEffect } from 'react'
 
-// ** Next Imports
+// ** Next Import
 import { useRouter } from 'next/router'
 
 // ** Hooks Import

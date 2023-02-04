@@ -1,7 +1,8 @@
-// ** Theme Type Import
-import { PaletteMode, ThemeOptions } from '@mui/material'
+// ** Type Imports
+import { Mode } from 'src/@core/layouts/types'
+import { ThemeOptions } from '@mui/material'
 
-const Shadows = (mode: PaletteMode): ThemeOptions['shadows'] => {
+const Shadows = (mode: Mode): ThemeOptions['shadows'] => {
   if (mode === 'light') {
     return [
       'none',

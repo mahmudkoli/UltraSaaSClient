@@ -1,6 +1,5 @@
-// ** Types Import
-import { Settings } from 'src/@core/context/settingsContext'
-import { NavLink, NavGroup, NavSectionTitle, VerticalNavItemsType } from 'src/@core/layouts/types'
+// ** Type Imports
+import { NavLink, NavGroup, LayoutProps, NavSectionTitle } from 'src/@core/layouts/types'
 
 // ** Custom Menu Components
 import VerticalNavLink from './VerticalNavLink'
@@ -10,16 +9,16 @@ import VerticalNavSectionTitle from './VerticalNavSectionTitle'
 interface Props {
   parent?: NavGroup
   navHover?: boolean
-  settings: Settings
   navVisible?: boolean
   groupActive: string[]
   isSubToSub?: NavGroup
   currentActiveGroup: string[]
   navigationBorderWidth: number
-  verticalNavItems?: VerticalNavItemsType
-  saveSettings: (values: Settings) => void
+  settings: LayoutProps['settings']
+  saveSettings: LayoutProps['saveSettings']
   setGroupActive: (value: string[]) => void
   setCurrentActiveGroup: (item: string[]) => void
+  verticalNavItems?: LayoutProps['verticalLayoutProps']['navMenu']['navItems']
 }
 
 const resolveNavItemComponent = (item: NavGroup | NavLink | NavSectionTitle) => {

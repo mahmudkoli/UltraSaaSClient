@@ -9,7 +9,7 @@
 import { PaletteMode, Direction } from '@mui/material'
 
 // ** Icon Import
-import Circle from 'mdi-material-ui/Circle'
+import Circle from '@mui/material'
 
 // ** Types
 import { Skin, AppBar, Footer, ContentWidth, VerticalNavToggle, HorizontalMenuToggle } from 'src/@core/layouts/types'

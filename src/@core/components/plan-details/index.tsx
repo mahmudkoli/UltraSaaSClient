@@ -4,8 +4,8 @@ import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
 import Box, { BoxProps } from '@mui/material/Box'
 
-// ** Icons Imports
-import CircleOutline from 'mdi-material-ui/CircleOutline'
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
 // ** Util Import
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
@@ -19,13 +19,13 @@ import { PricingPlanProps } from './types'
 // ** Styled Component for the wrapper of whole component
 const BoxWrapper = styled(Box)<BoxProps>(({ theme }) => ({
   position: 'relative',
-  padding: theme.spacing(12, 6, 6),
+  padding: theme.spacing(6),
+  paddingTop: theme.spacing(14.75),
   borderRadius: theme.shape.borderRadius
 }))
 
 // ** Styled Component for the wrapper of all the features of a plan
 const BoxFeature = styled(Box)<BoxProps>(({ theme }) => ({
-  marginTop: theme.spacing(5),
   marginBottom: theme.spacing(5),
   '& > :not(:first-of-type)': {
     marginTop: theme.spacing(4)
@@ -39,7 +39,9 @@ const PlanDetails = (props: PricingPlanProps) => {
   const renderFeatures = () => {
     return data?.planBenefits.map((item: string, index: number) => (
       <Box key={index} sx={{ display: 'flex', alignItems: 'center' }}>
-        <CircleOutline sx={{ mr: 2.5, fontSize: '0.875rem', color: 'text.secondary' }} />
+        <Box component='span' sx={{ display: 'inline-flex', color: 'text.secondary', mr: 2 }}>
+          <Icon icon='mdi:circle-outline' fontSize='0.75rem' />
+        </Box>
         <Typography variant='body2'>{item}</Typography>
       </Box>
     ))
@@ -57,26 +59,27 @@ const PlanDetails = (props: PricingPlanProps) => {
       {data?.popularPlan ? (
         <CustomChip
           skin='light'
-          size='small'
           label='Popular'
           color='primary'
           sx={{
-            top: 16,
-            right: 24,
+            top: 12,
+            right: 12,
+            height: 24,
             position: 'absolute',
             '& .MuiChip-label': {
-              px: 2.5,
-              fontSize: '0.8125rem'
+              px: 1.75,
+              fontWeight: 600,
+              fontSize: '0.75rem'
             }
           }}
         />
       ) : null}
-      <Box sx={{ display: 'flex', justifyContent: 'center' }}>
+      <Box sx={{ mb: 5, display: 'flex', justifyContent: 'center' }}>
         <img
           width={data?.imgWidth}
           src={`${data?.imgSrc}`}
           height={data?.imgHeight}
-          alt={`${data?.title.toLowerCase()}-plan-img`}
+          alt={`${data?.title.toLowerCase().replace(' ', '-')}-plan-img`}
         />
       </Box>
       <Box sx={{ textAlign: 'center' }}>
@@ -84,22 +87,22 @@ const PlanDetails = (props: PricingPlanProps) => {
           {data?.title}
         </Typography>
         <Typography variant='body2'>{data?.subtitle}</Typography>
-        <Box sx={{ mt: 5, mb: 10, position: 'relative' }}>
+        <Box sx={{ my: 7, position: 'relative' }}>
           <Box sx={{ display: 'flex', justifyContent: 'center' }}>
-            <Typography variant='body2' sx={{ mt: 1.6, alignSelf: 'flex-start' }}>
+            <Typography variant='body2' sx={{ mt: 1.6, fontWeight: 600, alignSelf: 'flex-start' }}>
               $
             </Typography>
-            <Typography variant='h3' sx={{ fontWeight: 500, color: 'primary.main', lineHeight: 1.17 }}>
+            <Typography variant='h3' sx={{ fontWeight: 600, color: 'primary.main', lineHeight: 1.17 }}>
               {plan === 'monthly' ? data?.monthlyPrice : data?.yearlyPlan.perMonth}
             </Typography>
-            <Typography variant='body2' sx={{ mb: 1.6, alignSelf: 'flex-end' }}>
+            <Typography variant='body2' sx={{ mb: 1.6, fontWeight: 600, alignSelf: 'flex-end' }}>
               /month
             </Typography>
           </Box>
           {plan !== 'monthly' && data?.monthlyPrice !== 0 ? (
             <Typography
-              variant='body2'
-              sx={{ left: 0, right: 0, position: 'absolute' }}
+              variant='caption'
+              sx={{ top: 50, left: '50%', position: 'absolute', transform: 'translateX(-50%)' }}
             >{`USD ${data?.yearlyPlan.totalAnnual}/year`}</Typography>
           ) : null}
         </Box>

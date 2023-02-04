@@ -17,7 +17,7 @@ const CleaveWrapper = styled(Box)<BoxProps>(({ theme }) => ({
     color: theme.palette.text.primary,
     fontFamily: theme.typography.body1.fontFamily,
     borderColor: `rgba(${theme.palette.customColors.main}, 0.22)`,
-    transition: theme.transitions.create(['border-color', 'background-color', 'box-shadow']),
+    transition: theme.transitions.create(['border-color', 'box-shadow']),
     '&:focus, &:focus-visible': {
       outline: 0,
       borderWidth: 2,

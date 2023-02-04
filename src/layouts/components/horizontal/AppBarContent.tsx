@@ -6,7 +6,7 @@ import { Settings } from 'src/@core/context/settingsContext'
 
 // ** Components
 import ModeToggler from 'src/@core/layouts/components/shared-components/ModeToggler'
-import UserDropdown from 'src/layouts/components/UserDropdown'
+import UserDropdown from 'src/@core/layouts/components/shared-components/UserDropdown'
 
 interface Props {
   settings: Settings

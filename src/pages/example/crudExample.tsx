@@ -6,7 +6,6 @@ import {
   ListItem,
   ListItemText,
 } from "@mui/material";
-import { DeleteCircle } from "mdi-material-ui";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Skill } from "src/common/Entity/Skill";
@@ -55,8 +54,8 @@ const crudExample = () => {
               key={value?.id}
               disableGutters
               secondaryAction={
-                <IconButton aria-label="comment">
-                  <DeleteCircle />
+                <IconButton aria-label="comment" title="Delete">
+                 
                 </IconButton>
               }
             >

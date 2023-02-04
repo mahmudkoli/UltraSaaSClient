@@ -1,7 +1,7 @@
 // ** React Imports
 import { ReactNode, useState } from 'react'
 
-// ** Next Imports
+// ** Next Import
 import { useRouter } from 'next/router'
 
 // ** Types

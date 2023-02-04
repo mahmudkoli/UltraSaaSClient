@@ -1,5 +1,5 @@
 // ** Types
-import { HorizontalNavItemsType, NavGroup, NavLink } from 'src/@core/layouts/types'
+import { NavLink, NavGroup, HorizontalNavItemsType } from 'src/@core/layouts/types'
 
 // ** Custom Navigation Components
 import HorizontalNavLink from './HorizontalNavLink'

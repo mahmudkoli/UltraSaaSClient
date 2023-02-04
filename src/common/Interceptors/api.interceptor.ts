@@ -1,5 +1,5 @@
 import axios, { AxiosError } from "axios";
-import { toast } from "react-toastify";
+// import { toast } from "react-toastify";
 import authConfig from 'src/configs/auth'
 
 import { memoizedRefreshToken } from './refreshtoken';
@@ -57,14 +57,14 @@ axios.interceptors.response.use(
         console.log(data);
         break;
       case 404:
-        toast.error("server error");
+        // toast.error("server error");
         break;
       case 500:
-        toast.error("server error");
+        // toast.error("server error");
         break;
 
       default:
-        toast.error("an unknown error occurred");
+        // toast.error("an unknown error occurred");
         break;
     }
     return Promise.reject(error);

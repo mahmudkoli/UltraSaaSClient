@@ -37,7 +37,6 @@ import MuiBreadcrumbs from './breadcrumbs'
 import MuiButtonGroup from './buttonGroup'
 import MuiAutocomplete from './autocomplete'
 import MuiToggleButton from './toggleButton'
-import MuiDateTimePicker from './dateTimePicker'
 
 const Overrides = (theme: Theme, settings: Settings) => {
   const { skin } = settings
@@ -67,7 +66,6 @@ const Overrides = (theme: Theme, settings: Settings) => {
   const pagination = MuiPagination(theme)
   const popover = MuiPopover(theme, skin)
   const snackbar = MuiSnackbar(theme, skin)
-  const dateTimePicker = MuiDateTimePicker(theme)
   const autocomplete = MuiAutocomplete(theme, skin)
 
   return Object.assign(
@@ -100,7 +98,6 @@ const Overrides = (theme: Theme, settings: Settings) => {
     pagination,
     autocomplete,
     MuiTypography,
-    dateTimePicker,
     MuiBreadcrumbs,
     MuiButtonGroup,
     MuiToggleButton

@@ -2,6 +2,9 @@
 import { useTheme } from '@mui/material/styles'
 import MuiTimelineDot from '@mui/lab/TimelineDot'
 
+// ** Hooks Imports
+import useBgColor, { UseBgColorType } from 'src/@core/hooks/useBgColor'
+
 // ** Util Import
 import { hexToRGBA } from 'src/@core/utils/hex-to-rgba'
 
@@ -14,37 +17,38 @@ const TimelineDot = (props: CustomTimelineDotProps) => {
 
   // ** Hook
   const theme = useTheme()
+  const bgColors: UseBgColorType = useBgColor()
 
   const colors: ColorsType = {
     primary: {
       boxShadow: 'none',
       color: theme.palette.primary.main,
-      backgroundColor: hexToRGBA(theme.palette.primary.main, 0.12)
+      backgroundColor: bgColors.primaryLight.backgroundColor
     },
     secondary: {
       boxShadow: 'none',
       color: theme.palette.secondary.main,
-      backgroundColor: hexToRGBA(theme.palette.secondary.main, 0.12)
+      backgroundColor: bgColors.secondaryLight.backgroundColor
     },
     success: {
       boxShadow: 'none',
       color: theme.palette.success.main,
-      backgroundColor: hexToRGBA(theme.palette.success.main, 0.12)
+      backgroundColor: bgColors.successLight.backgroundColor
     },
     error: {
       boxShadow: 'none',
       color: theme.palette.error.main,
-      backgroundColor: hexToRGBA(theme.palette.error.main, 0.12)
+      backgroundColor: bgColors.errorLight.backgroundColor
     },
     warning: {
       boxShadow: 'none',
       color: theme.palette.warning.main,
-      backgroundColor: hexToRGBA(theme.palette.warning.main, 0.12)
+      backgroundColor: bgColors.warningLight.backgroundColor
     },
     info: {
       boxShadow: 'none',
       color: theme.palette.info.main,
-      backgroundColor: hexToRGBA(theme.palette.info.main, 0.12)
+      backgroundColor: bgColors.infoLight.backgroundColor
     },
     grey: {
       boxShadow: 'none',

@@ -11,18 +11,18 @@ const RechartsWrapper = styled('div')(({ theme }) => ({
   '& .recharts-polar-grid-concentric-polygon': {
     stroke: theme.palette.divider
   },
-  '& .recharts-cartesian-axis-tick-value, & .recharts-polar-radius-axis-tick-value': {
-    fill: theme.palette.text.primary
+  '& .recharts-tooltip-wrapper': {
+    outline: 'none'
   },
   '& .recharts-default-tooltip': {
     border: 'none !important',
-    boxShadow: theme.shadows[2],
+    boxShadow: theme.shadows[3],
     borderRadius: theme.shape.borderRadius,
     backgroundColor: `${theme.palette.background.paper} !important`
   },
   '& .recharts-custom-tooltip': {
     padding: theme.spacing(2.5),
-    boxShadow: theme.shadows[2],
+    boxShadow: theme.shadows[3],
     borderRadius: theme.shape.borderRadius,
     backgroundColor: theme.palette.background.paper
   },
@@ -36,11 +36,13 @@ const RechartsWrapper = styled('div')(({ theme }) => ({
   '& .recharts-active-dot .recharts-dot': {
     fill: theme.palette.secondary.main
   },
-  '& .recharts-polar-angle-axis-tick-value': {
-    fill: theme.palette.text.primary
-  },
   '& .recharts-tooltip-item': {
+    fontSize: '0.875rem',
     color: `${theme.palette.text.primary} !important`
+  },
+  '& .recharts-text': {
+    fontSize: '0.875rem',
+    fill: theme.palette.text.disabled
   }
 }))
 
