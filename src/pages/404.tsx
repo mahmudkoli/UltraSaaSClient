@@ -50,11 +50,9 @@ const Error404 = () => {
           <Typography variant='body2'>We couldn&prime;t find the page you are looking for.</Typography>
         </BoxWrapper>
         <Img alt='error-illustration' src='/images/pages/404.png' />
-        <Link passHref href='/'>
-          <Button component='a' variant='contained' sx={{ px: 5.5 }}>
-            Back to Home
-          </Button>
-        </Link>
+        <Button href='/' component={Link} variant='contained' sx={{ px: 5.5 }}>
+          Back to Home
+        </Button>
       </Box>
       <FooterIllustrations image='/images/pages/misc-404-object.png' />
     </Box>

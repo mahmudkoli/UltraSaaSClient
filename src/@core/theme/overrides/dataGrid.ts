@@ -17,13 +17,10 @@ const DataGrid = (theme: Theme) => {
           paddingLeft: `${theme.spacing(3.25)} !important`
         },
         columnHeaders: {
-          maxHeight: '54px !important',
-          minHeight: '54px !important',
           lineHeight: '24px !important',
           backgroundColor: theme.palette.customColors.tableHeaderBg
         },
         columnHeader: {
-          height: '54px',
           '&:not(.MuiDataGrid-columnHeaderCheckbox)': {
             padding: theme.spacing(4),
             '&:first-of-type': {
@@ -49,15 +46,6 @@ const DataGrid = (theme: Theme) => {
         columnSeparator: {
           color: theme.palette.divider
         },
-        virtualScroller: {
-          marginTop: '54px !important'
-        },
-        virtualScrollerRenderZone: {
-          '& .MuiDataGrid-row': {
-            maxHeight: '50px !important',
-            minHeight: '50px !important'
-          }
-        },
         row: {
           '&:last-child': {
             '& .MuiDataGrid-cell': {
@@ -66,8 +54,6 @@ const DataGrid = (theme: Theme) => {
           }
         },
         cell: {
-          maxHeight: '50px !important',
-          minHeight: '50px !important',
           lineHeight: '20px !important',
           borderColor: theme.palette.divider,
           '&:not(.MuiDataGrid-cellCheckbox)': {
@@ -98,11 +84,18 @@ const DataGrid = (theme: Theme) => {
           minHeight: '50px !important',
           borderTop: `1px solid ${theme.palette.divider}`,
           '& .MuiTablePagination-toolbar': {
-            minHeight: '50px !important'
+            minHeight: '50px !important',
+            paddingLeft: `${theme.spacing(4)} !important`,
+            paddingRight: `${theme.spacing(4)} !important`
           },
           '& .MuiTablePagination-select': {
             color: theme.palette.text.primary
           }
+        },
+        selectedRowCount: {
+          margin: 0,
+          paddingLeft: theme.spacing(4),
+          paddingRight: theme.spacing(4)
         }
       },
       defaultProps: {

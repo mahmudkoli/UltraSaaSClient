@@ -42,36 +42,26 @@ const VerticalNavSectionTitle = (props: Props) => {
   const theme = useTheme()
 
   // ** Vars
-  const { skin, navCollapsed } = settings
+  const { mode, navCollapsed } = settings
 
   const conditionalBorderColor = () => {
-    if (skin === 'semi-dark' && theme.palette.mode === 'light') {
+    if (mode === 'semi-dark') {
       return {
         '&, &:before': {
           borderColor: `rgba(${theme.palette.customColors.dark}, 0.12)`
-        }
-      }
-    } else if (skin === 'semi-dark' && theme.palette.mode === 'dark') {
-      return {
-        '&, &:before': {
-          borderColor: `rgba(${theme.palette.customColors.light}, 0.12)`
         }
       }
     } else return {}
   }
 
   const conditionalColor = () => {
-    if (skin === 'semi-dark' && theme.palette.mode === 'light') {
+    if (mode === 'semi-dark') {
       return {
         color: `rgba(${theme.palette.customColors.dark}, 0.38) !important`
       }
-    } else if (skin === 'semi-dark' && theme.palette.mode === 'dark') {
-      return {
-        color: `rgba(${theme.palette.customColors.light}, 0.38) !important`
-      }
     } else {
       return {
-        color: theme.palette.text.disabled
+        color: 'text.disabled'
       }
     }
   }
@@ -89,7 +79,7 @@ const VerticalNavSectionTitle = (props: Props) => {
         <Divider
           textAlign='left'
           sx={{
-            m: 0,
+            m: '0 !important',
             lineHeight: 'normal',
             ...conditionalBorderColor(),
             '&:after': { display: 'none' },

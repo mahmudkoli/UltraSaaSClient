@@ -1,11 +1,10 @@
 // ** React Imports
 import { ReactNode, useState, Fragment, MouseEvent } from 'react'
 
-// ** Next Imports
+// ** Next Import
 import Link from 'next/link'
 
 // ** MUI Components
-import MuiLink from '@mui/material/Link'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
 import Checkbox from '@mui/material/Checkbox'
@@ -22,13 +21,8 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Typography, { TypographyProps } from '@mui/material/Typography'
 import MuiFormControlLabel, { FormControlLabelProps } from '@mui/material/FormControlLabel'
 
-// ** Icons Imports
-import Google from 'mdi-material-ui/Google'
-import Github from 'mdi-material-ui/Github'
-import Twitter from 'mdi-material-ui/Twitter'
-import Facebook from 'mdi-material-ui/Facebook'
-import EyeOutline from 'mdi-material-ui/EyeOutline'
-import EyeOffOutline from 'mdi-material-ui/EyeOffOutline'
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
 // ** Third Party Imports
 import * as yup from 'yup'
@@ -338,7 +332,7 @@ const Register = () => {
                             onMouseDown={e => e.preventDefault()}
                             onClick={() => setShowPassword(!showPassword)}
                           >
-                            {showPassword ? <EyeOutline /> : <EyeOffOutline />}
+                            <Icon icon={showPassword ? 'mdi:eye-outline' : 'mdi:eye-off-outline'} />
                           </IconButton>
                         </InputAdornment>
                       }
@@ -378,16 +372,15 @@ const Register = () => {
                             >
                               I agree to{' '}
                             </Typography>
-                            <Link href='/' passHref>
-                              <Typography
-                                variant='body2'
-                                component={MuiLink}
-                                sx={{ color: 'primary.main' }}
-                                onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
-                              >
-                                privacy policy & terms
-                              </Typography>
-                            </Link>
+                            <Typography
+                              href='/'
+                              variant='body2'
+                              component={Link}
+                              sx={{ color: 'primary.main', textDecoration: 'none' }}
+                              onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                            >
+                              privacy policy & terms
+                            </Typography>
                           </Fragment>
                         }
                       />
@@ -403,38 +396,52 @@ const Register = () => {
               </Button>
               <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
                 <Typography sx={{ mr: 2, color: 'text.secondary' }}>Already have an account?</Typography>
-                <Typography>
-                  <Link passHref href='/login'>
-                    <Typography component={MuiLink} sx={{ color: 'primary.main' }}>
-                      Sign in instead
-                    </Typography>
-                  </Link>
+                <Typography href='/login' component={Link} sx={{ color: 'primary.main', textDecoration: 'none' }}>
+                  Sign in instead
                 </Typography>
               </Box>
-              <Divider sx={{ mt: 5, mb: 7.5, '& .MuiDivider-wrapper': { px: 4 } }}>or</Divider>
+              <Divider
+                sx={{
+                  '& .MuiDivider-wrapper': { px: 4 },
+                  mt: theme => `${theme.spacing(5)} !important`,
+                  mb: theme => `${theme.spacing(7.5)} !important`
+                }}
+              >
+                or
+              </Divider>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Link href='/' passHref>
-                  <IconButton component='a' onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}>
-                    <Facebook sx={{ color: '#497ce2' }} />
-                  </IconButton>
-                </Link>
-                <Link href='/' passHref>
-                  <IconButton component='a' onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}>
-                    <Twitter sx={{ color: '#1da1f2' }} />
-                  </IconButton>
-                </Link>
-                <Link href='/' passHref>
-                  <IconButton component='a' onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}>
-                    <Github
-                      sx={{ color: theme => (theme.palette.mode === 'light' ? '#272727' : theme.palette.grey[300]) }}
-                    />
-                  </IconButton>
-                </Link>
-                <Link href='/' passHref>
-                  <IconButton component='a' onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}>
-                    <Google sx={{ color: '#db4437' }} />
-                  </IconButton>
-                </Link>
+                <IconButton
+                  href='/'
+                  component={Link}
+                  sx={{ color: '#497ce2' }}
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                >
+                  <Icon icon='mdi:facebook' />
+                </IconButton>
+                <IconButton
+                  href='/'
+                  component={Link}
+                  sx={{ color: '#1da1f2' }}
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                >
+                  <Icon icon='mdi:twitter' />
+                </IconButton>
+                <IconButton
+                  href='/'
+                  component={Link}
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                  sx={{ color: theme => (theme.palette.mode === 'light' ? '#272727' : 'grey.300') }}
+                >
+                  <Icon icon='mdi:github' />
+                </IconButton>
+                <IconButton
+                  href='/'
+                  component={Link}
+                  sx={{ color: '#db4437' }}
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                >
+                  <Icon icon='mdi:google' />
+                </IconButton>
               </Box>
             </form>
           </BoxWrapper>

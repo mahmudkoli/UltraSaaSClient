@@ -8,6 +8,7 @@ declare module 'next' {
     authGuard?: boolean
     guestGuard?: boolean
     setConfig?: () => void
+    contentHeightFixed?: boolean
     getLayout?: (page: ReactElement) => ReactNode
   }
 }

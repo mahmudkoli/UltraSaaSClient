@@ -3,6 +3,7 @@ export type ErrCallbackType = (err: { [key: string]: string }) => void
 export type LoginParams = {
   email: string
   password: string
+  rememberMe?: boolean
 }
 
 export type RegisterParams = {
@@ -12,35 +13,35 @@ export type RegisterParams = {
 }
 
 export type UserDataType = {
-  id: number
-  role: string
+  id: string
+  userName: string
+  firstName: string
+  lastName: string
   email: string
-  fullName: string
-  username: string
-  password: string
+  isActive: boolean
+  emailConfirmed: boolean
+  phoneNumber: string
+  imageUrl: string
+  phoneNumberConfirmed: boolean
+  address: string
+  gender: string
+  dateOfBirth: string
+  role?: string
   avatar?: string | null
 }
 
 export type AuthValuesType = {
   loading: boolean
-  setLoading: (value: boolean) => void
   logout: () => void
-  isInitialized: boolean
   user: UserDataType | null
+  setLoading: (value: boolean) => void
   setUser: (value: UserDataType | null) => void
-  setIsInitialized: (value: boolean) => void
   login: (params: LoginParams, errorCallback?: ErrCallbackType) => void
   register: (params: RegisterParams, errorCallback?: ErrCallbackType) => void
-  refreshToken: (errorCallback?: ErrCallbackType) => void
-}
-
-export type RefreshTokenParams = {
-  token : string
-  refreshToken : string
 }
 
 export type LoginResponse = {
-  token : string
-  refreshToken : string
-  refreshTokenExpiryTime : string
+  token: string
+  refreshToken: string
+  refreshTokenExpiryTime: string
 }
