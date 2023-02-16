@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path')
 
 /** @type {import('next').NextConfig} */
@@ -15,8 +16,7 @@ module.exports = withTM({
   trailingSlash: true,
   reactStrictMode: false,
   experimental: {
-    esmExternals: false,
-    jsconfigPaths: true // enables it for both jsconfig.json and tsconfig.json
+    esmExternals: false
   },
   webpack: config => {
     config.resolve.alias = {

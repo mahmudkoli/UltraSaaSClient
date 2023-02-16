@@ -1,6 +1,3 @@
-// ** React Imports
-import { Fragment } from 'react'
-
 // ** MUI Components
 import useMediaQuery from '@mui/material/useMediaQuery'
 import { styled, useTheme } from '@mui/material/styles'
@@ -41,10 +38,10 @@ const FooterIllustrations = (props: FooterIllustrationsProp) => {
 
   if (!hidden) {
     return (
-      <Fragment>
+      <>
         <ShapeImg alt='shape' src={src} />
         <MaskImg alt='mask' src={`/images/pages/misc-mask-${theme.palette.mode}.png`} />
-      </Fragment>
+      </>
     )
   } else {
     return null

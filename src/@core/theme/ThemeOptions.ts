@@ -30,7 +30,7 @@ const themeOptions = (settings: Settings): ThemeOptions => {
   const mergedThemeConfig = deepmerge(
     {
       direction,
-      palette: palette(mode, skin),
+      palette: palette(mode === 'semi-dark' ? 'light' : mode, skin),
       typography: {
         fontFamily:
           userFontFamily ||

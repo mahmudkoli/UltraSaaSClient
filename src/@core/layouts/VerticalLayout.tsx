@@ -6,8 +6,8 @@ import Fab from '@mui/material/Fab'
 import { styled } from '@mui/material/styles'
 import Box, { BoxProps } from '@mui/material/Box'
 
-// ** Icons Imports
-import ArrowUp from 'mdi-material-ui/ArrowUp'
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
 // ** Theme Config Import
 import themeConfig from 'src/configs/themeConfig'
@@ -21,9 +21,6 @@ import Customizer from 'src/@core/components/customizer'
 import Navigation from './components/vertical/navigation'
 import Footer from './components/shared-components/footer'
 import ScrollToTop from 'src/@core/components/scroll-to-top'
-
-// ** Styled Component
-import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 
 const VerticalLayoutWrapper = styled('div')({
   height: '100%',
@@ -51,7 +48,7 @@ const ContentWrapper = styled('main')(({ theme }) => ({
 
 const VerticalLayout = (props: LayoutProps) => {
   // ** Props
-  const { hidden, settings, children, scrollToTop } = props
+  const { hidden, settings, children, scrollToTop, footerProps, contentHeightFixed, verticalLayoutProps } = props
 
   // ** Vars
   const { skin, navHidden, contentWidth } = settings
@@ -61,7 +58,6 @@ const VerticalLayout = (props: LayoutProps) => {
   const collapsedNavWidth = collapsedNavigationSize
 
   // ** States
-  const [navHover, setNavHover] = useState<boolean>(false)
   const [navVisible, setNavVisible] = useState<boolean>(false)
 
   // ** Toggle Functions
@@ -71,29 +67,45 @@ const VerticalLayout = (props: LayoutProps) => {
     <>
       <VerticalLayoutWrapper className='layout-wrapper'>
         {/* Navigation Menu */}
-        {navHidden &&
-        themeConfig.layout === 'vertical' &&
-        !(navHidden && settings.lastLayout === 'horizontal') ? null : (
+        {navHidden && !(navHidden && settings.lastLayout === 'horizontal') ? null : (
           <Navigation
             navWidth={navWidth}
-            navHover={navHover}
             navVisible={navVisible}
-            setNavHover={setNavHover}
             setNavVisible={setNavVisible}
             collapsedNavWidth={collapsedNavWidth}
             toggleNavVisibility={toggleNavVisibility}
             navigationBorderWidth={navigationBorderWidth}
+            navMenuContent={verticalLayoutProps.navMenu.content}
+            navMenuBranding={verticalLayoutProps.navMenu.branding}
+            menuLockedIcon={verticalLayoutProps.navMenu.lockedIcon}
+            verticalNavItems={verticalLayoutProps.navMenu.navItems}
+            navMenuProps={verticalLayoutProps.navMenu.componentProps}
+            menuUnlockedIcon={verticalLayoutProps.navMenu.unlockedIcon}
+            afterNavMenuContent={verticalLayoutProps.navMenu.afterContent}
+            beforeNavMenuContent={verticalLayoutProps.navMenu.beforeContent}
             {...props}
           />
         )}
-        <MainContentWrapper className='layout-content-wrapper'>
+        <MainContentWrapper
+          className='layout-content-wrapper'
+          sx={{ ...(contentHeightFixed && { maxHeight: '100vh' }) }}
+        >
           {/* AppBar Component */}
-          <AppBar toggleNavVisibility={toggleNavVisibility} {...props} />
+          <AppBar
+            toggleNavVisibility={toggleNavVisibility}
+            appBarContent={verticalLayoutProps.appBar?.content}
+            appBarProps={verticalLayoutProps.appBar?.componentProps}
+            {...props}
+          />
 
           {/* Content */}
           <ContentWrapper
             className='layout-page-content'
             sx={{
+              ...(contentHeightFixed && {
+                overflow: 'hidden',
+                '& > :first-of-type': { height: '100%' }
+              }),
               ...(contentWidth === 'boxed' && {
                 mx: 'auto',
                 '@media (min-width:1440px)': { maxWidth: 1440 },
@@ -105,12 +117,7 @@ const VerticalLayout = (props: LayoutProps) => {
           </ContentWrapper>
 
           {/* Footer Component */}
-          <Footer {...props} />
-
-          {/* Portal for React Datepicker */}
-          <DatePickerWrapper sx={{ zIndex: 11 }}>
-            <Box id='react-datepicker-portal'></Box>
-          </DatePickerWrapper>
+          <Footer footerStyles={footerProps?.sx} footerContent={footerProps?.content} {...props} />
         </MainContentWrapper>
       </VerticalLayoutWrapper>
 
@@ -123,7 +130,7 @@ const VerticalLayout = (props: LayoutProps) => {
       ) : (
         <ScrollToTop className='mui-fixed'>
           <Fab color='primary' size='small' aria-label='scroll back to top'>
-            <ArrowUp />
+            <Icon icon='mdi:arrow-up' />
           </Fab>
         </ScrollToTop>
       )}

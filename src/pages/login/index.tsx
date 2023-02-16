@@ -6,7 +6,6 @@ import Link from 'next/link'
 
 // ** MUI Components
 import Alert from '@mui/material/Alert'
-import MuiLink from '@mui/material/Link'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
 import Checkbox from '@mui/material/Checkbox'
@@ -23,13 +22,8 @@ import InputAdornment from '@mui/material/InputAdornment'
 import Typography, { TypographyProps } from '@mui/material/Typography'
 import MuiFormControlLabel, { FormControlLabelProps } from '@mui/material/FormControlLabel'
 
-// ** Icons Imports
-import Google from 'mdi-material-ui/Google'
-import Github from 'mdi-material-ui/Github'
-import Twitter from 'mdi-material-ui/Twitter'
-import Facebook from 'mdi-material-ui/Facebook'
-import EyeOutline from 'mdi-material-ui/EyeOutline'
-import EyeOffOutline from 'mdi-material-ui/EyeOffOutline'
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
 // ** Third Party Imports
 import * as yup from 'yup'
@@ -116,12 +110,13 @@ interface FormData {
 }
 
 const LoginPage = () => {
+  const [rememberMe, setRememberMe] = useState<boolean>(true)
   const [showPassword, setShowPassword] = useState<boolean>(false)
 
   // ** Hooks
   const auth = useAuth()
   const theme = useTheme()
-  const bgClasses = useBgColor()
+  const bgColors = useBgColor()
   const { settings } = useSettings()
   const hidden = useMediaQuery(theme.breakpoints.down('md'))
 
@@ -141,7 +136,7 @@ const LoginPage = () => {
 
   const onSubmit = (data: FormData) => {
     const { email, password } = data
-    auth.login({ email, password }, () => {
+    auth.login({ email, password, rememberMe }, () => {
       setError('email', {
         type: 'manual',
         message: 'Email or Password is invalid'
@@ -264,9 +259,9 @@ const LoginPage = () => {
               <TypographyStyled variant='h5'>{`Welcome to ${themeConfig.templateName}! 👋🏻`}</TypographyStyled>
               <Typography variant='body2'>Please sign-in to your account and start the adventure</Typography>
             </Box>
-            <Alert icon={false} sx={{ py: 3, mb: 6, ...bgClasses.primaryLight, '& .MuiAlert-message': { p: 0 } }}>
+            <Alert icon={false} sx={{ py: 3, mb: 6, ...bgColors.primaryLight, '& .MuiAlert-message': { p: 0 } }}>
               <Typography variant='caption' sx={{ mb: 2, display: 'block', color: 'primary.main' }}>
-                Admin: <strong>admin@root.com</strong> / Pass: <strong>123Pa$$word!</strong>
+                Admin: <strong>admin@materialize.com</strong> / Pass: <strong>admin</strong>
               </Typography>
               <Typography variant='caption' sx={{ display: 'block', color: 'primary.main' }}>
                 Client: <strong>client@materialize.com</strong> / Pass: <strong>client</strong>
@@ -316,7 +311,7 @@ const LoginPage = () => {
                             onMouseDown={e => e.preventDefault()}
                             onClick={() => setShowPassword(!showPassword)}
                           >
-                            {showPassword ? <EyeOutline /> : <EyeOffOutline />}
+                            <Icon icon={showPassword ? 'mdi:eye-outline' : 'mdi:eye-off-outline'} fontSize={20} />
                           </IconButton>
                         </InputAdornment>
                       }
@@ -334,52 +329,68 @@ const LoginPage = () => {
               >
                 <FormControlLabel
                   label='Remember Me'
-                  control={<Checkbox />}
-                  sx={{ '& .MuiFormControlLabel-label': { color: 'text.primary' } }}
+                  control={<Checkbox checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} />}
                 />
-                <Link passHref href='/forgot-password'>
-                  <Typography component={MuiLink} variant='body2' sx={{ color: 'primary.main' }}>
-                    Forgot Password?
-                  </Typography>
-                </Link>
+                <Typography
+                  variant='body2'
+                  component={Link}
+                  href='/forgot-password'
+                  sx={{ color: 'primary.main', textDecoration: 'none' }}
+                >
+                  Forgot Password?
+                </Typography>
               </Box>
               <Button fullWidth size='large' type='submit' variant='contained' sx={{ mb: 7 }}>
                 Login
               </Button>
               <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
                 <Typography sx={{ mr: 2, color: 'text.secondary' }}>New on our platform?</Typography>
-                <Typography>
-                  <Link passHref href='/register'>
-                    <Typography component={MuiLink} sx={{ color: 'primary.main' }}>
-                      Create an account
-                    </Typography>
-                  </Link>
+                <Typography href='/register' component={Link} sx={{ color: 'primary.main', textDecoration: 'none' }}>
+                  Create an account
                 </Typography>
               </Box>
-              <Divider sx={{ mt: 5, mb: 7.5, '& .MuiDivider-wrapper': { px: 4 } }}>or</Divider>
+              <Divider
+                sx={{
+                  '& .MuiDivider-wrapper': { px: 4 },
+                  mt: theme => `${theme.spacing(5)} !important`,
+                  mb: theme => `${theme.spacing(7.5)} !important`
+                }}
+              >
+                or
+              </Divider>
               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Link href='/' passHref>
-                  <IconButton component='a' onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}>
-                    <Facebook sx={{ color: '#497ce2' }} />
-                  </IconButton>
-                </Link>
-                <Link href='/' passHref>
-                  <IconButton component='a' onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}>
-                    <Twitter sx={{ color: '#1da1f2' }} />
-                  </IconButton>
-                </Link>
-                <Link href='/' passHref>
-                  <IconButton component='a' onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}>
-                    <Github
-                      sx={{ color: theme => (theme.palette.mode === 'light' ? '#272727' : theme.palette.grey[300]) }}
-                    />
-                  </IconButton>
-                </Link>
-                <Link href='/' passHref>
-                  <IconButton component='a' onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}>
-                    <Google sx={{ color: '#db4437' }} />
-                  </IconButton>
-                </Link>
+                <IconButton
+                  href='/'
+                  component={Link}
+                  sx={{ color: '#497ce2' }}
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                >
+                  <Icon icon='mdi:facebook' />
+                </IconButton>
+                <IconButton
+                  href='/'
+                  component={Link}
+                  sx={{ color: '#1da1f2' }}
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                >
+                  <Icon icon='mdi:twitter' />
+                </IconButton>
+                <IconButton
+                  href='/'
+                  component={Link}
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                  sx={{ color: theme => (theme.palette.mode === 'light' ? '#272727' : 'grey.300') }}
+                >
+                  <Icon icon='mdi:github' />
+                </IconButton>
+                <IconButton
+                  href='/'
+                  component={Link}
+                  sx={{ color: '#db4437' }}
+                  onClick={(e: MouseEvent<HTMLElement>) => e.preventDefault()}
+                >
+                  <Icon icon='mdi:google' />
+                </IconButton>
               </Box>
             </form>
           </BoxWrapper>

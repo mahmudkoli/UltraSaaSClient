@@ -14,14 +14,8 @@ import MenuItem from '@mui/material/MenuItem'
 import { styled } from '@mui/material/styles'
 import Typography from '@mui/material/Typography'
 
-// ** Icons Imports
-import CogOutline from 'mdi-material-ui/CogOutline'
-import CurrencyUsd from 'mdi-material-ui/CurrencyUsd'
-import EmailOutline from 'mdi-material-ui/EmailOutline'
-import LogoutVariant from 'mdi-material-ui/LogoutVariant'
-import AccountOutline from 'mdi-material-ui/AccountOutline'
-import MessageOutline from 'mdi-material-ui/MessageOutline'
-import HelpCircleOutline from 'mdi-material-ui/HelpCircleOutline'
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
 // ** Context
 import { useAuth } from 'src/hooks/useAuth'
@@ -76,8 +70,9 @@ const UserDropdown = (props: Props) => {
     color: 'text.primary',
     textDecoration: 'none',
     '& svg': {
+      mr: 2,
       fontSize: '1.375rem',
-      color: 'text.secondary'
+      color: 'text.primary'
     }
   }
 
@@ -133,47 +128,50 @@ const UserDropdown = (props: Props) => {
             </Box>
           </Box>
         </Box>
-        <Divider sx={{ mt: 0, mb: 1 }} />
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/apps/user/view/12')}>
+        <Divider sx={{ mt: '0 !important' }} />
+        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/pages/user-profile/profile')}>
           <Box sx={styles}>
-            <AccountOutline sx={{ mr: 2 }} />
+            <Icon icon='mdi:account-outline' />
             Profile
           </Box>
         </MenuItem>
         <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/apps/email')}>
           <Box sx={styles}>
-            <EmailOutline sx={{ mr: 2 }} />
+            <Icon icon='mdi:email-outline' />
             Inbox
           </Box>
         </MenuItem>
         <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/apps/chat')}>
           <Box sx={styles}>
-            <MessageOutline sx={{ mr: 2 }} />
+            <Icon icon='mdi:message-outline' />
             Chat
           </Box>
         </MenuItem>
         <Divider />
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/pages/account-settings')}>
+        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/pages/account-settings/account')}>
           <Box sx={styles}>
-            <CogOutline sx={{ mr: 2 }} />
+            <Icon icon='mdi:cog-outline' />
             Settings
           </Box>
         </MenuItem>
         <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/pages/pricing')}>
           <Box sx={styles}>
-            <CurrencyUsd sx={{ mr: 2 }} />
+            <Icon icon='mdi:currency-usd' />
             Pricing
           </Box>
         </MenuItem>
         <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/pages/faq')}>
           <Box sx={styles}>
-            <HelpCircleOutline sx={{ mr: 2 }} />
+            <Icon icon='mdi:help-circle-outline' />
             FAQ
           </Box>
         </MenuItem>
         <Divider />
-        <MenuItem sx={{ py: 2 }} onClick={handleLogout}>
-          <LogoutVariant sx={{ mr: 2, fontSize: '1.375rem', color: 'text.secondary' }} />
+        <MenuItem
+          onClick={handleLogout}
+          sx={{ py: 2, '& svg': { mr: 2, fontSize: '1.375rem', color: 'text.primary' } }}
+        >
+          <Icon icon='mdi:logout-variant' />
           Logout
         </MenuItem>
       </Menu>

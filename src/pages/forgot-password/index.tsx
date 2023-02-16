@@ -1,11 +1,10 @@
 // ** React Imports
 import { ReactNode, SyntheticEvent } from 'react'
 
-// ** Next Imports
+// ** Next Import
 import Link from 'next/link'
 
 // ** MUI Components
-import MuiLink from '@mui/material/Link'
 import Button from '@mui/material/Button'
 import TextField from '@mui/material/TextField'
 import Box, { BoxProps } from '@mui/material/Box'
@@ -13,8 +12,8 @@ import useMediaQuery from '@mui/material/useMediaQuery'
 import { styled, useTheme } from '@mui/material/styles'
 import Typography, { TypographyProps } from '@mui/material/Typography'
 
-// ** Icons Imports
-import ChevronLeft from 'mdi-material-ui/ChevronLeft'
+// ** Icon Imports
+import Icon from 'src/@core/components/icon'
 
 // ** Configs
 import themeConfig from 'src/configs/themeConfig'
@@ -69,6 +68,15 @@ const TypographyStyled = styled(Typography)<TypographyProps>(({ theme }) => ({
   letterSpacing: '0.18px',
   marginBottom: theme.spacing(1.5),
   [theme.breakpoints.down('md')]: { marginTop: theme.spacing(8) }
+}))
+
+const LinkStyled = styled(Link)(({ theme }) => ({
+  display: 'flex',
+  '& svg': { mr: 1.5 },
+  alignItems: 'center',
+  textDecoration: 'none',
+  justifyContent: 'center',
+  color: theme.palette.primary.main
 }))
 
 const ForgotPassword = () => {
@@ -208,15 +216,10 @@ const ForgotPassword = () => {
                 Send reset link
               </Button>
               <Typography sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Link passHref href='/login'>
-                  <Typography
-                    component={MuiLink}
-                    sx={{ display: 'flex', alignItems: 'center', color: 'primary.main', justifyContent: 'center' }}
-                  >
-                    <ChevronLeft sx={{ mr: 1.5, fontSize: '2rem' }} />
-                    <span>Back to login</span>
-                  </Typography>
-                </Link>
+                <LinkStyled href='/login'>
+                  <Icon icon='mdi:chevron-left' fontSize='2rem' />
+                  <span>Back to login</span>
+                </LinkStyled>
               </Typography>
             </form>
           </BoxWrapper>

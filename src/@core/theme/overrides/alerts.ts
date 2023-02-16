@@ -102,7 +102,8 @@ const Alert = (theme: Theme) => {
           }
         },
         filled: {
-          fontWeight: 400
+          fontWeight: 400,
+          color: theme.palette.common.white
         }
       }
     }
