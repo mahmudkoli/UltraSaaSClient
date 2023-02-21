@@ -7,7 +7,7 @@ interface Props {
   variant: string;
   name: string;
   id: string;
-  type?:string;
+  type:string;
   placeholder?: string;
 }
 

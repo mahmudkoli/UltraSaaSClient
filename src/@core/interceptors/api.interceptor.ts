@@ -31,7 +31,7 @@ axios.interceptors.response.use(
     const config = error?.config
     if ((error?.response?.status === 401 || error?.response?.status === 403) && !config?.sent) {
       config.sent = true
-
+      console.log(error);
       const result = await memoizedRefreshToken()
 
       if (result?.token) {

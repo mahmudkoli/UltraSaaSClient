@@ -7,6 +7,7 @@ import { RootState } from 'src/store'
 import { PaginatedApiResponse } from 'src/types/apps/apiResponse'
 import { QueryObject } from 'src/types/apps/common.types'
 import { SingleValueType } from 'src/types/apps/singleValueTypes'
+import { closeModal } from '../modal'
 
 const initialVaue: PaginatedApiResponse<SingleValueType> = {
   currentPage: 1,
@@ -50,6 +51,7 @@ export const updateSingleValueTypeConfig = createAsyncThunk(
     try {
       await api.singleValue.edit(payload)
     } catch (error) {}
+    dispatch(closeModal());
     await dispatch(fetchSingleValueTypeConfigList())
   }
 )
@@ -72,7 +74,7 @@ export const singleValueTypeSlice = createSlice({
   },
   reducers: {
     handleSingleValueType: (state, action) => {
-      state.data = action.payload.data
+      state.data = [...action.payload.data]
       state.hasNextPage = action.payload.hasNextPage
       state.hasPreviousPage = action.payload.hasPreviousPage
       state.currentPage = action.payload.currentPage
@@ -83,7 +85,7 @@ export const singleValueTypeSlice = createSlice({
   },
   extraReducers: builder => {
     builder.addCase(fetchSingleValueTypeConfigList.fulfilled, (state, action) => {
-      state.data = action.payload.data
+      state.data = [...action.payload.data]
       state.hasNextPage = action.payload.hasNextPage
       state.hasPreviousPage = action.payload.hasPreviousPage
       state.currentPage = action.payload.currentPage

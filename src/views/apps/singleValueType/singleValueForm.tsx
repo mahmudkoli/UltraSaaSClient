@@ -2,14 +2,13 @@ import { Button, Grid, TextField } from "@mui/material";
 import { Form, Formik } from "formik";
 import { SingleValueTypeConfigFormValidation } from "src/configs/singleValue";
 import { useAppDispatch } from "src/hooks/reduxHook";
+import { closeModal } from "src/store/apps/modal";
 import {
   addSingleValueTypeConfig,
   updateSingleValueTypeConfig,
 } from "src/store/apps/singleValueType";
 import { SingleValueType } from "src/types/apps/singleValueTypes";
 import TextFieldValidation from "src/views/forms/form-elements/text-field/TextFieldValidation";
-
-
 
 interface Props {
   singleValueTypeData: SingleValueType | null;
@@ -23,6 +22,7 @@ const SingleValueTypeConfigForm = ({ singleValueTypeData }: Props) => {
     if (data.id) {
       //update
       dispatch(updateSingleValueTypeConfig(data));
+      //dispatch(closeModal())
     } else {
       //create new
       dispatch(addSingleValueTypeConfig(data));
@@ -45,7 +45,11 @@ const SingleValueTypeConfigForm = ({ singleValueTypeData }: Props) => {
           }}
         >
           {({ handleSubmit, isSubmitting }) => (
-            <Form onSubmit={handleSubmit} autoComplete="off">
+            <Form
+              style={{ display: "flex", flexDirection: "column" }}
+              onSubmit={handleSubmit}
+              autoComplete="off"
+            >
               <TextFieldValidation
                 label="Name"
                 variant="standard"
