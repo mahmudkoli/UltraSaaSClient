@@ -22,3 +22,11 @@ code:not([class*='language-']):after {
 code[class*='language-'] {
   padding: 0;
 }
+
+a,
+a:active,
+a:focus,
+a:hover {
+  text-decoration: none !important;
+  color: inherit;
+}

@@ -1,18 +1,26 @@
 // ** MUI Imports
 import TextField from '@mui/material/TextField'
+import { useField } from 'formik';
 
-const TextFieldValidation = () => {
+interface Props {
+  label: string;
+  variant: string;
+  name: string;
+  id: string;
+  type?:string;
+  placeholder?: string;
+}
+
+
+const TextFieldValidation = (props: Props) => {
+  const [field, meta] = useField(props);
+
   return (
-    <form className='demo-space-x' noValidate autoComplete='off'>
-      <TextField error id='validation-error' label='Error' defaultValue='Hello World' />
-      <TextField
-        error
-        label='Error'
-        defaultValue='Hello World'
-        helperText='Incorrect entry.'
-        id='validation-error-helper-text'
-      />
-    </form>
+    <>
+      <TextField {...field} {...props}  />
+      {(meta.touched && meta.error) &&
+      <p>{meta.error}</p>}
+    </>
   )
 }
 

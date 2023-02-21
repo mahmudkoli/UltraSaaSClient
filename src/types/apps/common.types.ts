@@ -1,3 +1,6 @@
+import { GridColumns } from "@mui/x-data-grid"
+import { PaginatedApiResponse } from "./apiResponse"
+
 export class QueryObject {
   pageNumber: number
   pageSize: number
