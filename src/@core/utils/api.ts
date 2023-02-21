@@ -31,7 +31,7 @@ const singleValue = {
     return request.get<PaginatedApiResponse<SingleValueType>>(`${singleValueConfig.listEndPoint}?${queryStr}`)
   },
   create: (payload: SingleValueType) => request.post<any>(singleValueConfig.createEndPoint, payload),
-  edit: (payload: SingleValueType) => request.put<any>(singleValueConfig.editEndPoint, payload),
+  edit: (payload: SingleValueType) => request.put<any>(`${singleValueConfig.editEndPoint}/${payload.id}`, payload),
   delete: (id: string) => request.delete<any>(`${singleValueConfig.deleteEndPoint}/${id}`)
 }
 
