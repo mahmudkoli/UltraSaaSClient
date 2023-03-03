@@ -9,6 +9,7 @@ import invoice from 'src/store/apps/invoice'
 import calendar from 'src/store/apps/calendar'
 import permissions from 'src/store/apps/permissions'
 import singleValueType from 'src/store/apps/singleValueType'
+import institute from 'src/store/apps/institute'
 import modal from './apps/modal'
 
 export const store = configureStore({
@@ -20,6 +21,7 @@ export const store = configureStore({
     calendar,
     permissions,
     singleValueType,
+    institute,
     modal
   },
   middleware: getDefaultMiddleware =>

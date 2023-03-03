@@ -6,8 +6,10 @@ import { commonHelperService } from './common-helper.service'
 //**endpints
 import authConfig from 'src/configs/auth'
 import singleValueConfig from 'src/configs/singleValue'
+import instituteConfig from 'src/configs/institute';
 import { SingleValueType } from 'src/types/apps/singleValueTypes'
 import { PaginatedApiResponse } from 'src/types/apps/apiResponse'
+import { Institute } from 'src/types/apps/institute'
 
 const responseBody = <T>(response: AxiosResponse<T>) => response.data
 
@@ -35,9 +37,21 @@ const singleValue = {
   delete: (id: string) => request.delete<any>(`${singleValueConfig.deleteEndPoint}/${id}`)
 }
 
+const institute = {
+  list: (query: any) => {
+    const queryStr: string = commonHelperService.convertToQueryString(query)
+
+    return request.get<PaginatedApiResponse<Institute>>(`${instituteConfig.listEndPoint}?${queryStr}`)
+  },
+  create: (payload: Institute) => request.post<any>(instituteConfig.createEndPoint, payload),
+  edit: (payload: Institute) => request.put<any>(`${instituteConfig.editEndPoint}/${payload.id}`, payload),
+  delete: (id: string) => request.delete<any>(`${instituteConfig.deleteEndPoint}/${id}`)
+}
+
 const api = {
   auth,
-  singleValue
+  singleValue,
+  institute
 }
 
 export default api
