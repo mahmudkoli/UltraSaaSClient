@@ -31,7 +31,7 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
 {
     isScreenSmall: boolean;
     navigation: Navigation;
-    user: User;
+    user: User | null;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     /**
@@ -80,7 +80,7 @@ export class ClassyLayoutComponent implements OnInit, OnDestroy
         // Subscribe to the user service
         this._userService.user$
             .pipe((takeUntil(this._unsubscribeAll)))
-            .subscribe((user: User) =>
+            .subscribe((user: User | null) =>
             {
                 this.user = user;
             });

@@ -1,8 +1,7 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from 'app/core/auth/auth.service';
-import { AuthUtils } from 'app/core/auth/auth.utils';
-import { catchError, Observable, throwError } from 'rxjs';
+import { catchError, Observable, throwError, switchMap } from 'rxjs';
 
 /**
  * Intercept
@@ -14,21 +13,27 @@ export const authInterceptor = (req: HttpRequest<unknown>, next: HttpHandlerFn):
 {
     const authService = inject(AuthService);
 
-    // Clone the request object
+    // Skip interceptor for authentication endpoints
+    if (req.url.includes('/api/tokens')) {
+        return next(req);
+    }
+
+    // Get the token and tenant from localStorage
+    const token = localStorage.getItem('access_token');
+    const tenantId = localStorage.getItem('tenant_id');
+
+    // Clone the request and add headers
     let newReq = req.clone();
 
-    // Request
-    //
-    // If the access token didn't expire, add the Authorization header.
-    // We won't add the Authorization header if the access token expired.
-    // This will force the server to return a "401 Unauthorized" response
-    // for the protected API routes which our response interceptor will
-    // catch and delete the access token from the local storage while logging
-    // the user out from the app.
-    if ( authService.accessToken && !AuthUtils.isTokenExpired(authService.accessToken) )
-    {
-        newReq = req.clone({
-            headers: req.headers.set('Authorization', 'Bearer ' + authService.accessToken),
+    if (token) {
+        newReq = newReq.clone({
+            headers: newReq.headers.set('Authorization', `Bearer ${token}`)
+        });
+    }
+
+    if (tenantId) {
+        newReq = newReq.clone({
+            headers: newReq.headers.set('tenant', tenantId)
         });
     }
 
@@ -39,14 +44,38 @@ export const authInterceptor = (req: HttpRequest<unknown>, next: HttpHandlerFn):
             // Catch "401 Unauthorized" responses
             if ( error instanceof HttpErrorResponse && error.status === 401 )
             {
-                // Sign out
-                authService.signOut();
-
-                // Reload the app
-                location.reload();
+                // Try to refresh the token
+                const refreshToken = localStorage.getItem('refresh_token');
+                const currentToken = localStorage.getItem('access_token');
+                
+                if (refreshToken && currentToken) {
+                    return authService.refreshToken({
+                        token: currentToken,
+                        refreshToken: refreshToken
+                    }).pipe(
+                        switchMap((response) => {
+                            // Retry the original request with the new token
+                            const newToken = response.token;
+                            const retryRequest = newReq.clone({
+                                headers: newReq.headers
+                                    .set('Authorization', `Bearer ${newToken}`)
+                                    .set('tenant', tenantId || '')
+                            });
+                            return next(retryRequest);
+                        }),
+                        catchError((refreshError) => {
+                            // If refresh fails, logout the user
+                            authService.logout();
+                            return throwError(() => refreshError);
+                        })
+                    );
+                } else {
+                    // No refresh token available, logout the user
+                    authService.logout();
+                }
             }
 
-            return throwError(error);
+            return throwError(() => error);
         }),
     );
 };

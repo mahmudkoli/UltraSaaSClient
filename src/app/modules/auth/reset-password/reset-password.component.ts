@@ -83,8 +83,30 @@ export class AuthResetPasswordComponent implements OnInit
         // Hide the alert
         this.showAlert = false;
 
+        // Get token from URL params (you might need to inject ActivatedRoute)
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const email = urlParams.get('email');
+
+        if (!token || !email) {
+            this.alert = {
+                type: 'error',
+                message: 'Invalid reset link. Please request a new password reset.',
+            };
+            this.showAlert = true;
+            this.resetPasswordForm.enable();
+            return;
+        }
+
         // Send the request to the server
-        this._authService.resetPassword(this.resetPasswordForm.get('password').value)
+        const request = {
+            email: email,
+            token: token,
+            password: this.resetPasswordForm.get('password').value,
+            confirmPassword: this.resetPasswordForm.get('passwordConfirm').value
+        };
+
+        this._authService.resetPassword(request)
             .pipe(
                 finalize(() =>
                 {
@@ -98,23 +120,21 @@ export class AuthResetPasswordComponent implements OnInit
                     this.showAlert = true;
                 }),
             )
-            .subscribe(
-                (response) =>
-                {
+            .subscribe({
+                next: (response) => {
                     // Set the alert
                     this.alert = {
                         type   : 'success',
                         message: 'Your password has been reset.',
                     };
                 },
-                (response) =>
-                {
+                error: (error) => {
                     // Set the alert
                     this.alert = {
                         type   : 'error',
-                        message: 'Something went wrong, please try again.',
+                        message: error.message || 'Something went wrong, please try again.',
                     };
-                },
-            );
+                }
+            });
     }
 }

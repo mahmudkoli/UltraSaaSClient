@@ -54,8 +54,9 @@ export class AuthSignInComponent implements OnInit
     {
         // Create the form
         this.signInForm = this._formBuilder.group({
-            email     : ['hughes.brian@company.com', [Validators.required, Validators.email]],
-            password  : ['admin', Validators.required],
+            tenant    : ['default', [Validators.required]], // Default tenant for testing
+            email     : ['admin@example.com', [Validators.required, Validators.email]],
+            password  : ['Admin123!', Validators.required],
             rememberMe: [''],
         });
     }
@@ -81,11 +82,30 @@ export class AuthSignInComponent implements OnInit
         // Hide the alert
         this.showAlert = false;
 
-        // Sign in
-        this._authService.signIn(this.signInForm.value)
-            .subscribe(
-                () =>
-                {
+        // Store tenant ID for future requests
+        const tenantId = this.signInForm.get('tenant').value;
+        this._authService.setTenantId(tenantId);
+
+        // Store remember me preference
+        const rememberMe = this.signInForm.get('rememberMe').value;
+        if (rememberMe) {
+            localStorage.setItem('remember_me', 'true');
+        } else {
+            localStorage.removeItem('remember_me');
+        }
+
+        // Prepare login request
+        const loginRequest = {
+            email: this.signInForm.get('email').value,
+            password: this.signInForm.get('password').value
+        };
+
+        // Sign in using the new API
+        this._authService.login(loginRequest)
+            .subscribe({
+                next: (response) => {
+                    console.log('Login successful:', response);
+                    
                     // Set the redirect url.
                     // The '/signed-in-redirect' is a dummy url to catch the request and redirect the user
                     // to the correct page after a successful sign in. This way, that url can be set via
@@ -94,10 +114,10 @@ export class AuthSignInComponent implements OnInit
 
                     // Navigate to the redirect url
                     this._router.navigateByUrl(redirectURL);
-
                 },
-                (response) =>
-                {
+                error: (error) => {
+                    console.error('Login failed:', error);
+                    
                     // Re-enable the form
                     this.signInForm.enable();
 
@@ -107,12 +127,12 @@ export class AuthSignInComponent implements OnInit
                     // Set the alert
                     this.alert = {
                         type   : 'error',
-                        message: 'Wrong email or password',
+                        message: error.message || 'Wrong email or password',
                     };
 
                     // Show the alert
                     this.showAlert = true;
-                },
-            );
+                }
+            });
     }
 }

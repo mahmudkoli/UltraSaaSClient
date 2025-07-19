@@ -85,14 +85,12 @@ export class AuthSignUpComponent implements OnInit
 
         // Sign up
         this._authService.signUp(this.signUpForm.value)
-            .subscribe(
-                (response) =>
-                {
+            .subscribe({
+                next: (response) => {
                     // Navigate to the confirmation required page
                     this._router.navigateByUrl('/confirmation-required');
                 },
-                (response) =>
-                {
+                error: (error) => {
                     // Re-enable the form
                     this.signUpForm.enable();
 
@@ -102,12 +100,12 @@ export class AuthSignUpComponent implements OnInit
                     // Set the alert
                     this.alert = {
                         type   : 'error',
-                        message: 'Something went wrong, please try again.',
+                        message: error.message || 'Something went wrong, please try again.',
                     };
 
                     // Show the alert
                     this.showAlert = true;
-                },
-            );
+                }
+            });
     }
 }

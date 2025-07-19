@@ -1,5 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { UserService } from './core/user/user.service';
 
 @Component({
     selector   : 'app-root',
@@ -8,12 +9,21 @@ import { RouterOutlet } from '@angular/router';
     standalone : true,
     imports    : [RouterOutlet],
 })
-export class AppComponent
+export class AppComponent implements OnInit
 {
     /**
      * Constructor
      */
-    constructor()
+    constructor(private _userService: UserService)
     {
+    }
+
+    /**
+     * On init
+     */
+    ngOnInit(): void
+    {
+        // Initialize user data from token if available
+        this._userService.initializeUserFromToken();
     }
 }

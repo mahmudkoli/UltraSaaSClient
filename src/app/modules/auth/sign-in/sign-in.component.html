@@ -42,6 +42,20 @@
                 [formGroup]="signInForm"
                 #signInNgForm="ngForm">
 
+                <!-- Tenant field -->
+                <mat-form-field class="w-full">
+                    <mat-label>Tenant ID</mat-label>
+                    <input
+                        id="tenant"
+                        matInput
+                        [formControlName]="'tenant'"
+                        placeholder="Enter your tenant ID (e.g., default)">
+                    <mat-hint>Enter your organization's tenant identifier</mat-hint>
+                    <mat-error *ngIf="signInForm.get('tenant').hasError('required')">
+                        Tenant ID is required
+                    </mat-error>
+                </mat-form-field>
+
                 <!-- Email field -->
                 <mat-form-field class="w-full">
                     <mat-label>Email address</mat-label>
