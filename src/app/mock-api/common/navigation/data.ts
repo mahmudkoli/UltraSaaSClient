@@ -15,6 +15,20 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type : 'basic',
         icon : 'heroicons_outline:users',
         link : '/users'
+    },
+    {
+        id   : 'student-management',
+        title: 'Student Management',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/students'
+    },
+    {
+        id   : 'teacher-management',
+        title: 'Teacher Management',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/teachers'
     }
 ];
 export const compactNavigation: FuseNavigationItem[] = [
@@ -31,6 +45,20 @@ export const compactNavigation: FuseNavigationItem[] = [
         type : 'basic',
         icon : 'heroicons_outline:users',
         link : '/users'
+    },
+    {
+        id   : 'student-management',
+        title: 'Student Management',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/students'
+    },
+    {
+        id   : 'teacher-management',
+        title: 'Teacher Management',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/teachers'
     }
 ];
 export const futuristicNavigation: FuseNavigationItem[] = [
@@ -47,6 +75,20 @@ export const futuristicNavigation: FuseNavigationItem[] = [
         type : 'basic',
         icon : 'heroicons_outline:users',
         link : '/users'
+    },
+    {
+        id   : 'student-management',
+        title: 'Student Management',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/students'
+    },
+    {
+        id   : 'teacher-management',
+        title: 'Teacher Management',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/teachers'
     }
 ];
 export const horizontalNavigation: FuseNavigationItem[] = [
@@ -63,5 +105,19 @@ export const horizontalNavigation: FuseNavigationItem[] = [
         type : 'basic',
         icon : 'heroicons_outline:users',
         link : '/users'
+    },
+    {
+        id   : 'student-management',
+        title: 'Student Management',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/students'
+    },
+    {
+        id   : 'teacher-management',
+        title: 'Teacher Management',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/teachers'
     }
 ];

@@ -229,13 +229,7 @@ export class UserListComponent implements OnInit, OnDestroy {
 
 
 
-    getStatusColor(status: boolean): string {
-        return status ? 'text-green-600' : 'text-red-600';
-    }
 
-    getStatusText(status: boolean): string {
-        return status ? 'Active' : 'Inactive';
-    }
 
     getFullName(user: UserDetailsDto): string {
         const firstName = user.firstName || '';

@@ -1,5 +1,37 @@
-export interface StudentDto
-{
+export enum Designation {
+    Principal = 0,
+    VicePrincipal = 1,
+    HeadOfDepartment = 2,
+    SeniorTeacher = 3,
+    Teacher = 4,
+    AssistantTeacher = 5,
+    Lecturer = 6,
+    SeniorLecturer = 7,
+    AssistantProfessor = 8,
+    AssociateProfessor = 9,
+    Professor = 10,
+    VisitingProfessor = 11,
+    AdjunctProfessor = 12,
+    ResearchScholar = 13,
+    TeachingAssistant = 14,
+    LabAssistant = 15,
+    Librarian = 16,
+    Counselor = 17,
+    Coordinator = 18,
+    Administrator = 19,
+    Manager = 20,
+    Director = 21,
+    Dean = 22,
+    Registrar = 23,
+    Accountant = 24,
+    Clerk = 25,
+    Peon = 26,
+    Driver = 27,
+    SecurityGuard = 28,
+    Other = 29
+}
+
+export interface TeacherDto {
     id: string;
     firstName: string;
     lastName: string;
@@ -11,14 +43,10 @@ export interface StudentDto
     dateOfBirth?: string;
     imageUrl?: string;
     isActive: boolean;
-    fathersName: string;
-    fathersPhoneNumber?: string;
-    mothersName: string;
-    mothersPhoneNumber?: string;
+    designation?: Designation;
 }
 
-export interface CreateStudentRequest
-{
+export interface CreateTeacherRequest {
     firstName: string;
     lastName: string;
     email?: string;
@@ -28,15 +56,11 @@ export interface CreateStudentRequest
     gender?: string;
     dateOfBirth?: string;
     image?: FileUploadRequest;
-    fathersName: string;
-    fathersPhoneNumber?: string;
-    mothersName: string;
-    mothersPhoneNumber?: string;
+    designation?: Designation;
     password: string;
 }
 
-export interface UpdateStudentRequest
-{
+export interface UpdateTeacherRequest {
     id: string;
     firstName: string;
     lastName: string;
@@ -48,21 +72,10 @@ export interface UpdateStudentRequest
     dateOfBirth?: string;
     image?: FileUploadRequest;
     deleteCurrentImage?: boolean;
-    fathersName: string;
-    fathersPhoneNumber?: string;
-    mothersName: string;
-    mothersPhoneNumber?: string;
+    designation?: Designation;
 }
 
-export interface FileUploadRequest
-{
-    name: string;
-    data: string;
-    extension: string;
-}
-
-export interface SearchStudentsRequest
-{
+export interface SearchTeachersRequest {
     pageNumber: number;
     pageSize: number;
     orderBy?: string[];
@@ -72,14 +85,18 @@ export interface SearchStudentsRequest
     isActive?: boolean;
 }
 
-export interface Search
-{
+export interface Search {
     fields: string[];
     keyword: string;
 }
 
-export interface PaginationResponse<T>
-{
+export interface FileUploadRequest {
+    name: string;
+    extension: string;
+    data: string;
+}
+
+export interface PaginationResponse<T> {
     data: T[];
     currentPage: number;
     totalPages: number;

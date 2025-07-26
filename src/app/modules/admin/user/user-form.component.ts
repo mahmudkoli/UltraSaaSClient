@@ -19,6 +19,7 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { UserService } from '../../../core/user/user.service';
 import { CreateUserRequest, UpdateUserRequest, UserDetailsDto } from '../../../core/user/user.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { DateUtils } from '../../../core/utils/date.utils';
 
 @Component({
     selector: 'user-form',
@@ -60,7 +61,8 @@ export class UserFormComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _notificationService: NotificationService
+        private _notificationService: NotificationService,
+        private _dateUtils: DateUtils
     ) {
         this.userForm = this._formBuilder.group({
             firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -175,7 +177,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
         // Convert date to ISO string if provided
         let dateOfBirth = null;
         if (formValue.dateOfBirth) {
-            dateOfBirth = this.formatDateForAPI(formValue.dateOfBirth);
+            dateOfBirth = this._dateUtils.formatDateForAPI(formValue.dateOfBirth);
         }
         
         const request: CreateUserRequest = {
@@ -192,6 +194,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
         };
 
         console.log('Create user request:', request);
+        console.log('Request JSON:', JSON.stringify(request, null, 2));
 
         this._userService.createUser(request)
             .pipe(takeUntil(this._unsubscribeAll))
@@ -200,11 +203,15 @@ export class UserFormComponent implements OnInit, OnDestroy {
                     console.log('User created successfully with response:', response);
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('User created successfully');
+                    this._notificationService.success(response || 'User created successfully');
                     this._router.navigate(['/users']);
                 },
                 error: (error) => {
                     console.error('Create user error details:', error);
+                    console.error('Error status:', error.status);
+                    console.error('Error message:', error.message);
+                    console.error('Error body:', error.error);
+                    
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
                     this._notificationService.error('Error creating user');
@@ -220,7 +227,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
         // Convert date to ISO string if provided
         let dateOfBirth = null;
         if (formValue.dateOfBirth) {
-            dateOfBirth = this.formatDateForAPI(formValue.dateOfBirth);
+            dateOfBirth = this._dateUtils.formatDateForAPI(formValue.dateOfBirth);
         }
         
         const request: UpdateUserRequest = {
@@ -243,7 +250,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
                     console.log('User updated successfully with response:', response);
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('User updated successfully');
+                    this._notificationService.success(response || 'User updated successfully');
                     this._router.navigate(['/users']);
                 },
                 error: (error) => {
@@ -259,23 +266,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
         this._router.navigate(['/users']);
     }
 
-    /**
-     * Format date to prevent timezone issues
-     * Ensures the date selected by user is preserved exactly
-     */
-    private formatDateForAPI(date: Date | string): string {
-        if (!date) return '';
-        
-        const dateObj = new Date(date);
-        
-        // Get the date components in local timezone
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        
-        // Return date in YYYY-MM-DD format to avoid timezone issues
-        return `${year}-${month}-${day}`;
-    }
+
 
     getPageTitle(): string {
         return this.isEditMode ? 'Edit User' : 'Create User';

@@ -41,7 +41,7 @@ export class StudentsService
      */
     create(request: CreateStudentRequest): Observable<string>
     {
-        return this._httpClient.post<string>(`${this.baseUrl}/api/v1/students`, request);
+        return this._httpClient.post(`${this.baseUrl}/api/v1/students`, request, { responseType: 'text' });
     }
 
     /**
@@ -49,7 +49,7 @@ export class StudentsService
      */
     update(id: string, request: UpdateStudentRequest): Observable<string>
     {
-        return this._httpClient.put<string>(`${this.baseUrl}/api/v1/students/${id}`, request);
+        return this._httpClient.put(`${this.baseUrl}/api/v1/students/${id}`, request, { responseType: 'text' });
     }
 
     /**

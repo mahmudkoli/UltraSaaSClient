@@ -149,27 +149,10 @@ export class UserService
     createUser(request: CreateUserRequest): Observable<string>
     {
         console.log('UserService - createUser called with request:', request);
-        return this._httpClient.post(`${this.baseUrl}/api/users`, request, { 
-            responseType: 'blob',
-            headers: { 'Content-Type': 'application/json' }
-        })
+        return this._httpClient.post(`${this.baseUrl}/api/users`, request, { responseType: 'text' })
             .pipe(
-                map(blob => {
-                    console.log('UserService - createUser blob response:', blob);
-                    // Convert blob to text if it's not empty
-                    if (blob.size > 0) {
-                        return new Promise<string>((resolve) => {
-                            const reader = new FileReader();
-                            reader.onload = () => resolve(reader.result as string);
-                            reader.readAsText(blob);
-                        });
-                    } else {
-                        return Promise.resolve('');
-                    }
-                }),
-                mergeMap(promise => from(promise)),
                 tap(response => {
-                    console.log('UserService - createUser final response:', response);
+                    console.log('UserService - createUser response:', response);
                 }),
                 catchError(error => {
                     console.error('UserService - createUser error:', error);
@@ -185,27 +168,10 @@ export class UserService
     updateUser(request: UpdateUserRequest): Observable<any>
     {
         console.log('UserService - updateUser called with request:', request);
-        return this._httpClient.put(`${this.baseUrl}/api/users/${request.id}`, request, { 
-            responseType: 'blob',
-            headers: { 'Content-Type': 'application/json' }
-        })
+        return this._httpClient.put(`${this.baseUrl}/api/users/${request.id}`, request, { responseType: 'text' })
             .pipe(
-                map(blob => {
-                    console.log('UserService - updateUser blob response:', blob);
-                    // Convert blob to text if it's not empty
-                    if (blob.size > 0) {
-                        return new Promise<string>((resolve) => {
-                            const reader = new FileReader();
-                            reader.onload = () => resolve(reader.result as string);
-                            reader.readAsText(blob);
-                        });
-                    } else {
-                        return Promise.resolve('');
-                    }
-                }),
-                mergeMap(promise => from(promise)),
                 tap(response => {
-                    console.log('UserService - updateUser final response:', response);
+                    console.log('UserService - updateUser response:', response);
                 }),
                 catchError(error => {
                     console.error('UserService - updateUser error:', error);
