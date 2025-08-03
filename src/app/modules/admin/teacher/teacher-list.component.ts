@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -12,7 +13,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
@@ -20,6 +21,7 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { TeachersService } from '../../../core/teachers/teachers.service';
 import { TeacherDto, SearchTeachersRequest, PaginationResponse, Designation } from '../../../core/teachers/teachers.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { TeacherDevToolsDialogComponent } from './teacher-dev-tools-dialog.component';
 
 @Component({
     selector: 'teacher-list',
@@ -31,6 +33,7 @@ import { NotificationService } from '../../../core/services/notification.service
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        RouterModule,
         MatButtonModule,
         MatFormFieldModule,
         MatIconModule,
@@ -70,7 +73,8 @@ export class TeacherListComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _notificationService: NotificationService
+        private _notificationService: NotificationService,
+        private _matDialog: MatDialog
     ) {}
 
     ngOnInit(): void {
@@ -195,7 +199,16 @@ export class TeacherListComponent implements OnInit, OnDestroy {
     }
 
     addTeacher(): void {
-        this._router.navigate(['create'], { relativeTo: this._route });
+        this._router.navigate(['/teacher/create']);
+    }
+
+    addQualification(teacher: TeacherDto): void {
+        this._router.navigate(['/teacher-qualifications/create'], { 
+            queryParams: { 
+                teacherId: teacher.id, 
+                teacherName: `${teacher.firstName} ${teacher.lastName}` 
+            }
+        });
     }
 
     /**
@@ -231,15 +244,15 @@ export class TeacherListComponent implements OnInit, OnDestroy {
             [Designation.TeachingAssistant]: 'Teaching Assistant',
             [Designation.LabAssistant]: 'Lab Assistant',
             [Designation.Librarian]: 'Librarian',
+            [Designation.AssistantLibrarian]: 'Assistant Librarian',
+            [Designation.SportsTeacher]: 'Sports Teacher',
+            [Designation.MusicTeacher]: 'Music Teacher',
+            [Designation.ArtTeacher]: 'Art Teacher',
+            [Designation.ComputerTeacher]: 'Computer Teacher',
             [Designation.Counselor]: 'Counselor',
-            [Designation.Coordinator]: 'Coordinator',
             [Designation.Administrator]: 'Administrator',
-            [Designation.Manager]: 'Manager',
-            [Designation.Director]: 'Director',
-            [Designation.Dean]: 'Dean',
-            [Designation.Registrar]: 'Registrar',
-            [Designation.Accountant]: 'Accountant',
-            [Designation.Clerk]: 'Clerk',
+            [Designation.AccountsOfficer]: 'Accounts Officer',
+            [Designation.DataEntryOperator]: 'Data Entry Operator',
             [Designation.Peon]: 'Peon',
             [Designation.Driver]: 'Driver',
             [Designation.SecurityGuard]: 'Security Guard',
@@ -247,5 +260,19 @@ export class TeacherListComponent implements OnInit, OnDestroy {
         };
 
         return designationLabels[designation] || 'Unknown';
+    }
+
+    openDevTools(): void {
+        const dialogRef = this._matDialog.open(TeacherDevToolsDialogComponent, {
+            width: '600px',
+            panelClass: 'dev-tools-dialog'
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                // Refresh the list after generation/deletion
+                this.loadTeachers();
+            }
+        });
     }
 } 

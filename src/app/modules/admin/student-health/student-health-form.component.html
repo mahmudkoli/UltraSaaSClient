@@ -1,0 +1,273 @@
+<div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5 dark:opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
+    </div>
+    <div class="relative z-10 flex flex-col flex-auto min-w-0">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200">
+                <mat-icon class="text-white">favorite</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                    {{ getPageTitle() }}
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {{ isEditMode ? 'Update student health information' : 'Add student health record to the system' }}
+                </p>
+            </div>
+        </div>
+        <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
+            <button
+                mat-stroked-button
+                class="w-full sm:w-auto h-12 px-6 rounded-lg border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                (click)="cancel()">
+                <mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon>
+                <span>Cancel</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="flex flex-col flex-auto min-w-0">
+            <div class="flex-auto">
+
+                <!-- Loading -->
+                <div *ngIf="isLoading" class="flex items-center justify-center p-12">
+                    <div class="flex flex-col items-center space-y-4">
+                        <div class="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                        <p class="text-gray-600 dark:text-gray-400">Loading health record...</p>
+                    </div>
+                </div>
+
+                <!-- Form -->
+                <div *ngIf="!isLoading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    
+                    <form [formGroup]="healthForm" (ngSubmit)="save()">
+                        <mat-tab-group class="health-form-tabs" animationDuration="300ms">
+                        
+                        <!-- Basic Health Information Tab -->
+                        <mat-tab label="Basic Health Info">
+                            <div class="p-6 space-y-6" formGroupName="basicInfo">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <!-- Student -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Student</mat-label>
+                                        <mat-select formControlName="studentId" required>
+                                            <mat-option *ngFor="let student of students" [value]="student.id">
+                                                {{ student.firstName }} {{ student.lastName }} ({{ student.userName }})
+                                            </mat-option>
+                                        </mat-select>
+                                        <mat-error *ngIf="healthForm.get('basicInfo.studentId')?.hasError('required')">
+                                            Student selection is required
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <!-- Blood Group -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Blood Group</mat-label>
+                                        <mat-select formControlName="bloodGroup">
+                                            <mat-option *ngFor="let bg of bloodGroupOptions" [value]="bg.value">
+                                                {{ bg.label }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+
+                                    <!-- Height -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Height (cm)</mat-label>
+                                        <input matInput formControlName="height" type="number" step="0.1">
+                                        <mat-error *ngIf="healthForm.get('basicInfo.height')?.hasError('pattern')">
+                                            Please enter a valid height
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <!-- Weight -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Weight (kg)</mat-label>
+                                        <input matInput formControlName="weight" type="number" step="0.1">
+                                        <mat-error *ngIf="healthForm.get('basicInfo.weight')?.hasError('pattern')">
+                                            Please enter a valid weight
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <!-- BMI (Auto-calculated) -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>BMI</mat-label>
+                                        <input matInput formControlName="bmi" readonly>
+                                        <mat-hint>Automatically calculated from height and weight</mat-hint>
+                                    </mat-form-field>
+
+                                    <!-- Vision Left -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Vision (Left Eye)</mat-label>
+                                        <input matInput formControlName="visionLeft" placeholder="e.g., 20/20, 6/6">
+                                    </mat-form-field>
+
+                                    <!-- Vision Right -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Vision (Right Eye)</mat-label>
+                                        <input matInput formControlName="visionRight" placeholder="e.g., 20/20, 6/6">
+                                    </mat-form-field>
+
+                                    <!-- Dental Health -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Dental Health</mat-label>
+                                        <input matInput formControlName="dentalHealth" placeholder="Good, Fair, Poor">
+                                    </mat-form-field>
+
+                                    <!-- Hearing Status -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Hearing Status</mat-label>
+                                        <input matInput formControlName="hearingStatus" placeholder="Normal, Impaired">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                        </mat-tab>
+
+                        <!-- Medical Information Tab -->
+                        <mat-tab label="Medical Information">
+                            <div class="p-6 space-y-6" formGroupName="medicalInfo">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Physical Disabilities -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Physical Disabilities</mat-label>
+                                        <textarea matInput formControlName="physicalDisabilities" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Identification Marks -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Identification Marks</mat-label>
+                                        <textarea matInput formControlName="identificationMarks" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Medical Conditions -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Medical Conditions</mat-label>
+                                        <textarea matInput formControlName="medicalConditions" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Chronic Diseases -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Chronic Diseases</mat-label>
+                                        <textarea matInput formControlName="chronicDiseases" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Allergies -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Allergies</mat-label>
+                                        <textarea matInput formControlName="allergies" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Current Medications -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Current Medications</mat-label>
+                                        <textarea matInput formControlName="medications" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Vaccination Status -->
+                                    <mat-form-field appearance="outline" class="w-full md:col-span-2">
+                                        <mat-label>Vaccination Status</mat-label>
+                                        <textarea matInput formControlName="vaccinationStatus" rows="3" placeholder="List completed vaccinations and dates"></textarea>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                        </mat-tab>
+
+                        <!-- Emergency Information Tab -->
+                        <mat-tab label="Emergency Information">
+                            <div class="p-6 space-y-6" formGroupName="emergencyInfo">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Emergency Contact -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Emergency Contact Name</mat-label>
+                                        <input matInput formControlName="emergencyContact" required>
+                                        <mat-error *ngIf="healthForm.get('emergencyInfo.emergencyContact')?.hasError('required')">
+                                            Emergency contact name is required
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <!-- Emergency Phone -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Emergency Contact Phone</mat-label>
+                                        <input matInput formControlName="emergencyPhone" required>
+                                        <mat-error *ngIf="healthForm.get('emergencyInfo.emergencyPhone')?.hasError('required')">
+                                            Emergency contact phone is required
+                                        </mat-error>
+                                        <mat-error *ngIf="healthForm.get('emergencyInfo.emergencyPhone')?.hasError('pattern')">
+                                            Please enter a valid phone number
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <!-- Health Insurance -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Health Insurance Provider</mat-label>
+                                        <input matInput formControlName="healthInsurance">
+                                    </mat-form-field>
+
+                                    <!-- Insurance Number -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Insurance Policy Number</mat-label>
+                                        <input matInput formControlName="insuranceNumber">
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                        </mat-tab>
+
+                        <!-- Checkup Information Tab -->
+                        <mat-tab label="Checkup Information">
+                            <div class="p-6 space-y-6" formGroupName="checkupInfo">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Last Checkup Date -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Last Checkup Date</mat-label>
+                                        <input matInput [matDatepicker]="lastCheckupPicker" formControlName="lastCheckupDate">
+                                        <mat-datepicker-toggle matSuffix [for]="lastCheckupPicker"></mat-datepicker-toggle>
+                                        <mat-datepicker #lastCheckupPicker></mat-datepicker>
+                                    </mat-form-field>
+
+                                    <!-- Next Checkup Date -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Next Checkup Date</mat-label>
+                                        <input matInput [matDatepicker]="nextCheckupPicker" formControlName="nextCheckupDate">
+                                        <mat-datepicker-toggle matSuffix [for]="nextCheckupPicker"></mat-datepicker-toggle>
+                                        <mat-datepicker #nextCheckupPicker></mat-datepicker>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                        </mat-tab>
+
+                        </mat-tab-group>
+
+                        <!-- Form Actions -->
+                        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+                            <button
+                                type="button"
+                                mat-stroked-button
+                                class="w-full sm:w-auto h-12 px-6 rounded-lg border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                                (click)="cancel()">
+                                <mat-icon class="icon-size-5 mr-2">close</mat-icon>
+                                <span>Cancel</span>
+                            </button>
+                            <button
+                                type="submit"
+                                mat-flat-button
+                                color="primary"
+                                class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                                [disabled]="healthForm.invalid || isSaving">
+                                <mat-icon class="icon-size-5 mr-2">check</mat-icon>
+                                <span>{{ getSaveButtonText() }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    </div>
+</div> 

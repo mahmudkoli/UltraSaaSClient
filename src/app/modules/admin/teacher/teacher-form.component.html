@@ -46,92 +46,72 @@
 
                 <!-- Form -->
                 <div *ngIf="!isLoading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                    <form [formGroup]="teacherForm" (ngSubmit)="save()" class="p-6 sm:p-8">
+                    
+                    <form [formGroup]="teacherForm" (ngSubmit)="save()">
+                        <mat-tab-group class="teacher-form-tabs" animationDuration="300ms">
                         
-                        <!-- Tabs -->
-                        <mat-tab-group class="mb-6" animationDuration="300ms">
-                            
-                            <!-- Basic Info Tab -->
-                            <mat-tab label="Basic Information">
-                                <div class="pt-6">
-                                    <div class="flex items-center space-x-3 mb-6">
-                                        <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
-                                            <mat-icon class="text-blue-600 dark:text-blue-400 text-lg">person</mat-icon>
-                                        </div>
-                                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Teacher Details</h3>
-                                    </div>
-                                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                    
+                        <!-- Basic Information Tab -->
+                        <mat-tab label="Basic Information">
+                            <div class="p-6 space-y-6" formGroupName="basicInfo">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <!-- First Name -->
-                                    <mat-form-field class="w-full" appearance="outline">
-                                        <mat-label>First Name *</mat-label>
-                                        <input matInput formControlName="firstName" placeholder="Enter first name">
-                                        <mat-error *ngIf="teacherForm.get('firstName')?.hasError('required')">
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>First Name</mat-label>
+                                        <input matInput formControlName="firstName" required>
+                                        <mat-error *ngIf="teacherForm.get('basicInfo.firstName')?.hasError('required')">
                                             First name is required
                                         </mat-error>
-                                        <mat-error *ngIf="teacherForm.get('firstName')?.hasError('maxlength')">
-                                            First name cannot exceed 75 characters
+                                        <mat-error *ngIf="teacherForm.get('basicInfo.firstName')?.hasError('maxlength')">
+                                            Maximum 75 characters allowed
                                         </mat-error>
                                     </mat-form-field>
 
                                     <!-- Last Name -->
-                                    <mat-form-field class="w-full" appearance="outline">
-                                        <mat-label>Last Name *</mat-label>
-                                        <input matInput formControlName="lastName" placeholder="Enter last name">
-                                        <mat-error *ngIf="teacherForm.get('lastName')?.hasError('required')">
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Last Name</mat-label>
+                                        <input matInput formControlName="lastName" required>
+                                        <mat-error *ngIf="teacherForm.get('basicInfo.lastName')?.hasError('required')">
                                             Last name is required
                                         </mat-error>
-                                        <mat-error *ngIf="teacherForm.get('lastName')?.hasError('maxlength')">
-                                            Last name cannot exceed 75 characters
+                                    </mat-form-field>
+
+                                    <!-- Username -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Username</mat-label>
+                                        <input matInput formControlName="userName" required>
+                                        <mat-error *ngIf="teacherForm.get('basicInfo.userName')?.hasError('required')">
+                                            Username is required
                                         </mat-error>
                                     </mat-form-field>
 
                                     <!-- Email -->
-                                    <mat-form-field class="w-full" appearance="outline">
+                                    <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Email</mat-label>
-                                        <input matInput formControlName="email" type="email" placeholder="Enter email address">
-                                        <mat-error *ngIf="teacherForm.get('email')?.hasError('email')">
-                                            Please enter a valid email address
-                                        </mat-error>
-                                    </mat-form-field>
-
-                                    <!-- User Name -->
-                                    <mat-form-field class="w-full" appearance="outline">
-                                        <mat-label>User Name *</mat-label>
-                                        <input matInput formControlName="userName" placeholder="Enter username">
-                                        <mat-error *ngIf="teacherForm.get('userName')?.hasError('required')">
-                                            User name is required
+                                        <input matInput type="email" formControlName="email">
+                                        <mat-error *ngIf="teacherForm.get('basicInfo.email')?.hasError('email')">
+                                            Please enter a valid email
                                         </mat-error>
                                     </mat-form-field>
 
                                     <!-- Phone Number -->
-                                    <mat-form-field class="w-full" appearance="outline">
-                                        <mat-label>Phone Number *</mat-label>
-                                        <input matInput formControlName="phoneNumber" placeholder="Enter phone number">
-                                        <mat-error *ngIf="teacherForm.get('phoneNumber')?.hasError('required')">
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Phone Number</mat-label>
+                                        <input matInput formControlName="phoneNumber" required>
+                                        <mat-error *ngIf="teacherForm.get('basicInfo.phoneNumber')?.hasError('required')">
                                             Phone number is required
-                                        </mat-error>
-                                        <mat-error *ngIf="teacherForm.get('phoneNumber')?.hasError('maxlength')">
-                                            Phone number cannot exceed 15 characters
                                         </mat-error>
                                     </mat-form-field>
 
-                                    <!-- Designation -->
-                                    <mat-form-field class="w-full" appearance="outline">
-                                        <mat-label>Designation</mat-label>
-                                        <mat-select formControlName="designation">
-                                            <mat-option value="">Select Designation</mat-option>
-                                            <mat-option *ngFor="let option of designationOptions" [value]="option.value">
-                                                {{ option.label }}
-                                            </mat-option>
-                                        </mat-select>
+                                    <!-- Address -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Address</mat-label>
+                                        <input matInput formControlName="address">
                                     </mat-form-field>
 
                                     <!-- Gender -->
-                                    <mat-form-field class="w-full" appearance="outline">
+                                    <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Gender</mat-label>
                                         <mat-select formControlName="gender">
-                                            <mat-option value="">Select Gender</mat-option>
                                             <mat-option value="Male">Male</mat-option>
                                             <mat-option value="Female">Female</mat-option>
                                             <mat-option value="Other">Other</mat-option>
@@ -139,78 +119,241 @@
                                     </mat-form-field>
 
                                     <!-- Date of Birth -->
-                                    <mat-form-field class="w-full" appearance="outline">
+                                    <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Date of Birth</mat-label>
-                                        <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth" placeholder="Choose date">
+                                        <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth">
                                         <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
                                         <mat-datepicker #dobPicker></mat-datepicker>
                                     </mat-form-field>
+                                </div>
 
-                                    <!-- Address -->
-                                    <mat-form-field class="w-full sm:col-span-2" appearance="outline">
-                                        <mat-label>Address</mat-label>
-                                        <textarea matInput formControlName="address" rows="3" placeholder="Enter address"></textarea>
+                                <!-- Password Section - Only in Create Mode -->
+                                <div *ngIf="!isEditMode" class="border-t pt-6 mt-6">
+                                    <h4 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Account Credentials</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <!-- Password -->
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Password</mat-label>
+                                            <input matInput type="password" formControlName="password" required>
+                                            <mat-error *ngIf="teacherForm.get('basicInfo.password')?.hasError('required')">
+                                                Password is required
+                                            </mat-error>
+                                            <mat-error *ngIf="teacherForm.get('basicInfo.password')?.hasError('minlength')">
+                                                Password must be at least 6 characters
+                                            </mat-error>
+                                        </mat-form-field>
+
+                                        <!-- Confirm Password -->
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Confirm Password</mat-label>
+                                            <input matInput type="password" formControlName="confirmPassword" required>
+                                            <mat-error *ngIf="teacherForm.get('basicInfo.confirmPassword')?.hasError('required')">
+                                                Please confirm your password
+                                            </mat-error>
+                                            <mat-error *ngIf="teacherForm.hasError('passwordMismatch')">
+                                                Passwords do not match
+                                            </mat-error>
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+                            </div>
+                        </mat-tab>
+
+                        <!-- Professional Information Tab -->
+                        <mat-tab label="Professional Information">
+                            <div class="p-6 space-y-6" formGroupName="professionalInfo">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <!-- Designation -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Designation</mat-label>
+                                        <mat-select formControlName="designation">
+                                            <mat-option *ngFor="let designation of designationOptions" [value]="designation.value">
+                                                {{ designation.label }}
+                                            </mat-option>
+                                        </mat-select>
                                     </mat-form-field>
 
-                                    </div>
+                                    <!-- Department -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Department</mat-label>
+                                        <mat-select formControlName="department">
+                                            <mat-option *ngFor="let dept of departmentOptions" [value]="dept.value">
+                                                {{ dept.label }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+
+                                    <!-- Subject -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Subject</mat-label>
+                                        <input matInput formControlName="subject">
+                                    </mat-form-field>
+
+                                    <!-- Specialization -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Specialization</mat-label>
+                                        <input matInput formControlName="specialization">
+                                    </mat-form-field>
+
+                                    <!-- Employee ID -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Employee ID</mat-label>
+                                        <input matInput formControlName="employeeId">
+                                    </mat-form-field>
+
+                                    <!-- Employee Code -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Employee Code</mat-label>
+                                        <input matInput formControlName="employeeCode">
+                                    </mat-form-field>
+
+                                    <!-- Joining Date -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Joining Date</mat-label>
+                                        <input matInput [matDatepicker]="joiningPicker" formControlName="joiningDate">
+                                        <mat-datepicker-toggle matSuffix [for]="joiningPicker"></mat-datepicker-toggle>
+                                        <mat-datepicker #joiningPicker></mat-datepicker>
+                                    </mat-form-field>
+
+                                    <!-- Confirmation Date -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Confirmation Date</mat-label>
+                                        <input matInput [matDatepicker]="confirmationPicker" formControlName="confirmationDate">
+                                        <mat-datepicker-toggle matSuffix [for]="confirmationPicker"></mat-datepicker-toggle>
+                                        <mat-datepicker #confirmationPicker></mat-datepicker>
+                                    </mat-form-field>
+
+                                    <!-- Employment Status -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Employment Status</mat-label>
+                                        <mat-select formControlName="employmentStatus">
+                                            <mat-option *ngFor="let status of employmentStatusOptions" [value]="status.value">
+                                                {{ status.label }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+
+                                    <!-- Employment Type -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Employment Type</mat-label>
+                                        <mat-select formControlName="employmentType">
+                                            <mat-option *ngFor="let type of employmentTypeOptions" [value]="type.value">
+                                                {{ type.label }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+
+                                    <!-- Work Location -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Work Location</mat-label>
+                                        <input matInput formControlName="workLocation">
+                                    </mat-form-field>
+
+                                    <!-- Work Shift -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Work Shift</mat-label>
+                                        <mat-select formControlName="workShift">
+                                            <mat-option *ngFor="let shift of workShiftOptions" [value]="shift.value">
+                                                {{ shift.label }}
+                                            </mat-option>
+                                        </mat-select>
+                                    </mat-form-field>
+
+                                    <!-- Working Hours -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Working Hours</mat-label>
+                                        <input matInput type="number" formControlName="workingHours">
+                                    </mat-form-field>
                                 </div>
-                            </mat-tab>
+                            </div>
+                        </mat-tab>
 
-                            <!-- Account Information Tab (for create only) -->
-                            <mat-tab *ngIf="!isEditMode" label="Account Information">
-                                <div class="pt-6">
-                                    <div class="flex items-center space-x-3 mb-6">
-                                        <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
-                                            <mat-icon class="text-purple-600 dark:text-purple-400 text-lg">lock</mat-icon>
-                                        </div>
-                                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Login Credentials</h3>
-                                    </div>
-                                    <div class="space-y-4">
-                                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            <mat-form-field class="w-full" appearance="outline">
-                                                <mat-label>Password</mat-label>
-                                                <input matInput formControlName="password" type="password" placeholder="Enter password">
-                                                <mat-error *ngIf="teacherForm.get('password')?.hasError('required')">
-                                                    Password is required
-                                                </mat-error>
-                                                <mat-error *ngIf="teacherForm.get('password')?.hasError('minlength')">
-                                                    Password must be at least 6 characters
-                                                </mat-error>
-                                            </mat-form-field>
+                        <!-- Additional tabs would go here for Experience, Salary, Financial, etc. -->
+                        <!-- For brevity, I'll add the key tabs -->
 
-                                            <mat-form-field class="w-full" appearance="outline">
-                                                <mat-label>Confirm Password</mat-label>
-                                                <input matInput formControlName="confirmPassword" type="password" placeholder="Confirm password">
-                                                <mat-error *ngIf="teacherForm.get('confirmPassword')?.hasError('required')">
-                                                    Please confirm your password
-                                                </mat-error>
-                                            </mat-form-field>
-                                        </div>
+                        <!-- Teaching Information Tab -->
+                        <mat-tab label="Teaching Information">
+                            <div class="p-6 space-y-6" formGroupName="teachingInfo">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                    <!-- Is Class Teacher -->
+                                    <mat-checkbox formControlName="isClassTeacher" class="w-full">
+                                        Is Class Teacher
+                                    </mat-checkbox>
 
-                                        <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800 max-w-md">
-                                            <div class="flex items-center space-x-2">
-                                                <mat-icon class="text-blue-600 dark:text-blue-400">info</mat-icon>
-                                                <span class="text-sm text-blue-800 dark:text-blue-200">
-                                                    Password will be used for teacher login
-                                                </span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    
-                                    <!-- Password Mismatch Error -->
-                                    <div *ngIf="teacherForm.hasError('passwordMismatch')" class="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                                        <div class="flex items-center">
-                                            <mat-icon class="text-red-600 dark:text-red-400 mr-2">error</mat-icon>
-                                            <span class="text-red-800 dark:text-red-200">Passwords do not match</span>
-                                        </div>
-                                    </div>
+                                    <!-- Assigned Classes -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Assigned Classes</mat-label>
+                                        <input matInput formControlName="assignedClasses">
+                                    </mat-form-field>
+
+                                    <!-- Assigned Subjects -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Assigned Subjects</mat-label>
+                                        <input matInput formControlName="assignedSubjects">
+                                    </mat-form-field>
+
+                                    <!-- Max Students -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Max Students</mat-label>
+                                        <input matInput type="number" formControlName="maxStudents">
+                                    </mat-form-field>
+
+                                    <!-- Current Students -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Current Students</mat-label>
+                                        <input matInput type="number" formControlName="currentStudents">
+                                    </mat-form-field>
                                 </div>
-                            </mat-tab>
+                            </div>
+                        </mat-tab>
+
+                        <!-- Personal Information Tab -->
+                        <mat-tab label="Personal Information">
+                            <div class="p-6 space-y-6" formGroupName="personalInfo">
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <!-- Languages Known -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Languages Known</mat-label>
+                                        <input matInput formControlName="languagesKnown">
+                                    </mat-form-field>
+
+                                    <!-- Hobbies -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Hobbies</mat-label>
+                                        <input matInput formControlName="hobbies">
+                                    </mat-form-field>
+
+                                    <!-- Special Skills -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Special Skills</mat-label>
+                                        <textarea matInput formControlName="specialSkills" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Interests -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Interests</mat-label>
+                                        <textarea matInput formControlName="interests" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Remarks -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Remarks</mat-label>
+                                        <textarea matInput formControlName="remarks" rows="3"></textarea>
+                                    </mat-form-field>
+
+                                    <!-- Notes -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Notes</mat-label>
+                                        <textarea matInput formControlName="notes" rows="3"></textarea>
+                                    </mat-form-field>
+                                </div>
+                            </div>
+                        </mat-tab>
 
                         </mat-tab-group>
 
                         <!-- Form Actions -->
-                        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end pt-6 border-t border-gray-200 dark:border-gray-700">
+                        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end p-6 border-t border-gray-200 dark:border-gray-700">
                             <button
                                 type="button"
                                 mat-stroked-button
@@ -220,17 +363,15 @@
                                 <span>Cancel</span>
                             </button>
                             <button
-                                type="button"
+                                type="submit"
                                 mat-flat-button
                                 color="primary"
                                 class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
-                                [disabled]="!isFormValid() || isSaving"
-                                (click)="save()">
+                                [disabled]="teacherForm.invalid || isSaving">
                                 <mat-icon class="icon-size-5 mr-2">check</mat-icon>
-                                <span>{{ isSaving ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}</span>
+                                <span>{{ getSaveButtonText() }}</span>
                             </button>
                         </div>
-
                     </form>
                 </div>
 

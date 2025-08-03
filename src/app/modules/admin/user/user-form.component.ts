@@ -203,7 +203,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
                     console.log('User created successfully with response:', response);
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success(response || 'User created successfully');
+                    this._notificationService.success('User created successfully');
                     this._router.navigate(['/users']);
                 },
                 error: (error) => {
@@ -250,7 +250,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
                     console.log('User updated successfully with response:', response);
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success(response || 'User updated successfully');
+                    this._notificationService.success('User updated successfully');
                     this._router.navigate(['/users']);
                 },
                 error: (error) => {

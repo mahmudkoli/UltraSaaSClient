@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -12,14 +13,16 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { ActivatedRoute, Router } from '@angular/router';
-import { BehaviorSubject, Observable, Subject, combineLatest } from 'rxjs';
-import { debounceTime, distinctUntilChanged, filter, takeUntil } from 'rxjs/operators';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { StudentsService } from '../../../core/students/students.service';
 import { StudentDto, SearchStudentsRequest, PaginationResponse } from '../../../core/students/students.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { DateUtils } from '../../../core/utils/date.utils';
+import { StudentExportDialogComponent, ExportDialogData } from './student-export-dialog.component';
 
 @Component({
     selector: 'student-list',
@@ -31,6 +34,7 @@ import { NotificationService } from '../../../core/services/notification.service
     imports: [
         CommonModule,
         ReactiveFormsModule,
+        RouterModule,
         MatButtonModule,
         MatFormFieldModule,
         MatIconModule,
@@ -70,7 +74,8 @@ export class StudentListComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _notificationService: NotificationService
+        private _notificationService: NotificationService,
+        private _matDialog: MatDialog
     ) {}
 
     ngOnInit(): void {
@@ -198,7 +203,25 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
 
     addStudent(): void {
-        this._router.navigate(['create'], { relativeTo: this._route });
+        this._router.navigate(['/student/create']);
+    }
+
+    addHealthRecord(student: StudentDto): void {
+        this._router.navigate(['/student-health/create'], { 
+            queryParams: { 
+                studentId: student.id, 
+                studentName: `${student.firstName} ${student.lastName}` 
+            }
+        });
+    }
+
+    addAcademicRecord(student: StudentDto): void {
+        this._router.navigate(['/student-academics/create'], { 
+            queryParams: { 
+                studentId: student.id, 
+                studentName: `${student.firstName} ${student.lastName}` 
+            }
+        });
     }
 
     /**
@@ -206,5 +229,24 @@ export class StudentListComponent implements OnInit, OnDestroy {
      */
     getFullName(student: StudentDto): string {
         return `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'N/A';
+    }
+
+    exportStudents(): void {
+        const dialogRef = this._matDialog.open(StudentExportDialogComponent, {
+            data: {
+                totalStudents: this.totalCount,
+                filters: {
+                    keyword: this.searchControl.value,
+                    isActive: this.statusFilterControl.value
+                }
+            } as ExportDialogData
+        });
+
+        dialogRef.afterClosed().subscribe((result) => {
+            if (result) {
+                // Export functionality is handled inside the dialog component
+                this.loadStudents(); // Refresh the list after export
+            }
+        });
     }
 } 

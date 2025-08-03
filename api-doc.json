@@ -2084,6 +2084,148 @@
         ]
       }
     },
+    "/api/v1/teacheremergencycontact/{teacherId}/emergency-contact": {
+      "put": {
+        "tags": [
+          "TeacherEmergencyContact"
+        ],
+        "summary": "Update teacher emergency contact information.",
+        "operationId": "TeacherEmergencyContact_UpdateEmergencyContact",
+        "parameters": [
+          {
+            "name": "teacherId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeacherEmergencyContactRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "guid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/teacherprofessionalinfo/{teacherId}/professional-info": {
+      "put": {
+        "tags": [
+          "TeacherProfessionalInfo"
+        ],
+        "summary": "Update teacher professional information.",
+        "operationId": "TeacherProfessionalInfo_UpdateProfessionalInfo",
+        "parameters": [
+          {
+            "name": "teacherId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateTeacherProfessionalInfoRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "guid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
     "/api/v1/teacherqualifications/search": {
       "post": {
         "tags": [
@@ -3045,6 +3187,77 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/CreateStudentAcademicRequest"
+              }
+            }
+          },
+          "required": true,
+          "x-position": 1
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "guid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HttpValidationProblemDetails"
+                }
+              }
+            }
+          },
+          "default": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResult"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Bearer": []
+          }
+        ]
+      }
+    },
+    "/api/v1/studentadditionalinfo/{studentId}/additional-info": {
+      "put": {
+        "tags": [
+          "StudentAdditionalInfo"
+        ],
+        "summary": "Update student additional information including guardian, emergency contact, and academic details.",
+        "operationId": "StudentAdditionalInfo_UpdateAdditionalInfo",
+        "parameters": [
+          {
+            "name": "studentId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "guid"
+            },
+            "x-position": 2
+          }
+        ],
+        "requestBody": {
+          "x-name": "request",
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateStudentAdditionalInfoRequest"
               }
             }
           },
@@ -13714,6 +13927,547 @@
           }
         }
       },
+      "UpdateTeacherEmergencyContactRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "teacherId"
+        ],
+        "properties": {
+          "teacherId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1,
+            "nullable": false
+          },
+          "emergencyContact": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": true
+          },
+          "emergencyPhone": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$",
+            "nullable": true
+          },
+          "emergencyEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "emergencyAddress": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0,
+            "nullable": true
+          },
+          "emergencyRelationship": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          }
+        }
+      },
+      "UpdateTeacherProfessionalInfoRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "teacherId"
+        ],
+        "properties": {
+          "teacherId": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1,
+            "nullable": false
+          },
+          "department": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Department"
+              }
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": true
+          },
+          "specialization": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "employeeCode": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "joiningDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "confirmationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resignationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastWorkingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employmentStatus": {
+            "$ref": "#/components/schemas/EmploymentStatus"
+          },
+          "employmentType": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmploymentType"
+              }
+            ]
+          },
+          "workLocation": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "nullable": true
+          },
+          "workShift": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WorkShift"
+              }
+            ]
+          },
+          "workingHours": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 24.0,
+            "minimum": 1.0,
+            "nullable": true
+          },
+          "totalExperience": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true
+          },
+          "teachingExperience": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true
+          },
+          "previousEmployers": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousPositions": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousSchools": {
+            "type": "string",
+            "nullable": true
+          },
+          "experienceDetails": {
+            "type": "string",
+            "nullable": true
+          },
+          "achievements": {
+            "type": "string",
+            "nullable": true
+          },
+          "awards": {
+            "type": "string",
+            "nullable": true
+          },
+          "publications": {
+            "type": "string",
+            "nullable": true
+          },
+          "researchWork": {
+            "type": "string",
+            "nullable": true
+          },
+          "reportingTo": {
+            "type": "string",
+            "nullable": true
+          },
+          "subordinates": {
+            "type": "string",
+            "nullable": true
+          },
+          "roles": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsibilities": {
+            "type": "string",
+            "nullable": true
+          },
+          "committees": {
+            "type": "string",
+            "nullable": true
+          },
+          "projects": {
+            "type": "string",
+            "nullable": true
+          },
+          "isClassTeacher": {
+            "type": "boolean"
+          },
+          "assignedClasses": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedSubjects": {
+            "type": "string",
+            "nullable": true
+          },
+          "maxStudents": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true,
+            "exclusiveMinimum": true
+          },
+          "currentStudents": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true
+          },
+          "performanceRating": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PerformanceRating"
+              }
+            ]
+          },
+          "lastAppraisalDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "appraisalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "improvementAreas": {
+            "type": "string",
+            "nullable": true
+          },
+          "trainingNeeds": {
+            "type": "string",
+            "nullable": true
+          },
+          "careerGoals": {
+            "type": "string",
+            "nullable": true
+          },
+          "isProbationPeriod": {
+            "type": "boolean"
+          },
+          "probationEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "languagesKnown": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobbies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialSkills": {
+            "type": "string",
+            "nullable": true
+          },
+          "interests": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          }
+        }
+      },
+      "Department": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "ComputerScience",
+          "InformationTechnology",
+          "Mathematics",
+          "Physics",
+          "Chemistry",
+          "Biology",
+          "English",
+          "Hindi",
+          "History",
+          "Geography",
+          "Economics",
+          "Commerce",
+          "Accounts",
+          "BusinessStudies",
+          "PhysicalEducation",
+          "Arts",
+          "Music",
+          "Dance",
+          "Drama",
+          "Library",
+          "Administration",
+          "Management",
+          "Engineering",
+          "Medical",
+          "Law",
+          "Architecture",
+          "Design",
+          "Media",
+          "Journalism",
+          "Psychology",
+          "Sociology",
+          "Philosophy",
+          "Languages",
+          "Literature",
+          "Science",
+          "SocialStudies",
+          "Other"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          22,
+          23,
+          24,
+          25,
+          26,
+          27,
+          28,
+          29,
+          30,
+          31,
+          32,
+          33,
+          34,
+          35,
+          36
+        ]
+      },
+      "EmploymentStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Active",
+          "Inactive",
+          "Suspended",
+          "Terminated",
+          "Resigned",
+          "Retired",
+          "OnLeave",
+          "Probation",
+          "Contract",
+          "PartTime",
+          "FullTime",
+          "Temporary",
+          "Permanent"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12
+        ]
+      },
+      "EmploymentType": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "FullTime",
+          "PartTime",
+          "Contract",
+          "Temporary",
+          "Permanent",
+          "Probation",
+          "Internship",
+          "Trainee",
+          "Visiting",
+          "Adjunct",
+          "Guest",
+          "Substitute",
+          "Casual",
+          "Seasonal",
+          "ProjectBased",
+          "Hourly",
+          "Daily",
+          "Weekly",
+          "Monthly",
+          "Yearly",
+          "Other"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20
+        ]
+      },
+      "WorkShift": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Morning",
+          "Afternoon",
+          "Evening",
+          "Night",
+          "Day",
+          "Rotational",
+          "Flexible",
+          "Fixed",
+          "Split",
+          "OnCall",
+          "Remote",
+          "Hybrid",
+          "Weekend",
+          "Holiday",
+          "Other"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
+      "PerformanceRating": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Outstanding",
+          "Excellent",
+          "VeryGood",
+          "Good",
+          "Satisfactory",
+          "Average",
+          "BelowAverage",
+          "Poor",
+          "Unsatisfactory",
+          "NeedsImprovement",
+          "Exceptional",
+          "Superior",
+          "Adequate",
+          "Marginal",
+          "Inadequate"
+        ],
+        "enum": [
+          0,
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14
+        ]
+      },
       "PaginationResponseOfTeacherQualificationDto": {
         "type": "object",
         "additionalProperties": false,
@@ -14264,6 +15018,362 @@
                 "$ref": "#/components/schemas/Designation"
               }
             ]
+          },
+          "department": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Department"
+              }
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialization": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "joiningDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "confirmationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resignationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastWorkingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employmentStatus": {
+            "$ref": "#/components/schemas/EmploymentStatus"
+          },
+          "employmentType": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmploymentType"
+              }
+            ]
+          },
+          "workLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "workShift": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WorkShift"
+              }
+            ]
+          },
+          "workingHours": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "totalExperience": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "teachingExperience": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "previousEmployers": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousPositions": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousSchools": {
+            "type": "string",
+            "nullable": true
+          },
+          "experienceDetails": {
+            "type": "string",
+            "nullable": true
+          },
+          "achievements": {
+            "type": "string",
+            "nullable": true
+          },
+          "awards": {
+            "type": "string",
+            "nullable": true
+          },
+          "publications": {
+            "type": "string",
+            "nullable": true
+          },
+          "researchWork": {
+            "type": "string",
+            "nullable": true
+          },
+          "basicSalary": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "grossSalary": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "netSalary": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "salaryStructure": {
+            "type": "string",
+            "nullable": true
+          },
+          "allowances": {
+            "type": "string",
+            "nullable": true
+          },
+          "benefits": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankName": {
+            "type": "string",
+            "nullable": true
+          },
+          "bankAccountNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "ifsCode": {
+            "type": "string",
+            "nullable": true
+          },
+          "panNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "aadharNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "pfNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "esiNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "reportingTo": {
+            "type": "string",
+            "nullable": true
+          },
+          "subordinates": {
+            "type": "string",
+            "nullable": true
+          },
+          "roles": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsibilities": {
+            "type": "string",
+            "nullable": true
+          },
+          "committees": {
+            "type": "string",
+            "nullable": true
+          },
+          "projects": {
+            "type": "string",
+            "nullable": true
+          },
+          "isClassTeacher": {
+            "type": "boolean"
+          },
+          "assignedClasses": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedSubjects": {
+            "type": "string",
+            "nullable": true
+          },
+          "maxStudents": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "currentStudents": {
+            "type": "integer",
+            "format": "int32",
+            "nullable": true
+          },
+          "performanceRating": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/PerformanceRating"
+              }
+            ]
+          },
+          "lastAppraisalDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "appraisalComments": {
+            "type": "string",
+            "nullable": true
+          },
+          "improvementAreas": {
+            "type": "string",
+            "nullable": true
+          },
+          "trainingNeeds": {
+            "type": "string",
+            "nullable": true
+          },
+          "careerGoals": {
+            "type": "string",
+            "nullable": true
+          },
+          "isProbationPeriod": {
+            "type": "boolean"
+          },
+          "probationEndDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "emergencyContact": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "resume": {
+            "type": "string",
+            "nullable": true
+          },
+          "appointmentLetter": {
+            "type": "string",
+            "nullable": true
+          },
+          "joiningReport": {
+            "type": "string",
+            "nullable": true
+          },
+          "relievingLetter": {
+            "type": "string",
+            "nullable": true
+          },
+          "experienceCertificate": {
+            "type": "string",
+            "nullable": true
+          },
+          "salarySlips": {
+            "type": "string",
+            "nullable": true
+          },
+          "form16": {
+            "type": "string",
+            "nullable": true
+          },
+          "taxDocuments": {
+            "type": "string",
+            "nullable": true
+          },
+          "medicalCertificate": {
+            "type": "string",
+            "nullable": true
+          },
+          "characterCertificate": {
+            "type": "string",
+            "nullable": true
+          },
+          "policeVerification": {
+            "type": "string",
+            "nullable": true
+          },
+          "addressProof": {
+            "type": "string",
+            "nullable": true
+          },
+          "educationalCertificates": {
+            "type": "string",
+            "nullable": true
+          },
+          "languagesKnown": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobbies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialSkills": {
+            "type": "string",
+            "nullable": true
+          },
+          "interests": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "deactivationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "deactivationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
           }
         }
       },
@@ -14428,6 +15538,185 @@
               }
             ]
           },
+          "department": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Department"
+              }
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": true
+          },
+          "specialization": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "employeeCode": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "joiningDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "confirmationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employmentStatus": {
+            "$ref": "#/components/schemas/EmploymentStatus"
+          },
+          "employmentType": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmploymentType"
+              }
+            ]
+          },
+          "workLocation": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 0,
+            "nullable": true
+          },
+          "workShift": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WorkShift"
+              }
+            ]
+          },
+          "workingHours": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 24.0,
+            "minimum": 1.0,
+            "nullable": true
+          },
+          "totalExperience": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true
+          },
+          "teachingExperience": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true
+          },
+          "previousEmployers": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousPositions": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousSchools": {
+            "type": "string",
+            "nullable": true
+          },
+          "experienceDetails": {
+            "type": "string",
+            "nullable": true
+          },
+          "reportingTo": {
+            "type": "string",
+            "nullable": true
+          },
+          "roles": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsibilities": {
+            "type": "string",
+            "nullable": true
+          },
+          "isClassTeacher": {
+            "type": "boolean"
+          },
+          "assignedClasses": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedSubjects": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContact": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyPhone": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$",
+            "nullable": true
+          },
+          "emergencyEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "emergencyAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "languagesKnown": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobbies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialSkills": {
+            "type": "string",
+            "nullable": true
+          },
+          "interests": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
           "password": {
             "type": "string"
           }
@@ -14537,6 +15826,186 @@
                 "$ref": "#/components/schemas/Designation"
               }
             ]
+          },
+          "department": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/Department"
+              }
+            ]
+          },
+          "subject": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialization": {
+            "type": "string",
+            "nullable": true
+          },
+          "employeeId": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "employeeCode": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "joiningDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "confirmationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "resignationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "lastWorkingDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "employmentStatus": {
+            "$ref": "#/components/schemas/EmploymentStatus"
+          },
+          "employmentType": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EmploymentType"
+              }
+            ]
+          },
+          "workLocation": {
+            "type": "string",
+            "nullable": true
+          },
+          "workShift": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/WorkShift"
+              }
+            ]
+          },
+          "workingHours": {
+            "type": "integer",
+            "format": "int32",
+            "maximum": 24.0,
+            "minimum": 1.0,
+            "nullable": true
+          },
+          "totalExperience": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true
+          },
+          "teachingExperience": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0.0,
+            "nullable": true
+          },
+          "previousEmployers": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousPositions": {
+            "type": "string",
+            "nullable": true
+          },
+          "previousSchools": {
+            "type": "string",
+            "nullable": true
+          },
+          "experienceDetails": {
+            "type": "string",
+            "nullable": true
+          },
+          "reportingTo": {
+            "type": "string",
+            "nullable": true
+          },
+          "roles": {
+            "type": "string",
+            "nullable": true
+          },
+          "responsibilities": {
+            "type": "string",
+            "nullable": true
+          },
+          "isClassTeacher": {
+            "type": "boolean"
+          },
+          "assignedClasses": {
+            "type": "string",
+            "nullable": true
+          },
+          "assignedSubjects": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContact": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "emergencyAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "languagesKnown": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobbies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialSkills": {
+            "type": "string",
+            "nullable": true
+          },
+          "interests": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
           }
         }
       },
@@ -14855,44 +16324,6 @@
           9
         ]
       },
-      "PerformanceRating": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Outstanding",
-          "Excellent",
-          "VeryGood",
-          "Good",
-          "Satisfactory",
-          "Average",
-          "BelowAverage",
-          "Poor",
-          "Unsatisfactory",
-          "NeedsImprovement",
-          "Exceptional",
-          "Superior",
-          "Adequate",
-          "Marginal",
-          "Inadequate"
-        ],
-        "enum": [
-          0,
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14
-        ]
-      },
       "SearchStudentAcademicsRequest": {
         "allOf": [
           {
@@ -15036,6 +16467,246 @@
             "$ref": "#/components/schemas/AcademicStatus"
           }
         }
+      },
+      "UpdateStudentAdditionalInfoRequest": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "guid",
+            "minLength": 1,
+            "nullable": false
+          },
+          "guardianName": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": true
+          },
+          "guardianPhone": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$",
+            "nullable": true
+          },
+          "guardianEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "guardianRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "enrollmentStatus": {
+            "$ref": "#/components/schemas/EnrollmentStatus"
+          },
+          "currentLevel": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EducationLevel"
+              }
+            ]
+          },
+          "enrollmentDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "graduationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "studentId": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "rollNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 0,
+            "nullable": true
+          },
+          "admissionNumber": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$",
+            "nullable": true
+          },
+          "emergencyContactEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "emergencyContactRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "fathersEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "fathersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "fathersIncome": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "mothersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersIncome": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
+          "specialInstructions": {
+            "type": "string",
+            "maxLength": 500,
+            "minLength": 0,
+            "nullable": true
+          }
+        }
+      },
+      "EnrollmentStatus": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Enrolled",
+          "Withdrawn",
+          "Graduated",
+          "Suspended",
+          "Transferred",
+          "OnLeave",
+          "Completed",
+          "Dropped",
+          "Pending",
+          "Provisional"
+        ],
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10
+        ]
+      },
+      "EducationLevel": {
+        "type": "integer",
+        "description": "",
+        "x-enumNames": [
+          "Primary",
+          "Middle",
+          "Secondary",
+          "HigherSecondary",
+          "Undergraduate",
+          "Postgraduate",
+          "Diploma",
+          "Coaching",
+          "TestPreparation",
+          "SkillDevelopment",
+          "Doctoral",
+          "Research",
+          "Certificate",
+          "Basic",
+          "Advanced",
+          "Professional",
+          "Foundation",
+          "Intermediate",
+          "Expert",
+          "MasterClass",
+          "Other"
+        ],
+        "enum": [
+          1,
+          2,
+          3,
+          4,
+          5,
+          6,
+          7,
+          8,
+          9,
+          10,
+          11,
+          12,
+          13,
+          14,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          99
+        ]
       },
       "PaginationResponseOfStudentHealthDto": {
         "type": "object",
@@ -15665,10 +17336,151 @@
             "type": "string",
             "nullable": true
           },
+          "fathersEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "fathersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "fathersIncome": {
+            "type": "string",
+            "nullable": true
+          },
           "mothersName": {
             "type": "string"
           },
           "mothersPhoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersIncome": {
+            "type": "string",
+            "nullable": true
+          },
+          "enrollmentStatus": {
+            "$ref": "#/components/schemas/EnrollmentStatus"
+          },
+          "currentLevel": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EducationLevel"
+              }
+            ]
+          },
+          "enrollmentDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "graduationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "studentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "rollNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "admissionNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "religion": {
+            "type": "string",
+            "nullable": true
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "languagesKnown": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobbies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialTalents": {
+            "type": "string",
+            "nullable": true
+          },
+          "achievements": {
+            "type": "string",
+            "nullable": true
+          },
+          "awards": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
             "type": "string",
             "nullable": true
           }
@@ -15752,11 +17564,276 @@
             "type": "string",
             "nullable": true
           },
+          "fathersEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "fathersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "fathersIncome": {
+            "type": "string",
+            "nullable": true
+          },
           "mothersName": {
             "type": "string"
           },
           "mothersPhoneNumber": {
             "type": "string",
+            "nullable": true
+          },
+          "mothersEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersIncome": {
+            "type": "string",
+            "nullable": true
+          },
+          "enrollmentStatus": {
+            "$ref": "#/components/schemas/EnrollmentStatus"
+          },
+          "currentLevel": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EducationLevel"
+              }
+            ]
+          },
+          "enrollmentDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "graduationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "studentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "rollNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "admissionNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactEmail": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "religion": {
+            "type": "string",
+            "nullable": true
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "motherTongue": {
+            "type": "string",
+            "nullable": true
+          },
+          "languagesKnown": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobbies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialTalents": {
+            "type": "string",
+            "nullable": true
+          },
+          "achievements": {
+            "type": "string",
+            "nullable": true
+          },
+          "awards": {
+            "type": "string",
+            "nullable": true
+          },
+          "totalFees": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "paidFees": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "pendingFees": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "feeCategory": {
+            "type": "string",
+            "nullable": true
+          },
+          "isFeeDefaulter": {
+            "type": "boolean"
+          },
+          "lastFeePaymentDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "paymentMethod": {
+            "type": "string",
+            "nullable": true
+          },
+          "usesTransport": {
+            "type": "boolean"
+          },
+          "transportRoute": {
+            "type": "string",
+            "nullable": true
+          },
+          "transportStop": {
+            "type": "string",
+            "nullable": true
+          },
+          "transportFee": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "isHosteller": {
+            "type": "boolean"
+          },
+          "hostelName": {
+            "type": "string",
+            "nullable": true
+          },
+          "hostelRoom": {
+            "type": "string",
+            "nullable": true
+          },
+          "hostelFee": {
+            "type": "number",
+            "format": "decimal",
+            "nullable": true
+          },
+          "birthCertificate": {
+            "type": "string",
+            "nullable": true
+          },
+          "aadharCard": {
+            "type": "string",
+            "nullable": true
+          },
+          "panCard": {
+            "type": "string",
+            "nullable": true
+          },
+          "passport": {
+            "type": "string",
+            "nullable": true
+          },
+          "drivingLicense": {
+            "type": "string",
+            "nullable": true
+          },
+          "voterID": {
+            "type": "string",
+            "nullable": true
+          },
+          "rationCard": {
+            "type": "string",
+            "nullable": true
+          },
+          "incomeCertificate": {
+            "type": "string",
+            "nullable": true
+          },
+          "casteCertificate": {
+            "type": "string",
+            "nullable": true
+          },
+          "domicileCertificate": {
+            "type": "string",
+            "nullable": true
+          },
+          "disabilityCertificate": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialInstructions": {
+            "type": "string",
+            "nullable": true
+          },
+          "deactivationReason": {
+            "type": "string",
+            "nullable": true
+          },
+          "deactivationDate": {
+            "type": "string",
+            "format": "date-time",
             "nullable": true
           }
         }
@@ -15768,7 +17845,9 @@
           "firstName",
           "lastName",
           "userName",
-          "phoneNumber"
+          "phoneNumber",
+          "fathersName",
+          "mothersName"
         ],
         "properties": {
           "firstName": {
@@ -15821,16 +17900,192 @@
             ]
           },
           "fathersName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "nullable": false
           },
           "fathersPhoneNumber": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$",
+            "nullable": true
+          },
+          "fathersEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "fathersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "fathersIncome": {
             "type": "string",
             "nullable": true
           },
           "mothersName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "nullable": false
           },
           "mothersPhoneNumber": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$",
+            "nullable": true
+          },
+          "mothersEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "mothersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersIncome": {
+            "type": "string",
+            "nullable": true
+          },
+          "enrollmentStatus": {
+            "$ref": "#/components/schemas/EnrollmentStatus"
+          },
+          "currentLevel": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EducationLevel"
+              }
+            ]
+          },
+          "enrollmentDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "studentId": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "rollNumber": {
+            "type": "string",
+            "maxLength": 20,
+            "minLength": 0,
+            "nullable": true
+          },
+          "admissionNumber": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 0,
+            "nullable": true
+          },
+          "guardianName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianPhone": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$",
+            "nullable": true
+          },
+          "guardianEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "guardianRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "maxLength": 15,
+            "minLength": 0,
+            "pattern": "^[+]?[0-9\\s\\-\\(\\)]+$",
+            "nullable": true
+          },
+          "emergencyContactEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "emergencyContactRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "religion": {
+            "type": "string",
+            "nullable": true
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "motherTongue": {
+            "type": "string",
+            "nullable": true
+          },
+          "languagesKnown": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobbies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialTalents": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
+          "specialInstructions": {
             "type": "string",
             "nullable": true
           },
@@ -15847,7 +18102,9 @@
           "firstName",
           "lastName",
           "userName",
-          "phoneNumber"
+          "phoneNumber",
+          "fathersName",
+          "mothersName"
         ],
         "properties": {
           "id": {
@@ -15909,16 +18166,179 @@
             "type": "boolean"
           },
           "fathersName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "nullable": false
           },
           "fathersPhoneNumber": {
             "type": "string",
             "nullable": true
           },
+          "fathersEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "fathersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "fathersIncome": {
+            "type": "string",
+            "nullable": true
+          },
           "mothersName": {
-            "type": "string"
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 1,
+            "nullable": false
           },
           "mothersPhoneNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "mothersOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "mothersIncome": {
+            "type": "string",
+            "nullable": true
+          },
+          "enrollmentStatus": {
+            "$ref": "#/components/schemas/EnrollmentStatus"
+          },
+          "currentLevel": {
+            "nullable": true,
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EducationLevel"
+              }
+            ]
+          },
+          "enrollmentDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "graduationDate": {
+            "type": "string",
+            "format": "date-time",
+            "nullable": true
+          },
+          "studentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "rollNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "admissionNumber": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianName": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "guardianRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "guardianOccupation": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactName": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactPhone": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactEmail": {
+            "type": "string",
+            "maxLength": 100,
+            "minLength": 0,
+            "pattern": "^[^@]+@[^@]+$",
+            "nullable": true
+          },
+          "emergencyContactRelationship": {
+            "type": "string",
+            "nullable": true
+          },
+          "emergencyContactAddress": {
+            "type": "string",
+            "nullable": true
+          },
+          "category": {
+            "type": "string",
+            "nullable": true
+          },
+          "religion": {
+            "type": "string",
+            "nullable": true
+          },
+          "nationality": {
+            "type": "string",
+            "nullable": true
+          },
+          "motherTongue": {
+            "type": "string",
+            "nullable": true
+          },
+          "languagesKnown": {
+            "type": "string",
+            "nullable": true
+          },
+          "hobbies": {
+            "type": "string",
+            "nullable": true
+          },
+          "specialTalents": {
+            "type": "string",
+            "nullable": true
+          },
+          "remarks": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
+          "notes": {
+            "type": "string",
+            "maxLength": 1000,
+            "minLength": 0,
+            "nullable": true
+          },
+          "specialInstructions": {
             "type": "string",
             "nullable": true
           }
@@ -19123,56 +21543,6 @@
           9,
           10,
           11
-        ]
-      },
-      "EducationLevel": {
-        "type": "integer",
-        "description": "",
-        "x-enumNames": [
-          "Primary",
-          "Middle",
-          "Secondary",
-          "HigherSecondary",
-          "Undergraduate",
-          "Postgraduate",
-          "Diploma",
-          "Coaching",
-          "TestPreparation",
-          "SkillDevelopment",
-          "Doctoral",
-          "Research",
-          "Certificate",
-          "Basic",
-          "Advanced",
-          "Professional",
-          "Foundation",
-          "Intermediate",
-          "Expert",
-          "MasterClass",
-          "Other"
-        ],
-        "enum": [
-          1,
-          2,
-          3,
-          4,
-          5,
-          6,
-          7,
-          8,
-          9,
-          10,
-          11,
-          12,
-          13,
-          14,
-          15,
-          16,
-          17,
-          18,
-          19,
-          20,
-          99
         ]
       },
       "InstitutionType": {

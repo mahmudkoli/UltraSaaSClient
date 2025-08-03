@@ -36,13 +36,44 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-            <button
-                mat-fab
-                color="primary"
-                (click)="addStudent()"
-                matTooltip="Add New Student">
-                <mat-icon>add</mat-icon>
-            </button>
+            <div class="flex items-center space-x-3">
+                <!-- Quick Access Menu -->
+                <button 
+                    mat-icon-button
+                    [matMenuTriggerFor]="quickAccessMenu"
+                    matTooltip="Related Modules">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                                    <mat-menu #quickAccessMenu="matMenu">
+                        <button mat-menu-item routerLink="/student-academics">
+                            <mat-icon>assignment</mat-icon>
+                            <span>Academic Records</span>
+                        </button>
+                        <button mat-menu-item routerLink="/student-health">
+                            <mat-icon>favorite</mat-icon>
+                            <span>Health Records</span>
+                        </button>
+                        <button mat-menu-item routerLink="/analytics">
+                            <mat-icon>analytics</mat-icon>
+                            <span>Analytics Dashboard</span>
+                        </button>
+                    </mat-menu>
+
+                <button
+                    mat-mini-fab
+                    color="accent"
+                    (click)="exportStudents()"
+                    matTooltip="Export Students">
+                    <mat-icon>file_download</mat-icon>
+                </button>
+                <button
+                    mat-fab
+                    color="primary"
+                    (click)="addStudent()"
+                    matTooltip="Add New Student">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -205,6 +236,17 @@
                                             <button mat-menu-item (click)="deleteStudent(student)" class="hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-red-600 dark:text-red-400">delete</mat-icon>
                                                 <span class="ml-2">Delete Student</span>
+                                            </button>
+                                            <mat-divider></mat-divider>
+                                            <button mat-menu-item (click)="addHealthRecord(student)" class="hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-green-600 dark:text-green-400">health_and_safety</mat-icon>
+                                                <span class="ml-2">Add Health Record</span>
+                                                <span class="ml-auto text-xs text-gray-400" *ngIf="student.hasHealthRecord">✓</span>
+                                            </button>
+                                            <button mat-menu-item (click)="addAcademicRecord(student)" class="hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-purple-600 dark:text-purple-400">school</mat-icon>
+                                                <span class="ml-2">Add Academic Record</span>
+                                                <span class="ml-auto text-xs text-gray-400" *ngIf="student.hasAcademicRecord">✓</span>
                                             </button>
                                         </mat-menu>
                                     </div>

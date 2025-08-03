@@ -1,78 +1,133 @@
-import { HttpClient } from '@angular/common/http';
-import { inject, Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { 
-    StudentDto,
-    CreateStudentRequest,
-    UpdateStudentRequest,
-    SearchStudentsRequest,
-    PaginationResponse
+    StudentDto, 
+    CreateStudentRequest, 
+    UpdateStudentRequest, 
+    SearchStudentsRequest, 
+    ExportStudentsRequest,
+    ExportProgress,
+    PaginationResponse 
 } from './students.types';
 
-@Injectable({providedIn: 'root'})
-export class StudentsService
-{
-    private _httpClient = inject(HttpClient);
-    private readonly baseUrl = environment.apiUrl;
+@Injectable({
+    providedIn: 'root'
+})
+export class StudentsService {
+    private readonly baseUrl = `${environment.apiUrl}/api/v1/students`;
+    private exportProgressSubject = new BehaviorSubject<ExportProgress | null>(null);
+    public exportProgress$ = this.exportProgressSubject.asObservable();
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods
-    // -----------------------------------------------------------------------------------------------------
+    constructor(private http: HttpClient) {}
 
-    /**
-     * Search students using available filters
-     */
-    search(request: SearchStudentsRequest): Observable<PaginationResponse<StudentDto>>
-    {
-        return this._httpClient.post<PaginationResponse<StudentDto>>(`${this.baseUrl}/api/v1/students/search`, request);
+    search(request: SearchStudentsRequest): Observable<PaginationResponse<StudentDto>> {
+        return this.http.post<PaginationResponse<StudentDto>>(`${this.baseUrl}/search`, request);
+    }
+
+    getById(id: string): Observable<StudentDto> {
+        return this.http.get<StudentDto>(`${this.baseUrl}/${id}`);
     }
 
     /**
-     * Get student details by ID
+     * Get student details via Dapper (alternative query method)
+     * Useful for performance testing and comparison
      */
-    getById(id: string): Observable<StudentDto>
-    {
-        return this._httpClient.get<StudentDto>(`${this.baseUrl}/api/v1/students/${id}`);
+    getByIdDapper(id: string): Observable<StudentDto> {
+        const params = new HttpParams().set('id', id);
+        return this.http.get<StudentDto>(`${this.baseUrl}/dapper`, { params });
+    }
+
+    create(request: CreateStudentRequest): Observable<string> {
+        return this.http.post(this.baseUrl, request, { responseType: 'text' });
+    }
+
+    update(id: string, request: UpdateStudentRequest): Observable<string> {
+        return this.http.put(`${this.baseUrl}/${id}`, request, { responseType: 'text' });
+    }
+
+    delete(id: string): Observable<string> {
+        return this.http.delete<string>(`${this.baseUrl}/${id}`);
     }
 
     /**
-     * Create a new student
+     * Export students data to file
+     * Returns a blob that can be downloaded
      */
-    create(request: CreateStudentRequest): Observable<string>
-    {
-        return this._httpClient.post(`${this.baseUrl}/api/v1/students`, request, { responseType: 'text' });
+    export(request: ExportStudentsRequest): Observable<Blob> {
+        // Update progress
+        this.exportProgressSubject.next({
+            status: 'preparing',
+            progress: 0,
+            message: 'Preparing export...'
+        });
+
+        const exportObservable = this.http.post(`${this.baseUrl}/export`, request, {
+            responseType: 'blob',
+            reportProgress: true,
+            observe: 'response'
+        });
+
+        // Simulate progress updates (since backend might not provide them)
+        const progressTimer = setInterval(() => {
+            const current = this.exportProgressSubject.value;
+            if (current && current.status === 'preparing' && current.progress < 90) {
+                this.exportProgressSubject.next({
+                    ...current,
+                    progress: current.progress + 10,
+                    message: 'Generating export file...'
+                });
+            }
+        }, 500);
+
+        return new Observable(observer => {
+            exportObservable.subscribe({
+                next: (response) => {
+                    clearInterval(progressTimer);
+                    
+                    // Extract filename from content-disposition header if available
+                    const contentDisposition = response.headers.get('content-disposition');
+                    let filename = 'students_export.xlsx';
+                    if (contentDisposition) {
+                        const filenameMatch = contentDisposition.match(/filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/);
+                        if (filenameMatch) {
+                            filename = filenameMatch[1].replace(/['"]/g, '');
+                        }
+                    }
+
+                    // Create download URL
+                    const blob = response.body;
+                    const downloadUrl = window.URL.createObjectURL(blob!);
+
+                    this.exportProgressSubject.next({
+                        status: 'completed',
+                        progress: 100,
+                        message: 'Export completed successfully!',
+                        downloadUrl,
+                        fileName: filename
+                    });
+
+                    observer.next(blob!);
+                    observer.complete();
+                },
+                error: (error) => {
+                    clearInterval(progressTimer);
+                    this.exportProgressSubject.next({
+                        status: 'error',
+                        progress: 0,
+                        message: 'Export failed. Please try again.'
+                    });
+                    observer.error(error);
+                }
+            });
+        });
     }
 
     /**
-     * Update a student
+     * Reset export progress state
      */
-    update(id: string, request: UpdateStudentRequest): Observable<string>
-    {
-        return this._httpClient.put(`${this.baseUrl}/api/v1/students/${id}`, request, { responseType: 'text' });
-    }
-
-    /**
-     * Delete a student
-     */
-    delete(id: string): Observable<string>
-    {
-        return this._httpClient.delete<string>(`${this.baseUrl}/api/v1/students/${id}`);
-    }
-
-    /**
-     * Get students using Dapper
-     */
-    getStudentsDapper(): Observable<StudentDto[]>
-    {
-        return this._httpClient.get<StudentDto[]>(`${this.baseUrl}/api/v1/students/dapper`);
-    }
-
-    /**
-     * Export students
-     */
-    exportStudents(): Observable<Blob>
-    {
-        return this._httpClient.get(`${this.baseUrl}/api/v1/students/export`, { responseType: 'blob' });
+    resetExportProgress(): void {
+        this.exportProgressSubject.next(null);
     }
 } 

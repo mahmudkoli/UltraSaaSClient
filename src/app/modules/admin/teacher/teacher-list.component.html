@@ -36,13 +36,40 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-            <button
-                mat-fab
-                color="primary"
-                (click)="addTeacher()"
-                matTooltip="Add New Teacher">
-                <mat-icon>add</mat-icon>
-            </button>
+            <div class="flex items-center space-x-3">
+                <!-- Quick Access Menu -->
+                <button 
+                    mat-icon-button
+                    [matMenuTriggerFor]="quickAccessMenu"
+                    matTooltip="Related Modules">
+                    <mat-icon>more_vert</mat-icon>
+                </button>
+                                    <mat-menu #quickAccessMenu="matMenu">
+                        <button mat-menu-item routerLink="/teacher-qualifications">
+                            <mat-icon>emoji_events</mat-icon>
+                            <span>Teacher Qualifications</span>
+                        </button>
+                        <button mat-menu-item routerLink="/analytics">
+                            <mat-icon>analytics</mat-icon>
+                            <span>Analytics Dashboard</span>
+                        </button>
+                    </mat-menu>
+
+                <button
+                    mat-mini-fab
+                    color="accent"
+                    (click)="openDevTools()"
+                    matTooltip="Developer Tools">
+                    <mat-icon>code</mat-icon>
+                </button>
+                <button
+                    mat-fab
+                    color="primary"
+                    (click)="addTeacher()"
+                    matTooltip="Add New Teacher">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
         </div>
     </div>
 
@@ -205,6 +232,12 @@
                                             <button mat-menu-item (click)="deleteTeacher(teacher)" class="hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-red-600 dark:text-red-400">delete</mat-icon>
                                                 <span class="ml-2">Delete Teacher</span>
+                                            </button>
+                                            <mat-divider></mat-divider>
+                                            <button mat-menu-item (click)="addQualification(teacher)" class="hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-indigo-600 dark:text-indigo-400">school</mat-icon>
+                                                <span class="ml-2">Add Qualification</span>
+                                                <span class="ml-auto text-xs text-gray-400" *ngIf="teacher.hasQualification">✓</span>
                                             </button>
                                         </mat-menu>
                                     </div>
