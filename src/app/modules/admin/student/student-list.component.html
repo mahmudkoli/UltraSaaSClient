@@ -36,44 +36,13 @@
                     </mat-select>
                 </mat-form-field>
             </div>
-            <div class="flex items-center space-x-3">
-                <!-- Quick Access Menu -->
-                <button 
-                    mat-icon-button
-                    [matMenuTriggerFor]="quickAccessMenu"
-                    matTooltip="Related Modules">
-                    <mat-icon>more_vert</mat-icon>
-                </button>
-                                    <mat-menu #quickAccessMenu="matMenu">
-                        <button mat-menu-item routerLink="/student-academics">
-                            <mat-icon>assignment</mat-icon>
-                            <span>Academic Records</span>
-                        </button>
-                        <button mat-menu-item routerLink="/student-health">
-                            <mat-icon>favorite</mat-icon>
-                            <span>Health Records</span>
-                        </button>
-                        <button mat-menu-item routerLink="/analytics">
-                            <mat-icon>analytics</mat-icon>
-                            <span>Analytics Dashboard</span>
-                        </button>
-                    </mat-menu>
-
-                <button
-                    mat-mini-fab
-                    color="accent"
-                    (click)="exportStudents()"
-                    matTooltip="Export Students">
-                    <mat-icon>file_download</mat-icon>
-                </button>
-                <button
-                    mat-fab
-                    color="primary"
-                    (click)="addStudent()"
-                    matTooltip="Add New Student">
-                    <mat-icon>add</mat-icon>
-                </button>
-            </div>
+            <button
+                mat-fab
+                color="primary"
+                (click)="addStudent()"
+                matTooltip="Add New Student">
+                <mat-icon>add</mat-icon>
+            </button>
         </div>
     </div>
 
@@ -86,7 +55,7 @@
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div class="relative overflow-x-auto">
                         <table mat-table [dataSource]="students" class="w-full">
-                            
+
                             <!-- Avatar Column -->
                             <ng-container matColumnDef="avatar">
                                 <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6">
@@ -210,7 +179,7 @@
                                             matTooltip="Edit Student">
                                             <mat-icon class="icon-size-5">edit</mat-icon>
                                         </button>
-                                        
+
                                         <!-- Delete Button -->
                                         <button
                                             mat-icon-button
@@ -219,7 +188,7 @@
                                             matTooltip="Delete Student">
                                             <mat-icon class="icon-size-5">delete</mat-icon>
                                         </button>
-                                        
+
                                         <!-- More Options Button -->
                                         <button
                                             mat-icon-button
@@ -237,24 +206,13 @@
                                                 <mat-icon class="icon-size-5 text-red-600 dark:text-red-400">delete</mat-icon>
                                                 <span class="ml-2">Delete Student</span>
                                             </button>
-                                            <mat-divider></mat-divider>
-                                            <button mat-menu-item (click)="addHealthRecord(student)" class="hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-green-600 dark:text-green-400">health_and_safety</mat-icon>
-                                                <span class="ml-2">Add Health Record</span>
-                                                <span class="ml-auto text-xs text-gray-400" *ngIf="student.hasHealthRecord">✓</span>
-                                            </button>
-                                            <button mat-menu-item (click)="addAcademicRecord(student)" class="hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-purple-600 dark:text-purple-400">school</mat-icon>
-                                                <span class="ml-2">Add Academic Record</span>
-                                                <span class="ml-auto text-xs text-gray-400" *ngIf="student.hasAcademicRecord">✓</span>
-                                            </button>
                                         </mat-menu>
                                     </div>
                                 </td>
                             </ng-container>
 
                             <tr mat-header-row *matHeaderRowDef="['avatar', 'userName', 'name', 'email', 'phone', 'status', 'actions']" class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10"></tr>
-                            <tr mat-row *matRowDef="let row; columns: ['avatar', 'userName', 'name', 'email', 'phone', 'status', 'actions'];" 
+                            <tr mat-row *matRowDef="let row; columns: ['avatar', 'userName', 'name', 'email', 'phone', 'status', 'actions'];"
                                 class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-700"></tr>
                         </table>
                     </div>
@@ -315,4 +273,4 @@
         </div>
     </div>
     </div>
-</div> 
+</div>

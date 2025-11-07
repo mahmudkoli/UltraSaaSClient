@@ -65,7 +65,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
     
     // Math property for pagination display
     Math = Math;
-    
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(

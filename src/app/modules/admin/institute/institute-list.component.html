@@ -1,0 +1,322 @@
+<div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-pink-50/30 to-red-50/30 dark:from-gray-900 dark:via-pink-900/20 dark:to-red-900/20 relative">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5 dark:opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
+    </div>
+    <div class="relative z-10 flex flex-col flex-auto min-w-0">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-pink-500 to-red-600 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200">
+                <mat-icon class="text-white">school</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                    Institutes
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Manage educational institutions
+                </p>
+            </div>
+        </div>
+        <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
+            <mat-form-field class="w-full sm:w-auto sm:min-w-72 mt-6" appearance="outline">
+                <mat-label>Search institutes</mat-label>
+                <input matInput [formControl]="searchControl" placeholder="Search by name, code, or type">
+                <mat-icon matSuffix class="text-gray-400">search</mat-icon>
+            </mat-form-field>
+            <div class="pt-6">
+                <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline">
+                    <mat-label>Status</mat-label>
+                    <mat-select [formControl]="statusControl">
+                        <mat-option value="all">All</mat-option>
+                        <mat-option value="active">Active</mat-option>
+                        <mat-option value="inactive">Inactive</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="pt-6">
+                <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline">
+                    <mat-label>Type</mat-label>
+                    <mat-select [formControl]="typeControl">
+                        <mat-option value="all">All Types</mat-option>
+                        <mat-option value="school">School</mat-option>
+                        <mat-option value="college">College</mat-option>
+                        <mat-option value="university">University</mat-option>
+                    </mat-select>
+                </mat-form-field>
+            </div>
+            <div class="pt-2 flex space-x-2">
+                <button
+                    mat-fab
+                    color="primary"
+                    (click)="createInstitute()"
+                    matTooltip="Create Institute">
+                    <mat-icon>add</mat-icon>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="flex flex-col flex-auto min-w-0">
+            <div class="flex-auto">
+
+                <!-- Table -->
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="relative overflow-x-auto">
+                        <table mat-table [dataSource]="dataSource" matSort class="w-full">
+
+                            <!-- Name Column -->
+                            <ng-container matColumnDef="name">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6">
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Institute</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let institute" class="pl-4 sm:pl-6">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 w-10 h-10 rounded-full bg-gradient-to-r from-pink-100 to-red-100 flex items-center justify-center mr-3">
+                                            <mat-icon class="text-pink-600">school</mat-icon>
+                                        </div>
+                                        <div>
+                                            <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                                {{ institute.displayName || institute.name }}
+                                            </div>
+                                            <div class="text-xs text-gray-500">
+                                                {{ institute.contactEmail || 'contact@institute.edu' }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <!-- Code Column -->
+                            <ng-container matColumnDef="code">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Code</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let institute">
+                                    <div class="flex flex-col">
+                                        <div class="flex items-center text-sm text-gray-900 dark:text-white">
+                                            <mat-icon class="text-gray-400 mr-2 text-sm">tag</mat-icon>
+                                            <span class="font-mono">{{ institute.code }}</span>
+                                        </div>
+                                        <span class="text-xs text-gray-500">Institute ID</span>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <!-- Type Column -->
+                            <ng-container matColumnDef="type">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Type</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let institute">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"
+                                          [class]="{
+                                            'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': institute.type === 'University',
+                                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': institute.type === 'College',
+                                            'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200': institute.type === 'School',
+                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': !institute.type
+                                          }">
+                                        {{ institute.type | titlecase }}
+                                    </span>
+                                </td>
+                            </ng-container>
+
+                            <!-- Contact Info Column -->
+                            <ng-container matColumnDef="contactInfo">
+                                <th mat-header-cell *matHeaderCellDef>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Location</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let institute">
+                                    <div class="flex flex-col">
+                                        <div class="flex items-center text-sm text-gray-900 dark:text-white">
+                                            <mat-icon class="text-gray-400 mr-2 text-sm">location_on</mat-icon>
+                                            {{ institute.country || 'Not specified' }}
+                                        </div>
+                                        <span class="text-xs text-gray-500">{{ institute.city || 'City not set' }}</span>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <!-- Status Column -->
+                            <ng-container matColumnDef="isActive">
+                                <th mat-header-cell *matHeaderCellDef mat-sort-header>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let institute">
+                                    <div class="flex items-center">
+                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"
+                                              [class]="{
+                                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': institute.status === 'Active',
+                                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': institute.status === 'Inactive',
+                                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': !institute.status
+                                              }">
+                                            <mat-icon class="icon-size-4 mr-1.5">
+                                                {{ institute.status === 'Active' ? 'check_circle' : 'cancel' }}
+                                            </mat-icon>
+                                            {{ institute.status || 'Unknown' }}
+                                        </span>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <!-- Setup Status Column -->
+                            <ng-container matColumnDef="setupStatus">
+                                <th mat-header-cell *matHeaderCellDef>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Setup</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let institute">
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"
+                                          [class]="{
+                                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': institute.setupStatus === 'Complete',
+                                            'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': institute.setupStatus === 'Pending',
+                                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': institute.setupStatus === 'Failed',
+                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': !institute.setupStatus
+                                          }">
+                                        <mat-icon class="icon-size-4 mr-1.5">
+                                            {{ institute.setupStatus === 'Complete' ? 'check_circle' :
+                                               institute.setupStatus === 'Pending' ? 'schedule' :
+                                               institute.setupStatus === 'Failed' ? 'error' : 'help_outline' }}
+                                        </mat-icon>
+                                        {{ institute.setupStatus || 'Unknown' }}
+                                    </span>
+                                </td>
+                            </ng-container>
+
+                            <!-- Actions Column -->
+                            <ng-container matColumnDef="actions">
+                                <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6">
+                                    <div class="flex items-center justify-end">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let institute" class="pr-4 sm:pr-6">
+                                    <div class="flex items-center justify-end space-x-2">
+                                        <!-- Edit Button -->
+                                        <button
+                                            mat-icon-button
+                                            [routerLink]="['/institute', institute.id, 'edit']"
+                                            class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 rounded-full"
+                                            matTooltip="Edit institute">
+                                            <mat-icon class="icon-size-5">edit</mat-icon>
+                                        </button>
+
+                                        <!-- Capacity Button -->
+                                        <button
+                                            mat-icon-button
+                                            (click)="manageCapacity(institute)"
+                                            class="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 rounded-full"
+                                            matTooltip="Manage capacity">
+                                            <mat-icon class="icon-size-5">groups</mat-icon>
+                                        </button>
+
+                                        <!-- Branding Button -->
+                                        <button
+                                            mat-icon-button
+                                            (click)="manageBranding(institute)"
+                                            class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 rounded-full"
+                                            matTooltip="Manage branding">
+                                            <mat-icon class="icon-size-5">palette</mat-icon>
+                                        </button>
+
+                                        <!-- More Options Button -->
+                                        <button
+                                            mat-icon-button
+                                            [matMenuTriggerFor]="menu"
+                                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-full"
+                                            matTooltip="More Options">
+                                            <mat-icon class="icon-size-5">more_vert</mat-icon>
+                                        </button>
+                                        <mat-menu #menu="matMenu" class="shadow-xl border border-gray-200 dark:border-gray-700">
+                                            <button mat-menu-item [routerLink]="['/institute', institute.id, 'edit']" class="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-blue-600 dark:text-blue-400">edit</mat-icon>
+                                                <span class="ml-2">Edit Institute</span>
+                                            </button>
+                                            <button mat-menu-item (click)="manageCapacity(institute)" class="hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-green-600 dark:text-green-400">groups</mat-icon>
+                                                <span class="ml-2">Manage Capacity</span>
+                                            </button>
+                                            <button mat-menu-item (click)="manageBranding(institute)" class="hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-purple-600 dark:text-purple-400">palette</mat-icon>
+                                                <span class="ml-2">Manage Branding</span>
+                                            </button>
+                                        </mat-menu>
+                                    </div>
+                                </td>
+                            </ng-container>
+
+                            <tr mat-header-row *matHeaderRowDef="displayedColumns" class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10"></tr>
+                            <tr mat-row *matRowDef="let row; columns: displayedColumns;"
+                                class="hover:bg-pink-50 dark:hover:bg-pink-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700 hover:border-pink-200 dark:hover:border-pink-700"></tr>
+                        </table>
+                    </div>
+
+                    <!-- Loading -->
+                    <div *ngIf="loading" class="p-8">
+                        <div class="space-y-4">
+                            <div *ngFor="let item of [1,2,3,4,5]" class="flex items-center space-x-4 animate-pulse">
+                                <div class="flex-1 space-y-2">
+                                    <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                                    <div class="h-3 bg-gray-200 dark:bg-gray-700 rounded w-1/2"></div>
+                                </div>
+                                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/4"></div>
+                                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/3"></div>
+                                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-1/5"></div>
+                                <div class="h-4 bg-gray-200 dark:bg-gray-700 rounded w-16"></div>
+                                <div class="w-8 h-8 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Empty State -->
+                    <div *ngIf="!loading && dataSource.data.length === 0" class="flex flex-col items-center justify-center p-12">
+                        <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg">
+                            <mat-icon class="icon-size-16 text-gray-400 dark:text-gray-500">school</mat-icon>
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No institutes found</h3>
+                        <p class="text-sm text-gray-600 dark:text-gray-400 text-center mb-6 max-w-md">
+                            {{ searchControl.value || statusControl.value !== 'all' || typeControl.value !== 'all' ? 'Try adjusting your search or filter criteria.' : 'Get started by creating your first institute.' }}
+                        </p>
+                        <button
+                            *ngIf="!searchControl.value && statusControl.value === 'all' && typeControl.value === 'all'"
+                            mat-flat-button
+                            color="primary"
+                            class="h-12 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
+                            (click)="createInstitute()">
+                            <mat-icon class="icon-size-5 mr-2">add_circle</mat-icon>
+                            <span>Create Institute</span>
+                        </button>
+                    </div>
+
+                    <!-- Pagination -->
+                    <div *ngIf="dataSource.data.length > 0" class="flex items-center justify-between px-4 py-0.5 border-t border-gray-200 dark:border-gray-700">
+                        <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                            Showing {{ rangeStart }} to {{ rangeEnd }} of {{ totalCount }} results
+                        </div>
+                        <mat-paginator
+                            [pageSizeOptions]="[5, 10, 25, 50]"
+                            [pageSize]="10"
+                            showFirstLastButtons>
+                        </mat-paginator>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>

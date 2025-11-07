@@ -82,6 +82,8 @@ export const appRoutes: Route[] = [
             {path: 'student-academics', loadChildren: () => import('app/modules/admin/student-academics/student-academics.routes')},
             {path: 'student-health', loadChildren: () => import('app/modules/admin/student-health/student-health.routes')},
             {path: 'teacher-qualifications', loadChildren: () => import('app/modules/admin/teacher-qualifications/teacher-qualifications.routes')},
+            {path: 'tenant', loadChildren: () => import('app/modules/admin/tenant/tenant.routes')},
+            {path: 'institute', loadChildren: () => import('app/modules/admin/institute/institute.routes')},
         ]
     }
 ];

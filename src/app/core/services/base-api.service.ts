@@ -63,12 +63,38 @@ export abstract class BaseApiService
     }
 
     /**
+     * POST request expecting text response
+     */
+    protected postText(url: string, body: any): Observable<string>
+    {
+        return this._httpClient.post(`${this.baseUrl}${url}`, body, {
+            headers: this.getHeaders(),
+            responseType: 'text'
+        }).pipe(
+            catchError(this.handleError)
+        );
+    }
+
+    /**
      * PUT request
      */
     protected put<T>(url: string, body: any): Observable<T>
     {
         return this._httpClient.put<T>(`${this.baseUrl}${url}`, body, {
             headers: this.getHeaders()
+        }).pipe(
+            catchError(this.handleError)
+        );
+    }
+
+    /**
+     * PUT request expecting text response
+     */
+    protected putText(url: string, body: any): Observable<string>
+    {
+        return this._httpClient.put(`${this.baseUrl}${url}`, body, {
+            headers: this.getHeaders(),
+            responseType: 'text'
         }).pipe(
             catchError(this.handleError)
         );

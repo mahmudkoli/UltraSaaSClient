@@ -73,6 +73,28 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/teacher-qualifications'
             }
         ]
+    },
+    {
+        id: 'system-management',
+        title: 'System Management',
+        type: 'collapsable',
+        icon: 'heroicons_outline:cog-6-tooth',
+        children: [
+            {
+                id   : 'tenant-management',
+                title: 'Tenant Management',
+                type : 'basic',
+                icon : 'heroicons_outline:building-office',
+                link : '/tenant'
+            },
+            {
+                id   : 'institute-management',
+                title: 'Institute Management',
+                type : 'basic',
+                icon : 'heroicons_outline:academic-cap',
+                link : '/institute'
+            }
+        ]
     }
 ];
 
@@ -132,6 +154,20 @@ export const compactNavigation: FuseNavigationItem[] = [
         type : 'basic',
         icon : 'heroicons_outline:trophy',
         link : '/teacher-qualifications'
+    },
+    {
+        id   : 'tenant-management',
+        title: 'Tenants',
+        type : 'basic',
+        icon : 'heroicons_outline:building-office',
+        link : '/tenant'
+    },
+    {
+        id   : 'institute-management',
+        title: 'Institutes',
+        type : 'basic',
+        icon : 'heroicons_outline:academic-cap',
+        link : '/institute'
     }
 ];
 
@@ -207,6 +243,28 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 link : '/teacher-qualifications'
             }
         ]
+    },
+    {
+        id: 'system-management',
+        title: 'System Management',
+        type: 'collapsable',
+        icon: 'heroicons_outline:cog-6-tooth',
+        children: [
+            {
+                id   : 'tenant-management',
+                title: 'Tenant Management',
+                type : 'basic',
+                icon : 'heroicons_outline:building-office',
+                link : '/tenant'
+            },
+            {
+                id   : 'institute-management',
+                title: 'Institute Management',
+                type : 'basic',
+                icon : 'heroicons_outline:academic-cap',
+                link : '/institute'
+            }
+        ]
     }
 ];
 
@@ -278,6 +336,27 @@ export const horizontalNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:trophy',
                 link : '/teacher-qualifications'
+            }
+        ]
+    },
+    {
+        id: 'system',
+        title: 'System',
+        type: 'group',
+        children: [
+            {
+                id   : 'tenant-management',
+                title: 'Tenants',
+                type : 'basic',
+                icon : 'heroicons_outline:building-office',
+                link : '/tenant'
+            },
+            {
+                id   : 'institute-management',
+                title: 'Institutes',
+                type : 'basic',
+                icon : 'heroicons_outline:academic-cap',
+                link : '/institute'
             }
         ]
     }

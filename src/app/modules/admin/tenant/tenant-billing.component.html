@@ -1,0 +1,251 @@
+<div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-green-50/30 to-blue-50/30 dark:from-gray-900 dark:via-green-900/20 dark:to-blue-900/20 relative">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5 dark:opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
+    </div>
+    <div class="relative z-10 flex flex-col flex-auto min-w-0">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200">
+                <mat-icon class="text-white">payment</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                    Tenant Billing Management
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Manage billing plans, payments, and subscription details for {{ tenant?.name || 'tenant' }}
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button
+                mat-stroked-button
+                (click)="goBack()"
+                class="px-6">
+                <mat-icon class="mr-2">arrow_back</mat-icon>
+                Back to Tenants
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-auto p-4 sm:p-6">
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="flex items-center justify-center p-12">
+            <div class="flex flex-col items-center space-y-4">
+                <div class="w-16 h-16 border-4 border-green-200 border-t-green-600 rounded-full animate-spin"></div>
+                <p class="text-gray-600 dark:text-gray-400">Loading billing information...</p>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <!-- Row 1: Current Billing Information, Extend Validity, Resource Usage -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+                <!-- Current Billing Information -->
+                <div class="p-6 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/20 dark:to-blue-900/20 rounded-xl border border-green-200 dark:border-green-700">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full">
+                            <mat-icon>info</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-green-900 dark:text-green-100">Current Billing Information</h3>
+                            <p class="text-sm text-green-700 dark:text-green-300">{{ tenant?.name }}</p>
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <span class="font-medium text-green-800 dark:text-green-200">Current Plan:</span>
+                            <p class="text-xl font-bold text-green-900 dark:text-green-100">{{ tenant?.billingPlan || 'Not Set' }}</p>
+                        </div>
+                        <div class="space-y-2">
+                            <span class="font-medium text-green-800 dark:text-green-200">Monthly Fee:</span>
+                            <p class="text-xl font-bold text-green-900 dark:text-green-100">
+                                {{ (tenant?.monthlyFee || 0) | currency:(tenant?.billingCurrency || 'USD') }}
+                            </p>
+                        </div>
+                        <div class="space-y-2">
+                            <span class="font-medium text-green-800 dark:text-green-200">Payment Status:</span>
+                            <p class="text-xl font-bold"
+                               [ngClass]="{
+                                   'text-green-600 dark:text-green-400': tenant?.paymentStatus === 'Paid',
+                                   'text-amber-600 dark:text-amber-400': tenant?.paymentStatus === 'Pending',
+                                   'text-red-600 dark:text-red-400': tenant?.paymentStatus === 'Overdue' || tenant?.paymentStatus === 'Failed'
+                               }">
+                                {{ tenant?.paymentStatus || 'Unknown' }}
+                            </p>
+                        </div>
+                        <div class="space-y-2">
+                            <span class="font-medium text-green-800 dark:text-green-200">Valid Until:</span>
+                            <p class="text-xl font-bold text-green-900 dark:text-green-100">
+                                {{ tenant?.validUpto ? (tenant?.validUpto | date:'mediumDate') : 'Not Set' }}
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Extend Validity -->
+                <div class="p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded-full">
+                            <mat-icon>schedule</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-100">Extend Validity Period</h3>
+                            <p class="text-sm text-purple-700 dark:text-purple-300">Extend subscription validity</p>
+                        </div>
+                    </div>
+
+                    <form [formGroup]="extendValidityForm" (ngSubmit)="extendValidity()" class="space-y-4">
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Extend by (months)</mat-label>
+                            <input matInput type="number" formControlName="months" min="1" max="36">
+                            <mat-hint>Choose between 1-36 months</mat-hint>
+                        </mat-form-field>
+
+                        <div class="flex justify-end">
+                            <button mat-flat-button
+                                    color="accent"
+                                    type="submit"
+                                    class="px-6 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                                    [disabled]="extendValidityForm.invalid || saving">
+                                <mat-icon *ngIf="!saving" class="mr-2">update</mat-icon>
+                                <mat-spinner *ngIf="saving" diameter="20" class="mr-2"></mat-spinner>
+                                <span>{{ saving ? 'Extending...' : 'Extend' }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Resource Usage Overview -->
+                <div class="p-6 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl border border-orange-200 dark:border-orange-700" *ngIf="tenant">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 rounded-full">
+                            <mat-icon>analytics</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-orange-900 dark:text-orange-100">Resource Usage</h3>
+                            <p class="text-sm text-orange-700 dark:text-orange-300">Current month overview</p>
+                        </div>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium text-orange-800 dark:text-orange-200">API Calls</span>
+                                <span class="text-xs text-orange-600 dark:text-orange-400">
+                                    {{ tenant.currentMonthApiCalls || 0 }} / {{ tenant.maxApiCallsPerMonth || 0 }}
+                                </span>
+                            </div>
+                            <div class="w-full bg-orange-200 dark:bg-orange-800 rounded-full h-2">
+                                <div class="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                                     [style.width.%]="((tenant.currentMonthApiCalls || 0) / (tenant.maxApiCallsPerMonth || 1)) * 100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div>
+                            <div class="flex justify-between items-center mb-1">
+                                <span class="text-sm font-medium text-orange-800 dark:text-orange-200">Storage</span>
+                                <span class="text-xs text-orange-600 dark:text-orange-400">
+                                    {{ tenant.currentDatabaseMB || 0 }}MB / {{ (tenant.maxDatabaseGB || 0) * 1024 }}MB
+                                </span>
+                            </div>
+                            <div class="w-full bg-orange-200 dark:bg-orange-800 rounded-full h-2">
+                                <div class="bg-orange-600 h-2 rounded-full transition-all duration-300"
+                                     [style.width.%]="((tenant.currentDatabaseMB || 0) / ((tenant.maxDatabaseGB || 1) * 1024)) * 100">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button mat-stroked-button
+                                    color="primary"
+                                    [routerLink]="['/tenant', tenantId, 'usage']"
+                                    class="w-full px-4 py-1 rounded-lg transition-all duration-200 text-sm">
+                                <mat-icon class="mr-2 !text-base">analytics</mat-icon>
+                                View Details
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Update Billing Plan (Full Width) -->
+            <div class="px-6 pb-6 pt-2">
+                <div class="p-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-xl border border-blue-200 dark:border-blue-700">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full">
+                            <mat-icon>edit</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100">Update Billing Plan</h3>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">Modify billing settings and payment information</p>
+                        </div>
+                    </div>
+
+                    <form [formGroup]="billingForm" (ngSubmit)="updateBilling()">
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Billing Plan</mat-label>
+                                <mat-select formControlName="billingPlan" (selectionChange)="onPlanChange()">
+                                    <mat-option *ngFor="let plan of billingPlans" [value]="plan.value">
+                                        {{ plan.label }} - {{ plan.price | currency:'USD' }}/month
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Monthly Fee</mat-label>
+                                <input matInput type="number" formControlName="monthlyFee" step="0.01" min="0">
+                                <span matPrefix>$&nbsp;</span>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Currency</mat-label>
+                                <mat-select formControlName="billingCurrency">
+                                    <mat-option *ngFor="let currency of currencies" [value]="currency.value">
+                                        {{ currency.label }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline">
+                                <mat-label>Payment Status</mat-label>
+                                <mat-select formControlName="paymentStatus">
+                                    <mat-option *ngFor="let status of paymentStatuses" [value]="status.value">
+                                        {{ status.label }}
+                                    </mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="mb-6">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Billing Email</mat-label>
+                                <input matInput type="email" formControlName="billingEmail">
+                                <mat-icon matSuffix>email</mat-icon>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="flex justify-end pt-4 border-t border-blue-200 dark:border-blue-700">
+                            <button mat-flat-button
+                                    color="primary"
+                                    type="submit"
+                                    class="px-8 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                                    [disabled]="billingForm.invalid || saving">
+                                <mat-icon *ngIf="!saving" class="mr-2">save</mat-icon>
+                                <mat-spinner *ngIf="saving" diameter="20" class="mr-2"></mat-spinner>
+                                <span>{{ saving ? 'Updating...' : 'Update Billing' }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>

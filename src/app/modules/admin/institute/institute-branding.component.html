@@ -1,0 +1,295 @@
+<div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-purple-50/30 to-pink-50/30 dark:from-gray-900 dark:via-purple-900/20 dark:to-pink-900/20 relative">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5 dark:opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
+    </div>
+    <div class="relative z-10 flex flex-col flex-auto min-w-0">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200">
+                <mat-icon class="text-white">palette</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                    Institute Branding
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    Customize your institute's brand identity and appearance
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button
+                mat-stroked-button
+                (click)="goBack()"
+                class="px-6">
+                <mat-icon class="mr-2">arrow_back</mat-icon>
+                Back to Institutes
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-auto p-4 sm:p-6">
+
+        <!-- Loading -->
+        <div *ngIf="loading" class="flex items-center justify-center p-12">
+            <div class="flex flex-col items-center space-y-4">
+                <div class="w-16 h-16 border-4 border-purple-200 border-t-purple-600 rounded-full animate-spin"></div>
+                <p class="text-gray-600 dark:text-gray-400">Loading branding information...</p>
+            </div>
+        </div>
+
+        <!-- Form -->
+        <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <!-- Row 1: Brand Preview and Visual Assets -->
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 p-6">
+                <!-- Brand Preview -->
+                <div class="p-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded-full">
+                            <mat-icon>preview</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-100">Brand Preview</h3>
+                            <p class="text-sm text-purple-700 dark:text-purple-300">Live brand display</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <!-- Logo Preview -->
+                        <div class="flex items-center justify-center p-4 bg-white dark:bg-gray-800 rounded-lg">
+                            <div class="w-16 h-16 rounded-lg overflow-hidden bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center text-white font-bold text-2xl">
+                                <img *ngIf="brandingForm.get('logoUrl')?.value && isValidUrl(brandingForm.get('logoUrl')?.value)"
+                                     [src]="brandingForm.get('logoUrl')?.value"
+                                     alt="Logo Preview"
+                                     class="w-full h-full object-contain"
+                                     (error)="$event.target.style.display='none'">
+                                <span *ngIf="!brandingForm.get('logoUrl')?.value || !isValidUrl(brandingForm.get('logoUrl')?.value)">
+                                    {{ (brandingForm.get('brandName')?.value || institute?.displayName || institute?.name || 'IN')[0] }}
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Brand Info -->
+                        <div class="text-center">
+                            <div class="font-bold text-lg text-purple-900 dark:text-purple-100">
+                                {{ brandingForm.get('brandName')?.value || institute?.displayName || institute?.name || 'Institute Name' }}
+                            </div>
+                            <div class="text-sm text-purple-700 dark:text-purple-300" *ngIf="brandingForm.get('brandTagline')?.value">
+                                "{{ brandingForm.get('brandTagline')?.value }}"
+                            </div>
+                            <div class="mt-2 px-3 py-1 rounded-full text-xs font-medium"
+                                 [style.background-color]="brandingForm.get('primaryColor')?.value || '#6366f1'"
+                                 [style.color]="'white'">
+                                Primary Theme
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color Scheme -->
+                <div class="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200 dark:border-blue-700">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full">
+                            <mat-icon>color_lens</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100">Color Scheme</h3>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">Brand colors</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <!-- Color Preview -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div class="text-center">
+                                <div class="w-full h-12 rounded-lg border border-gray-200 dark:border-gray-700"
+                                     [style.background-color]="brandingForm.get('primaryColor')?.value || '#6366f1'"></div>
+                                <p class="text-xs mt-1 text-blue-700 dark:text-blue-300">Primary</p>
+                            </div>
+                            <div class="text-center">
+                                <div class="w-full h-12 rounded-lg border border-gray-200 dark:border-gray-700"
+                                     [style.background-color]="brandingForm.get('secondaryColor')?.value || '#ec4899'"></div>
+                                <p class="text-xs mt-1 text-blue-700 dark:text-blue-300">Secondary</p>
+                            </div>
+                        </div>
+                        <!-- Color Values -->
+                        <div class="text-xs space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-blue-700 dark:text-blue-300">Primary:</span>
+                                <span class="text-blue-900 dark:text-blue-100">{{ brandingForm.get('primaryColor')?.value || '#6366f1' }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-blue-700 dark:text-blue-300">Secondary:</span>
+                                <span class="text-blue-900 dark:text-blue-100">{{ brandingForm.get('secondaryColor')?.value || '#ec4899' }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Typography -->
+                <div class="p-6 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-xl border border-green-200 dark:border-green-700">
+                    <div class="flex items-center space-x-3 mb-4">
+                        <div class="flex items-center justify-center w-10 h-10 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full">
+                            <mat-icon>text_fields</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-green-900 dark:text-green-100">Typography</h3>
+                            <p class="text-sm text-green-700 dark:text-green-300">Font styles</p>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                        <!-- Typography Preview -->
+                        <div class="space-y-2">
+                            <div class="text-lg font-bold text-green-900 dark:text-green-100"
+                                 [style.font-family]="brandingForm.get('headingFont')?.value || 'Inter, sans-serif'">
+                                Heading Text
+                            </div>
+                            <div class="text-sm text-green-700 dark:text-green-300"
+                                 [style.font-family]="brandingForm.get('primaryFont')?.value || 'Inter, sans-serif'">
+                                Body text example with current font settings applied to demonstrate the typography choices.
+                            </div>
+                        </div>
+                        <!-- Font Details -->
+                        <div class="text-xs space-y-1">
+                            <div class="flex justify-between">
+                                <span class="text-green-700 dark:text-green-300">Heading:</span>
+                                <span class="text-green-900 dark:text-green-100">{{ headingFontName }}</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-green-700 dark:text-green-300">Body:</span>
+                                <span class="text-green-900 dark:text-green-100">{{ primaryFontName }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Row 2: Branding Configuration (Full Width) -->
+            <div class="px-6 pb-6 pt-2">
+                <div class="p-6 bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 rounded-xl border border-orange-200 dark:border-orange-700">
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="flex items-center justify-center w-10 h-10 bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 rounded-full">
+                            <mat-icon>brush</mat-icon>
+                        </div>
+                        <div>
+                            <h3 class="text-lg font-semibold text-orange-900 dark:text-orange-100">Branding Configuration</h3>
+                            <p class="text-sm text-orange-700 dark:text-orange-300">Complete brand identity setup</p>
+                        </div>
+                    </div>
+
+                    <form [formGroup]="brandingForm" (ngSubmit)="updateBranding()">
+                        <!-- Basic Information Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Brand Name</mat-label>
+                                <input matInput formControlName="brandName" placeholder="Enter brand name">
+                                <mat-icon matSuffix class="text-secondary">business</mat-icon>
+                                <mat-hint>Display name for your institute</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Brand Tagline</mat-label>
+                                <input matInput formControlName="brandTagline" placeholder="Enter a catchy tagline">
+                                <mat-icon matSuffix class="text-secondary">format_quote</mat-icon>
+                                <mat-hint>Short motto or slogan</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Institute</mat-label>
+                                <input matInput [value]="institute?.displayName || institute?.name" readonly>
+                                <mat-icon matSuffix class="text-secondary">school</mat-icon>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Visual Assets Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Logo URL</mat-label>
+                                <input matInput formControlName="logoUrl" type="url" placeholder="https://example.com/logo.png">
+                                <mat-icon matSuffix class="text-secondary">image</mat-icon>
+                                <mat-hint>URL to your institute logo</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Banner URL</mat-label>
+                                <input matInput formControlName="bannerUrl" type="url" placeholder="https://example.com/banner.jpg">
+                                <mat-icon matSuffix class="text-secondary">panorama</mat-icon>
+                                <mat-hint>URL to your institute banner</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Favicon URL</mat-label>
+                                <input matInput formControlName="favicon" type="url" placeholder="https://example.com/favicon.ico">
+                                <mat-icon matSuffix class="text-secondary">tab</mat-icon>
+                                <mat-hint>Small icon for browser tabs</mat-hint>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Colors Row -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Primary Color</mat-label>
+                                <input matInput formControlName="primaryColor" type="color">
+                                <mat-icon matSuffix class="text-secondary">palette</mat-icon>
+                                <mat-hint>Main brand color</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Secondary Color</mat-label>
+                                <input matInput formControlName="secondaryColor" type="color">
+                                <mat-icon matSuffix class="text-secondary">palette</mat-icon>
+                                <mat-hint>Accent color</mat-hint>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Primary Font</mat-label>
+                                <mat-select formControlName="primaryFont">
+                                    <mat-option value="'Inter', sans-serif">Inter</mat-option>
+                                    <mat-option value="'Roboto', sans-serif">Roboto</mat-option>
+                                    <mat-option value="'Poppins', sans-serif">Poppins</mat-option>
+                                    <mat-option value="'Open Sans', sans-serif">Open Sans</mat-option>
+                                </mat-select>
+                                <mat-icon matSuffix>text_fields</mat-icon>
+                            </mat-form-field>
+
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Heading Font</mat-label>
+                                <mat-select formControlName="headingFont">
+                                    <mat-option value="'Inter', sans-serif">Inter</mat-option>
+                                    <mat-option value="'Roboto', sans-serif">Roboto</mat-option>
+                                    <mat-option value="'Poppins', sans-serif">Poppins</mat-option>
+                                    <mat-option value="'Playfair Display', serif">Playfair Display</mat-option>
+                                </mat-select>
+                                <mat-icon matSuffix>title</mat-icon>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Brand Description -->
+                        <div class="mb-8">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Brand Description</mat-label>
+                                <textarea matInput formControlName="brandDescription" placeholder="Describe your institute's mission and values" rows="3"></textarea>
+                                <mat-icon matSuffix class="text-secondary">description</mat-icon>
+                                <mat-hint>Brief description of your institute's mission, vision, and values</mat-hint>
+                            </mat-form-field>
+                        </div>
+
+                        <div class="flex justify-end pt-4 border-t border-orange-200 dark:border-orange-700">
+                            <button mat-flat-button
+                                    color="primary"
+                                    type="submit"
+                                    class="px-8 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                                    [disabled]="brandingForm.invalid || saving">
+                                <mat-icon *ngIf="!saving" class="mr-2">palette</mat-icon>
+                                <mat-spinner *ngIf="saving" diameter="20" class="mr-2"></mat-spinner>
+                                <span>{{ saving ? 'Applying Branding...' : 'Apply Branding' }}</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>
