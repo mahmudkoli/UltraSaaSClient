@@ -1,0 +1,139 @@
+<div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
+    <!-- Background Pattern -->
+    <div class="absolute inset-0 opacity-5 dark:opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
+    </div>
+    <div class="relative z-10 flex flex-col flex-auto min-w-0">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200">
+                <mat-icon class="text-white">calendar_today</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                    {{ getPageTitle() }}
+                </h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                    {{ isEditMode ? 'Update academic year information' : 'Create a new academic year' }}
+                </p>
+            </div>
+        </div>
+        <div class="flex items-center space-x-3">
+            <button
+                mat-stroked-button
+                (click)="cancel()"
+                class="px-6">
+                <mat-icon class="mr-2">arrow_back</mat-icon>
+                Cancel
+            </button>
+        </div>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-auto p-4 sm:p-6">
+        <div class="flex flex-col flex-auto min-w-0">
+            <div class="flex-auto">
+                <form [formGroup]="academicYearForm" (ngSubmit)="save()">
+
+                <!-- Loading Spinner -->
+                <div *ngIf="isLoading" class="flex justify-center items-center py-12">
+                    <mat-spinner diameter="40"></mat-spinner>
+                </div>
+
+                <!-- Form Content -->
+                <div *ngIf="!isLoading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+
+                    <div class="p-6 space-y-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Name -->
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Name</mat-label>
+                                <input matInput formControlName="name" placeholder="e.g. Academic Year 2025-2026" required>
+                                <mat-error *ngIf="academicYearForm.get('name')?.hasError('required')">
+                                    Name is required
+                                </mat-error>
+                                <mat-error *ngIf="academicYearForm.get('name')?.hasError('maxlength')">
+                                    Maximum 100 characters allowed
+                                </mat-error>
+                            </mat-form-field>
+
+                            <!-- Code -->
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Code</mat-label>
+                                <input matInput formControlName="code" placeholder="e.g. AY-2025-26" required>
+                                <mat-error *ngIf="academicYearForm.get('code')?.hasError('required')">
+                                    Code is required
+                                </mat-error>
+                                <mat-error *ngIf="academicYearForm.get('code')?.hasError('maxlength')">
+                                    Maximum 20 characters allowed
+                                </mat-error>
+                            </mat-form-field>
+
+                            <!-- Start Date -->
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Start Date</mat-label>
+                                <input matInput [matDatepicker]="startPicker" formControlName="startDate" required>
+                                <mat-datepicker-toggle matSuffix [for]="startPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #startPicker></mat-datepicker>
+                                <mat-error *ngIf="academicYearForm.get('startDate')?.hasError('required')">
+                                    Start date is required
+                                </mat-error>
+                            </mat-form-field>
+
+                            <!-- End Date -->
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>End Date</mat-label>
+                                <input matInput [matDatepicker]="endPicker" formControlName="endDate" required>
+                                <mat-datepicker-toggle matSuffix [for]="endPicker"></mat-datepicker-toggle>
+                                <mat-datepicker #endPicker></mat-datepicker>
+                                <mat-error *ngIf="academicYearForm.get('endDate')?.hasError('required')">
+                                    End date is required
+                                </mat-error>
+                            </mat-form-field>
+                        </div>
+
+                        <!-- Date Range Error -->
+                        <div *ngIf="academicYearForm.hasError('dateRange') && (academicYearForm.get('startDate')?.touched || academicYearForm.get('endDate')?.touched)"
+                             class="text-sm text-red-600 dark:text-red-400 -mt-2">
+                            End date must be after start date
+                        </div>
+
+                        <!-- Description -->
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Description</mat-label>
+                            <textarea matInput rows="3" formControlName="description" placeholder="Optional description for this academic year"></textarea>
+                            <mat-error *ngIf="academicYearForm.get('description')?.hasError('maxlength')">
+                                Maximum 500 characters allowed
+                            </mat-error>
+                        </mat-form-field>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+                        <button
+                            type="button"
+                            mat-stroked-button
+                            class="w-full sm:w-auto h-12 px-6 rounded-lg border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
+                            (click)="cancel()">
+                            <mat-icon class="icon-size-5 mr-2">close</mat-icon>
+                            <span>Cancel</span>
+                        </button>
+                        <button
+                            type="submit"
+                            mat-flat-button
+                            color="primary"
+                            class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
+                            [disabled]="academicYearForm.invalid || isSaving">
+                            <mat-icon class="icon-size-5 mr-2">check</mat-icon>
+                            <span>{{ getSaveButtonText() }}</span>
+                        </button>
+                    </div>
+                </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    </div>
+</div>

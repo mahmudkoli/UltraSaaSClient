@@ -11,11 +11,13 @@ import { takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
 
 // Services
+import { DashboardService } from '../../../core/dashboard/dashboard.service';
 import { StudentAcademicsService } from '../../../core/student-academics/student-academics.service';
 import { StudentHealthService } from '../../../core/student-health/student-health.service';
 import { TeacherQualificationsService } from '../../../core/teacher-qualifications/teacher-qualifications.service';
 
 // Types
+import { StatsDto } from '../../../core/dashboard/dashboard.types';
 import { AcademicAnalytics } from '../../../core/student-academics/student-academics.types';
 import { HealthAnalytics } from '../../../core/student-health/student-health.types';
 import { QualificationAnalytics } from '../../../core/teacher-qualifications/teacher-qualifications.types';
@@ -62,6 +64,86 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
                 </div>
 
                 <div *ngIf="!isLoading" class="space-y-8">
+                    <!-- Overview Stats -->
+                    <div *ngIf="stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Students</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.studentCount }}</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
+                                    <mat-icon class="text-white">school</mat-icon>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Teachers</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.teacherCount }}</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
+                                    <mat-icon class="text-white">person</mat-icon>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.userCount }}</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
+                                    <mat-icon class="text-white">group</mat-icon>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Roles</p>
+                                    <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.roleCount }}</p>
+                                </div>
+                                <div class="w-12 h-12 bg-gradient-to-br from-orange-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg">
+                                    <mat-icon class="text-white">admin_panel_settings</mat-icon>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trend -->
+                    <div *ngIf="stats?.dataEnterBarChart?.length" class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <div class="bg-gradient-to-r from-gray-700 to-gray-900 px-6 py-4">
+                            <h3 class="text-xl font-bold text-white flex items-center">
+                                <mat-icon class="mr-2">bar_chart</mat-icon>
+                                Monthly Registration Trend ({{ currentYear }})
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div class="grid grid-cols-12 gap-2 items-end h-48">
+                                <div *ngFor="let month of months; let i = index" class="flex flex-col items-center gap-1">
+                                    <div class="flex gap-1 items-end w-full justify-center" style="min-height: 120px;">
+                                        <div *ngFor="let series of stats.dataEnterBarChart; let si = index"
+                                            class="rounded-t-sm transition-all duration-300"
+                                            [class]="si === 0 ? 'bg-blue-500' : 'bg-green-500'"
+                                            [style.height.px]="getBarHeight(series.data[i])"
+                                            [style.width.px]="12"
+                                            [matTooltip]="series.name + ': ' + series.data[i]">
+                                        </div>
+                                    </div>
+                                    <span class="text-xs text-gray-500 dark:text-gray-400">{{ month }}</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center justify-center gap-6 mt-4">
+                                <div *ngFor="let series of stats.dataEnterBarChart; let si = index" class="flex items-center gap-2">
+                                    <div class="w-3 h-3 rounded-sm" [class]="si === 0 ? 'bg-blue-500' : 'bg-green-500'"></div>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">{{ series.name }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Academic Analytics -->
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
                         <div class="bg-gradient-to-r from-blue-500 to-purple-600 px-6 py-4">
@@ -300,14 +382,19 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
     ],
 })
 export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
+    stats: StatsDto | null = null;
     academicAnalytics: AcademicAnalytics | null = null;
     healthAnalytics: HealthAnalytics | null = null;
     qualificationAnalytics: QualificationAnalytics | null = null;
     isLoading = false;
 
+    months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    currentYear = new Date().getFullYear();
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
+        private _dashboardService: DashboardService,
         private _studentAcademicsService: StudentAcademicsService,
         private _studentHealthService: StudentHealthService,
         private _teacherQualificationsService: TeacherQualificationsService,
@@ -328,16 +415,18 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
         this._changeDetectorRef.markForCheck();
 
         forkJoin({
+            stats: this._dashboardService.getStats(),
             academic: this._studentAcademicsService.getAnalytics(),
             health: this._studentHealthService.getAnalytics(),
             qualifications: this._teacherQualificationsService.getAnalytics()
         })
         .pipe(takeUntil(this._unsubscribeAll))
         .subscribe({
-            next: (analytics) => {
-                this.academicAnalytics = analytics.academic;
-                this.healthAnalytics = analytics.health;
-                this.qualificationAnalytics = analytics.qualifications;
+            next: (result) => {
+                this.stats = result.stats;
+                this.academicAnalytics = result.academic;
+                this.healthAnalytics = result.health;
+                this.qualificationAnalytics = result.qualifications;
                 this.isLoading = false;
                 this._changeDetectorRef.markForCheck();
             },
@@ -357,6 +446,13 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
     getPercentage(count: number, total: number): string {
         if (total === 0) return '0';
         return `${((count / total) * 100).toFixed(1)}`;
+    }
+
+    getBarHeight(value: number): number {
+        if (!this.stats?.dataEnterBarChart?.length) return 0;
+        const allValues = this.stats.dataEnterBarChart.flatMap(s => s.data || []);
+        const max = Math.max(...allValues, 1);
+        return Math.max((value / max) * 100, 2);
     }
 
     getHonorStudentsCount(): number {

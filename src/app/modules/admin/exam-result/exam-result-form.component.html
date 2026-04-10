@@ -1,0 +1,116 @@
+<div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
+    <div class="absolute inset-0 opacity-5 dark:opacity-10">
+        <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
+    </div>
+    <div class="relative z-10 flex flex-col flex-auto min-w-0">
+
+    <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
+                <mat-icon class="text-white">grading</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ getPageTitle() }}</h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ isEditMode ? 'Update exam result' : 'Record student exam result' }}</p>
+            </div>
+        </div>
+        <button mat-stroked-button (click)="cancel()" class="px-6"><mat-icon class="mr-2">arrow_back</mat-icon> Cancel</button>
+    </div>
+
+    <div class="flex-auto p-4 sm:p-6">
+        <form [formGroup]="form" (ngSubmit)="save()">
+            <div *ngIf="isLoading" class="flex justify-center items-center py-12"><mat-spinner diameter="40"></mat-spinner></div>
+            <div *ngIf="!isLoading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="p-6 space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Student</mat-label>
+                            <mat-select formControlName="studentId" required>
+                                <mat-option *ngFor="let s of students" [value]="s.id">{{ getStudentDisplayName(s) }}</mat-option>
+                            </mat-select>
+                            <mat-error>Student is required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Exam</mat-label>
+                            <mat-select formControlName="examId" required>
+                                <mat-option *ngFor="let e of exams" [value]="e.id">{{ e.name }}</mat-option>
+                            </mat-select>
+                            <mat-error>Exam is required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Subject</mat-label>
+                            <mat-select formControlName="subjectId" required>
+                                <mat-option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</mat-option>
+                            </mat-select>
+                            <mat-error>Subject is required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Class</mat-label>
+                            <mat-select formControlName="classId" required>
+                                <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }}</mat-option>
+                            </mat-select>
+                            <mat-error>Class is required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Exam Type</mat-label>
+                            <mat-select formControlName="examType" required>
+                                <mat-option *ngFor="let t of examTypeOptions" [value]="t.value">{{ t.label }}</mat-option>
+                            </mat-select>
+                            <mat-error>Exam type is required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Exam Date</mat-label>
+                            <input matInput [matDatepicker]="datePicker" formControlName="examDate">
+                            <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                            <mat-datepicker #datePicker></mat-datepicker>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Marks Obtained</mat-label>
+                            <input matInput type="number" formControlName="marksObtained" min="0">
+                            <mat-error>Marks obtained is required</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Total Marks</mat-label>
+                            <input matInput type="number" formControlName="totalMarks" min="1">
+                            <mat-error>Total marks must be greater than 0</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Evaluated By</mat-label>
+                            <input matInput formControlName="evaluatedBy" placeholder="Evaluator name">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="flex items-center space-x-4">
+                        <mat-checkbox formControlName="isAbsent" color="warn">Student was absent</mat-checkbox>
+                    </div>
+
+                    <div *ngIf="form.get('isAbsent')?.value" class="grid grid-cols-1 gap-6">
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Absent Reason</mat-label>
+                            <textarea matInput rows="2" formControlName="absentReason" placeholder="Reason for absence" maxlength="500"></textarea>
+                        </mat-form-field>
+                    </div>
+
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Remarks</mat-label>
+                        <textarea matInput rows="2" formControlName="remarks" placeholder="Optional remarks" maxlength="500"></textarea>
+                    </mat-form-field>
+                </div>
+
+                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end p-6 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" mat-stroked-button class="w-full sm:w-auto h-12 px-6 rounded-lg" (click)="cancel()"><mat-icon class="icon-size-5 mr-2">close</mat-icon> Cancel</button>
+                    <button type="submit" mat-flat-button color="primary" class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm" [disabled]="form.invalid || isSaving"><mat-icon class="icon-size-5 mr-2">check</mat-icon> {{ getSaveButtonText() }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    </div>
+</div>
