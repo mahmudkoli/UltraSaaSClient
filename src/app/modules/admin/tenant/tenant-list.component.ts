@@ -357,6 +357,10 @@ export class TenantListComponent implements OnInit {
         this._router.navigate([`/tenant/${tenant.id}/usage`]);
     }
 
+    manageTheme(): void {
+        this._router.navigate(['/tenant/theme-settings']);
+    }
+
     extendValidity(tenant: TenantDto): void {
         this._router.navigate([`/tenant/${tenant.id}/billing`]);
     }

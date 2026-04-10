@@ -39,6 +39,10 @@ export default [
             {
                 path: ':id/usage',
                 loadComponent: () => import('./tenant-usage.component').then(m => m.TenantUsageComponent)
+            },
+            {
+                path: 'theme-settings',
+                loadComponent: () => import('./tenant-theme-settings.component').then(m => m.TenantThemeSettingsComponent)
             }
         ]
     }

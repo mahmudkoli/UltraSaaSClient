@@ -11,6 +11,8 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertComponent, FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
+import { TenantService } from 'app/core/tenant/tenant.service';
+import { TenantThemeService } from 'app/core/tenant/tenant-theme.service';
 
 @Component({
     selector     : 'auth-sign-in',
@@ -31,62 +33,70 @@ export class AuthSignInComponent implements OnInit
     signInForm: UntypedFormGroup;
     showAlert: boolean = false;
 
-    /**
-     * Constructor
-     */
+    // Tenant UX state
+    showTenantField: boolean = true;
+    resolvedTenantName: string | null = null;
+
     constructor(
         private _activatedRoute: ActivatedRoute,
         private _authService: AuthService,
         private _formBuilder: UntypedFormBuilder,
         private _router: Router,
+        private _tenantService: TenantService,
+        private _tenantThemeService: TenantThemeService,
     )
     {
     }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Lifecycle hooks
-    // -----------------------------------------------------------------------------------------------------
-
-    /**
-     * On init
-     */
     ngOnInit(): void
     {
-        // Create the form
+        // Resolve tenant automatically
+        const autoTenant = this._tenantService.resolve();
+        this.showTenantField = this._tenantService.showTenantField;
+        this.resolvedTenantName = autoTenant;
+
         this.signInForm = this._formBuilder.group({
-            tenant    : ['default', [Validators.required]], // Default tenant for testing
-            email     : ['admin@example.com', [Validators.required, Validators.email]],
-            password  : ['Admin123!', Validators.required],
+            tenant    : [autoTenant || 'root', [Validators.required]],
+            email     : ['admin@root.com', [Validators.required, Validators.email]],
+            password  : ['123Pa$$word!', Validators.required],
             rememberMe: [''],
         });
+
+        // Load and apply tenant theme (cached first, then API)
+        if (autoTenant) {
+            this._tenantThemeService.loadAndApply();
+        }
     }
 
-    // -----------------------------------------------------------------------------------------------------
-    // @ Public methods
-    // -----------------------------------------------------------------------------------------------------
+    /**
+     * Show the tenant field (when user clicks "Switch organization")
+     */
+    switchTenant(): void
+    {
+        this._tenantService.clear();
+        this.showTenantField = true;
+        this.resolvedTenantName = null;
+        this.signInForm.get('tenant').setValue('');
+    }
 
     /**
      * Sign in
      */
     signIn(): void
     {
-        // Return if the form is invalid
-        if ( this.signInForm.invalid )
+        if (this.signInForm.invalid)
         {
             return;
         }
 
-        // Disable the form
         this.signInForm.disable();
-
-        // Hide the alert
         this.showAlert = false;
 
-        // Store tenant ID for future requests
+        // Store tenant ID
         const tenantId = this.signInForm.get('tenant').value;
+        this._tenantService.save(tenantId);
         this._authService.setTenantId(tenantId);
 
-        // Store remember me preference
         const rememberMe = this.signInForm.get('rememberMe').value;
         if (rememberMe) {
             localStorage.setItem('remember_me', 'true');
@@ -94,43 +104,25 @@ export class AuthSignInComponent implements OnInit
             localStorage.removeItem('remember_me');
         }
 
-        // Prepare login request
         const loginRequest = {
             email: this.signInForm.get('email').value,
             password: this.signInForm.get('password').value
         };
 
-        // Sign in using the new API
         this._authService.login(loginRequest)
             .subscribe({
-                next: (response) => {
-                    console.log('Login successful:', response);
-                    
-                    // Set the redirect url.
-                    // The '/signed-in-redirect' is a dummy url to catch the request and redirect the user
-                    // to the correct page after a successful sign in. This way, that url can be set via
-                    // routing file and we don't have to touch here.
+                next: () => {
                     const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
-
-                    // Navigate to the redirect url
                     this._router.navigateByUrl(redirectURL);
                 },
                 error: (error) => {
-                    console.error('Login failed:', error);
-                    
-                    // Re-enable the form
                     this.signInForm.enable();
-
-                    // Reset the form
                     this.signInNgForm.resetForm();
 
-                    // Set the alert
                     this.alert = {
                         type   : 'error',
                         message: error.message || 'Wrong email or password',
                     };
-
-                    // Show the alert
                     this.showAlert = true;
                 }
             });

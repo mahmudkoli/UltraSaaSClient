@@ -6,7 +6,8 @@ import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { FusePlatformService } from '@fuse/services/platform';
 import { FUSE_VERSION } from '@fuse/version';
 import { combineLatest, filter, map, Subject, takeUntil } from 'rxjs';
-import { SettingsComponent } from './common/settings/settings.component';
+import { TenantThemeService } from 'app/core/tenant/tenant-theme.service';
+
 import { EmptyLayoutComponent } from './layouts/empty/empty.component';
 import { CenteredLayoutComponent } from './layouts/horizontal/centered/centered.component';
 import { EnterpriseLayoutComponent } from './layouts/horizontal/enterprise/enterprise.component';
@@ -25,7 +26,7 @@ import { ThinLayoutComponent } from './layouts/vertical/thin/thin.component';
     styleUrls    : ['./layout.component.scss'],
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [NgIf, EmptyLayoutComponent, CenteredLayoutComponent, EnterpriseLayoutComponent, MaterialLayoutComponent, ModernLayoutComponent, ClassicLayoutComponent, ClassyLayoutComponent, CompactLayoutComponent, DenseLayoutComponent, FuturisticLayoutComponent, ThinLayoutComponent, SettingsComponent],
+    imports      : [NgIf, EmptyLayoutComponent, CenteredLayoutComponent, EnterpriseLayoutComponent, MaterialLayoutComponent, ModernLayoutComponent, ClassicLayoutComponent, ClassyLayoutComponent, CompactLayoutComponent, DenseLayoutComponent, FuturisticLayoutComponent, ThinLayoutComponent],
 })
 export class LayoutComponent implements OnInit, OnDestroy
 {
@@ -46,6 +47,7 @@ export class LayoutComponent implements OnInit, OnDestroy
         private _fuseConfigService: FuseConfigService,
         private _fuseMediaWatcherService: FuseMediaWatcherService,
         private _fusePlatformService: FusePlatformService,
+        private _tenantThemeService: TenantThemeService,
     )
     {
     }
@@ -59,6 +61,9 @@ export class LayoutComponent implements OnInit, OnDestroy
      */
     ngOnInit(): void
     {
+        // Load and apply tenant theme
+        this._tenantThemeService.loadAndApply();
+
         // Set the theme and scheme based on the configuration
         combineLatest([
             this._fuseConfigService.config$,

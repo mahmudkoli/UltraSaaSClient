@@ -1,6 +1,7 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { AuthService } from 'app/core/auth/auth.service';
+import { TenantService } from 'app/core/tenant/tenant.service';
 import { catchError, Observable, throwError, switchMap } from 'rxjs';
 
 /**
@@ -12,15 +13,16 @@ import { catchError, Observable, throwError, switchMap } from 'rxjs';
 export const authInterceptor = (req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> =>
 {
     const authService = inject(AuthService);
+    const tenantService = inject(TenantService);
 
     // Skip interceptor for authentication endpoints
     if (req.url.includes('/api/tokens')) {
         return next(req);
     }
 
-    // Get the token and tenant from localStorage
+    // Get the token and resolve tenant (subdomain or localStorage)
     const token = localStorage.getItem('access_token');
-    const tenantId = localStorage.getItem('tenant_id');
+    const tenantId = tenantService.resolve();
 
     // Clone the request and add headers
     let newReq = req.clone();

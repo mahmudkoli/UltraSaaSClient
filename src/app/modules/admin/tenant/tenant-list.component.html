@@ -211,6 +211,15 @@
                                             <mat-icon class="icon-size-5">analytics</mat-icon>
                                         </button>
 
+                                        <!-- Theme Settings Button -->
+                                        <button
+                                            mat-icon-button
+                                            (click)="manageTheme()"
+                                            class="text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-all duration-200 rounded-full"
+                                            matTooltip="Theme Settings">
+                                            <mat-icon class="icon-size-5">palette</mat-icon>
+                                        </button>
+
                                         <!-- More Options Button -->
                                         <button
                                             mat-icon-button
@@ -239,6 +248,10 @@
                                             <button mat-menu-item (click)="viewUsage(tenant)" class="hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-green-600 dark:text-green-400">analytics</mat-icon>
                                                 <span class="ml-2">View Usage</span>
+                                            </button>
+                                            <button mat-menu-item (click)="manageTheme()" class="hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-pink-600 dark:text-pink-400">palette</mat-icon>
+                                                <span class="ml-2">Theme Settings</span>
                                             </button>
                                             <mat-divider></mat-divider>
                                         </mat-menu>

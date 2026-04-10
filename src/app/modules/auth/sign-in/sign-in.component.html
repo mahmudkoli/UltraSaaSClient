@@ -8,22 +8,9 @@
 
             <!-- Title -->
             <div class="mt-8 text-4xl font-extrabold tracking-tight leading-tight">Sign in</div>
-            <div class="flex items-baseline mt-0.5 font-medium">
-                <div>Don't have an account?</div>
-                <a
-                    class="ml-1 text-primary-500 hover:underline"
-                    [routerLink]="['/sign-up']">Sign up
-                </a>
+            <div class="mt-0.5 font-medium text-secondary">
+                Access your institution dashboard
             </div>
-
-            <!-- Alert -->
-            <fuse-alert
-                class="mt-8"
-                [appearance]="'outline'"
-                [showIcon]="false"
-                [type]="'info'">
-                You are browsing <strong>Fuse Demo</strong>. Click on the "Sign in" button to access the Demo and Documentation.
-            </fuse-alert>
 
             <!-- Alert -->
             <fuse-alert
@@ -42,19 +29,28 @@
                 [formGroup]="signInForm"
                 #signInNgForm="ngForm">
 
-                <!-- Tenant field -->
-                <mat-form-field class="w-full">
-                    <mat-label>Tenant ID</mat-label>
+                <!-- Tenant field (visible) -->
+                <mat-form-field class="w-full" *ngIf="showTenantField">
+                    <mat-label>Organization ID</mat-label>
                     <input
                         id="tenant"
                         matInput
                         [formControlName]="'tenant'"
-                        placeholder="Enter your tenant ID (e.g., default)">
-                    <mat-hint>Enter your organization's tenant identifier</mat-hint>
+                        placeholder="e.g., greenwood">
+                    <mat-hint>Your organization's unique identifier</mat-hint>
                     <mat-error *ngIf="signInForm.get('tenant').hasError('required')">
-                        Tenant ID is required
+                        Organization ID is required
                     </mat-error>
                 </mat-form-field>
+
+                <!-- Tenant resolved (hidden field, show badge) -->
+                <div *ngIf="!showTenantField" class="flex items-center justify-between mb-4 px-3 py-2 bg-primary-50 dark:bg-primary-900/20 rounded-lg border border-primary-200 dark:border-primary-800">
+                    <div class="flex items-center space-x-2">
+                        <mat-icon class="text-primary-500 icon-size-5" [svgIcon]="'heroicons_outline:building-office'"></mat-icon>
+                        <span class="text-sm font-medium text-primary-700 dark:text-primary-300">{{ resolvedTenantName }}</span>
+                    </div>
+                    <a class="text-xs text-primary-500 hover:underline cursor-pointer" (click)="switchTenant()">Switch</a>
+                </div>
 
                 <!-- Email field -->
                 <mat-form-field class="w-full">
@@ -129,40 +125,6 @@
                         [mode]="'indeterminate'"></mat-progress-spinner>
                 </button>
 
-                <!-- Separator -->
-                <div class="flex items-center mt-8">
-                    <div class="flex-auto mt-px border-t"></div>
-                    <div class="mx-2 text-secondary">Or continue with</div>
-                    <div class="flex-auto mt-px border-t"></div>
-                </div>
-
-                <!-- Single sign-on buttons -->
-                <div class="flex items-center mt-8 space-x-4">
-                    <button
-                        class="flex-auto"
-                        type="button"
-                        mat-stroked-button>
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'feather:facebook'"></mat-icon>
-                    </button>
-                    <button
-                        class="flex-auto"
-                        type="button"
-                        mat-stroked-button>
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'feather:twitter'"></mat-icon>
-                    </button>
-                    <button
-                        class="flex-auto"
-                        type="button"
-                        mat-stroked-button>
-                        <mat-icon
-                            class="icon-size-5"
-                            [svgIcon]="'feather:github'"></mat-icon>
-                    </button>
-                </div>
             </form>
         </div>
     </div>
@@ -190,29 +152,29 @@
         <!-- Content -->
         <div class="z-10 relative w-full max-w-2xl">
             <div class="text-7xl font-bold leading-none text-gray-100">
-                <div>Welcome to</div>
-                <div>our community</div>
+                <div>UltraSaaS</div>
+                <div class="text-primary-400">EduManage</div>
             </div>
             <div class="mt-6 text-lg tracking-tight leading-6 text-gray-400">
-                Fuse helps developers to build organized and well coded dashboards full of beautiful and rich modules.
-                Join us and start building your application today.
+                Complete institution management platform. Manage students, teachers, academics, attendance, exams, fees, and more — all in one place.
             </div>
-            <div class="flex items-center mt-8">
-                <div class="flex flex-0 items-center -space-x-1.5">
-                    <img
-                        class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
-                        src="assets/images/avatars/female-18.jpg">
-                    <img
-                        class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
-                        src="assets/images/avatars/female-11.jpg">
-                    <img
-                        class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
-                        src="assets/images/avatars/male-09.jpg">
-                    <img
-                        class="flex-0 w-10 h-10 rounded-full ring-4 ring-offset-1 ring-gray-800 ring-offset-gray-800 object-cover"
-                        src="assets/images/avatars/male-16.jpg">
+            <div class="flex flex-col mt-8 space-y-4">
+                <div class="flex items-center space-x-3">
+                    <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:academic-cap'"></mat-icon>
+                    <span class="text-gray-300">Student & Teacher Management</span>
                 </div>
-                <div class="ml-4 font-medium tracking-tight text-gray-400">More than 17k people joined us, it's your turn</div>
+                <div class="flex items-center space-x-3">
+                    <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:clipboard-document-check'"></mat-icon>
+                    <span class="text-gray-300">Attendance, Exams & Results</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
+                    <span class="text-gray-300">Fee Management & Invoicing</span>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
+                    <span class="text-gray-300">Analytics & Dashboard</span>
+                </div>
             </div>
         </div>
     </div>
