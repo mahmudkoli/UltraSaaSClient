@@ -139,6 +139,20 @@
                                 </td>
                             </ng-container>
 
+                            <!-- Theme Column -->
+                            <ng-container matColumnDef="theme">
+                                <th mat-header-cell *matHeaderCellDef>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Theme</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let tenant">
+                                    <div class="flex items-center space-x-2">
+                                        <span class="text-sm text-gray-900 dark:text-white capitalize">{{ getThemeLabel(tenant) }}</span>
+                                    </div>
+                                </td>
+                            </ng-container>
+
                             <!-- Valid Until Column -->
                             <ng-container matColumnDef="validUpto">
                                 <th mat-header-cell *matHeaderCellDef mat-sort-header>
@@ -214,7 +228,7 @@
                                         <!-- Theme Settings Button -->
                                         <button
                                             mat-icon-button
-                                            (click)="manageTheme()"
+                                            (click)="manageTheme(tenant)"
                                             class="text-pink-600 dark:text-pink-400 hover:text-pink-700 dark:hover:text-pink-300 hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-all duration-200 rounded-full"
                                             matTooltip="Theme Settings">
                                             <mat-icon class="icon-size-5">palette</mat-icon>
@@ -249,7 +263,7 @@
                                                 <mat-icon class="icon-size-5 text-green-600 dark:text-green-400">analytics</mat-icon>
                                                 <span class="ml-2">View Usage</span>
                                             </button>
-                                            <button mat-menu-item (click)="manageTheme()" class="hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors duration-200">
+                                            <button mat-menu-item (click)="manageTheme(tenant)" class="hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-pink-600 dark:text-pink-400">palette</mat-icon>
                                                 <span class="ml-2">Theme Settings</span>
                                             </button>

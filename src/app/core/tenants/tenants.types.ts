@@ -80,6 +80,9 @@ export interface TenantDto {
     isExpiringSoon: boolean;
     hasExpired: boolean;
 
+    // ============= THEME =============
+    themeConfig?: string;
+
     // ============= BACKWARD COMPATIBILITY =============
     /** @deprecated Use systemName instead */
     name?: string;

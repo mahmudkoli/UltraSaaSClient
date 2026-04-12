@@ -112,6 +112,9 @@ export class AuthSignInComponent implements OnInit
         this._authService.login(loginRequest)
             .subscribe({
                 next: () => {
+                    // Apply tenant theme after successful login
+                    this._tenantThemeService.loadAndApply();
+
                     const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
                     this._router.navigateByUrl(redirectURL);
                 },

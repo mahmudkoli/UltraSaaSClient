@@ -7,7 +7,7 @@
             </div>
             <div>
                 <h2 class="text-2xl font-bold tracking-tight">Theme Settings</h2>
-                <p class="text-sm text-secondary">Configure the appearance for all users in this tenant</p>
+                <p class="text-sm text-secondary">Configure the appearance for tenant: <strong>{{ tenantId }}</strong></p>
             </div>
         </div>
         <div class="flex items-center space-x-3">
@@ -19,12 +19,32 @@
                 <mat-icon [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
                 <span class="ml-2">Reset to Default</span>
             </button>
+
+            <!-- Preview / Back to Current toggle -->
+            <button *ngIf="!isPreviewing" mat-stroked-button color="accent" (click)="preview()">
+                <mat-icon>visibility</mat-icon>
+                <span class="ml-2">Preview</span>
+            </button>
+            <button *ngIf="isPreviewing" mat-stroked-button (click)="backToCurrent()">
+                <mat-icon>undo</mat-icon>
+                <span class="ml-2">Back to Current</span>
+            </button>
+
             <button mat-flat-button color="primary" (click)="save()" [disabled]="isSaving">
                 <mat-icon *ngIf="!isSaving" [svgIcon]="'heroicons_outline:check'"></mat-icon>
                 <mat-progress-spinner *ngIf="isSaving" [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
                 <span class="ml-2">Save</span>
             </button>
         </div>
+    </div>
+
+    <!-- Preview banner -->
+    <div *ngIf="isPreviewing" class="flex items-center justify-center gap-3 px-4 py-2 bg-amber-100 dark:bg-amber-900/40 text-amber-800 dark:text-amber-200 text-sm font-medium">
+        <mat-icon class="icon-size-5">visibility</mat-icon>
+        <span>Previewing theme for <strong>{{ tenantId }}</strong> &mdash; this is temporary</span>
+        <button mat-stroked-button class="ml-2 h-7 min-h-7 text-xs" (click)="backToCurrent()">
+            Back to Current
+        </button>
     </div>
 
     <!-- Content -->

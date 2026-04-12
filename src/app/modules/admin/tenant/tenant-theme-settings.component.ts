@@ -1,13 +1,13 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { FuseAlertComponent } from '@fuse/components/alert';
 import { FuseConfigService } from '@fuse/services/config';
+import { take } from 'rxjs';
 import { TenantThemeService, ThemeConfig } from 'app/core/tenant/tenant-theme.service';
-import { TenantService } from 'app/core/tenant/tenant.service';
 import { NotificationService } from 'app/core/services/notification.service';
 
 @Component({
@@ -24,12 +24,16 @@ import { NotificationService } from 'app/core/services/notification.service';
         FuseAlertComponent,
     ],
 })
-export class TenantThemeSettingsComponent implements OnInit {
+export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
+    tenantId: string = '';
     selectedScheme: string = 'light';
     selectedTheme: string = 'theme-default';
     selectedLayout: string = 'classy';
     isSaving = false;
     showSuccess = false;
+    isPreviewing = false;
+
+    private originalConfig: { scheme: string; theme: string; layout: string } | null = null;
 
     themes = [
         { id: 'theme-default', name: 'Default' },
@@ -53,40 +57,119 @@ export class TenantThemeSettingsComponent implements OnInit {
 
     constructor(
         private tenantThemeService: TenantThemeService,
-        private tenantService: TenantService,
         private fuseConfigService: FuseConfigService,
         private notificationService: NotificationService,
         private router: Router,
+        private route: ActivatedRoute,
     ) {}
 
     ngOnInit(): void {
-        const current = this.tenantThemeService.getCurrentTheme();
-        this.selectedScheme = current.scheme;
-        this.selectedTheme = current.theme;
-        this.selectedLayout = current.layout;
+        // Resuming after layout-triggered destroy/recreate?
+        const ps = this.tenantThemeService.previewState;
+        if (ps) {
+            this.tenantId = ps.tenantId;
+            this.originalConfig = ps.original;
+            this.selectedScheme = ps.selected.scheme;
+            this.selectedTheme = ps.selected.theme;
+            this.selectedLayout = ps.selected.layout;
+            this.isPreviewing = ps.isPreviewing;
+            this.tenantThemeService.clearPreviewState();
+            return;
+        }
+
+        // Normal init: snapshot current config
+        this.fuseConfigService.config$.pipe(take(1)).subscribe(cfg => {
+            this.originalConfig = {
+                scheme: cfg?.scheme || 'light',
+                theme: cfg?.theme || 'theme-default',
+                layout: cfg?.layout || 'classy',
+            };
+        });
+
+        this.tenantId = this.route.snapshot.paramMap.get('id') || '';
+        if (!this.tenantId) {
+            this.notificationService.error('No tenant ID provided');
+            this.router.navigate(['/tenant']);
+            return;
+        }
+
+        // Load saved theme for the target tenant
+        this.tenantThemeService.fetchTheme(this.tenantId).subscribe(result => {
+            console.log('[ThemeSettings] fetchTheme result:', result);
+            if (result) {
+                const config = typeof result === 'string' ? JSON.parse(result as string) : result;
+                this.selectedScheme = config.scheme || 'light';
+                this.selectedTheme = config.theme || 'theme-default';
+                this.selectedLayout = config.layout || 'classy';
+            }
+        });
+    }
+
+    ngOnDestroy(): void {
+        // If service holds state, a layout switch is in progress — don't restore
+        if (this.tenantThemeService.previewState) {
+            return;
+        }
+        // Actually leaving the page — restore original
+        if (this.originalConfig) {
+            this.fuseConfigService.config = {
+                scheme: this.originalConfig.scheme,
+                theme: this.originalConfig.theme,
+                layout: this.originalConfig.layout,
+            };
+        }
     }
 
     selectScheme(scheme: string): void {
         this.selectedScheme = scheme;
-        this.applyPreview();
     }
 
     selectTheme(theme: string): void {
         this.selectedTheme = theme;
-        this.applyPreview();
     }
 
     selectLayout(layout: string): void {
         this.selectedLayout = layout;
-        this.applyPreview();
+    }
+
+    preview(): void {
+        this.isPreviewing = true;
+        // Persist state so it survives the layout-triggered component recreate
+        this.tenantThemeService.setPreviewState(
+            this.tenantId,
+            { scheme: this.selectedScheme as any, theme: this.selectedTheme, layout: this.selectedLayout },
+            this.originalConfig!,
+            true,
+        );
+        this.fuseConfigService.config = {
+            scheme: this.selectedScheme,
+            theme: this.selectedTheme,
+            layout: this.selectedLayout,
+        };
+    }
+
+    backToCurrent(): void {
+        this.isPreviewing = false;
+        // Persist selections (not previewing) so they survive the layout restore recreate
+        this.tenantThemeService.setPreviewState(
+            this.tenantId,
+            { scheme: this.selectedScheme as any, theme: this.selectedTheme, layout: this.selectedLayout },
+            this.originalConfig!,
+            false,
+        );
+        this.fuseConfigService.config = {
+            scheme: this.originalConfig!.scheme,
+            theme: this.originalConfig!.theme,
+            layout: this.originalConfig!.layout,
+        };
     }
 
     save(): void {
-        const tenantId = this.tenantService.resolve();
-        if (!tenantId) return;
+        if (!this.tenantId) return;
 
         this.isSaving = true;
         this.showSuccess = false;
+        this.tenantThemeService.clearPreviewState();
 
         const config: ThemeConfig = {
             scheme: this.selectedScheme as any,
@@ -94,7 +177,7 @@ export class TenantThemeSettingsComponent implements OnInit {
             layout: this.selectedLayout,
         };
 
-        this.tenantThemeService.saveTheme(tenantId, config).subscribe({
+        this.tenantThemeService.saveTheme(this.tenantId, config).subscribe({
             next: () => {
                 this.isSaving = false;
                 this.notificationService.success('Theme settings saved successfully');
@@ -111,14 +194,8 @@ export class TenantThemeSettingsComponent implements OnInit {
         this.selectedScheme = 'light';
         this.selectedTheme = 'theme-default';
         this.selectedLayout = 'classy';
-        this.applyPreview();
-    }
-
-    private applyPreview(): void {
-        this.fuseConfigService.config = {
-            scheme: this.selectedScheme,
-            theme: this.selectedTheme,
-            layout: this.selectedLayout,
-        };
+        if (this.isPreviewing) {
+            this.backToCurrent();
+        }
     }
 }

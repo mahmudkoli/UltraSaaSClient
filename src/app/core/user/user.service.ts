@@ -68,24 +68,16 @@ export class UserService
             try {
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 const user: User = {
-                    id: payload.sub || payload.nameid,
-                    name: payload.name || payload.given_name + ' ' + payload.family_name,
-                    email: payload.email,
-                    avatar: payload.picture || null,
+                    id: payload.sub || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/nameidentifier'],
+                    name: payload.fullName || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/name'] || 'User',
+                    email: payload.email || payload['http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress'],
+                    avatar: payload.image_url || null,
                     status: 'online'
                 };
                 this._user.next(user);
             } catch (error) {
                 console.error('Error parsing token:', error);
-                // Set a default user if token parsing fails
-                const defaultUser: User = {
-                    id: 'default',
-                    name: 'User',
-                    email: 'user@example.com',
-                    avatar: null,
-                    status: 'online'
-                };
-                this._user.next(defaultUser);
+                this._user.next(null);
             }
         }
     }

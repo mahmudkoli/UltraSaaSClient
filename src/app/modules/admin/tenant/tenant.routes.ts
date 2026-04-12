@@ -41,7 +41,7 @@ export default [
                 loadComponent: () => import('./tenant-usage.component').then(m => m.TenantUsageComponent)
             },
             {
-                path: 'theme-settings',
+                path: ':id/theme-settings',
                 loadComponent: () => import('./tenant-theme-settings.component').then(m => m.TenantThemeSettingsComponent)
             }
         ]

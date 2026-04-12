@@ -44,6 +44,7 @@ export class TenantFormComponent implements OnInit {
     tenantId: string | null = null;
     loading: boolean = false;
     saving: boolean = false;
+    themeLabel: string = 'Not configured';
 
 
     constructor(
@@ -158,6 +159,15 @@ export class TenantFormComponent implements OnInit {
                     enableBackupRestore: tenant.enableBackupRestore || false,
                     enableMultipleDatabases: tenant.enableMultipleDatabases || false
                 });
+                // Parse theme config for display
+                if (tenant.themeConfig) {
+                    try {
+                        const tc = JSON.parse(tenant.themeConfig);
+                        const themeName = (tc.theme || 'default').replace('theme-', '');
+                        this.themeLabel = `${themeName} / ${tc.scheme || 'light'} / ${tc.layout || 'classy'}`;
+                    } catch { /* ignore */ }
+                }
+
                 // Disable ID field in edit mode
                 this.tenantForm.get('id')?.disable();
                 this.loading = false;
@@ -325,6 +335,12 @@ export class TenantFormComponent implements OnInit {
 
     cancel(): void {
         this._router.navigate(['/tenant']);
+    }
+
+    openThemeSettings(): void {
+        if (this.tenantId) {
+            this._router.navigate([`/tenant/${this.tenantId}/theme-settings`]);
+        }
     }
 
     generateTenantId(): void {

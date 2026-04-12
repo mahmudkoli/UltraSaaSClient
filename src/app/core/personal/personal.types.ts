@@ -1,28 +1,32 @@
 export interface PersonalProfileDto {
     id: string;
-    firstName: string;
-    lastName: string;
-    email: string;
-    phoneNumber?: string;
-    dateOfBirth?: string;
-    address?: string;
-    profilePicture?: string;
+    userName?: string;
+    firstName?: string;
+    lastName?: string;
+    email?: string;
     isActive: boolean;
-    createdAt: string;
-    updatedAt: string;
+    emailConfirmed: boolean;
+    phoneNumber?: string;
+    imageUrl?: string;
+    phoneNumberConfirmed: boolean;
+    address?: string;
+    gender?: string;
+    dateOfBirth?: string;
 }
 
 export interface UpdatePersonalProfileRequest {
-    firstName: string;
-    lastName: string;
+    id: string;
+    firstName?: string;
+    lastName?: string;
     phoneNumber?: string;
-    dateOfBirth?: string;
+    email?: string;
     address?: string;
-    profilePicture?: string;
+    gender?: string;
+    dateOfBirth?: string;
 }
 
 export interface ChangePasswordRequest {
-    currentPassword: string;
+    password: string;
     newPassword: string;
-    confirmPassword: string;
+    confirmNewPassword: string;
 } 

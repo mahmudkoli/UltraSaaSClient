@@ -57,7 +57,7 @@ import { TenantsService } from '../../../core/tenants/tenants.service';
 export class TenantListComponent implements OnInit {
     tenants: TenantDto[] = [];
     loading: boolean = false;
-    displayedColumns: string[] = ['name', 'adminEmail', 'url', 'isActive', 'validUpto', 'actions'];
+    displayedColumns: string[] = ['name', 'adminEmail', 'url', 'isActive', 'theme', 'validUpto', 'actions'];
 
     dataSource: MatTableDataSource<TenantDto> = new MatTableDataSource<TenantDto>([]);
     searchControl = new FormControl<string>('');
@@ -357,8 +357,8 @@ export class TenantListComponent implements OnInit {
         this._router.navigate([`/tenant/${tenant.id}/usage`]);
     }
 
-    manageTheme(): void {
-        this._router.navigate(['/tenant/theme-settings']);
+    manageTheme(tenant: TenantDto): void {
+        this._router.navigate([`/tenant/${tenant.id}/theme-settings`]);
     }
 
     extendValidity(tenant: TenantDto): void {
@@ -374,6 +374,19 @@ export class TenantListComponent implements OnInit {
                 console.error('Error checking tenant health:', error);
             }
         });
+    }
+
+    getThemeLabel(tenant: TenantDto): string {
+        if (!tenant.themeConfig) return 'Default';
+        try {
+            const config = JSON.parse(tenant.themeConfig);
+            const theme = (config.theme || 'default').replace('theme-', '');
+            const scheme = config.scheme || 'light';
+            const layout = config.layout || 'classy';
+            return `${theme} / ${scheme} / ${layout}`;
+        } catch {
+            return 'Default';
+        }
     }
 
     getResourceUsagePercentage(tenant: TenantDto): number {

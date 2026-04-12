@@ -15,11 +15,6 @@ export const authInterceptor = (req: HttpRequest<unknown>, next: HttpHandlerFn):
     const authService = inject(AuthService);
     const tenantService = inject(TenantService);
 
-    // Skip interceptor for authentication endpoints
-    if (req.url.includes('/api/tokens')) {
-        return next(req);
-    }
-
     // Get the token and resolve tenant (subdomain or localStorage)
     const token = localStorage.getItem('access_token');
     const tenantId = tenantService.resolve();
@@ -27,12 +22,14 @@ export const authInterceptor = (req: HttpRequest<unknown>, next: HttpHandlerFn):
     // Clone the request and add headers
     let newReq = req.clone();
 
-    if (token) {
+    // Add auth token (skip for login/token endpoints)
+    if (token && !req.url.includes('/api/tokens')) {
         newReq = newReq.clone({
             headers: newReq.headers.set('Authorization', `Bearer ${token}`)
         });
     }
 
+    // Always add tenant header
     if (tenantId) {
         newReq = newReq.clone({
             headers: newReq.headers.set('tenant', tenantId)

@@ -2,18 +2,20 @@ import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { 
-    TokenRequest, 
-    TokenResponse, 
+import {
+    TokenRequest,
+    TokenResponse,
     RefreshTokenRequest
 } from './auth.types';
 import { UserService } from '../user/user.service';
+import { TenantService } from '../tenant/tenant.service';
 
 @Injectable({providedIn: 'root'})
 export class AuthService
 {
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
+    private _tenantService = inject(TenantService);
     private readonly baseUrl = environment.apiUrl;
 
     // -----------------------------------------------------------------------------------------------------
@@ -25,8 +27,8 @@ export class AuthService
      */
     login(request: TokenRequest): Observable<TokenResponse>
     {
-        const tenantId = localStorage.getItem('tenant_id');
-        
+        const tenantId = this._tenantService.resolve();
+
         let headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });
@@ -53,8 +55,8 @@ export class AuthService
      */
     refreshToken(request: RefreshTokenRequest): Observable<TokenResponse>
     {
-        const tenantId = localStorage.getItem('tenant_id');
-        
+        const tenantId = this._tenantService.resolve();
+
         let headers = new HttpHeaders({
             'Content-Type': 'application/json'
         });

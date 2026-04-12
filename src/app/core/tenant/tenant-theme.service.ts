@@ -32,14 +32,17 @@ export class TenantThemeService {
      * Fetch theme from backend (anonymous, no auth needed).
      */
     fetchTheme(tenantId: string): Observable<ThemeConfig | null> {
-        return this.http.get<string>(`${this.baseUrl}/${tenantId}/theme`).pipe(
-            tap(json => {
-                if (json) {
-                    const config = typeof json === 'string' ? JSON.parse(json) : json;
+        return this.http.get<any>(`${this.baseUrl}/${tenantId}/theme`).pipe(
+            tap(response => {
+                if (response) {
+                    const config = typeof response === 'string' ? JSON.parse(response) : response;
                     this.cacheTheme(tenantId, config);
                 }
             }),
-            catchError(() => of(null))
+            catchError(err => {
+                console.error(`[TenantTheme] Failed to fetch theme for ${tenantId}:`, err);
+                return of(null);
+            })
         ) as Observable<ThemeConfig | null>;
     }
 
@@ -105,5 +108,29 @@ export class TenantThemeService {
     private getCachedTheme(tenantId: string): ThemeConfig | null {
         const cached = localStorage.getItem(this.CACHE_PREFIX + tenantId);
         return cached ? JSON.parse(cached) : null;
+    }
+
+    // ── Preview state (survives component destroy during layout switch) ──
+
+    private _previewState: {
+        tenantId: string;
+        selected: ThemeConfig;
+        original: { scheme: string; theme: string; layout: string };
+        isPreviewing: boolean;
+    } | null = null;
+
+    get previewState() { return this._previewState; }
+
+    setPreviewState(
+        tenantId: string,
+        selected: ThemeConfig,
+        original: { scheme: string; theme: string; layout: string },
+        isPreviewing: boolean,
+    ): void {
+        this._previewState = { tenantId, selected, original, isPreviewing };
+    }
+
+    clearPreviewState(): void {
+        this._previewState = null;
     }
 }

@@ -544,6 +544,24 @@
                                         </div>
                                     </mat-card>
 
+                                    <!-- Theme Settings -->
+                                    <mat-card class="p-4" *ngIf="isEditMode">
+                                        <h3 class="text-lg font-semibold mb-4 text-pink-600 dark:text-pink-400 flex items-center">
+                                            <mat-icon class="mr-2">palette</mat-icon>
+                                            Theme Settings
+                                        </h3>
+                                        <div class="space-y-3 text-sm">
+                                            <div>
+                                                <span class="font-medium text-gray-700 dark:text-gray-300">Current Theme:</span>
+                                                <span class="ml-2 text-gray-900 dark:text-white capitalize">{{ themeLabel }}</span>
+                                            </div>
+                                            <button mat-stroked-button color="primary" (click)="openThemeSettings()" type="button">
+                                                <mat-icon class="mr-2">palette</mat-icon>
+                                                Configure Theme
+                                            </button>
+                                        </div>
+                                    </mat-card>
+
                                     <!-- Advanced Configuration -->
                                     <mat-card class="p-4">
                                         <h3 class="text-lg font-semibold mb-4 text-red-600 dark:text-red-400 flex items-center">
