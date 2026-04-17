@@ -115,6 +115,9 @@
                         },
                         "development": {
                           "buildTarget": "fuse:build:development"
+                        },
+                        "demo": {
+                          "buildTarget": "fuse:build:demo"
                         }
                     },
                     "defaultConfiguration": "development"
