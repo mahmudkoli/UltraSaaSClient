@@ -59,4 +59,31 @@ export interface SearchAttendancesRequest {
     pageSize: number;
     orderBy?: string[];
     keyword?: string;
+    classId?: string;
+    subjectId?: string;
+    studentId?: string;
+    fromDate?: string;
+    toDate?: string;
+}
+
+export interface BulkMarkAttendanceEntry {
+    studentId: string;
+    status: AttendanceStatus;
+    remarks?: string;
+    checkInTime?: string;
+    checkOutTime?: string;
+}
+
+export interface BulkMarkAttendanceRequest {
+    classId: string;
+    subjectId?: string;
+    date: string;
+    markedBy: string;
+    markedByName?: string;
+    entries: BulkMarkAttendanceEntry[];
+}
+
+export interface BulkMarkAttendanceResponse {
+    created: number;
+    updated: number;
 }

@@ -63,6 +63,7 @@ export interface SearchFeeInvoicesRequest {
     studentId?: string;
     classId?: string;
     academicYearId?: string;
+    overdueOnly?: boolean;
 }
 
 export { PaginationResponse } from '../students/students.types';

@@ -185,4 +185,25 @@ export class FeeInvoiceFormComponent implements OnInit, OnDestroy {
     getPageTitle(): string { return this.isEditMode ? 'Record Payment' : 'Create Invoice'; }
     getSaveButtonText(): string { return this.isSaving ? 'Saving...' : (this.isEditMode ? 'Record Payment' : 'Create'); }
     getStudentDisplayName(s: StudentDto): string { return `${s.firstName} ${s.lastName}`.trim(); }
+
+    get netInvoiceAmount(): number {
+        const fv = this.form.value;
+        const total = Number(fv.totalAmount) || 0;
+        const discount = Number(fv.discountAmount) || 0;
+        const tax = Number(fv.taxAmount) || 0;
+        const lateFee = Number(fv.lateFeeAmount) || 0;
+        return total - discount + tax + lateFee;
+    }
+
+    get balanceAfterPayment(): number {
+        if (!this.currentInvoice) return 0;
+        const paid = Number(this.form.get('paidAmount')?.value) || 0;
+        return Math.max(0, (this.currentInvoice.balanceAmount ?? 0) - paid);
+    }
+
+    get isOverpayment(): boolean {
+        if (!this.currentInvoice) return false;
+        const paid = Number(this.form.get('paidAmount')?.value) || 0;
+        return paid > (this.currentInvoice.balanceAmount ?? 0);
+    }
 }

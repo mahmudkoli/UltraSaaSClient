@@ -103,6 +103,35 @@ export interface SearchExamResultsRequest {
     pageNumber: number;
     pageSize: number;
     keyword?: string;
+    examId?: string;
+    subjectId?: string;
+    classId?: string;
+    studentId?: string;
+}
+
+export interface BulkMarkExamResultEntry {
+    studentId: string;
+    marksObtained: number;
+    totalMarks: number;
+    isAbsent: boolean;
+    absentReason?: string;
+    remarks?: string;
+}
+
+export interface BulkMarkExamResultsRequest {
+    examId: string;
+    subjectId: string;
+    classId: string;
+    examType: ExamType;
+    markedBy: string;
+    evaluatedBy?: string;
+    examDate?: string;
+    entries: BulkMarkExamResultEntry[];
+}
+
+export interface BulkMarkExamResultsResponse {
+    created: number;
+    updated: number;
 }
 
 export { PaginationResponse } from '../students/students.types';

@@ -7,6 +7,8 @@ import {
     CreateAttendanceRequest,
     UpdateAttendanceRequest,
     SearchAttendancesRequest,
+    BulkMarkAttendanceRequest,
+    BulkMarkAttendanceResponse,
     PaginationResponse
 } from './attendances.types';
 
@@ -36,5 +38,9 @@ export class AttendancesService {
 
     delete(id: string): Observable<string> {
         return this.http.delete<string>(`${this.baseUrl}/${id}`);
+    }
+
+    bulkMark(request: BulkMarkAttendanceRequest): Observable<BulkMarkAttendanceResponse> {
+        return this.http.post<BulkMarkAttendanceResponse>(`${this.baseUrl}/bulk`, request);
     }
 }

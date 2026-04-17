@@ -1,0 +1,111 @@
+<div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
+    <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
+                <mat-icon class="text-white">fact_check</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold tracking-tight">Bulk Mark Attendance</h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Select a class and date, then mark the whole roster in one go.</p>
+            </div>
+        </div>
+        <button mat-stroked-button (click)="cancel()" data-testid="cancel-button"><mat-icon>arrow_back</mat-icon>&nbsp;Back to list</button>
+    </div>
+
+    <div class="p-4 sm:p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-4 mb-4">
+            <form [formGroup]="filterForm" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Class *</mat-label>
+                    <mat-select formControlName="classId" data-testid="class-select">
+                        <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Subject (optional)</mat-label>
+                    <mat-select formControlName="subjectId" data-testid="subject-select">
+                        <mat-option [value]="">— All subjects —</mat-option>
+                        <mat-option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Date *</mat-label>
+                    <input matInput [matDatepicker]="picker" formControlName="date" data-testid="date-input">
+                    <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>
+                    <mat-datepicker #picker></mat-datepicker>
+                </mat-form-field>
+                <button mat-flat-button color="primary" type="button" class="h-12" (click)="loadRoster()" [disabled]="isLoadingRoster" data-testid="load-roster-button">
+                    <mat-icon>group</mat-icon>&nbsp;{{ isLoadingRoster ? 'Loading...' : 'Load Roster' }}
+                </button>
+            </form>
+        </div>
+
+        <div *ngIf="rosterLoaded && roster.length > 0" class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-3 p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex gap-2 flex-wrap">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Present {{ presentCount() }}</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Absent {{ absentCount() }}</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Late {{ lateCount() }}</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Total {{ roster.length }}</span>
+                </div>
+                <div class="flex gap-2">
+                    <button mat-stroked-button type="button" (click)="setAll(1)" data-testid="mark-all-present">Mark all Present</button>
+                    <button mat-stroked-button type="button" (click)="setAll(2)" data-testid="mark-all-absent">Mark all Absent</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Roll</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of roster; let i = index" class="border-t border-gray-100 dark:border-gray-700 hover:bg-blue-50/40">
+                            <td class="px-4 py-2">{{ i + 1 }}</td>
+                            <td class="px-4 py-2">{{ row.rollNumber || '-' }}</td>
+                            <td class="px-4 py-2 font-medium">
+                                {{ row.studentName }}
+                                <span *ngIf="row.existing" class="ml-2 text-xs text-gray-400" matTooltip="Already has a record — will be updated">(saved)</span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <mat-form-field appearance="outline" class="w-40" subscriptSizing="dynamic">
+                                    <mat-select [value]="row.status" (selectionChange)="updateStatus(row.studentId, $event.value)" [attr.data-testid]="'status-' + row.studentId">
+                                        <mat-option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</mat-option>
+                                    </mat-select>
+                                </mat-form-field>
+                            </td>
+                            <td class="px-4 py-2">
+                                <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                    <input matInput [value]="row.remarks || ''" (input)="updateRemarks(row.studentId, $any($event.target).value)" placeholder="Optional">
+                                </mat-form-field>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+                <button mat-stroked-button (click)="cancel()">Cancel</button>
+                <button mat-flat-button color="primary" [disabled]="isSaving" (click)="save()" data-testid="save-bulk-button">
+                    <mat-icon>save</mat-icon>&nbsp;{{ isSaving ? 'Saving...' : 'Save Attendance' }}
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="rosterLoaded && roster.length === 0" class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <mat-icon class="icon-size-16 text-gray-400">group_off</mat-icon>
+            <h3 class="text-xl font-semibold mt-4">No students enrolled</h3>
+            <p class="text-sm text-gray-600 mt-2">This class has no active student enrollments yet.</p>
+        </div>
+
+        <div *ngIf="!rosterLoaded && !isLoadingRoster" class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-12 text-center">
+            <mat-icon class="icon-size-16 text-gray-400">playlist_add_check</mat-icon>
+            <h3 class="text-xl font-semibold mt-4">Pick class + date</h3>
+            <p class="text-sm text-gray-600 mt-2">Select a class, optional subject and date, then click "Load Roster".</p>
+        </div>
+    </div>
+</div>

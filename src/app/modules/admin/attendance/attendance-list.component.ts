@@ -2,12 +2,15 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { CommonModule } from '@angular/common';
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { DateUtils } from '../../../core/utils/date.utils';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -26,7 +29,8 @@ import { NotificationService } from '../../../core/services/notification.service
     standalone: true,
     imports: [
         CommonModule, ReactiveFormsModule, RouterModule,
-        MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
+        MatButtonModule, MatDatepickerModule, MatNativeDateModule,
+        MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatTableModule, MatTooltipModule,
     ],
 })
@@ -38,6 +42,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     pageSize = 10;
     pageSizeOptions = [5, 10, 25, 50];
     searchControl = new FormControl('');
+    fromDateControl = new FormControl<Date | null>(null);
+    toDateControl = new FormControl<Date | null>(null);
     displayedColumns: string[] = ['studentName', 'className', 'subjectName', 'date', 'status', 'markedByName', 'actions'];
     Math = Math;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -48,14 +54,30 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _notificationService: NotificationService
+        private _notificationService: NotificationService,
+        private _dateUtils: DateUtils
     ) {}
 
     ngOnInit(): void {
         this.searchControl.valueChanges
             .pipe(takeUntil(this._unsubscribeAll), debounceTime(300), distinctUntilChanged())
             .subscribe(() => { this.currentPage = 0; this.loadData(); });
+        this.fromDateControl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(() => { this.currentPage = 0; this.loadData(); });
+        this.toDateControl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(() => { this.currentPage = 0; this.loadData(); });
         this.loadData();
+    }
+
+    clearDateFilter(): void {
+        this.fromDateControl.setValue(null);
+        this.toDateControl.setValue(null);
+    }
+
+    bulkMark(): void {
+        this._router.navigate(['bulk-mark'], { relativeTo: this._route });
     }
 
     ngOnDestroy(): void { this._unsubscribeAll.next(null); this._unsubscribeAll.complete(); }
@@ -66,7 +88,9 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
         const request: SearchAttendancesRequest = {
             pageNumber: this.currentPage + 1,
             pageSize: this.pageSize,
-            keyword: this.searchControl.value || undefined
+            keyword: this.searchControl.value || undefined,
+            fromDate: this.fromDateControl.value ? this._dateUtils.formatDateForAPI(this.fromDateControl.value) : undefined,
+            toDate: this.toDateControl.value ? this._dateUtils.formatDateForAPI(this.toDateControl.value) : undefined
         };
         this._service.search(request).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response: PaginationResponse<AttendanceDto>) => {

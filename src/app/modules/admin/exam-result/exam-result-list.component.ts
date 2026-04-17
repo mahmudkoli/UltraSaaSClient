@@ -82,6 +82,7 @@ export class ExamResultListComponent implements OnInit, OnDestroy {
 
     onPageChange(event: PageEvent): void { this.currentPage = event.pageIndex; this.pageSize = event.pageSize; this.loadData(); }
     add(): void { this._router.navigate(['create'], { relativeTo: this._route }); }
+    bulkEntry(): void { this._router.navigate(['bulk-entry'], { relativeTo: this._route }); }
     edit(item: ExamResultDto): void { this._router.navigate([item.id, 'edit'], { relativeTo: this._route }); }
 
     deleteItem(item: ExamResultDto): void {

@@ -1,0 +1,130 @@
+<div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 to-purple-50/30 dark:from-gray-900 dark:to-purple-900/20">
+    <div class="flex flex-col sm:flex-row flex-0 sm:items-center sm:justify-between p-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+        <div class="flex items-center space-x-4">
+            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl shadow-lg">
+                <mat-icon class="text-white">grade</mat-icon>
+            </div>
+            <div>
+                <h2 class="text-2xl font-bold tracking-tight">Bulk Exam Results Entry</h2>
+                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Pick exam, subject, class — enter marks for the full roster in one grid.</p>
+            </div>
+        </div>
+        <button mat-stroked-button (click)="cancel()"><mat-icon>arrow_back</mat-icon>&nbsp;Back to list</button>
+    </div>
+
+    <div class="p-4 sm:p-6">
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-4 mb-4">
+            <form [formGroup]="filterForm" class="grid grid-cols-1 sm:grid-cols-6 gap-4 items-end">
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Exam *</mat-label>
+                    <mat-select formControlName="examId" data-testid="exam-select">
+                        <mat-option *ngFor="let e of exams" [value]="e.id">{{ e.name }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Subject *</mat-label>
+                    <mat-select formControlName="subjectId" data-testid="subject-select">
+                        <mat-option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Class *</mat-label>
+                    <mat-select formControlName="classId" data-testid="class-select">
+                        <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Type *</mat-label>
+                    <mat-select formControlName="examType">
+                        <mat-option *ngFor="let t of examTypeOptions" [value]="t.value">{{ t.label }}</mat-option>
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Total Marks *</mat-label>
+                    <input matInput type="number" formControlName="totalMarks" data-testid="total-marks">
+                </mat-form-field>
+                <button mat-flat-button color="primary" type="button" class="h-12" (click)="loadRoster()" [disabled]="isLoadingRoster" data-testid="load-roster-button">
+                    <mat-icon>group</mat-icon>&nbsp;{{ isLoadingRoster ? 'Loading...' : 'Load Roster' }}
+                </button>
+            </form>
+        </div>
+
+        <div *ngIf="rosterLoaded && rows.length > 0" class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div class="flex flex-wrap items-center justify-between gap-3 p-4 border-b border-gray-200 dark:border-gray-700">
+                <div class="flex gap-2 flex-wrap">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Pass {{ passCount() }}</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">Fail {{ failCount() }}</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Absent {{ absentCount() }}</span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Total {{ rows.length }}</span>
+                </div>
+                <div class="flex gap-2">
+                    <button mat-stroked-button type="button" (click)="setAllAbsent(false)">Clear absent</button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50 dark:bg-gray-700">
+                        <tr>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">#</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Roll</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Student</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Marks</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">%</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Grade</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Absent</th>
+                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let row of rows; let i = index" class="border-t border-gray-100 dark:border-gray-700 hover:bg-purple-50/30">
+                            <td class="px-4 py-2">{{ i + 1 }}</td>
+                            <td class="px-4 py-2">{{ row.rollNumber || '-' }}</td>
+                            <td class="px-4 py-2 font-medium">
+                                {{ row.studentName }}
+                                <span *ngIf="row.existing" class="ml-2 text-xs text-gray-400" matTooltip="Already has a result — will be updated">(saved)</span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <mat-form-field appearance="outline" class="w-24" subscriptSizing="dynamic">
+                                    <input matInput type="number" [value]="row.marksObtained" [disabled]="row.isAbsent"
+                                           (input)="updateMarks(row.studentId, $any($event.target).value)"
+                                           [attr.data-testid]="'marks-' + row.studentId">
+                                </mat-form-field>
+                                <span class="text-xs text-gray-500 ml-1">/ {{ row.totalMarks }}</span>
+                            </td>
+                            <td class="px-4 py-2">{{ row.isAbsent ? '-' : (percentage(row) + '%') }}</td>
+                            <td class="px-4 py-2">
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium" [class]="gradeClass(row)">{{ grade(row) }}</span>
+                            </td>
+                            <td class="px-4 py-2">
+                                <mat-checkbox [checked]="row.isAbsent" (change)="updateAbsent(row.studentId, $event.checked)"
+                                              [attr.data-testid]="'absent-' + row.studentId"></mat-checkbox>
+                            </td>
+                            <td class="px-4 py-2">
+                                <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                                    <input matInput [value]="row.remarks || ''" (input)="updateRemarks(row.studentId, $any($event.target).value)" placeholder="Optional">
+                                </mat-form-field>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="flex justify-end gap-2 p-4 border-t border-gray-200 dark:border-gray-700">
+                <button mat-stroked-button (click)="cancel()">Cancel</button>
+                <button mat-flat-button color="primary" [disabled]="isSaving" (click)="save()" data-testid="save-bulk-button">
+                    <mat-icon>save</mat-icon>&nbsp;{{ isSaving ? 'Saving...' : 'Save Results' }}
+                </button>
+            </div>
+        </div>
+
+        <div *ngIf="rosterLoaded && rows.length === 0" class="bg-white dark:bg-gray-800 rounded-2xl shadow p-12 text-center">
+            <mat-icon class="icon-size-16 text-gray-400">group_off</mat-icon>
+            <h3 class="text-xl font-semibold mt-4">No students in this class</h3>
+        </div>
+
+        <div *ngIf="!rosterLoaded && !isLoadingRoster" class="bg-white dark:bg-gray-800 rounded-2xl shadow p-12 text-center">
+            <mat-icon class="icon-size-16 text-gray-400">grade</mat-icon>
+            <h3 class="text-xl font-semibold mt-4">Pick exam + subject + class</h3>
+            <p class="text-sm text-gray-600 mt-2">Click "Load Roster" to see the full class.</p>
+        </div>
+    </div>
+</div>

@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterLink } from '@angular/router';
 import { Subject, forkJoin } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
@@ -59,46 +60,67 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
 
             <!-- Content -->
             <div class="flex flex-col flex-auto p-6 md:p-8">
-                <div *ngIf="isLoading" class="flex items-center justify-center h-64">
-                    <mat-spinner [diameter]="50"></mat-spinner>
+                <!-- Skeleton loader matches final layout -->
+                <div *ngIf="isLoading" class="space-y-8" data-testid="dashboard-skeleton">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        <div *ngFor="let i of [1,2,3,4]" class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-6 animate-pulse">
+                            <div class="flex items-center justify-between">
+                                <div class="flex-1 space-y-3">
+                                    <div class="h-3 w-28 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                    <div class="h-8 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                                </div>
+                                <div class="w-12 h-12 rounded-xl bg-gray-200 dark:bg-gray-700"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
+                        <div class="h-14 bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="p-6 h-56"></div>
+                    </div>
+                    <div *ngFor="let s of [1,2,3]" class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 overflow-hidden animate-pulse">
+                        <div class="h-14 bg-gray-200 dark:bg-gray-700"></div>
+                        <div class="p-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                            <div *ngFor="let k of [1,2,3,4]" class="h-20 rounded-lg bg-gray-200 dark:bg-gray-700"></div>
+                        </div>
+                    </div>
                 </div>
 
                 <div *ngIf="!isLoading" class="space-y-8">
-                    <!-- Overview Stats -->
+                    <!-- Overview Stats — each card drills down to the matching list -->
                     <div *ngIf="stats" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+                        <a routerLink="/students" class="block bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-students">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Students</p>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">Total Students <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
                                     <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.studentCount }}</p>
                                 </div>
                                 <div class="w-12 h-12 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
                                     <mat-icon class="text-white">school</mat-icon>
                                 </div>
                             </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+                        </a>
+                        <a routerLink="/teachers" class="block bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-teachers">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Teachers</p>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">Total Teachers <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
                                     <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.teacherCount }}</p>
                                 </div>
                                 <div class="w-12 h-12 bg-gradient-to-br from-green-500 to-green-600 rounded-xl flex items-center justify-center shadow-lg">
                                     <mat-icon class="text-white">person</mat-icon>
                                 </div>
                             </div>
-                        </div>
-                        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
+                        </a>
+                        <a routerLink="/users" class="block bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-users">
                             <div class="flex items-center justify-between">
                                 <div>
-                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400">Total Users</p>
+                                    <p class="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1">Total Users <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
                                     <p class="text-3xl font-bold text-gray-900 dark:text-gray-100 mt-1">{{ stats.userCount }}</p>
                                 </div>
                                 <div class="w-12 h-12 bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl flex items-center justify-center shadow-lg">
                                     <mat-icon class="text-white">group</mat-icon>
                                 </div>
                             </div>
-                        </div>
+                        </a>
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 hover:shadow-xl transition-shadow duration-200">
                             <div class="flex items-center justify-between">
                                 <div>
@@ -176,17 +198,17 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4">
+                                <a routerLink="/student-academics" class="block bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20 rounded-lg p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-academics">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <p class="text-sm font-medium text-purple-600 dark:text-purple-400">Total Students</p>
+                                            <p class="text-sm font-medium text-purple-600 dark:text-purple-400 flex items-center gap-1">Total Students <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
                                             <p class="text-2xl font-bold text-purple-900 dark:text-purple-100">{{ academicAnalytics.totalStudents }}</p>
                                         </div>
                                         <div class="w-10 h-10 bg-purple-500 rounded-full flex items-center justify-center">
                                             <mat-icon class="text-white">group</mat-icon>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
                                 <div class="bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20 rounded-lg p-4">
                                     <div class="flex items-center justify-between">
                                         <div>
@@ -238,17 +260,17 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4">
+                                <a routerLink="/student-health" class="block bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20 rounded-lg p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-health">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <p class="text-sm font-medium text-blue-600 dark:text-blue-400">Health Records</p>
+                                            <p class="text-sm font-medium text-blue-600 dark:text-blue-400 flex items-center gap-1">Health Records <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
                                             <p class="text-2xl font-bold text-blue-900 dark:text-blue-100">{{ healthAnalytics.totalRecords }}</p>
                                         </div>
                                         <div class="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center">
                                             <mat-icon class="text-white">medical_services</mat-icon>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
                                 <div class="bg-gradient-to-br from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20 rounded-lg p-4">
                                     <div class="flex items-center justify-between">
                                         <div>
@@ -311,17 +333,17 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
                                         </div>
                                     </div>
                                 </div>
-                                <div class="bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg p-4">
+                                <a routerLink="/teacher-qualifications" class="block bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-qualifications">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400">Total Teachers</p>
+                                            <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1">Total Teachers <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
                                             <p class="text-2xl font-bold text-indigo-900 dark:text-indigo-100">{{ qualificationAnalytics.totalTeachers }}</p>
                                         </div>
                                         <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center">
                                             <mat-icon class="text-white">person</mat-icon>
                                         </div>
                                     </div>
-                                </div>
+                                </a>
                                 <div class="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg p-4">
                                     <div class="flex items-center justify-between">
                                         <div>
@@ -373,6 +395,7 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
     standalone: true,
     imports: [
         CommonModule,
+        RouterLink,
         MatButtonModule,
         MatCardModule,
         MatIconModule,

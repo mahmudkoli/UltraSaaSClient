@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { ExamResultDto, CreateExamResultRequest, UpdateExamResultRequest, SearchExamResultsRequest, PaginationResponse } from './exam-results.types';
+import { ExamResultDto, CreateExamResultRequest, UpdateExamResultRequest, SearchExamResultsRequest, BulkMarkExamResultsRequest, BulkMarkExamResultsResponse, PaginationResponse } from './exam-results.types';
 
 @Injectable({ providedIn: 'root' })
 export class ExamResultsService {
@@ -28,5 +28,9 @@ export class ExamResultsService {
 
     delete(id: string): Observable<string> {
         return this.http.delete(`${this.baseUrl}/${id}`, { responseType: 'text' });
+    }
+
+    bulkMark(request: BulkMarkExamResultsRequest): Observable<BulkMarkExamResultsResponse> {
+        return this.http.post<BulkMarkExamResultsResponse>(`${this.baseUrl}/bulk`, request);
     }
 }

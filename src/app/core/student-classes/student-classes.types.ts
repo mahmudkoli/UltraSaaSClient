@@ -36,4 +36,7 @@ export interface SearchStudentClassesRequest {
     pageSize: number;
     orderBy?: string[];
     keyword?: string;
+    classId?: string;
+    studentId?: string;
+    academicYearId?: string;
 }

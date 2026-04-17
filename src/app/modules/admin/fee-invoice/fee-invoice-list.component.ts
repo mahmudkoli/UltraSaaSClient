@@ -45,6 +45,7 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
     searchControl = new FormControl('');
     selectedClassId = '';
     selectedAcademicYearId = '';
+    overdueOnly = false;
     classes: ClassDto[] = [];
     academicYears: AcademicYearDto[] = [];
     displayedColumns: string[] = ['invoiceNumber', 'studentName', 'className', 'totalAmount', 'paidAmount', 'balanceAmount', 'dueDate', 'status', 'actions'];
@@ -89,7 +90,8 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
             pageSize: this.pageSize,
             keyword: this.searchControl.value || undefined,
             classId: this.selectedClassId || undefined,
-            academicYearId: this.selectedAcademicYearId || undefined
+            academicYearId: this.selectedAcademicYearId || undefined,
+            overdueOnly: this.overdueOnly || undefined
         };
         this._service.search(request).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response: PaginationResponse<FeeInvoiceDto>) => {
@@ -132,6 +134,28 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
             5: 'Cancelled', 6: 'Refunded', 7: 'Disputed', 8: 'On Hold'
         };
         return map[status] || '-';
+    }
+
+    isOverdue(item: FeeInvoiceDto): boolean {
+        if (!item.dueDate || item.balanceAmount <= 0) return false;
+        const due = new Date(item.dueDate);
+        due.setHours(0, 0, 0, 0);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        return due < today;
+    }
+
+    daysOverdue(item: FeeInvoiceDto): number {
+        if (!this.isOverdue(item)) return 0;
+        const due = new Date(item.dueDate);
+        const today = new Date();
+        return Math.floor((today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24));
+    }
+
+    toggleOverdueFilter(): void {
+        this.overdueOnly = !this.overdueOnly;
+        this.currentPage = 0;
+        this.loadData();
     }
 
     getStatusClass(status: InvoiceStatus): string {

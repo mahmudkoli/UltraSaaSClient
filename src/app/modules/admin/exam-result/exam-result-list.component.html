@@ -20,7 +20,8 @@
                 <input matInput [formControl]="searchControl" placeholder="Search exam results">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>
             </mat-form-field>
-            <button mat-fab color="primary" (click)="add()" matTooltip="Add Result"><mat-icon>add</mat-icon></button>
+            <button mat-stroked-button color="primary" (click)="bulkEntry()" matTooltip="Enter marks for a whole class at once" data-testid="bulk-entry-button"><mat-icon>grid_on</mat-icon>&nbsp;Bulk Entry</button>
+            <button mat-fab color="primary" (click)="add()" matTooltip="Add Result (single)"><mat-icon>add</mat-icon></button>
         </div>
     </div>
 
