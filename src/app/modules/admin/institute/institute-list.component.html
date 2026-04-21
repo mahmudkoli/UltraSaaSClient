@@ -21,41 +21,35 @@
             </div>
         </div>
         <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-            <mat-form-field class="w-full sm:w-auto sm:min-w-72 mt-6" appearance="outline">
+            <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Search institutes</mat-label>
                 <input matInput [formControl]="searchControl" placeholder="Search by name, code, or type">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>
             </mat-form-field>
-            <div class="pt-6">
-                <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline">
-                    <mat-label>Status</mat-label>
-                    <mat-select [formControl]="statusControl">
-                        <mat-option value="all">All</mat-option>
-                        <mat-option value="active">Active</mat-option>
-                        <mat-option value="inactive">Inactive</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <div class="pt-6">
-                <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline">
-                    <mat-label>Type</mat-label>
-                    <mat-select [formControl]="typeControl">
-                        <mat-option value="all">All Types</mat-option>
-                        <mat-option value="school">School</mat-option>
-                        <mat-option value="college">College</mat-option>
-                        <mat-option value="university">University</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
-            <div class="pt-2 flex space-x-2">
-                <button
-                    mat-fab
-                    color="primary"
-                    (click)="createInstitute()"
-                    matTooltip="Create Institute">
-                    <mat-icon>add</mat-icon>
-                </button>
-            </div>
+            <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Status</mat-label>
+                <mat-select [formControl]="statusControl">
+                    <mat-option value="all">All</mat-option>
+                    <mat-option value="active">Active</mat-option>
+                    <mat-option value="inactive">Inactive</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Type</mat-label>
+                <mat-select [formControl]="typeControl">
+                    <mat-option value="all">All Types</mat-option>
+                    <mat-option value="school">School</mat-option>
+                    <mat-option value="college">College</mat-option>
+                    <mat-option value="university">University</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button
+                mat-fab
+                color="primary"
+                (click)="createInstitute()"
+                matTooltip="Create Institute">
+                <mat-icon>add</mat-icon>
+            </button>
         </div>
     </div>
 

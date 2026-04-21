@@ -21,22 +21,20 @@
             </div>
         </div>
         <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-            <mat-form-field class="w-full sm:w-auto sm:min-w-72 mt-6" appearance="outline">
+            <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>{{ isSearching ? 'Searching...' : 'Search users' }}</mat-label>
                 <input matInput [ngModel]="searchTerm" (ngModelChange)="onSearchChange($event)" placeholder="Search by name, email, or username">
                 <mat-icon matSuffix class="text-gray-400" *ngIf="!isSearching">search</mat-icon>
                 <mat-spinner matSuffix diameter="18" *ngIf="isSearching"></mat-spinner>
             </mat-form-field>
-            <div class="pt-6">
-                <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline">
-                    <mat-label>Status</mat-label>
-                    <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onStatusChange()">
-                        <mat-option value="all">All Status</mat-option>
-                        <mat-option value="active">Active</mat-option>
-                        <mat-option value="inactive">Inactive</mat-option>
-                    </mat-select>
-                </mat-form-field>
-            </div>
+            <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Status</mat-label>
+                <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onStatusChange()">
+                    <mat-option value="all">All Status</mat-option>
+                    <mat-option value="active">Active</mat-option>
+                    <mat-option value="inactive">Inactive</mat-option>
+                </mat-select>
+            </mat-form-field>
             <button
                 mat-fab
                 color="primary"

@@ -21,7 +21,7 @@
             </div>
         </div>
         <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-            <mat-form-field class="w-full sm:w-auto sm:min-w-72 mt-6" appearance="outline">
+            <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Search qualifications</mat-label>
                 <input matInput [formControl]="searchControl" placeholder="Search by teacher name, degree, or institution">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>
@@ -65,7 +65,7 @@
         </div>
 
         <!-- Main -->
-        <div class="flex flex-col flex-auto p-6 md:p-8">
+        <div class="flex flex-col flex-auto p-4 sm:p-6">
             <!-- Table wrapper -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
                 <div class="overflow-x-auto">

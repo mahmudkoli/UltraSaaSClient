@@ -14,21 +14,21 @@
 
     <div class="p-4 sm:p-6">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-4 mb-4">
-            <form [formGroup]="filterForm" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
-                <mat-form-field appearance="outline" class="w-full">
+            <form [formGroup]="filterForm" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-center">
+                <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
                     <mat-label>Class *</mat-label>
                     <mat-select formControlName="classId" data-testid="class-select">
                         <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="w-full">
+                <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
                     <mat-label>Subject (optional)</mat-label>
                     <mat-select formControlName="subjectId" data-testid="subject-select">
                         <mat-option [value]="">— All subjects —</mat-option>
                         <mat-option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <mat-form-field appearance="outline" class="w-full">
+                <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
                     <mat-label>Date *</mat-label>
                     <input matInput [matDatepicker]="picker" formControlName="date" data-testid="date-input">
                     <mat-datepicker-toggle matSuffix [for]="picker"></mat-datepicker-toggle>

@@ -15,20 +15,20 @@
             </div>
         </div>
         <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-            <mat-form-field class="w-full sm:w-40 mt-6" appearance="outline" subscriptSizing="dynamic">
+            <mat-form-field class="w-full sm:w-40" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>From</mat-label>
                 <input matInput [matDatepicker]="fromPicker" [formControl]="fromDateControl" data-testid="from-date">
                 <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
                 <mat-datepicker #fromPicker></mat-datepicker>
             </mat-form-field>
-            <mat-form-field class="w-full sm:w-40 mt-6" appearance="outline" subscriptSizing="dynamic">
+            <mat-form-field class="w-full sm:w-40" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>To</mat-label>
                 <input matInput [matDatepicker]="toPicker" [formControl]="toDateControl" data-testid="to-date">
                 <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
                 <mat-datepicker #toPicker></mat-datepicker>
             </mat-form-field>
             <button *ngIf="fromDateControl.value || toDateControl.value" mat-icon-button (click)="clearDateFilter()" matTooltip="Clear dates" data-testid="clear-date-filter"><mat-icon>filter_alt_off</mat-icon></button>
-            <mat-form-field class="w-full sm:w-auto sm:min-w-60 mt-6" appearance="outline" subscriptSizing="dynamic">
+            <mat-form-field class="w-full sm:w-auto sm:min-w-60" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Search</mat-label>
                 <input matInput [formControl]="searchControl" placeholder="Search attendance records">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>

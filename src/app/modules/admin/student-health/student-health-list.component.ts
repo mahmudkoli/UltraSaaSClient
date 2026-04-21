@@ -180,6 +180,12 @@ export class StudentHealthListComponent implements OnInit, OnDestroy {
         return 'text-red-600';
     }
 
+    toNumber(value: any): number | null {
+        if (value === null || value === undefined || value === '') return null;
+        const n = parseFloat(String(value));
+        return isNaN(n) ? null : n;
+    }
+
     getBloodGroupLabel(bloodGroup: any): string {
         const labels = {
             0: 'A+',

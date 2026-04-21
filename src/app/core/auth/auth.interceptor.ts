@@ -1,5 +1,6 @@
 import { HttpErrorResponse, HttpEvent, HttpHandlerFn, HttpRequest } from '@angular/common/http';
 import { inject } from '@angular/core';
+import { Router } from '@angular/router';
 import { AuthService } from 'app/core/auth/auth.service';
 import { TenantService } from 'app/core/tenant/tenant.service';
 import { catchError, Observable, throwError, switchMap } from 'rxjs';
@@ -14,6 +15,13 @@ export const authInterceptor = (req: HttpRequest<unknown>, next: HttpHandlerFn):
 {
     const authService = inject(AuthService);
     const tenantService = inject(TenantService);
+    const router = inject(Router);
+
+    const redirectToSignIn = () =>
+    {
+        const returnUrl = router.url && !router.url.startsWith('/sign-in') ? router.url : null;
+        router.navigate(['sign-in'], returnUrl ? { queryParams: { redirectURL: returnUrl } } : undefined);
+    };
 
     // Get the token and resolve tenant (subdomain or localStorage)
     const token = localStorage.getItem('access_token');
@@ -63,14 +71,16 @@ export const authInterceptor = (req: HttpRequest<unknown>, next: HttpHandlerFn):
                             return next(retryRequest);
                         }),
                         catchError((refreshError) => {
-                            // If refresh fails, logout the user
+                            // If refresh fails, logout the user and redirect to sign-in
                             authService.logout();
+                            redirectToSignIn();
                             return throwError(() => refreshError);
                         })
                     );
                 } else {
-                    // No refresh token available, logout the user
+                    // No refresh token available, logout the user and redirect to sign-in
                     authService.logout();
+                    redirectToSignIn();
                 }
             }
 

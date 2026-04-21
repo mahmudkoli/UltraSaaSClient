@@ -15,26 +15,26 @@
             </div>
         </div>
         <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-            <mat-form-field class="w-full sm:w-auto sm:min-w-72 mt-6" appearance="outline">
+            <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Search</mat-label>
                 <input matInput [formControl]="searchControl" placeholder="Search invoices">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>
             </mat-form-field>
-            <mat-form-field class="w-full sm:w-auto sm:min-w-40 mt-6" appearance="outline">
+            <mat-form-field class="w-full sm:w-auto sm:min-w-40" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Class</mat-label>
                 <mat-select [(value)]="selectedClassId" (selectionChange)="onFilterChange()">
                     <mat-option value="">All</mat-option>
                     <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }}</mat-option>
                 </mat-select>
             </mat-form-field>
-            <mat-form-field class="w-full sm:w-auto sm:min-w-40 mt-6" appearance="outline">
+            <mat-form-field class="w-full sm:w-auto sm:min-w-40" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Academic Year</mat-label>
                 <mat-select [(value)]="selectedAcademicYearId" (selectionChange)="onFilterChange()">
                     <mat-option value="">All</mat-option>
                     <mat-option *ngFor="let ay of academicYears" [value]="ay.id">{{ ay.name }}</mat-option>
                 </mat-select>
             </mat-form-field>
-            <button mat-stroked-button (click)="toggleOverdueFilter()" class="h-12" [class.!bg-red-600]="overdueOnly" [class.!text-white]="overdueOnly" matTooltip="Show only overdue invoices" data-testid="overdue-filter">
+            <button mat-stroked-button (click)="toggleOverdueFilter()" [class.!bg-red-600]="overdueOnly" [class.!text-white]="overdueOnly" matTooltip="Show only overdue invoices" data-testid="overdue-filter">
                 <mat-icon>{{ overdueOnly ? 'filter_alt' : 'filter_alt_off' }}</mat-icon>&nbsp;{{ overdueOnly ? 'Overdue only' : 'All' }}
             </button>
             <button mat-fab color="primary" (click)="add()" matTooltip="Create Invoice"><mat-icon>add</mat-icon></button>
