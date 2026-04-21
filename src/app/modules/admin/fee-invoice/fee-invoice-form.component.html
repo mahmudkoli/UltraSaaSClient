@@ -41,6 +41,12 @@
                             <mat-icon class="icon-size-4">info</mat-icon> Recording payment for existing invoice
                         </div>
                         <div class="text-sm text-gray-600">Invoice <span class="font-mono font-semibold text-gray-900">{{ currentInvoice.invoiceNumber }}</span> &middot; Student: <span class="font-semibold text-gray-900">{{ currentInvoice.studentName }}</span></div>
+                        <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-600">
+                            <span>Class: <span class="font-semibold text-gray-900">{{ currentInvoice.className || '—' }}</span></span>
+                            <span>Academic Year: <span class="font-semibold text-gray-900">{{ currentInvoice.academicYearName || '—' }}</span></span>
+                            <span>Invoice Date: <span class="font-semibold text-gray-900">{{ currentInvoice.invoiceDate | date:'mediumDate' }}</span></span>
+                            <span>Due Date: <span class="font-semibold text-gray-900">{{ currentInvoice.dueDate | date:'mediumDate' }}</span></span>
+                        </div>
                         <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2 border-t border-green-200">
                             <div><div class="text-xs text-gray-500">Total</div><div class="text-lg font-bold">{{ currentInvoice.totalAmount | number:'1.2-2' }}</div></div>
                             <div><div class="text-xs text-gray-500">Already paid</div><div class="text-lg font-bold text-green-700">{{ currentInvoice.paidAmount | number:'1.2-2' }}</div></div>

@@ -105,7 +105,7 @@ export class FeeInvoiceFormComponent implements OnInit, OnDestroy {
         this._classesService.search({ pageNumber: 1, pageSize: 200 })
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({ next: (r) => { this.classes = r.data; this._cdr.markForCheck(); }, error: () => {} });
-        this._academicYearsService.search({ pageNumber: 1, pageSize: 200, isActive: true })
+        this._academicYearsService.search({ pageNumber: 1, pageSize: 200 })
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({ next: (r) => { this.academicYears = r.data; this._cdr.markForCheck(); }, error: () => {} });
     }
@@ -127,7 +127,15 @@ export class FeeInvoiceFormComponent implements OnInit, OnDestroy {
                     paidBy: '',
                     receiptNumber: ''
                 });
-                // In edit mode, set validators for payment fields
+                // Edit mode is Record-Payment only — the invoice fields are
+                // already set on the server and this form doesn't re-send them.
+                // Clear create-mode required validators so the form isn't stuck
+                // invalid on fields the user never sees or interacts with.
+                const createOnlyFields = ['invoiceNumber', 'studentId', 'classId', 'academicYearId', 'invoiceDate', 'dueDate', 'totalAmount'];
+                for (const f of createOnlyFields) {
+                    this.form.get(f)?.clearValidators();
+                    this.form.get(f)?.updateValueAndValidity();
+                }
                 this.form.get('paidAmount')?.setValidators([Validators.required, Validators.min(0.01)]);
                 this.form.get('paymentMethod')?.setValidators([Validators.required, Validators.maxLength(50)]);
                 this.form.get('paidAmount')?.updateValueAndValidity();
