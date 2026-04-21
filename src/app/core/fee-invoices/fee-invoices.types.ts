@@ -67,3 +67,21 @@ export interface SearchFeeInvoicesRequest {
 }
 
 export { PaginationResponse } from '../students/students.types';
+
+export interface FeeStatusBucket {
+    status: string;
+    count: number;
+    amount: number;
+}
+
+export interface FeeAnalytics {
+    totalInvoices: number;
+    totalInvoiced: number;
+    totalCollected: number;
+    totalOutstanding: number;
+    overdueCount: number;
+    overdueAmount: number;
+    thisMonthCollected: number;
+    collectionRate: number;
+    statusBreakdown: FeeStatusBucket[];
+}

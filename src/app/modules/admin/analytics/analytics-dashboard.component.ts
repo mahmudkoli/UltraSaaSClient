@@ -16,12 +16,14 @@ import { DashboardService } from '../../../core/dashboard/dashboard.service';
 import { StudentAcademicsService } from '../../../core/student-academics/student-academics.service';
 import { StudentHealthService } from '../../../core/student-health/student-health.service';
 import { TeacherQualificationsService } from '../../../core/teacher-qualifications/teacher-qualifications.service';
+import { FeeInvoicesService } from '../../../core/fee-invoices/fee-invoices.service';
 
 // Types
 import { StatsDto } from '../../../core/dashboard/dashboard.types';
 import { AcademicAnalytics } from '../../../core/student-academics/student-academics.types';
 import { HealthAnalytics } from '../../../core/student-health/student-health.types';
 import { QualificationAnalytics } from '../../../core/teacher-qualifications/teacher-qualifications.types';
+import { FeeAnalytics } from '../../../core/fee-invoices/fee-invoices.types';
 
 @Component({
     selector: 'analytics-dashboard',
@@ -312,6 +314,83 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
                         </div>
                     </div>
 
+                    <!-- Fee & Revenue Analytics -->
+                    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+                        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 px-6 py-4">
+                            <h3 class="text-xl font-bold text-white flex items-center">
+                                <mat-icon class="mr-2">payments</mat-icon>
+                                Fee &amp; Revenue
+                            </h3>
+                        </div>
+                        <div class="p-6">
+                            <div *ngIf="feeAnalytics" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                                <a routerLink="/fee-invoices" class="block bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-800/20 rounded-lg p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-fee-invoices">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-emerald-600 dark:text-emerald-400 flex items-center gap-1">Total Invoiced <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
+                                            <p class="text-2xl font-bold text-emerald-900 dark:text-emerald-100">{{ feeAnalytics.totalInvoiced | number:'1.0-0' }}</p>
+                                            <p class="text-xs text-emerald-600/80 dark:text-emerald-400/80 mt-1">{{ feeAnalytics.totalInvoices }} invoices</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center">
+                                            <mat-icon class="text-white">request_quote</mat-icon>
+                                        </div>
+                                    </div>
+                                </a>
+                                <div class="bg-gradient-to-br from-teal-50 to-teal-100 dark:from-teal-900/20 dark:to-teal-800/20 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-teal-600 dark:text-teal-400">Collected</p>
+                                            <p class="text-2xl font-bold text-teal-900 dark:text-teal-100">{{ feeAnalytics.totalCollected | number:'1.0-0' }}</p>
+                                            <p class="text-xs text-teal-600/80 dark:text-teal-400/80 mt-1">{{ feeAnalytics.collectionRate | number:'1.1-1' }}% collection rate</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-teal-500 rounded-full flex items-center justify-center">
+                                            <mat-icon class="text-white">paid</mat-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-800/20 rounded-lg p-4">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-amber-600 dark:text-amber-400">Outstanding</p>
+                                            <p class="text-2xl font-bold text-amber-900 dark:text-amber-100">{{ feeAnalytics.totalOutstanding | number:'1.0-0' }}</p>
+                                            <p class="text-xs text-amber-600/80 dark:text-amber-400/80 mt-1">This month collected: {{ feeAnalytics.thisMonthCollected | number:'1.0-0' }}</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                                            <mat-icon class="text-white">schedule</mat-icon>
+                                        </div>
+                                    </div>
+                                </div>
+                                <a [routerLink]="['/fee-invoices']" [queryParams]="{ overdue: true }" class="block bg-gradient-to-br from-red-50 to-red-100 dark:from-red-900/20 dark:to-red-800/20 rounded-lg p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-fee-overdue">
+                                    <div class="flex items-center justify-between">
+                                        <div>
+                                            <p class="text-sm font-medium text-red-600 dark:text-red-400 flex items-center gap-1">Overdue <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
+                                            <p class="text-2xl font-bold text-red-900 dark:text-red-100">{{ feeAnalytics.overdueCount }}</p>
+                                            <p class="text-xs text-red-600/80 dark:text-red-400/80 mt-1">Amount: {{ feeAnalytics.overdueAmount | number:'1.0-0' }}</p>
+                                        </div>
+                                        <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center">
+                                            <mat-icon class="text-white">warning</mat-icon>
+                                        </div>
+                                    </div>
+                                </a>
+                            </div>
+
+                            <!-- Status Breakdown -->
+                            <div class="mt-8" *ngIf="feeAnalytics?.statusBreakdown?.length">
+                                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Invoice Status Breakdown</h4>
+                                <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                    <div *ngFor="let bucket of feeAnalytics.statusBreakdown" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+                                        <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ bucket.status }}</p>
+                                        <p class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ bucket.count }}</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ bucket.amount | number:'1.0-0' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div *ngIf="!feeAnalytics" class="p-6 text-center text-gray-500 dark:text-gray-400">
+                            No fee data available
+                        </div>
+                    </div>
+
                     <!-- Teacher Qualifications Analytics -->
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
                         <div class="bg-gradient-to-r from-purple-500 to-indigo-600 px-6 py-4">
@@ -336,8 +415,8 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
                                 <a routerLink="/teacher-qualifications" class="block bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-800/20 rounded-lg p-4 hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 no-underline" data-testid="drill-qualifications">
                                     <div class="flex items-center justify-between">
                                         <div>
-                                            <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1">Total Teachers <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
-                                            <p class="text-2xl font-bold text-indigo-900 dark:text-indigo-100">{{ qualificationAnalytics.totalTeachers }}</p>
+                                            <p class="text-sm font-medium text-indigo-600 dark:text-indigo-400 flex items-center gap-1">Qualification Records <mat-icon class="icon-size-3 opacity-50">arrow_outward</mat-icon></p>
+                                            <p class="text-2xl font-bold text-indigo-900 dark:text-indigo-100">{{ qualificationAnalytics.totalRecords }}</p>
                                         </div>
                                         <div class="w-10 h-10 bg-indigo-500 rounded-full flex items-center justify-center">
                                             <mat-icon class="text-white">person</mat-icon>
@@ -369,13 +448,13 @@ import { QualificationAnalytics } from '../../../core/teacher-qualifications/tea
                             </div>
 
                             <!-- Qualification Levels -->
-                            <div class="mt-8">
+                            <div class="mt-8" *ngIf="qualificationAnalytics.qualificationDistribution?.length">
                                 <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">Qualification Levels</h4>
                                 <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                                    <div *ngFor="let level of qualificationAnalytics.qualificationLevels" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
+                                    <div *ngFor="let level of qualificationAnalytics.qualificationDistribution" class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 text-center">
                                         <p class="text-sm font-medium text-gray-600 dark:text-gray-400">{{ level.level }}</p>
                                         <p class="text-xl font-bold text-gray-900 dark:text-gray-100">{{ level.count }}</p>
-                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ getPercentage(level.count, qualificationAnalytics.totalTeachers) }}%</p>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400">{{ getPercentage(level.count, qualificationAnalytics.totalRecords) }}%</p>
                                     </div>
                                 </div>
                             </div>
@@ -409,6 +488,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
     academicAnalytics: AcademicAnalytics | null = null;
     healthAnalytics: HealthAnalytics | null = null;
     qualificationAnalytics: QualificationAnalytics | null = null;
+    feeAnalytics: FeeAnalytics | null = null;
     isLoading = false;
 
     months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
@@ -421,6 +501,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
         private _studentAcademicsService: StudentAcademicsService,
         private _studentHealthService: StudentHealthService,
         private _teacherQualificationsService: TeacherQualificationsService,
+        private _feeInvoicesService: FeeInvoicesService,
         private _changeDetectorRef: ChangeDetectorRef
     ) {}
 
@@ -441,7 +522,8 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
             stats: this._dashboardService.getStats(),
             academic: this._studentAcademicsService.getAnalytics(),
             health: this._studentHealthService.getAnalytics(),
-            qualifications: this._teacherQualificationsService.getAnalytics()
+            qualifications: this._teacherQualificationsService.getAnalytics(),
+            fees: this._feeInvoicesService.getAnalytics()
         })
         .pipe(takeUntil(this._unsubscribeAll))
         .subscribe({
@@ -450,6 +532,7 @@ export class AnalyticsDashboardComponent implements OnInit, OnDestroy {
                 this.academicAnalytics = result.academic;
                 this.healthAnalytics = result.health;
                 this.qualificationAnalytics = result.qualifications;
+                this.feeAnalytics = result.fees;
                 this.isLoading = false;
                 this._changeDetectorRef.markForCheck();
             },
