@@ -35,4 +35,22 @@ test.describe('Fee Invoice UX E2E', () => {
         await expect(page.locator('[data-testid="overdue-filter"]')).toBeVisible();
     });
 
+    test('04 - Print Receipt button appears on each invoice row and opens a print tab', async ({ page, context }) => {
+        await login(page);
+        await page.goto('/fee-invoices');
+        await page.waitForLoadState('networkidle');
+
+        const printBtn = page.locator('[data-testid="fee-invoice-print"]').first();
+        await expect(printBtn).toBeVisible();
+
+        const popupPromise = context.waitForEvent('page');
+        await printBtn.click();
+        const popup = await popupPromise;
+        await popup.waitForLoadState('domcontentloaded');
+
+        await expect(popup.locator('h1')).toContainText('INVOICE');
+        await expect(popup.locator('body')).toContainText('Balance Due');
+        await popup.close();
+    });
+
 });

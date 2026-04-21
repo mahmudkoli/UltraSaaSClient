@@ -128,6 +128,124 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
         });
     }
 
+    printReceipt(item: FeeInvoiceDto): void {
+        const html = this.buildReceiptHtml(item);
+        const w = window.open('', '_blank', 'width=800,height=900');
+        if (!w) {
+            this._notificationService.error('Pop-up blocked. Allow pop-ups to print the receipt.');
+            return;
+        }
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+    }
+
+    private buildReceiptHtml(inv: FeeInvoiceDto): string {
+        const money = (n: number | undefined) => (n ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const date = (d?: string) => d ? new Date(d).toLocaleDateString() : '—';
+        const status = this.getStatusName(inv.status);
+
+        return `<!doctype html>
+<html><head>
+<meta charset="utf-8">
+<title>Invoice ${this.escape(inv.invoiceNumber)}</title>
+<style>
+  * { box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #111; margin: 0; padding: 32px; }
+  .header { display: flex; justify-content: space-between; align-items: flex-start; border-bottom: 2px solid #111; padding-bottom: 16px; margin-bottom: 24px; }
+  .header h1 { margin: 0; font-size: 28px; letter-spacing: 1px; }
+  .muted { color: #666; font-size: 13px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-bottom: 24px; }
+  .block h3 { font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #666; margin: 0 0 8px; }
+  .block p { margin: 2px 0; font-size: 14px; }
+  table { width: 100%; border-collapse: collapse; margin: 16px 0 24px; }
+  th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; font-size: 14px; }
+  th { background: #f6f6f6; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; color: #444; }
+  .text-right { text-align: right; }
+  .totals { margin-left: auto; width: 280px; font-size: 14px; }
+  .totals div { display: flex; justify-content: space-between; padding: 6px 0; }
+  .totals .grand { border-top: 2px solid #111; margin-top: 8px; padding-top: 10px; font-size: 16px; font-weight: 700; }
+  .status { display: inline-block; padding: 4px 12px; border-radius: 999px; font-size: 12px; font-weight: 600; letter-spacing: 0.5px; }
+  .status-paid { background: #d1fae5; color: #065f46; }
+  .status-partial { background: #dbeafe; color: #1e40af; }
+  .status-pending { background: #fef3c7; color: #92400e; }
+  .status-overdue { background: #fee2e2; color: #991b1b; }
+  .status-other { background: #e5e7eb; color: #374151; }
+  .footer { border-top: 1px solid #eee; padding-top: 16px; margin-top: 32px; font-size: 12px; color: #666; text-align: center; }
+  @media print { body { padding: 16px; } .no-print { display: none; } }
+</style>
+</head><body>
+<div class="header">
+  <div>
+    <h1>INVOICE</h1>
+    <div class="muted">${this.escape(inv.invoiceNumber)}</div>
+  </div>
+  <div style="text-align:right;">
+    <span class="status ${this.statusPrintClass(status)}">${this.escape(status)}</span>
+    <div class="muted" style="margin-top:8px;">Issued ${date(inv.invoiceDate)}</div>
+    <div class="muted">Due ${date(inv.dueDate)}</div>
+  </div>
+</div>
+
+<div class="grid">
+  <div class="block">
+    <h3>Billed To</h3>
+    <p><strong>${this.escape(inv.studentName || '—')}</strong></p>
+    <p class="muted">Class: ${this.escape(inv.className || '—')}</p>
+    <p class="muted">Academic Year: ${this.escape(inv.academicYearName || '—')}</p>
+  </div>
+  <div class="block">
+    <h3>Payment</h3>
+    <p>Method: ${this.escape(inv.paymentMethod || '—')}</p>
+    <p>Paid on: ${date(inv.paidDate)}</p>
+    <p>Receipt #: ${this.escape(inv.receiptNumber || '—')}</p>
+    <p>Txn ID: ${this.escape(inv.transactionId || '—')}</p>
+  </div>
+</div>
+
+<table>
+  <thead><tr><th>Description</th><th class="text-right">Amount</th></tr></thead>
+  <tbody>
+    <tr><td>Tuition / Fees</td><td class="text-right">${money(inv.totalAmount)}</td></tr>
+    ${inv.discountAmount ? `<tr><td>Discount</td><td class="text-right">-${money(inv.discountAmount)}</td></tr>` : ''}
+    ${inv.taxAmount ? `<tr><td>Tax</td><td class="text-right">${money(inv.taxAmount)}</td></tr>` : ''}
+    ${inv.lateFeeAmount ? `<tr><td>Late Fee</td><td class="text-right">${money(inv.lateFeeAmount)}</td></tr>` : ''}
+  </tbody>
+</table>
+
+<div class="totals">
+  <div><span>Subtotal</span><span>${money(inv.totalAmount)}</span></div>
+  <div><span>Paid</span><span>${money(inv.paidAmount)}</span></div>
+  <div class="grand"><span>Balance Due</span><span>${money(inv.balanceAmount)}</span></div>
+</div>
+
+${inv.remarks ? `<div class="block"><h3>Remarks</h3><p>${this.escape(inv.remarks)}</p></div>` : ''}
+
+<div class="footer">
+  Thank you for your payment. This is a system-generated receipt.
+</div>
+
+<script>
+  window.addEventListener('load', function() { setTimeout(function(){ window.print(); }, 100); });
+</script>
+</body></html>`;
+    }
+
+    private escape(s: string | undefined | null): string {
+        if (s === null || s === undefined) return '';
+        return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]!));
+    }
+
+    private statusPrintClass(status: string): string {
+        switch (status) {
+            case 'Paid': return 'status-paid';
+            case 'Partial': return 'status-partial';
+            case 'Pending': return 'status-pending';
+            case 'Overdue': return 'status-overdue';
+            default: return 'status-other';
+        }
+    }
+
     getStatusName(status: InvoiceStatus): string {
         const map: Record<number, string> = {
             1: 'Pending', 2: 'Partial', 3: 'Paid', 4: 'Overdue',
