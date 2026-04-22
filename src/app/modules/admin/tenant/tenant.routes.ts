@@ -13,14 +13,6 @@ export default [
                 loadComponent: () => import('./tenant-form.component').then(m => m.TenantFormComponent)
             },
             {
-                path: 'create-with-institute',
-                loadComponent: () => import('./tenant-with-institute-form.component').then(m => m.TenantWithInstituteFormComponent)
-            },
-            {
-                path: 'wizard',
-                loadComponent: () => import('./tenant-institute-wizard.component').then(m => m.TenantInstituteWizardComponent)
-            },
-            {
                 path: ':id/edit',
                 loadComponent: () => import('./tenant-form.component').then(m => m.TenantFormComponent)
             },

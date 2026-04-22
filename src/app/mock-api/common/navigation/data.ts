@@ -27,7 +27,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 title: 'Outlets',
                 type : 'basic',
                 icon : 'heroicons_outline:building-storefront',
-                link : '/institute'
+                link : '/outlet'
             }
         ]
     }
@@ -83,7 +83,7 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 title: 'Outlets',
                 type : 'basic',
                 icon : 'heroicons_outline:building-storefront',
-                link : '/institute'
+                link : '/outlet'
             }
         ]
     }
@@ -114,7 +114,7 @@ export const horizontalNavigation: FuseNavigationItem[] = [
                 title: 'Outlets',
                 type : 'basic',
                 icon : 'heroicons_outline:building-storefront',
-                link : '/institute'
+                link : '/outlet'
             }
         ]
     }

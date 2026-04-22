@@ -19,7 +19,7 @@ test.describe('UltraPOS E2E Tests', () => {
     // NAVIGATION — core routes load without error
     // ════════════════════════════════════════════════════════════
 
-    const moduleRoutes = ['/users', '/tenant', '/institute', '/profile'];
+    const moduleRoutes = ['/users', '/tenant', '/outlet', '/profile'];
 
     test('02 - All core routes load', async ({ page }) => {
         await login(page);
@@ -44,9 +44,9 @@ test.describe('UltraPOS E2E Tests', () => {
         await expect(page.locator('text=root').first()).toBeVisible({ timeout: 10000 });
     });
 
-    test('04 - Institute: page loads', async ({ page }) => {
+    test('04 - Outlet: page loads', async ({ page }) => {
         await login(page);
-        await page.goto('/institute');
+        await page.goto('/outlet');
         await page.waitForLoadState('networkidle');
         await expect(page).toHaveURL(/.*institute/);
     });
