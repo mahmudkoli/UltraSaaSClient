@@ -3,187 +3,30 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
 
 export const defaultNavigation: FuseNavigationItem[] = [
     {
-        id   : 'analytics',
-        title: 'Analytics Dashboard',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-bar',
-        link : '/analytics'
-    },
-    {
-        id   : 'example',
-        title: 'Example',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-pie',
-        link : '/example'
-    },
-    {
-        id: 'academic-management',
-        title: 'Academic Management',
-        type: 'collapsable',
-        icon: 'heroicons_outline:academic-cap',
-        children: [
-            {
-                id   : 'user-management',
-                title: 'User Management',
-                type : 'basic',
-                icon : 'heroicons_outline:users',
-                link : '/users'
-            },
-            {
-                id   : 'student-management',
-                title: 'Student Management',
-                type : 'basic',
-                icon : 'heroicons_outline:user-group',
-                link : '/students'
-            },
-            {
-                id   : 'teacher-management',
-                title: 'Teacher Management',
-                type : 'basic',
-                icon : 'heroicons_outline:identification',
-                link : '/teachers'
-            },
-            {
-                id   : 'academic-year-management',
-                title: 'Academic Years',
-                type : 'basic',
-                icon : 'heroicons_outline:calendar-days',
-                link : '/academic-years'
-            },
-            {
-                id   : 'class-management',
-                title: 'Classes',
-                type : 'basic',
-                icon : 'heroicons_outline:rectangle-group',
-                link : '/classes'
-            },
-            {
-                id   : 'subject-management',
-                title: 'Subjects',
-                type : 'basic',
-                icon : 'heroicons_outline:book-open',
-                link : '/subjects'
-            },
-            {
-                id   : 'student-class-management',
-                title: 'Student-Class',
-                type : 'basic',
-                icon : 'heroicons_outline:link',
-                link : '/student-classes'
-            },
-            {
-                id   : 'class-subject-management',
-                title: 'Class Subjects',
-                type : 'basic',
-                icon : 'heroicons_outline:puzzle-piece',
-                link : '/class-subjects'
-            }
-        ]
-    },
-    {
-        id: 'records-management',
-        title: 'Records Management',
-        type: 'collapsable',
-        icon: 'heroicons_outline:document-text',
-        children: [
-            {
-                id   : 'student-academics',
-                title: 'Academic Records',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-list',
-                link : '/student-academics'
-            },
-            {
-                id   : 'student-health',
-                title: 'Health Records',
-                type : 'basic',
-                icon : 'heroicons_outline:heart',
-                link : '/student-health'
-            },
-            {
-                id   : 'teacher-qualifications',
-                title: 'Teacher Qualifications',
-                type : 'basic',
-                icon : 'heroicons_outline:trophy',
-                link : '/teacher-qualifications'
-            },
-            {
-                id   : 'attendance-management',
-                title: 'Attendance',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-check',
-                link : '/attendances'
-            },
-            {
-                id   : 'exam-management',
-                title: 'Exams',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-list',
-                link : '/exams'
-            },
-            {
-                id   : 'exam-result-management',
-                title: 'Exam Results',
-                type : 'basic',
-                icon : 'heroicons_outline:chart-bar-square',
-                link : '/exam-results'
-            }
-        ]
-    },
-    {
-        id: 'finance-management',
-        title: 'Finance',
-        type: 'collapsable',
-        icon: 'heroicons_outline:currency-dollar',
-        children: [
-            {
-                id   : 'fee-type-management',
-                title: 'Fee Types',
-                type : 'basic',
-                icon : 'heroicons_outline:tag',
-                link : '/fee-types'
-            },
-            {
-                id   : 'fee-structure-management',
-                title: 'Fee Structures',
-                type : 'basic',
-                icon : 'heroicons_outline:table-cells',
-                link : '/fee-structures'
-            },
-            {
-                id   : 'fee-structure-detail-management',
-                title: 'Fee Structure Details',
-                type : 'basic',
-                icon : 'heroicons_outline:list-bullet',
-                link : '/fee-structure-details'
-            },
-            {
-                id   : 'fee-invoice-management',
-                title: 'Fee Invoices',
-                type : 'basic',
-                icon : 'heroicons_outline:banknotes',
-                link : '/fee-invoices'
-            }
-        ]
-    },
-    {
         id: 'system-management',
         title: 'System Management',
         type: 'collapsable',
         icon: 'heroicons_outline:cog-6-tooth',
         children: [
             {
+                id   : 'user-management',
+                title: 'Users',
+                type : 'basic',
+                icon : 'heroicons_outline:users',
+                link : '/users'
+            },
+            {
                 id   : 'tenant-management',
-                title: 'Tenant Management',
+                title: 'Tenants',
                 type : 'basic',
                 icon : 'heroicons_outline:building-office',
                 link : '/tenant'
             },
             {
                 id   : 'institute-management',
-                title: 'Institute Management',
+                title: 'Outlets',
                 type : 'basic',
-                icon : 'heroicons_outline:academic-cap',
+                icon : 'heroicons_outline:building-storefront',
                 link : '/institute'
             }
         ]
@@ -192,144 +35,11 @@ export const defaultNavigation: FuseNavigationItem[] = [
 
 export const compactNavigation: FuseNavigationItem[] = [
     {
-        id   : 'analytics',
-        title: 'Analytics',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-bar',
-        link : '/analytics'
-    },
-    {
-        id   : 'example',
-        title: 'Example',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-pie',
-        link : '/example'
-    },
-    {
         id   : 'user-management',
         title: 'Users',
         type : 'basic',
         icon : 'heroicons_outline:users',
         link : '/users'
-    },
-    {
-        id   : 'student-management',
-        title: 'Students',
-        type : 'basic',
-        icon : 'heroicons_outline:user-group',
-        link : '/students'
-    },
-    {
-        id   : 'teacher-management',
-        title: 'Teachers',
-        type : 'basic',
-        icon : 'heroicons_outline:identification',
-        link : '/teachers'
-    },
-    {
-        id   : 'academic-year-management',
-        title: 'Academic Years',
-        type : 'basic',
-        icon : 'heroicons_outline:calendar-days',
-        link : '/academic-years'
-    },
-    {
-        id   : 'class-management',
-        title: 'Classes',
-        type : 'basic',
-        icon : 'heroicons_outline:rectangle-group',
-        link : '/classes'
-    },
-    {
-        id   : 'subject-management',
-        title: 'Subjects',
-        type : 'basic',
-        icon : 'heroicons_outline:book-open',
-        link : '/subjects'
-    },
-    {
-        id   : 'student-class-management',
-        title: 'Student-Class',
-        type : 'basic',
-        icon : 'heroicons_outline:link',
-        link : '/student-classes'
-    },
-    {
-        id   : 'class-subject-management',
-        title: 'Class Subjects',
-        type : 'basic',
-        icon : 'heroicons_outline:puzzle-piece',
-        link : '/class-subjects'
-    },
-    {
-        id   : 'student-academics',
-        title: 'Academic Records',
-        type : 'basic',
-        icon : 'heroicons_outline:clipboard-document-list',
-        link : '/student-academics'
-    },
-    {
-        id   : 'student-health',
-        title: 'Health Records',
-        type : 'basic',
-        icon : 'heroicons_outline:heart',
-        link : '/student-health'
-    },
-    {
-        id   : 'teacher-qualifications',
-        title: 'Qualifications',
-        type : 'basic',
-        icon : 'heroicons_outline:trophy',
-        link : '/teacher-qualifications'
-    },
-    {
-        id   : 'attendance-management',
-        title: 'Attendance',
-        type : 'basic',
-        icon : 'heroicons_outline:clipboard-document-check',
-        link : '/attendances'
-    },
-    {
-        id   : 'exam-management',
-        title: 'Exams',
-        type : 'basic',
-        icon : 'heroicons_outline:clipboard-document-list',
-        link : '/exams'
-    },
-    {
-        id   : 'exam-result-management',
-        title: 'Exam Results',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-bar-square',
-        link : '/exam-results'
-    },
-    {
-        id   : 'fee-type-management',
-        title: 'Fee Types',
-        type : 'basic',
-        icon : 'heroicons_outline:tag',
-        link : '/fee-types'
-    },
-    {
-        id   : 'fee-structure-management',
-        title: 'Fee Structures',
-        type : 'basic',
-        icon : 'heroicons_outline:table-cells',
-        link : '/fee-structures'
-    },
-    {
-        id   : 'fee-structure-detail-management',
-        title: 'Fee Details',
-        type : 'basic',
-        icon : 'heroicons_outline:list-bullet',
-        link : '/fee-structure-details'
-    },
-    {
-        id   : 'fee-invoice-management',
-        title: 'Fee Invoices',
-        type : 'basic',
-        icon : 'heroicons_outline:banknotes',
-        link : '/fee-invoices'
     },
     {
         id   : 'tenant-management',
@@ -340,178 +50,14 @@ export const compactNavigation: FuseNavigationItem[] = [
     },
     {
         id   : 'institute-management',
-        title: 'Institutes',
+        title: 'Outlets',
         type : 'basic',
-        icon : 'heroicons_outline:academic-cap',
+        icon : 'heroicons_outline:building-storefront',
         link : '/institute'
     }
 ];
 
 export const futuristicNavigation: FuseNavigationItem[] = [
-    {
-        id   : 'analytics',
-        title: 'Analytics Dashboard',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-bar',
-        link : '/analytics'
-    },
-    {
-        id   : 'example',
-        title: 'Example',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-pie',
-        link : '/example'
-    },
-    {
-        id: 'academic-management',
-        title: 'Academic Management',
-        type: 'collapsable',
-        icon: 'heroicons_outline:academic-cap',
-        children: [
-            {
-                id   : 'user-management',
-                title: 'User Management',
-                type : 'basic',
-                icon : 'heroicons_outline:users',
-                link : '/users'
-            },
-            {
-                id   : 'student-management',
-                title: 'Student Management',
-                type : 'basic',
-                icon : 'heroicons_outline:user-group',
-                link : '/students'
-            },
-            {
-                id   : 'teacher-management',
-                title: 'Teacher Management',
-                type : 'basic',
-                icon : 'heroicons_outline:identification',
-                link : '/teachers'
-            },
-            {
-                id   : 'academic-year-management',
-                title: 'Academic Years',
-                type : 'basic',
-                icon : 'heroicons_outline:calendar-days',
-                link : '/academic-years'
-            },
-            {
-                id   : 'class-management',
-                title: 'Classes',
-                type : 'basic',
-                icon : 'heroicons_outline:rectangle-group',
-                link : '/classes'
-            },
-            {
-                id   : 'subject-management',
-                title: 'Subjects',
-                type : 'basic',
-                icon : 'heroicons_outline:book-open',
-                link : '/subjects'
-            },
-            {
-                id   : 'student-class-management',
-                title: 'Student-Class',
-                type : 'basic',
-                icon : 'heroicons_outline:link',
-                link : '/student-classes'
-            },
-            {
-                id   : 'class-subject-management',
-                title: 'Class Subjects',
-                type : 'basic',
-                icon : 'heroicons_outline:puzzle-piece',
-                link : '/class-subjects'
-            }
-        ]
-    },
-    {
-        id: 'records-management',
-        title: 'Records Management',
-        type: 'collapsable',
-        icon: 'heroicons_outline:document-text',
-        children: [
-            {
-                id   : 'student-academics',
-                title: 'Academic Records',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-list',
-                link : '/student-academics'
-            },
-            {
-                id   : 'student-health',
-                title: 'Health Records',
-                type : 'basic',
-                icon : 'heroicons_outline:heart',
-                link : '/student-health'
-            },
-            {
-                id   : 'teacher-qualifications',
-                title: 'Teacher Qualifications',
-                type : 'basic',
-                icon : 'heroicons_outline:trophy',
-                link : '/teacher-qualifications'
-            },
-            {
-                id   : 'attendance-management',
-                title: 'Attendance',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-check',
-                link : '/attendances'
-            },
-            {
-                id   : 'exam-management',
-                title: 'Exams',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-list',
-                link : '/exams'
-            },
-            {
-                id   : 'exam-result-management',
-                title: 'Exam Results',
-                type : 'basic',
-                icon : 'heroicons_outline:chart-bar-square',
-                link : '/exam-results'
-            }
-        ]
-    },
-    {
-        id: 'finance-management',
-        title: 'Finance',
-        type: 'collapsable',
-        icon: 'heroicons_outline:currency-dollar',
-        children: [
-            {
-                id   : 'fee-type-management',
-                title: 'Fee Types',
-                type : 'basic',
-                icon : 'heroicons_outline:tag',
-                link : '/fee-types'
-            },
-            {
-                id   : 'fee-structure-management',
-                title: 'Fee Structures',
-                type : 'basic',
-                icon : 'heroicons_outline:table-cells',
-                link : '/fee-structures'
-            },
-            {
-                id   : 'fee-structure-detail-management',
-                title: 'Fee Structure Details',
-                type : 'basic',
-                icon : 'heroicons_outline:list-bullet',
-                link : '/fee-structure-details'
-            },
-            {
-                id   : 'fee-invoice-management',
-                title: 'Fee Invoices',
-                type : 'basic',
-                icon : 'heroicons_outline:banknotes',
-                link : '/fee-invoices'
-            }
-        ]
-    },
     {
         id: 'system-management',
         title: 'System Management',
@@ -519,17 +65,24 @@ export const futuristicNavigation: FuseNavigationItem[] = [
         icon: 'heroicons_outline:cog-6-tooth',
         children: [
             {
+                id   : 'user-management',
+                title: 'Users',
+                type : 'basic',
+                icon : 'heroicons_outline:users',
+                link : '/users'
+            },
+            {
                 id   : 'tenant-management',
-                title: 'Tenant Management',
+                title: 'Tenants',
                 type : 'basic',
                 icon : 'heroicons_outline:building-office',
                 link : '/tenant'
             },
             {
                 id   : 'institute-management',
-                title: 'Institute Management',
+                title: 'Outlets',
                 type : 'basic',
-                icon : 'heroicons_outline:academic-cap',
+                icon : 'heroicons_outline:building-storefront',
                 link : '/institute'
             }
         ]
@@ -538,22 +91,8 @@ export const futuristicNavigation: FuseNavigationItem[] = [
 
 export const horizontalNavigation: FuseNavigationItem[] = [
     {
-        id   : 'analytics',
-        title: 'Analytics',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-bar',
-        link : '/analytics'
-    },
-    {
-        id   : 'example',
-        title: 'Example',
-        type : 'basic',
-        icon : 'heroicons_outline:chart-pie',
-        link : '/example'
-    },
-    {
-        id: 'management',
-        title: 'Management',
+        id: 'system',
+        title: 'System',
         type: 'group',
         children: [
             {
@@ -564,146 +103,6 @@ export const horizontalNavigation: FuseNavigationItem[] = [
                 link : '/users'
             },
             {
-                id   : 'student-management',
-                title: 'Students',
-                type : 'basic',
-                icon : 'heroicons_outline:user-group',
-                link : '/students'
-            },
-            {
-                id   : 'teacher-management',
-                title: 'Teachers',
-                type : 'basic',
-                icon : 'heroicons_outline:identification',
-                link : '/teachers'
-            },
-            {
-                id   : 'academic-year-management',
-                title: 'Academic Years',
-                type : 'basic',
-                icon : 'heroicons_outline:calendar-days',
-                link : '/academic-years'
-            },
-            {
-                id   : 'class-management',
-                title: 'Classes',
-                type : 'basic',
-                icon : 'heroicons_outline:rectangle-group',
-                link : '/classes'
-            },
-            {
-                id   : 'subject-management',
-                title: 'Subjects',
-                type : 'basic',
-                icon : 'heroicons_outline:book-open',
-                link : '/subjects'
-            },
-            {
-                id   : 'student-class-management',
-                title: 'Student-Class',
-                type : 'basic',
-                icon : 'heroicons_outline:link',
-                link : '/student-classes'
-            },
-            {
-                id   : 'class-subject-management',
-                title: 'Class Subjects',
-                type : 'basic',
-                icon : 'heroicons_outline:puzzle-piece',
-                link : '/class-subjects'
-            }
-        ]
-    },
-    {
-        id: 'records',
-        title: 'Records',
-        type: 'group',
-        children: [
-            {
-                id   : 'student-academics',
-                title: 'Academic Records',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-list',
-                link : '/student-academics'
-            },
-            {
-                id   : 'student-health',
-                title: 'Health Records',
-                type : 'basic',
-                icon : 'heroicons_outline:heart',
-                link : '/student-health'
-            },
-            {
-                id   : 'teacher-qualifications',
-                title: 'Teacher Qualifications',
-                type : 'basic',
-                icon : 'heroicons_outline:trophy',
-                link : '/teacher-qualifications'
-            },
-            {
-                id   : 'attendance-management',
-                title: 'Attendance',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-check',
-                link : '/attendances'
-            },
-            {
-                id   : 'exam-management',
-                title: 'Exams',
-                type : 'basic',
-                icon : 'heroicons_outline:clipboard-document-list',
-                link : '/exams'
-            },
-            {
-                id   : 'exam-result-management',
-                title: 'Exam Results',
-                type : 'basic',
-                icon : 'heroicons_outline:chart-bar-square',
-                link : '/exam-results'
-            }
-        ]
-    },
-    {
-        id: 'finance',
-        title: 'Finance',
-        type: 'group',
-        children: [
-            {
-                id   : 'fee-type-management',
-                title: 'Fee Types',
-                type : 'basic',
-                icon : 'heroicons_outline:tag',
-                link : '/fee-types'
-            },
-            {
-                id   : 'fee-structure-management',
-                title: 'Fee Structures',
-                type : 'basic',
-                icon : 'heroicons_outline:table-cells',
-                link : '/fee-structures'
-            },
-            {
-                id   : 'fee-structure-detail-management',
-                title: 'Fee Structure Details',
-                type : 'basic',
-                icon : 'heroicons_outline:list-bullet',
-                link : '/fee-structure-details'
-            },
-            {
-                id   : 'fee-invoice-management',
-                title: 'Fee Invoices',
-                type : 'basic',
-                icon : 'heroicons_outline:banknotes',
-                link : '/fee-invoices'
-            }
-        ]
-    },
-    {
-        id: 'system',
-        title: 'System',
-        type: 'group',
-        children: [
-            {
                 id   : 'tenant-management',
                 title: 'Tenants',
                 type : 'basic',
@@ -712,9 +111,9 @@ export const horizontalNavigation: FuseNavigationItem[] = [
             },
             {
                 id   : 'institute-management',
-                title: 'Institutes',
+                title: 'Outlets',
                 type : 'basic',
-                icon : 'heroicons_outline:academic-cap',
+                icon : 'heroicons_outline:building-storefront',
                 link : '/institute'
             }
         ]

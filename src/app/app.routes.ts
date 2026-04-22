@@ -74,28 +74,9 @@ export const appRoutes: Route[] = [
             initialData: initialDataResolver
         },
         children: [
-            {path: 'example', loadChildren: () => import('app/modules/admin/example/example.routes')},
-            {path: 'analytics', loadChildren: () => import('app/modules/admin/analytics/analytics.routes')},
             {path: 'users', loadChildren: () => import('app/modules/admin/user/user.routes')},
-            {path: 'students', loadChildren: () => import('app/modules/admin/student/student.routes')},
-            {path: 'teachers', loadChildren: () => import('app/modules/admin/teacher/teacher.routes')},
-            {path: 'student-academics', loadChildren: () => import('app/modules/admin/student-academics/student-academics.routes')},
-            {path: 'student-health', loadChildren: () => import('app/modules/admin/student-health/student-health.routes')},
-            {path: 'teacher-qualifications', loadChildren: () => import('app/modules/admin/teacher-qualifications/teacher-qualifications.routes')},
             {path: 'tenant', loadChildren: () => import('app/modules/admin/tenant/tenant.routes')},
             {path: 'institute', loadChildren: () => import('app/modules/admin/institute/institute.routes')},
-            {path: 'academic-years', loadChildren: () => import('app/modules/admin/academic-year/academic-year.routes')},
-            {path: 'classes', loadChildren: () => import('app/modules/admin/class/class.routes')},
-            {path: 'subjects', loadChildren: () => import('app/modules/admin/subject/subject.routes')},
-            {path: 'student-classes', loadChildren: () => import('app/modules/admin/student-class/student-class.routes')},
-            {path: 'attendances', loadChildren: () => import('app/modules/admin/attendance/attendance.routes')},
-            {path: 'exams', loadChildren: () => import('app/modules/admin/exam/exam.routes')},
-            {path: 'exam-results', loadChildren: () => import('app/modules/admin/exam-result/exam-result.routes')},
-            {path: 'fee-types', loadChildren: () => import('app/modules/admin/fee-type/fee-type.routes')},
-            {path: 'fee-structures', loadChildren: () => import('app/modules/admin/fee-structure/fee-structure.routes')},
-            {path: 'fee-invoices', loadChildren: () => import('app/modules/admin/fee-invoice/fee-invoice.routes')},
-            {path: 'class-subjects', loadChildren: () => import('app/modules/admin/class-subject/class-subject.routes')},
-            {path: 'fee-structure-details', loadChildren: () => import('app/modules/admin/fee-structure-detail/fee-structure-detail.routes')},
             {path: 'profile', loadChildren: () => import('app/modules/admin/profile/profile.routes')},
         ]
     }
