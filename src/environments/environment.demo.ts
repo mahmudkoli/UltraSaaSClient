@@ -4,5 +4,5 @@ export const environment = {
   appName: 'UltraSaaS Client',
   version: '1.0.0',
   tenantStrategy: 'subdomain' as 'subdomain' | 'manual',
-  baseDomain: 'ultrasaas.local',
+  baseDomain: 'ultrapos.local',
 };
