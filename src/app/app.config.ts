@@ -18,9 +18,7 @@ import { dateInterceptor } from './core/interceptors/date.interceptor';
 export const appConfig: ApplicationConfig = {
     providers: [
         provideAnimations(),
-        provideHttpClient(),
-        // Temporarily disabled date interceptor for debugging
-        // provideHttpClient(withInterceptors([dateInterceptor])),
+        // HttpClient is provided (with interceptors) by provideAuth() below — don't double-register here.
         provideRouter(appRoutes,
             withPreloading(PreloadAllModules),
             withInMemoryScrolling({scrollPositionRestoration: 'enabled'}),

@@ -56,8 +56,8 @@ export class AuthSignInComponent implements OnInit
         this.resolvedTenantName = autoTenant;
 
         this.signInForm = this._formBuilder.group({
-            tenant    : [autoTenant || 'root', [Validators.required]],
-            email     : ['admin@root.com', [Validators.required, Validators.email]],
+            tenant    : [autoTenant || 'electroplus', [Validators.required]],
+            email     : ['admin@electroplus.com', [Validators.required, Validators.email]],
             password  : ['123Pa$$word!', Validators.required],
             rememberMe: [''],
         });
