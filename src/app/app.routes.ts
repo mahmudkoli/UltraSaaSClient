@@ -10,14 +10,14 @@ import { LayoutComponent } from 'app/layout/layout.component';
 export const appRoutes: Route[] = [
 
     // Redirect empty path to '/users'
-    {path: '', pathMatch : 'full', redirectTo: 'users'},
+    {path: '', pathMatch : 'full', redirectTo: 'pos'},
 
     // Redirect signed-in user to the '/users'
     //
     // After the user signs in, the sign-in page will redirect the user to the 'signed-in-redirect'
     // path. Below is another redirection for that path to redirect the user to the desired
     // location. This is a small convenience to keep all main routes together here on this file.
-    {path: 'signed-in-redirect', pathMatch : 'full', redirectTo: 'users'},
+    {path: 'signed-in-redirect', pathMatch : 'full', redirectTo: 'pos'},
 
     // Auth routes for guests
     {
@@ -78,6 +78,14 @@ export const appRoutes: Route[] = [
             {path: 'tenant', loadChildren: () => import('app/modules/admin/tenant/tenant.routes')},
             {path: 'outlet', loadChildren: () => import('app/modules/admin/outlet/outlet.routes')},
             {path: 'profile', loadChildren: () => import('app/modules/admin/profile/profile.routes')},
+
+            // POS
+            {path: 'pos', loadChildren: () => import('app/modules/admin/pos/pos.routes')},
+            {path: 'catalog', loadChildren: () => import('app/modules/admin/catalog/catalog.routes')},
+            {path: 'sales', loadChildren: () => import('app/modules/admin/sales/sales.routes')},
+            {path: 'customers', loadChildren: () => import('app/modules/admin/customers/customers.routes')},
+            {path: 'suppliers', loadChildren: () => import('app/modules/admin/suppliers/suppliers.routes')},
+            {path: 'reports', loadChildren: () => import('app/modules/admin/reports/reports.routes')},
         ]
     }
 ];
