@@ -1,7 +1,8 @@
 import { Routes } from '@angular/router';
-import { SalesComponent, SaleDetailComponent } from './sales.component';
+import { SalesListComponent } from './sales-list.component';
+import { SaleDetailComponent } from './sale-detail.component';
 
 export default [
-    { path: '', component: SalesComponent },
+    { path: '', component: SalesListComponent },
     { path: ':id', component: SaleDetailComponent },
 ] as Routes;
