@@ -39,6 +39,7 @@ export interface TenantDto {
     maxDatabaseGB: number;
     maxApiCallsPerMonth: number;
     maxConcurrentUsers: number;
+    maxOutlets: number;
     maxUsers: number;
     maxInstitutes: number;
     currentMonthApiCalls: number;
@@ -134,6 +135,7 @@ export interface CreateTenantRequest {
     maxDatabaseGB?: number;
     maxApiCallsPerMonth?: number;
     maxConcurrentUsers?: number;
+    maxOutlets?: number;
     maxUsers?: number;
     maxInstitutes?: number;
 
@@ -194,6 +196,7 @@ export interface UpdateTenantRequest {
     maxDatabaseGB?: number;
     maxApiCallsPerMonth?: number;
     maxConcurrentUsers?: number;
+    maxOutlets?: number;
     maxUsers?: number;
     maxInstitutes?: number;
 
@@ -378,6 +381,8 @@ export interface UpdateResourceLimitsRequest {
     maxDatabaseGB?: number;
     maxApiCallsPerMonth?: number;
     maxConcurrentUsers?: number;
+    maxOutlets?: number;
+    maxUsers?: number;
 }
 
 export interface ExtendValidityRequest {
