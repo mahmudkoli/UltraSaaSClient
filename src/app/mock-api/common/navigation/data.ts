@@ -4,6 +4,7 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
 const posNav: FuseNavigationItem[] = [
     { id: 'pos', title: 'POS Sale', type: 'basic', icon: 'heroicons_outline:shopping-cart', link: '/pos' },
     { id: 'sales', title: 'Sales', type: 'basic', icon: 'heroicons_outline:receipt-percent', link: '/sales' },
+    { id: 'returns', title: 'Returns', type: 'basic', icon: 'heroicons_outline:arrow-uturn-left', link: '/returns' },
     {
         id: 'catalog', title: 'Catalog', type: 'collapsable', icon: 'heroicons_outline:squares-2x2',
         children: [
@@ -14,7 +15,15 @@ const posNav: FuseNavigationItem[] = [
         ],
     },
     { id: 'customers', title: 'Customers', type: 'basic', icon: 'heroicons_outline:user-group', link: '/customers' },
+    { id: 'promotions', title: 'Promotions', type: 'basic', icon: 'heroicons_outline:tag', link: '/promotions' },
     { id: 'suppliers', title: 'Suppliers', type: 'basic', icon: 'heroicons_outline:truck', link: '/suppliers' },
+    {
+        id: 'procurement', title: 'Procurement', type: 'collapsable', icon: 'heroicons_outline:archive-box',
+        children: [
+            { id: 'purchase-orders', title: 'Purchase Orders', type: 'basic', icon: 'heroicons_outline:document-text', link: '/purchase-orders' },
+            { id: 'goods-receipts', title: 'Goods Receipts', type: 'basic', icon: 'heroicons_outline:inbox-arrow-down', link: '/goods-receipts' },
+        ],
+    },
     { id: 'reports', title: 'Reports', type: 'basic', icon: 'heroicons_outline:chart-bar', link: '/reports' },
 ];
 
