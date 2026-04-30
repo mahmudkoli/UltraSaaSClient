@@ -43,3 +43,40 @@ export interface ProductElectronicsDto {
     warrantyMonths: number;
     warrantyTerms?: string;
 }
+
+export type StockTransferStatus = 'Draft' | 'InTransit' | 'Received' | 'Cancelled';
+
+export interface StockTransferItemDto {
+    id: string;
+    stockTransferId: string;
+    productId: string;
+    productName: string;
+    sku: string;
+    quantity: number;
+}
+
+export interface StockTransferDto {
+    id: string;
+    fromOutletId: string;
+    toOutletId: string;
+    transferNumber: string;
+    sequenceNumber: number;
+    status: StockTransferStatus;
+    createdOnUtc: string;
+    dispatchedOnUtc?: string;
+    receivedOnUtc?: string;
+    notes?: string;
+    items: StockTransferItemDto[];
+}
+
+export interface CreateStockTransferLine {
+    productId: string;
+    quantity: number;
+}
+
+export interface CreateStockTransferRequest {
+    fromOutletId: string;
+    toOutletId: string;
+    lines: CreateStockTransferLine[];
+    notes?: string;
+}
