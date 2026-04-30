@@ -18,15 +18,15 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('02 - Theme settings page loads for tenant', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
         await expect(page.locator('text=Theme Settings').first()).toBeVisible({ timeout: 10000 });
-        await expect(page.locator('text=tenant-001').first()).toBeVisible();
+        await expect(page.locator('text=electroplus').first()).toBeVisible();
     });
 
     test('03 - Theme settings page shows Color Theme section', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
         await expect(page.locator('text=Color Theme').first()).toBeVisible({ timeout: 10000 });
         await expect(page.locator('text=Color Scheme').first()).toBeVisible();
@@ -39,7 +39,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('04 - Can select a color theme', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         // Click on Teal theme
@@ -52,7 +52,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('05 - Can select a color scheme', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         // Click Dark scheme
@@ -65,7 +65,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('06 - Can select a layout', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         // Click Modern layout
@@ -82,7 +82,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('07 - Preview button exists and works', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         // Preview button should be visible
@@ -101,7 +101,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('08 - Back to Current restores original', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         // Select a different theme and preview
@@ -123,7 +123,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('09 - Save theme and verify selections persist', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         // Select Teal + Dark + Compact
@@ -138,7 +138,7 @@ test.describe('Tenant Theme Settings E2E', () => {
         await expect(page).toHaveURL(/.*tenant/, { timeout: 15000 });
 
         // Go back to theme settings — selections should be loaded
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         // Verify saved selections are pre-selected (ring-2 classes)
@@ -151,7 +151,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('10 - Reset to Default resets selections', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         // Select something non-default
@@ -171,7 +171,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('11 - Back button returns to tenant list', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/theme-settings');
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
 
         await page.locator('button:has-text("Back")').first().click();
@@ -184,7 +184,7 @@ test.describe('Tenant Theme Settings E2E', () => {
 
     test('12 - Tenant edit review shows theme info', async ({ page }) => {
         await login(page);
-        await page.goto('/tenant/tenant-001/edit');
+        await page.goto('/tenant/electroplus/edit');
         await page.waitForLoadState('networkidle');
 
         // Navigate to the Review tab (last tab)
@@ -204,10 +204,10 @@ test.describe('Tenant Theme Settings E2E', () => {
     test('13 - Different tenants have independent theme pages', async ({ page }) => {
         await login(page);
 
-        // Visit tenant-001 theme settings
-        await page.goto('/tenant/tenant-001/theme-settings');
+        // Visit electroplus theme settings
+        await page.goto('/tenant/electroplus/theme-settings');
         await page.waitForLoadState('networkidle');
-        await expect(page.locator('text=tenant-001').first()).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('text=electroplus').first()).toBeVisible({ timeout: 10000 });
 
         // Visit greenwood theme settings
         await page.goto('/tenant/greenwood/theme-settings');

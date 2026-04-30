@@ -1,21 +1,38 @@
-import { Page } from '@playwright/test';
+import { Page, expect } from '@playwright/test';
 
-export const ADMIN_EMAIL = 'admin@root.com';
+export const ROOT_TENANT = 'root';
+export const ROOT_EMAIL = 'admin@root.com';
+
+export const ELECTRO_TENANT = 'electroplus';
+export const ELECTRO_EMAIL = 'admin@electroplus.com';
+
 export const ADMIN_PASSWORD = '123Pa$$word!';
-export const TENANT = 'root';
 
-export async function login(page: Page) {
+// Backward-compat constants for the original e2e.spec.ts.
+export const ADMIN_EMAIL = ROOT_EMAIL;
+export const TENANT = ROOT_TENANT;
+
+/**
+ * Logs into the SPA with the given tenant credentials. Falls through to
+ * whatever post-login route the app navigates to (Phase 2.7d default is
+ * /pos). Callers should wait for whatever screen they need next.
+ */
+export async function login(
+    page: Page,
+    opts: { tenant?: string; email?: string; password?: string } = {},
+) {
+    const tenant = opts.tenant ?? ROOT_TENANT;
+    const email = opts.email ?? ROOT_EMAIL;
+    const password = opts.password ?? ADMIN_PASSWORD;
+
     await page.goto('/sign-in');
     await page.waitForSelector('#email', { timeout: 15000 });
 
-    // Fill login form
-    await page.locator('#tenant').fill(TENANT);
-    await page.locator('#email').fill(ADMIN_EMAIL);
-    await page.locator('#password').fill(ADMIN_PASSWORD);
-
-    // Click the Sign in button (no type="submit", uses (click) handler)
+    await page.locator('#tenant').fill(tenant);
+    await page.locator('#email').fill(email);
+    await page.locator('#password').fill(password);
     await page.locator('button:has-text("Sign in")').click();
 
-    // Wait for redirect after login (goes to /users)
-    await page.waitForURL('**/users', { timeout: 30000 });
+    // The auth flow is done once the URL leaves /sign-in.
+    await expect(page).not.toHaveURL(/sign-in/, { timeout: 30000 });
 }
