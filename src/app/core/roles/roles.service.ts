@@ -4,6 +4,7 @@ import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
 import {
     CreateOrUpdateRoleRequest,
+    PermissionDto,
     RoleDto,
     RoleWithPermissionsDto,
     UpdateRolePermissionsRequest,
@@ -28,4 +29,12 @@ export class RolesService {
 
     updatePermissions = (id: string, req: UpdateRolePermissionsRequest): Observable<string> =>
         this.http.put<string>(`${this.base}/${id}/permissions`, req);
+
+    /**
+     * Returns the permissions available to the current tenant — the tenant's
+     * permission pool intersected with the global Admin pool. Use this to
+     * populate the role-permission picker.
+     */
+    getAvailablePermissions = (): Observable<PermissionDto[]> =>
+        this.http.get<PermissionDto[]>(`${this.base}/permissions/available`);
 }

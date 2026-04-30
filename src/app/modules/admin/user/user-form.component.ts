@@ -17,9 +17,11 @@ import { Subject, takeUntil } from 'rxjs';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { UserService } from '../../../core/user/user.service';
-import { CreateUserRequest, UpdateUserRequest, UserDetailsDto } from '../../../core/user/user.types';
+import { CreateUserRequest, UpdateUserRequest, UserDetailsDto, UserRoleDto } from '../../../core/user/user.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
+import { RolesService } from '../../../core/roles/roles.service';
+import { RoleDto } from '../../../core/roles/roles.types';
 
 @Component({
     selector: 'user-form',
@@ -51,6 +53,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
     userId: string | null = null;
     isEditMode = false;
     user: UserDetailsDto | null = null;
+    availableRoles: RoleDto[] = [];
     
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -62,7 +65,8 @@ export class UserFormComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _route: ActivatedRoute,
         private _notificationService: NotificationService,
-        private _dateUtils: DateUtils
+        private _dateUtils: DateUtils,
+        private _rolesService: RolesService,
     ) {
         this.userForm = this._formBuilder.group({
             firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -74,14 +78,26 @@ export class UserFormComponent implements OnInit, OnDestroy {
             phoneNumber: [''],
             address: [''],
             gender: [''],
-            dateOfBirth: ['']
+            dateOfBirth: [''],
+            role: ['Cashier'],
         }, { validators: this.passwordMatchValidator });
     }
 
     ngOnInit(): void {
         this.userId = this._route.snapshot.paramMap.get('id');
         this.isEditMode = !!this.userId;
-        
+
+        // Roles list is needed only for the create form (edit uses Manage Roles dialog).
+        if (!this.isEditMode) {
+            this._rolesService.getAll().subscribe({
+                next: roles => {
+                    this.availableRoles = roles ?? [];
+                    this._changeDetectorRef.markForCheck();
+                },
+                error: () => { /* role picker becomes empty; user lands as Basic */ },
+            });
+        }
+
         if (this.isEditMode) {
             this.loadUser();
             this.setupEditMode();
@@ -201,22 +217,58 @@ export class UserFormComponent implements OnInit, OnDestroy {
             .subscribe({
                 next: (response) => {
                     console.log('User created successfully with response:', response);
-                    this.isSaving = false;
-                    this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('User created successfully');
-                    this._router.navigate(['/users']);
+                    const chosenRole: string | null = formValue.role || null;
+                    if (chosenRole && chosenRole !== 'Basic') {
+                        this.applyRoleAfterCreate(formValue.email, chosenRole);
+                    } else {
+                        this.finishCreateSuccess();
+                    }
                 },
                 error: (error) => {
                     console.error('Create user error details:', error);
                     console.error('Error status:', error.status);
                     console.error('Error message:', error.message);
                     console.error('Error body:', error.error);
-                    
+
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
                     this._notificationService.error('Error creating user');
                 }
             });
+    }
+
+    private applyRoleAfterCreate(email: string, roleName: string): void {
+        // Re-fetch the user we just created to get its id, then assign the chosen
+        // role (and disable Basic) via assignUserRoles.
+        this._userService.searchUsers({ pageNumber: 1, pageSize: 1, keyword: email })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: response => {
+                    const created = (response?.data ?? []).find(u => u.email === email);
+                    if (!created) {
+                        this.finishCreateSuccess('Created — assign role manually from the list.');
+                        return;
+                    }
+                    const userRoles: UserRoleDto[] = [
+                        { roleName, enabled: true },
+                        { roleName: 'Basic', enabled: false },
+                    ];
+                    this._userService.assignUserRoles(created.id, { userRoles })
+                        .pipe(takeUntil(this._unsubscribeAll))
+                        .subscribe({
+                            next: () => this.finishCreateSuccess(`Created and assigned ${roleName}`),
+                            error: () => this.finishCreateSuccess('Created — role assignment failed, set it manually.'),
+                        });
+                },
+                error: () => this.finishCreateSuccess('Created — assign role manually from the list.'),
+            });
+    }
+
+    private finishCreateSuccess(message: string = 'User created successfully'): void {
+        this.isSaving = false;
+        this._changeDetectorRef.markForCheck();
+        this._notificationService.success(message);
+        this._router.navigate(['/users']);
     }
 
     updateUser(): void {

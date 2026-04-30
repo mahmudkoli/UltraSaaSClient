@@ -136,6 +136,23 @@
                             </div>
                         </div>
 
+                        <!-- Initial Role (create only) -->
+                        <div class="mb-6" *ngIf="!isEditMode">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center">
+                                    <mat-icon class="text-violet-600 dark:text-violet-400 text-lg">manage_accounts</mat-icon>
+                                </div>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Initial Role</h3>
+                            </div>
+                            <mat-form-field class="w-full sm:w-1/2" appearance="outline">
+                                <mat-label>Role</mat-label>
+                                <mat-select formControlName="role">
+                                    <mat-option *ngFor="let r of availableRoles" [value]="r.name">{{ r.name }}<span class="text-xs text-gray-500" *ngIf="r.description"> — {{ r.description }}</span></mat-option>
+                                </mat-select>
+                                <mat-hint>You can change roles later via the Manage Roles dialog.</mat-hint>
+                            </mat-form-field>
+                        </div>
+
                         <!-- Additional Information -->
                         <div class="mb-6">
                             <div class="flex items-center space-x-3 mb-4">

@@ -228,8 +228,8 @@ export class TenantUsageComponent implements OnInit {
                 return this.tenant.maxDatabaseGB ?
                     ((this.tenant.currentDatabaseMB || 0) / (this.tenant.maxDatabaseGB * 1024)) * 100 : 0;
             case 'users':
-                return this.tenant.maxUsers ?
-                    ((this.tenant.currentUsers || 0) / this.tenant.maxUsers) * 100 : 0;
+                return this.tenantUsage?.maxUsers ?
+                    ((this.tenantUsage.currentUsers || 0) / this.tenantUsage.maxUsers) * 100 : 0;
             case 'outlets':
                 return this.tenantUsage?.maxOutlets ?
                     ((this.tenantUsage.currentOutlets || 0) / this.tenantUsage.maxOutlets) * 100 : 0;

@@ -104,8 +104,8 @@
                             </div>
                             <div class="text-right">
                                 <p class="text-sm font-medium text-purple-700 dark:text-purple-300">Active Users</p>
-                                <p class="text-3xl font-bold text-purple-900 dark:text-purple-100">{{ tenant.currentUsers || 0 | number }}</p>
-                                <p class="text-xs text-purple-600 dark:text-purple-400">of {{ tenant.maxUsers | number }} limit</p>
+                                <p class="text-3xl font-bold text-purple-900 dark:text-purple-100">{{ tenantUsage?.currentUsers ?? 0 | number }}</p>
+                                <p class="text-xs text-purple-600 dark:text-purple-400">of {{ tenantUsage?.maxUsers ?? '—' }} limit</p>
                             </div>
                         </div>
                         <div class="w-full bg-purple-200 dark:bg-purple-800 rounded-full h-2">
@@ -275,7 +275,7 @@
                                         </mat-chip-set>
                                     </div>
                                     <div class="text-sm text-gray-600 mb-1">
-                                        {{ tenant.currentUsers || 0 | number }} / {{ tenant.maxUsers | number }} users
+                                        {{ tenantUsage?.currentUsers ?? 0 | number }} / {{ tenantUsage?.maxUsers ?? '—' }} users
                                         ({{ getUsagePercentage('users') | number:'1.1-1' }}%)
                                     </div>
                                     <mat-progress-bar

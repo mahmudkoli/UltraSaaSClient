@@ -350,6 +350,7 @@ export interface TenantUsageDto {
     maxConcurrentUsers: number;
     currentOutlets: number;
     maxOutlets: number;
+    currentUsers: number;
     maxUsers: number;
     usagePercentages: {
         database: number;

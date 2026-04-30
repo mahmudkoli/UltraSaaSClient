@@ -36,6 +36,14 @@
                 </mat-select>
             </mat-form-field>
             <button
+                mat-stroked-button
+                class="h-12 px-6"
+                [routerLink]="['roles']"
+                matTooltip="Manage roles and permissions">
+                <mat-icon class="mr-2">manage_accounts</mat-icon>
+                <span>Roles</span>
+            </button>
+            <button
                 mat-fab
                 color="primary"
                 [routerLink]="['create']"
