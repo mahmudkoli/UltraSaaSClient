@@ -1,4 +1,5 @@
 import { inject } from '@angular/core';
+import { FeaturesService } from 'app/core/auth/features.service';
 import { PermissionsService } from 'app/core/auth/permissions.service';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { MessagesService } from 'app/layout/common/messages/messages.service';
@@ -15,13 +16,15 @@ export const initialDataResolver = () =>
     const quickChatService = inject(QuickChatService);
     const shortcutsService = inject(ShortcutsService);
     const permissionsService = inject(PermissionsService);
+    const featuresService = inject(FeaturesService);
 
-    // Load the user's permissions FIRST so NavigationService can filter the tree
-    // before publishing it. The auxiliary streams (messages / notifications /
-    // chat / shortcuts) can run in parallel with navigation once permissions
-    // are in. Errors are swallowed — the auth interceptor handles 401 redirects.
-    return permissionsService.load().pipe(
-        catchError(() => of([] as string[])),
+    // Load permissions + tenant features FIRST so NavigationService can filter
+    // the tree before publishing it. The auxiliary streams run in parallel
+    // afterward. Errors are swallowed — the auth interceptor handles 401s.
+    return forkJoin([
+        permissionsService.load().pipe(catchError(() => of([] as string[]))),
+        featuresService.load().pipe(catchError(() => of([] as string[]))),
+    ]).pipe(
         switchMap(() => forkJoin([
             navigationService.get().pipe(catchError(() => of(null))),
             messagesService.getAll().pipe(catchError(() => of([]))),

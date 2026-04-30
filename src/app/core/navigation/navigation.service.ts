@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation';
 import { Navigation } from 'app/core/navigation/navigation.types';
+import { FeaturesService } from 'app/core/auth/features.service';
 import { PermissionsService } from 'app/core/auth/permissions.service';
 import { Observable, ReplaySubject, tap } from 'rxjs';
 
@@ -10,6 +11,7 @@ export class NavigationService
 {
     private _httpClient = inject(HttpClient);
     private _permissionsService = inject(PermissionsService);
+    private _featuresService = inject(FeaturesService);
     private _navigation: ReplaySubject<Navigation> = new ReplaySubject<Navigation>(1);
 
     get navigation$(): Observable<Navigation>
@@ -29,11 +31,12 @@ export class NavigationService
             tap((navigation) =>
             {
                 const permissions = this._permissionsService.permissions();
+                const features = this._featuresService.features();
                 const filtered: Navigation = {
-                    default: this._filterByPermissions(navigation.default, permissions),
-                    compact: this._filterByPermissions(navigation.compact, permissions),
-                    futuristic: this._filterByPermissions(navigation.futuristic, permissions),
-                    horizontal: this._filterByPermissions(navigation.horizontal, permissions),
+                    default: this._filterByPermissions(navigation.default, permissions, features),
+                    compact: this._filterByPermissions(navigation.compact, permissions, features),
+                    futuristic: this._filterByPermissions(navigation.futuristic, permissions, features),
+                    horizontal: this._filterByPermissions(navigation.horizontal, permissions, features),
                 };
                 this._navigation.next(filtered);
             }),
@@ -41,12 +44,17 @@ export class NavigationService
     }
 
     /**
-     * Recursively prune nav items whose required permission is missing.
+     * Recursively prune nav items whose required permission or feature is missing.
      * - A leaf with `meta.permission` is kept only when the user has that permission.
-     * - A leaf without `meta.permission` is always kept.
+     * - A leaf with `meta.feature` is kept only when the tenant has that feature enabled.
+     * - A leaf without either gate is always kept.
      * - A group / collapsable is kept only if at least one descendant survives.
      */
-    private _filterByPermissions(items: FuseNavigationItem[], permissions: string[] | null): FuseNavigationItem[]
+    private _filterByPermissions(
+        items: FuseNavigationItem[],
+        permissions: string[] | null,
+        features: string[] | null,
+    ): FuseNavigationItem[]
     {
         // No permissions list yet → don't hide anything (resolver will rerun).
         if (permissions === null) return items;
@@ -56,8 +64,9 @@ export class NavigationService
             const out: FuseNavigationItem[] = [];
             for (const item of list)
             {
-                const required = (item.meta && (item.meta as { permission?: string }).permission) || undefined;
-                if (required && !permissions.includes(required)) continue;
+                const meta = (item.meta || {}) as { permission?: string; feature?: string };
+                if (meta.permission && !permissions.includes(meta.permission)) continue;
+                if (meta.feature && !(features ?? []).includes(meta.feature)) continue;
 
                 if (item.children && item.children.length > 0)
                 {

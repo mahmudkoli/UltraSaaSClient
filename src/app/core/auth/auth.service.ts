@@ -9,6 +9,7 @@ import {
 } from './auth.types';
 import { UserService } from '../user/user.service';
 import { PermissionsService } from './permissions.service';
+import { FeaturesService } from './features.service';
 import { TenantService } from '../tenant/tenant.service';
 
 @Injectable({providedIn: 'root'})
@@ -17,6 +18,7 @@ export class AuthService
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
     private _permissionsService = inject(PermissionsService);
+    private _featuresService = inject(FeaturesService);
     private _tenantService = inject(TenantService);
     private readonly baseUrl = environment.apiUrl;
 
@@ -90,6 +92,7 @@ export class AuthService
         // Clear user data
         this._userService.user = null;
         this._permissionsService.clear();
+        this._featuresService.clear();
     }
 
     /**
