@@ -80,3 +80,27 @@ export interface CreateStockTransferRequest {
     lines: CreateStockTransferLine[];
     notes?: string;
 }
+
+export type StockAdjustmentReason =
+    | 'PhysicalCount' | 'Damage' | 'Loss' | 'Expiry' | 'Correction' | 'OpeningBalance' | 'Other';
+
+export interface StockAdjustmentDto {
+    id: string;
+    productId: string;
+    outletId: string;
+    oldQuantity: number;
+    newQuantity: number;
+    delta: number;
+    reason: StockAdjustmentReason;
+    notes?: string;
+    adjustedOn: string;
+    createdOn: string;
+}
+
+export interface CreateStockAdjustmentRequest {
+    productId: string;
+    outletId: string;
+    newQuantity: number;
+    reason: StockAdjustmentReason;
+    notes?: string;
+}

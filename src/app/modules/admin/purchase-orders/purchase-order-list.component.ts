@@ -11,6 +11,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
 import { PurchaseOrdersService, SuppliersService } from 'app/core/purchasing/purchasing.service';
 import { PurchaseOrderDto, PurchaseOrderStatus, SupplierDto } from 'app/core/purchasing/purchasing.types';
+import { OutletsService } from 'app/core/outlets/outlets.service';
+import { OutletDto } from 'app/core/outlets/outlets.types';
+import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 
 @Component({
     selector: 'app-purchase-order-list',
@@ -37,6 +40,15 @@ import { PurchaseOrderDto, PurchaseOrderStatus, SupplierDto } from 'app/core/pur
                     <mat-label>Search</mat-label>
                     <input matInput [(ngModel)]="search" placeholder="PO # / supplier">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
+                </mat-form-field>
+                <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Outlet</mat-label>
+                    <mat-select [(ngModel)]="outletFilter" (ngModelChange)="onOutletChange()">
+                        <mat-option [value]="''">All outlets</mat-option>
+                        @for (o of outlets(); track o.id) {
+                            <mat-option [value]="o.id">{{ o.name }}</mat-option>
+                        }
+                    </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Status</mat-label>
@@ -102,11 +114,15 @@ import { PurchaseOrderDto, PurchaseOrderStatus, SupplierDto } from 'app/core/pur
 export class PurchaseOrderListComponent implements OnInit {
     private readonly api = inject(PurchaseOrdersService);
     private readonly suppliersApi = inject(SuppliersService);
+    private readonly outletsApi = inject(OutletsService);
+    private readonly currentOutlet = inject(CurrentOutletService);
     private readonly router = inject(Router);
     rows = signal<PurchaseOrderDto[]>([]);
     suppliers = signal<SupplierDto[]>([]);
+    outlets = signal<OutletDto[]>([]);
     loading = signal(true);
     search = '';
+    outletFilter = '';
     statusFilter: 'all' | PurchaseOrderStatus = 'all';
     cols = ['number', 'date', 'supplier', 'eta', 'items', 'total', 'status', 'actions'];
 
@@ -142,12 +158,21 @@ export class PurchaseOrderListComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.loading.set(true);
         this.suppliersApi.getAll().subscribe(s => this.suppliers.set(s));
-        this.api.getAll().subscribe({
+        this.outletsApi.getAll().subscribe(o => {
+            this.outlets.set(o);
+            const remembered = this.currentOutlet.outletId();
+            if (remembered && o.some(x => x.id === remembered)) this.outletFilter = remembered;
+            this.load();
+        });
+    }
+    load(): void {
+        this.loading.set(true);
+        this.api.getAll({ outletId: this.outletFilter || undefined }).subscribe({
             next: d => { this.rows.set(d); this.loading.set(false); },
             error: () => this.loading.set(false),
         });
     }
+    onOutletChange(): void { this.load(); }
     view(r: PurchaseOrderDto): void { this.router.navigate(['/purchase-orders', r.id]); }
 }

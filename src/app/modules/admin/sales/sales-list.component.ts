@@ -11,6 +11,9 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
 import { SalesService } from 'app/core/sales/sales.service';
 import { SaleDto } from 'app/core/sales/sales.types';
+import { OutletsService } from 'app/core/outlets/outlets.service';
+import { OutletDto } from 'app/core/outlets/outlets.types';
+import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 
 @Component({
     selector: 'app-sales-list',
@@ -37,6 +40,15 @@ import { SaleDto } from 'app/core/sales/sales.types';
                     <mat-label>Search invoices</mat-label>
                     <input matInput [(ngModel)]="search" placeholder="Invoice / customer">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
+                </mat-form-field>
+                <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Outlet</mat-label>
+                    <mat-select [(ngModel)]="outletFilter" (ngModelChange)="onOutletChange()">
+                        <mat-option [value]="''">All outlets</mat-option>
+                        @for (o of outlets(); track o.id) {
+                            <mat-option [value]="o.id">{{ o.name }}</mat-option>
+                        }
+                    </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Status</mat-label>
@@ -106,7 +118,11 @@ import { SaleDto } from 'app/core/sales/sales.types';
 })
 export class SalesListComponent implements OnInit {
     private readonly api = inject(SalesService);
+    private readonly outletsApi = inject(OutletsService);
+    private readonly currentOutlet = inject(CurrentOutletService);
     private readonly router = inject(Router);
+    outlets = signal<OutletDto[]>([]);
+    outletFilter = '';
     rows = signal<SaleDto[]>([]);
     loading = signal(true);
     search = '';
@@ -129,11 +145,21 @@ export class SalesListComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.outletsApi.getAll().subscribe(o => {
+            this.outlets.set(o);
+            // Pre-fill from the session-wide selection so list pages match POS.
+            const remembered = this.currentOutlet.outletId();
+            if (remembered && o.some(x => x.id === remembered)) this.outletFilter = remembered;
+            this.load();
+        });
+    }
+    load(): void {
         this.loading.set(true);
-        this.api.getAll({ take: 200 }).subscribe({
+        this.api.getAll({ outletId: this.outletFilter || undefined, take: 200 }).subscribe({
             next: d => { this.rows.set(d); this.loading.set(false); },
             error: () => this.loading.set(false),
         });
     }
+    onOutletChange(): void { this.load(); }
     view(r: SaleDto): void { this.router.navigate(['/sales', r.id]); }
 }

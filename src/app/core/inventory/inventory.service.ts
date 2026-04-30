@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
-import { CreateStockTransferRequest, ProductElectronicsDto, StockDto, StockMovementDto, StockSerialDto, StockTransferDto } from './inventory.types';
+import { CreateStockAdjustmentRequest, CreateStockTransferRequest, ProductElectronicsDto, StockAdjustmentDto, StockDto, StockMovementDto, StockSerialDto, StockTransferDto } from './inventory.types';
 
 const api = environment.apiUrl;
 
@@ -75,5 +75,22 @@ export class StockTransfersService {
         if (params?.toOutletId) qs.append('toOutletId', params.toOutletId);
         if (params?.take !== undefined) qs.append('take', String(params.take));
         return this.http.get<StockTransferDto[]>(qs.toString() ? `${this.base}?${qs}` : this.base);
+    };
+}
+
+@Injectable({ providedIn: 'root' })
+export class StockAdjustmentsService {
+    private readonly http = inject(HttpClient);
+    private readonly base = `${api}/api/stockadjustments`;
+
+    create = (req: CreateStockAdjustmentRequest): Observable<string> =>
+        this.http.post<string>(this.base, req);
+
+    search = (params?: { productId?: string; outletId?: string; take?: number }): Observable<StockAdjustmentDto[]> => {
+        const qs = new URLSearchParams();
+        if (params?.productId) qs.append('productId', params.productId);
+        if (params?.outletId) qs.append('outletId', params.outletId);
+        if (params?.take !== undefined) qs.append('take', String(params.take));
+        return this.http.get<StockAdjustmentDto[]>(qs.toString() ? `${this.base}?${qs}` : this.base);
     };
 }

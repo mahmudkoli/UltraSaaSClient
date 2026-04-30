@@ -43,6 +43,8 @@ const posNav: FuseNavigationItem[] = [
               meta: { permission: 'Permissions.GoodsReceipts.View' } },
             { id: 'stock-transfers', title: 'Stock Transfers', type: 'basic', icon: 'heroicons_outline:arrows-right-left', link: '/stock-transfers',
               meta: { permission: 'Permissions.StockTransfers.View' } },
+            { id: 'stock-adjustments', title: 'Stock Adjustments', type: 'basic', icon: 'heroicons_outline:adjustments-horizontal', link: '/stock-adjustments',
+              meta: { permission: 'Permissions.StockAdjustments.View' } },
         ],
     },
     { id: 'reports', title: 'Reports', type: 'basic', icon: 'heroicons_outline:chart-bar', link: '/reports',
