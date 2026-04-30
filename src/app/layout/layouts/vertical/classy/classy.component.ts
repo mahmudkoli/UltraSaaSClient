@@ -12,6 +12,7 @@ import { Navigation } from 'app/core/navigation/navigation.types';
 import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
 import { UserComponent } from 'app/layout/common/user/user.component';
+import { OutletSwitcherComponent } from 'app/layout/common/outlet-switcher/outlet-switcher.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -19,7 +20,7 @@ import { Subject, takeUntil } from 'rxjs';
     templateUrl  : './classy.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [FuseLoadingBarComponent, FuseVerticalNavigationComponent, UserComponent, NgIf, MatIconModule, MatButtonModule, FuseFullscreenComponent, RouterOutlet],
+    imports      : [FuseLoadingBarComponent, FuseVerticalNavigationComponent, UserComponent, OutletSwitcherComponent, NgIf, MatIconModule, MatButtonModule, FuseFullscreenComponent, RouterOutlet],
 })
 export class ClassyLayoutComponent implements OnInit, OnDestroy
 {

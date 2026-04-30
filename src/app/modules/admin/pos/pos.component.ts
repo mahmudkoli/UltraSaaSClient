@@ -15,8 +15,9 @@ import { ProductsService } from 'app/core/catalog/catalog.service';
 import { ProductDto } from 'app/core/catalog/catalog.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
+import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 import { CustomersService, SalesService } from 'app/core/sales/sales.service';
-import { CreateSaleLine, CreateSalePayment, CustomerDto, PaymentMethod } from 'app/core/sales/sales.types';
+import { CreateSaleLine, CreateSalePayment, CustomerDto, PaymentMethod, SaleDto } from 'app/core/sales/sales.types';
 import { PromotionsService } from 'app/core/marketing/marketing.service';
 import { PromotionDiscountPreview } from 'app/core/marketing/marketing.types';
 
@@ -42,7 +43,7 @@ interface CartLine extends CreateSaleLine {
                     <div class="flex items-center gap-3">
                         <mat-form-field appearance="outline" class="flex-1 !my-0">
                             <mat-label>Outlet</mat-label>
-                            <mat-select [(ngModel)]="outletId">
+                            <mat-select [(ngModel)]="outletId" (ngModelChange)="onOutletChange()">
                                 @for (o of outlets(); track o.id) {
                                     <mat-option [value]="o.id">{{ o.code }} — {{ o.name }}</mat-option>
                                 }
@@ -213,6 +214,7 @@ export class PosComponent implements OnInit {
     private readonly customersApi = inject(CustomersService);
     private readonly salesApi = inject(SalesService);
     private readonly promosApi = inject(PromotionsService);
+    private readonly currentOutlet = inject(CurrentOutletService);
     private readonly snack = inject(MatSnackBar);
     private readonly router = inject(Router);
 
@@ -263,10 +265,20 @@ export class PosComponent implements OnInit {
     ngOnInit(): void {
         this.outletsApi.getAll().subscribe(o => {
             this.outlets.set(o);
-            if (o.length > 0) this.outletId = o[0].id;
+            if (o.length === 0) return;
+            // Restore the last-used outlet if it's still in the user's allowed list,
+            // otherwise fall back to the first available outlet.
+            const remembered = this.currentOutlet.outletId();
+            const match = remembered && o.find(x => x.id === remembered);
+            this.outletId = match ? match.id : o[0].id;
+            this.currentOutlet.set(this.outletId);
         });
         this.productsApi.getAll({ isActive: true }).subscribe(p => this.products.set(p));
         this.customersApi.getAll().subscribe(c => this.customers.set(c));
+    }
+
+    onOutletChange(): void {
+        this.currentOutlet.set(this.outletId);
     }
 
     addToCart(p: ProductDto): void {
@@ -363,6 +375,10 @@ export class PosComponent implements OnInit {
         }).subscribe({
             next: (id) => {
                 this.finalizing.set(false);
+                // Fetch the finalized sale for the receipt and let the cashier
+                // either print or jump to the detail page. Reset the cart in
+                // either case so the next customer can start ringing up.
+                this.salesApi.get(id).subscribe(sale => this.printReceipt(sale));
                 this.snack.open(`Sale finalized! Invoice → /sales/${id}`, 'View', { duration: 5000 })
                     .onAction().subscribe(() => this.router.navigate(['/sales', id]));
                 this.cart.set([]);
@@ -377,5 +393,77 @@ export class PosComponent implements OnInit {
                 this.snack.open(msg, 'OK', { duration: 6000 });
             },
         });
+    }
+
+    /**
+     * Open the receipt in a new window so the print dialog doesn't pull in
+     * the app's CSS or chrome. The user can dismiss the dialog without
+     * disrupting their next sale.
+     */
+    private printReceipt(sale: SaleDto): void {
+        const w = window.open('', '_blank', 'width=380,height=720');
+        if (!w) return;
+        const html = this.buildReceiptHtml(sale);
+        w.document.open();
+        w.document.write(html);
+        w.document.close();
+        // Wait a tick for layout, then trigger print. window.print() blocks,
+        // so close after it returns.
+        w.onload = () => {
+            try { w.focus(); w.print(); } finally { /* leave window open so user can re-print */ }
+        };
+    }
+
+    private buildReceiptHtml(sale: SaleDto): string {
+        const fmt = (n: number) => n.toFixed(2);
+        const outletName = this.outlets().find(o => o.id === sale.outletId)?.name ?? '';
+        const items = sale.items.map(i => `
+            <tr>
+                <td style="padding:2px 0">${this.escape(i.productName)}<br><span style="color:#666;font-size:10px">${this.escape(i.sku)}${i.serialNumber ? ' · SN ' + this.escape(i.serialNumber) : ''}</span></td>
+                <td style="text-align:right;padding:2px 0">${i.quantity} × ${fmt(i.unitPrice)}</td>
+                <td style="text-align:right;padding:2px 0">${fmt(i.lineTotal)}</td>
+            </tr>`).join('');
+        const payments = sale.payments.map(p => `
+            <tr><td>${this.escape(p.method)}${p.reference ? ' (' + this.escape(p.reference) + ')' : ''}</td><td style="text-align:right">${fmt(p.amount)}</td></tr>`).join('');
+        return `<!doctype html><html><head><meta charset="utf-8"><title>${this.escape(sale.invoiceNumber)}</title>
+<style>
+    body{font-family:'Courier New',Courier,monospace;font-size:12px;color:#000;margin:0;padding:8px;width:280px}
+    h1,h2,h3{margin:4px 0}
+    .center{text-align:center}
+    table{width:100%;border-collapse:collapse}
+    .totals td{padding:1px 0}
+    .totals .grand{border-top:1px dashed #000;font-weight:bold;font-size:14px;padding-top:4px}
+    hr{border:none;border-top:1px dashed #000;margin:6px 0}
+    @media print { @page { margin:0 } body { padding:8px } }
+</style></head><body>
+<div class="center">
+    <h2>${this.escape(outletName)}</h2>
+    <div>Invoice ${this.escape(sale.invoiceNumber)}</div>
+    <div>${new Date(sale.saleDate).toLocaleString()}</div>
+    ${sale.customerName ? `<div>Customer: ${this.escape(sale.customerName)}</div>` : ''}
+</div>
+<hr>
+<table>${items}</table>
+<hr>
+<table class="totals">
+    <tr><td>Subtotal</td><td style="text-align:right">${fmt(sale.subTotal)}</td></tr>
+    ${sale.discountAmount ? `<tr><td>Discount</td><td style="text-align:right">−${fmt(sale.discountAmount)}</td></tr>` : ''}
+    ${sale.taxAmount ? `<tr><td>Tax</td><td style="text-align:right">${fmt(sale.taxAmount)}</td></tr>` : ''}
+    <tr class="grand"><td>Total</td><td style="text-align:right">${fmt(sale.total)}</td></tr>
+</table>
+<hr>
+<table>${payments}</table>
+<hr>
+<div class="center">Thank you!</div>
+</body></html>`;
+    }
+
+    private escape(s: string): string {
+        return (s ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
     }
 }
