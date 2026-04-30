@@ -145,7 +145,8 @@
                                             <mat-option value="Supermarket">Supermarket — weight SKUs, promotions, loyalty</mat-option>
                                         </mat-select>
                                         <mat-icon matSuffix class="text-secondary">storefront</mat-icon>
-                                        <mat-hint>{{ isEditMode ? 'Read-only after creation. Contact platform admin to change.' : 'Decides which vertical-specific UI + APIs are exposed. Set once at creation.' }}</mat-hint>
+                                        <mat-hint *ngIf="!isEditMode">Decides which vertical-specific UI + APIs are exposed. Set once at creation.</mat-hint>
+                                        <mat-hint *ngIf="isEditMode">Pick a new value, then click "Change Vertical" below to commit. Regular Save ignores this field.</mat-hint>
                                     </mat-form-field>
 
                                     <!-- Outlet Label -->
@@ -155,6 +156,25 @@
                                         <mat-icon matSuffix class="text-secondary">label</mat-icon>
                                         <mat-hint>Display name for branches: e.g. "Outlet", "Store", "Branch", "Pharmacy", "Warehouse"</mat-hint>
                                     </mat-form-field>
+
+                                    <!-- Change Vertical action (edit mode only) -->
+                                    <div *ngIf="isEditMode" class="lg:col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-900/20">
+                                        <div class="flex items-start gap-3">
+                                            <mat-icon class="text-amber-600 dark:text-amber-400 icon-size-6 mt-0.5">warning</mat-icon>
+                                            <div>
+                                                <div class="text-sm font-semibold text-gray-900 dark:text-white">Pivot tenant vertical</div>
+                                                <div class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
+                                                    Pick a different Business Type or Outlet Label, then click below. Existing batches / serials / prescriptions stay in the DB but won't be reachable from the new vertical's UI.
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button mat-stroked-button color="warn" type="button"
+                                                [disabled]="changingVertical"
+                                                (click)="changeVertical()">
+                                            <mat-icon class="icon-size-5 mr-2">swap_horiz</mat-icon>
+                                            <span>{{ changingVertical ? 'Changing…' : 'Change Vertical' }}</span>
+                                        </button>
+                                    </div>
 
                                 </div>
                             </div>

@@ -138,6 +138,17 @@ export class TenantsService extends BaseApiService {
         return this.postText(`/api/tenants/${id}/extend-validity`, request);
     }
 
+    // ============= VERTICAL =============
+
+    /**
+     * Change a tenant's BusinessType + OutletLabel post-creation. High-stakes:
+     * pivoting a tenant orphans existing batches/serials/etc. from their
+     * vertical UI. Always wrap calls in a confirmation dialog.
+     */
+    updateVertical(id: string, businessType: string, outletLabel?: string): Observable<any> {
+        return this.put<any>(`/api/tenants/${id}/vertical`, { businessType, outletLabel });
+    }
+
     // ============= RESOURCE MANAGEMENT =============
 
     /**

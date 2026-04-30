@@ -46,6 +46,12 @@ export class TenantFormComponent implements OnInit {
     saving: boolean = false;
     themeLabel: string = 'Not configured';
 
+    // Original vertical loaded from server — used to detect dirty changes
+    // and to revert if root cancels the confirmation dialog.
+    originalBusinessType: string = 'Generic';
+    originalOutletLabel: string = 'Outlet';
+    changingVertical: boolean = false;
+
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -112,10 +118,10 @@ export class TenantFormComponent implements OnInit {
         if (this.tenantId) {
             this.isEditMode = true;
             this.loadTenant();
-            // BusinessType is set at creation only — disable on edit until we
-            // ship a dedicated change endpoint (rebrand is rare and risky:
-            // existing batches/serials/etc. are tied to the original vertical).
-            this.tenantForm.get('businessType')?.disable();
+            // Note: BusinessType/OutletLabel can be edited in the dropdown but
+            // they don't ride the regular Save path (UpdateTenantRequest doesn't
+            // accept them). The dedicated "Change Vertical" button is the only
+            // commit path — see changeVertical().
         }
     }
 
@@ -136,7 +142,7 @@ export class TenantFormComponent implements OnInit {
                     isShared: tenant.isShared,
                     issuer: tenant.issuer || '',
 
-                    // Vertical
+                    // Vertical (read-only on edit; changed via changeVertical())
                     businessType: tenant.businessType || 'Generic',
                     outletLabel: tenant.outletLabel || 'Outlet',
 
@@ -175,6 +181,10 @@ export class TenantFormComponent implements OnInit {
                     enableBackupRestore: tenant.enableBackupRestore || false,
                     enableMultipleDatabases: tenant.enableMultipleDatabases || false
                 });
+                // Snapshot original vertical so changeVertical() can compare
+                // against it and revert the form if root cancels.
+                this.originalBusinessType = tenant.businessType || 'Generic';
+                this.originalOutletLabel = tenant.outletLabel || 'Outlet';
                 // Parse theme config for display
                 if (tenant.themeConfig) {
                     try {
@@ -365,6 +375,84 @@ export class TenantFormComponent implements OnInit {
         if (this.tenantId) {
             this._router.navigate([`/tenant/${this.tenantId}/theme-settings`]);
         }
+    }
+
+    /**
+     * Change a tenant's BusinessType + OutletLabel via the dedicated
+     * PUT /api/tenants/{id}/vertical endpoint, behind a confirmation dialog.
+     * High-stakes — pivoting a tenant orphans existing batches/serials/etc.
+     * from their vertical UI.
+     */
+    changeVertical(): void {
+        if (!this.tenantId) return;
+
+        const newType = this.tenantForm.get('businessType')?.value as string;
+        const newLabel = ((this.tenantForm.get('outletLabel')?.value as string) ?? '').trim() || 'Outlet';
+
+        const unchanged = newType === this.originalBusinessType
+            && newLabel === this.originalOutletLabel;
+
+        if (unchanged) {
+            this._fuseConfirmationService.open({
+                title: 'No changes',
+                message: 'Pick a different Business Type or Outlet Label first, then click Change Vertical.',
+                actions: { confirm: { label: 'OK' }, cancel: { show: false } as any },
+            });
+            return;
+        }
+
+        const ref = this._fuseConfirmationService.open({
+            title: 'Pivot this tenant?',
+            message: `This will change <b>${this.tenantId}</b> from <b>${this.originalBusinessType}</b> to <b>${newType}</b>. Existing batches, serials, prescriptions and other vertical-specific data are <b>not</b> migrated — they'll stay in the database but won't be reachable from the new vertical's UI. Are you sure?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: {
+                confirm: { show: true, label: 'Yes, pivot tenant', color: 'warn' },
+                cancel: { show: true, label: 'Cancel' },
+            },
+            dismissible: true,
+        });
+
+        ref.afterClosed().subscribe(result => {
+            if (result !== 'confirmed') {
+                // Revert the form so the user sees the actual current state.
+                this.tenantForm.patchValue({
+                    businessType: this.originalBusinessType,
+                    outletLabel: this.originalOutletLabel,
+                });
+                return;
+            }
+
+            this.changingVertical = true;
+            this._tenantsService.updateVertical(this.tenantId!, newType, newLabel).subscribe({
+                next: () => {
+                    this.changingVertical = false;
+                    this.originalBusinessType = newType;
+                    this.originalOutletLabel = newLabel;
+                    this._fuseConfirmationService.open({
+                        title: 'Vertical updated',
+                        message: `${this.tenantId} is now a ${newType} tenant. Users on this tenant should refresh to see the updated nav.`,
+                        icon: { show: true, name: 'heroicons_outline:check-circle', color: 'success' },
+                        actions: { confirm: { label: 'OK' }, cancel: { show: false } as any },
+                    });
+                },
+                error: (err) => {
+                    this.changingVertical = false;
+                    console.error('Error changing vertical:', err);
+                    // Revert the form
+                    this.tenantForm.patchValue({
+                        businessType: this.originalBusinessType,
+                        outletLabel: this.originalOutletLabel,
+                    });
+                    const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Failed to change vertical.';
+                    this._fuseConfirmationService.open({
+                        title: 'Error',
+                        message: msg,
+                        icon: { show: true, name: 'heroicons_outline:x-circle', color: 'warn' },
+                        actions: { confirm: { label: 'OK' }, cancel: { show: false } as any },
+                    });
+                },
+            });
+        });
     }
 
     generateTenantId(): void {
