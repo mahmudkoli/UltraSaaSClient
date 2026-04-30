@@ -7,6 +7,8 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { forkJoin } from 'rxjs';
+import { PermissionsService } from 'app/core/auth/permissions.service';
+import { NavigationService } from 'app/core/navigation/navigation.service';
 import { UserService } from 'app/core/user/user.service';
 import { UserRoleDto } from 'app/core/user/user.types';
 
@@ -67,6 +69,8 @@ export interface UserRolesDialogData {
 })
 export class UserRolesDialogComponent implements OnInit {
     private readonly userService = inject(UserService);
+    private readonly permissionsService = inject(PermissionsService);
+    private readonly navigationService = inject(NavigationService);
     private readonly dialogRef = inject(MatDialogRef<UserRolesDialogComponent>);
 
     roles = signal<UserRoleDto[]>([]);
@@ -88,7 +92,15 @@ export class UserRolesDialogComponent implements OnInit {
     save(): void {
         this.saving.set(true);
         this.userService.assignUserRoles(this.data.userId, { userRoles: this.roles() }).subscribe({
-            next: () => { this.saving.set(false); this.dialogRef.close(true); },
+            next: () => {
+                // Refresh the current user's permissions + navigation in case
+                // they just edited their own roles. Cheap no-op when not.
+                this.permissionsService.load().subscribe({
+                    complete: () => this.navigationService.get().subscribe({
+                        complete: () => { this.saving.set(false); this.dialogRef.close(true); },
+                    }),
+                });
+            },
             error: () => this.saving.set(false),
         });
     }

@@ -262,11 +262,26 @@ export class ReturnFormComponent implements OnInit {
         }
     }
 
+    /** Pick the most-used payment method on the original sale, or Cash if none. */
+    private defaultRefundMethod(): PaymentMethod {
+        const payments = this.sale()?.payments ?? [];
+        if (payments.length === 0) return 'Cash';
+        const totals: Partial<Record<PaymentMethod, number>> = {};
+        for (const p of payments) totals[p.method] = (totals[p.method] ?? 0) + p.amount;
+        let best: PaymentMethod = payments[0].method;
+        let bestAmt = totals[best] ?? 0;
+        for (const m of Object.keys(totals) as PaymentMethod[]) {
+            if ((totals[m] ?? 0) > bestAmt) { best = m; bestAmt = totals[m] ?? 0; }
+        }
+        return best;
+    }
+
     addRefund(): void {
         const remaining = +(this.refundDue() - this.refundEntered()).toFixed(2);
+        const method = this.refunds().length === 0 ? this.defaultRefundMethod() : 'Cash';
         this.refunds.set([
             ...this.refunds(),
-            { method: 'Cash', amount: Math.max(0, remaining), reference: '' },
+            { method, amount: Math.max(0, remaining), reference: '' },
         ]);
     }
 
