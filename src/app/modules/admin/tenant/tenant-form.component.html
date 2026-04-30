@@ -272,6 +272,22 @@
                                         <mat-icon matSuffix>group</mat-icon>
                                     </mat-form-field>
 
+                                    <!-- Max Outlets -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Max Outlets</mat-label>
+                                        <input matInput formControlName="maxOutlets" type="number" placeholder="3">
+                                        <mat-icon matSuffix>store</mat-icon>
+                                        <mat-hint>Active + suspended outlets are counted; archived release the slot.</mat-hint>
+                                    </mat-form-field>
+
+                                    <!-- Max Users -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Max Users (active)</mat-label>
+                                        <input matInput formControlName="maxUsers" type="number" placeholder="10">
+                                        <mat-icon matSuffix>people</mat-icon>
+                                        <mat-hint>Only active users count toward this limit.</mat-hint>
+                                    </mat-form-field>
+
                                     <!-- Data Residency -->
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Data Residency</mat-label>
@@ -522,6 +538,8 @@
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Database:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('maxDatabaseGB')?.value || '5' }} GB</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">API Calls/Month:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('maxApiCallsPerMonth')?.value || '10,000' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Concurrent Users:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('maxConcurrentUsers')?.value || '50' }}</span></div>
+                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Outlets:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('maxOutlets')?.value || '—' }}</span></div>
+                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Users:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('maxUsers')?.value || '—' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Data Residency:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('dataResidency')?.value || 'US' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Data Retention:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('dataRetentionDays')?.value || '365' }} days</span></div>
                                         </div>

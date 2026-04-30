@@ -79,6 +79,8 @@ export class TenantFormComponent implements OnInit {
             maxDatabaseGB: [5, [Validators.required, Validators.min(1)]],
             maxApiCallsPerMonth: [10000, [Validators.required, Validators.min(1000)]],
             maxConcurrentUsers: [50, [Validators.required, Validators.min(1)]],
+            maxOutlets: [3, [Validators.required, Validators.min(1)]],
+            maxUsers: [10, [Validators.required, Validators.min(1)]],
             dataResidency: ['US', [Validators.required]],
             dataRetentionDays: [365, [Validators.required, Validators.min(30)]],
 
@@ -140,6 +142,8 @@ export class TenantFormComponent implements OnInit {
                     maxDatabaseGB: tenant.maxDatabaseGB || 5,
                     maxApiCallsPerMonth: tenant.maxApiCallsPerMonth || 10000,
                     maxConcurrentUsers: tenant.maxConcurrentUsers || 50,
+                    maxOutlets: tenant.maxOutlets || 3,
+                    maxUsers: tenant.maxUsers || 10,
                     dataResidency: tenant.dataResidency || 'US',
                     dataRetentionDays: tenant.dataRetentionDays || 365,
 
@@ -213,6 +217,8 @@ export class TenantFormComponent implements OnInit {
                 maxDatabaseGB: formData.maxDatabaseGB,
                 maxApiCallsPerMonth: formData.maxApiCallsPerMonth,
                 maxConcurrentUsers: formData.maxConcurrentUsers,
+                maxOutlets: formData.maxOutlets,
+                maxUsers: formData.maxUsers,
                 dataResidency: formData.dataResidency,
                 dataRetentionDays: formData.dataRetentionDays,
 
@@ -286,6 +292,8 @@ export class TenantFormComponent implements OnInit {
                 maxDatabaseGB: formData.maxDatabaseGB,
                 maxApiCallsPerMonth: formData.maxApiCallsPerMonth,
                 maxConcurrentUsers: formData.maxConcurrentUsers,
+                maxOutlets: formData.maxOutlets,
+                maxUsers: formData.maxUsers,
                 dataResidency: formData.dataResidency,
                 dataRetentionDays: formData.dataRetentionDays,
 

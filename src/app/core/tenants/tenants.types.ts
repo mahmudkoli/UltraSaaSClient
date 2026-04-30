@@ -348,10 +348,14 @@ export interface TenantUsageDto {
     maxApiCallsPerMonth: number;
     currentConcurrentUsers: number;
     maxConcurrentUsers: number;
+    currentOutlets: number;
+    maxOutlets: number;
+    maxUsers: number;
     usagePercentages: {
         database: number;
         apiCalls: number;
         users: number;
+        outlets: number;
     };
 }
 

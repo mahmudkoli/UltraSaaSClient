@@ -217,7 +217,7 @@ export class TenantUsageComponent implements OnInit {
         // For now, we'll create placeholder charts
     }
 
-    getUsagePercentage(type: 'api' | 'storage' | 'users'): number {
+    getUsagePercentage(type: 'api' | 'storage' | 'users' | 'outlets'): number {
         if (!this.tenant) return 0;
 
         switch (type) {
@@ -230,6 +230,9 @@ export class TenantUsageComponent implements OnInit {
             case 'users':
                 return this.tenant.maxUsers ?
                     ((this.tenant.currentUsers || 0) / this.tenant.maxUsers) * 100 : 0;
+            case 'outlets':
+                return this.tenantUsage?.maxOutlets ?
+                    ((this.tenantUsage.currentOutlets || 0) / this.tenantUsage.maxOutlets) * 100 : 0;
             default:
                 return 0;
         }
