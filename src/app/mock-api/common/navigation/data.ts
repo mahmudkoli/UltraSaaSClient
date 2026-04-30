@@ -35,6 +35,15 @@ const posNav: FuseNavigationItem[] = [
     { id: 'suppliers', title: 'Suppliers', type: 'basic', icon: 'heroicons_outline:truck', link: '/suppliers',
       meta: { permission: 'Permissions.Suppliers.View' } },
     {
+        id: 'inventory', title: 'Inventory', type: 'collapsable', icon: 'heroicons_outline:cube-transparent',
+        children: [
+            { id: 'inventory-stock', title: 'Stock On Hand', type: 'basic', icon: 'heroicons_outline:square-3-stack-3d', link: '/inventory/stock',
+              meta: { permission: 'Permissions.Stocks.View' } },
+            { id: 'inventory-serials', title: 'Stock Serials', type: 'basic', icon: 'heroicons_outline:qr-code', link: '/inventory/serials',
+              meta: { permission: 'Permissions.StockSerials.View' } },
+        ],
+    },
+    {
         id: 'procurement', title: 'Procurement', type: 'collapsable', icon: 'heroicons_outline:archive-box',
         children: [
             { id: 'purchase-orders', title: 'Purchase Orders', type: 'basic', icon: 'heroicons_outline:document-text', link: '/purchase-orders',
@@ -45,6 +54,15 @@ const posNav: FuseNavigationItem[] = [
               meta: { permission: 'Permissions.StockTransfers.View' } },
             { id: 'stock-adjustments', title: 'Stock Adjustments', type: 'basic', icon: 'heroicons_outline:adjustments-horizontal', link: '/stock-adjustments',
               meta: { permission: 'Permissions.StockAdjustments.View' } },
+        ],
+    },
+    {
+        id: 'pharmacy', title: 'Pharmacy', type: 'collapsable', icon: 'heroicons_outline:beaker',
+        children: [
+            { id: 'pharmacy-batches', title: 'Batches', type: 'basic', icon: 'heroicons_outline:swatch', link: '/batches',
+              meta: { permission: 'Permissions.Batches.View' } },
+            { id: 'pharmacy-prescriptions', title: 'Prescriptions', type: 'basic', icon: 'heroicons_outline:document-check', link: '/prescriptions',
+              meta: { permission: 'Permissions.Prescriptions.View' } },
         ],
     },
     { id: 'reports', title: 'Reports', type: 'basic', icon: 'heroicons_outline:chart-bar', link: '/reports',

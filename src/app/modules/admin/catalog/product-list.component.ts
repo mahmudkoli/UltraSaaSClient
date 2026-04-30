@@ -14,6 +14,7 @@ import { BrandsService, CategoriesService, ProductsService } from 'app/core/cata
 import { BrandDto, CategoryDto, ProductDto } from 'app/core/catalog/catalog.types';
 import { ProductPricingDialogComponent } from './product-pricing-dialog.component';
 import { ProductPharmacyDialogComponent } from './product-pharmacy-dialog.component';
+import { ProductElectronicsDialogComponent } from './product-electronics-dialog.component';
 
 @Component({
     selector: 'app-product-list',
@@ -79,6 +80,7 @@ import { ProductPharmacyDialogComponent } from './product-pharmacy-dialog.compon
                                 <div class="flex items-center justify-end space-x-2">
                                     <button mat-icon-button class="text-blue-600" [routerLink]="['../products', r.id]" matTooltip="Edit"><mat-icon class="icon-size-5">edit</mat-icon></button>
                                     <button mat-icon-button class="text-amber-600" (click)="manageOutletPrices(r)" matTooltip="Outlet pricing"><mat-icon class="icon-size-5">price_change</mat-icon></button>
+                                    <button mat-icon-button class="text-sky-600" (click)="manageElectronics(r)" matTooltip="Electronics details"><mat-icon class="icon-size-5">memory</mat-icon></button>
                                     <button mat-icon-button class="text-emerald-600" (click)="managePharmacy(r)" matTooltip="Pharmacy details"><mat-icon class="icon-size-5">medication</mat-icon></button>
                                     <button mat-icon-button class="text-red-600" (click)="remove(r)" matTooltip="Delete"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </div>
@@ -148,6 +150,13 @@ export class ProductListComponent implements OnInit {
 
     managePharmacy(r: ProductDto): void {
         this.dialog.open(ProductPharmacyDialogComponent, {
+            width: '640px',
+            data: { product: r },
+        });
+    }
+
+    manageElectronics(r: ProductDto): void {
+        this.dialog.open(ProductElectronicsDialogComponent, {
             width: '640px',
             data: { product: r },
         });

@@ -1,9 +1,9 @@
 export interface StockDto {
+    id: string;
     productId: string;
     outletId: string;
     quantity: number;
-    productName: string;
-    sku: string;
+    lastCountedOn?: string;
     lastMovementOn?: string;
 }
 
@@ -32,6 +32,8 @@ export interface StockSerialDto {
     purchaseCost: number;
     receivedOn: string;
     soldOn?: string;
+    saleId?: string;
+    notes?: string;
 }
 
 export interface ProductElectronicsDto {

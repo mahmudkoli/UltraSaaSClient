@@ -8,16 +8,18 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
 import { CustomersService } from 'app/core/sales/sales.service';
 import { CustomerDto } from 'app/core/sales/sales.types';
+import { LoyaltyAdjustDialogComponent } from './loyalty-adjust-dialog.component';
 
 @Component({
     selector: 'app-customer-list',
     standalone: true,
     imports: [
         CommonModule, FormsModule, RouterModule,
-        MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
+        MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatSelectModule, MatTableModule, MatTooltipModule,
     ],
     template: `
@@ -99,6 +101,7 @@ import { CustomerDto } from 'app/core/sales/sales.types';
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
                                     <button mat-icon-button class="text-blue-600" [routerLink]="[r.id]" matTooltip="Edit"><mat-icon class="icon-size-5">edit</mat-icon></button>
+                                    <button mat-icon-button class="text-rose-600" (click)="adjustLoyalty(r)" matTooltip="Adjust loyalty points"><mat-icon class="icon-size-5">redeem</mat-icon></button>
                                     <button mat-icon-button class="text-red-600" (click)="remove(r)" matTooltip="Delete"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </div>
                             </td>
@@ -124,6 +127,7 @@ import { CustomerDto } from 'app/core/sales/sales.types';
 })
 export class CustomerListComponent implements OnInit {
     private readonly api = inject(CustomersService);
+    private readonly dialog = inject(MatDialog);
     rows = signal<CustomerDto[]>([]);
     loading = signal(true);
     search = '';
@@ -151,5 +155,13 @@ export class CustomerListComponent implements OnInit {
     remove(r: CustomerDto): void {
         if (!confirm(`Delete customer "${r.name}"?`)) return;
         this.api.delete(r.id).subscribe(() => this.load());
+    }
+
+    adjustLoyalty(r: CustomerDto): void {
+        const ref = this.dialog.open(LoyaltyAdjustDialogComponent, {
+            width: '720px',
+            data: { customer: r },
+        });
+        ref.afterClosed().subscribe(saved => { if (saved) this.load(); });
     }
 }
