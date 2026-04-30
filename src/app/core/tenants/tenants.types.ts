@@ -1,3 +1,5 @@
+export type BusinessType = 'Generic' | 'Electronics' | 'Pharmacy' | 'Supermarket';
+
 /**
  * Tenant DTO for SYSTEM level data (authentication, billing, technical config)
  * NO institute-specific business data here - that goes in InstituteDto
@@ -8,6 +10,10 @@ export interface TenantDto {
     id: string;
     systemName: string; // Changed from name
     connectionString?: string;
+
+    // ============= VERTICAL =============
+    businessType: BusinessType;
+    outletLabel: string;
 
     // ============= TECHNICAL CONFIGURATION =============
     isShared: boolean;
@@ -106,6 +112,10 @@ export interface CreateTenantRequest {
     technicalAdminEmail: string; // Changed from adminEmail
     subdomain: string; // Changed from url
     billingPlan?: string;
+
+    // ============= VERTICAL =============
+    businessType?: BusinessType;
+    outletLabel?: string;
 
     // ============= OPTIONAL TECHNICAL FIELDS =============
     connectionString?: string;

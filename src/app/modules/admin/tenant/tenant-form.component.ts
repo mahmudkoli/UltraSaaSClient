@@ -65,6 +65,10 @@ export class TenantFormComponent implements OnInit {
             isShared: [false],
             issuer: [''],
 
+            // Vertical (set at creation; root-only edit deferred)
+            businessType: ['Generic', [Validators.required]],
+            outletLabel: ['Outlet', [Validators.required, Validators.maxLength(40)]],
+
             // Billing & Subscription
             billingPlan: ['Basic', [Validators.required]],
             monthlyFee: [0, [Validators.min(0)]],
@@ -108,6 +112,10 @@ export class TenantFormComponent implements OnInit {
         if (this.tenantId) {
             this.isEditMode = true;
             this.loadTenant();
+            // BusinessType is set at creation only — disable on edit until we
+            // ship a dedicated change endpoint (rebrand is rare and risky:
+            // existing batches/serials/etc. are tied to the original vertical).
+            this.tenantForm.get('businessType')?.disable();
         }
     }
 
@@ -127,6 +135,10 @@ export class TenantFormComponent implements OnInit {
                     connectionString: tenant.connectionString || '',
                     isShared: tenant.isShared,
                     issuer: tenant.issuer || '',
+
+                    // Vertical
+                    businessType: tenant.businessType || 'Generic',
+                    outletLabel: tenant.outletLabel || 'Outlet',
 
                     // Billing & Subscription
                     billingPlan: tenant.billingPlan || 'Basic',
@@ -277,6 +289,10 @@ export class TenantFormComponent implements OnInit {
                 connectionString: formData.connectionString || undefined,
                 isShared: formData.isShared,
                 issuer: formData.issuer || undefined,
+
+                // Vertical (root-immutable after creation)
+                businessType: formData.businessType,
+                outletLabel: formData.outletLabel,
 
                 // Billing & Subscription
                 billingPlan: formData.billingPlan,

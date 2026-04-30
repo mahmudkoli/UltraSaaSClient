@@ -135,6 +135,27 @@
                                         <mat-hint>Custom domain for white-label solution</mat-hint>
                                     </mat-form-field>
 
+                                    <!-- Business Type (Vertical) -->
+                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
+                                        <mat-label>Business Type</mat-label>
+                                        <mat-select formControlName="businessType">
+                                            <mat-option value="Generic">Generic — sees every vertical</mat-option>
+                                            <mat-option value="Electronics">Electronics — serial tracking, warranty</mat-option>
+                                            <mat-option value="Pharmacy">Pharmacy — batch / expiry / prescriptions</mat-option>
+                                            <mat-option value="Supermarket">Supermarket — weight SKUs, promotions, loyalty</mat-option>
+                                        </mat-select>
+                                        <mat-icon matSuffix class="text-secondary">storefront</mat-icon>
+                                        <mat-hint>{{ isEditMode ? 'Read-only after creation. Contact platform admin to change.' : 'Decides which vertical-specific UI + APIs are exposed. Set once at creation.' }}</mat-hint>
+                                    </mat-form-field>
+
+                                    <!-- Outlet Label -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Outlet Label</mat-label>
+                                        <input matInput formControlName="outletLabel" placeholder="Outlet">
+                                        <mat-icon matSuffix class="text-secondary">label</mat-icon>
+                                        <mat-hint>Display name for branches: e.g. "Outlet", "Store", "Branch", "Pharmacy", "Warehouse"</mat-hint>
+                                    </mat-form-field>
+
                                 </div>
                             </div>
                         </mat-tab>
