@@ -11,6 +11,8 @@ const posNav: FuseNavigationItem[] = [
       meta: { permission: 'Permissions.Sales.Create' } },
     { id: 'sales', title: 'Sales', type: 'basic', icon: 'heroicons_outline:receipt-percent', link: '/sales',
       meta: { permission: 'Permissions.Sales.View' } },
+    { id: 'shifts', title: 'Shifts', type: 'basic', icon: 'heroicons_outline:clock', link: '/shifts',
+      meta: { permission: 'Permissions.Shifts.View' } },
     { id: 'returns', title: 'Returns', type: 'basic', icon: 'heroicons_outline:arrow-uturn-left', link: '/returns',
       meta: { permission: 'Permissions.SaleReturns.View' } },
     {

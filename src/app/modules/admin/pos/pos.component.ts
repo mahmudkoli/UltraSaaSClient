@@ -16,6 +16,9 @@ import { ProductDto } from 'app/core/catalog/catalog.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
 import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
+import { ShiftsService } from 'app/core/sales/shifts.service';
+import { ShiftDto } from 'app/core/sales/shifts.types';
+import { RouterModule } from '@angular/router';
 import { CustomersService, SalesService } from 'app/core/sales/sales.service';
 import { CreateSaleLine, CreateSalePayment, CustomerDto, PaymentMethod, SaleDto } from 'app/core/sales/sales.types';
 import { PromotionsService } from 'app/core/marketing/marketing.service';
@@ -31,7 +34,7 @@ interface CartLine extends CreateSaleLine {
     selector: 'app-pos',
     standalone: true,
     imports: [
-        CommonModule, FormsModule,
+        CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatSelectModule, MatSnackBarModule, MatTableModule, MatChipsModule,
     ],
@@ -54,6 +57,19 @@ interface CartLine extends CreateSaleLine {
                             <input matInput [(ngModel)]="search" placeholder="e.g. PARA, iPhone..." />
                         </mat-form-field>
                     </div>
+                    @if (currentShift(); as cs) {
+                        <div class="mt-2 flex items-center gap-2 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-xs">
+                            <mat-icon class="icon-size-4 text-emerald-700 dark:text-emerald-300">play_circle</mat-icon>
+                            <span class="text-emerald-700 dark:text-emerald-300">Shift open since {{ cs.openedAt | date:'shortTime' }} · float {{ cs.openingFloat | number:'1.2-2' }}</span>
+                            <a class="ml-auto text-blue-600 hover:underline cursor-pointer" routerLink="/shifts">Manage</a>
+                        </div>
+                    } @else {
+                        <div class="mt-2 flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs">
+                            <mat-icon class="icon-size-4 text-amber-700 dark:text-amber-300">info</mat-icon>
+                            <span class="text-amber-700 dark:text-amber-300">No shift open. Sales will record without shift attribution.</span>
+                            <a class="ml-auto text-blue-600 hover:underline cursor-pointer" routerLink="/shifts">Open one</a>
+                        </div>
+                    }
                 </mat-card>
 
                 <mat-card class="flex-1 overflow-auto !p-2">
@@ -233,6 +249,7 @@ export class PosComponent implements OnInit {
     private readonly salesApi = inject(SalesService);
     private readonly promosApi = inject(PromotionsService);
     private readonly currentOutlet = inject(CurrentOutletService);
+    private readonly shiftsApi = inject(ShiftsService);
     private readonly snack = inject(MatSnackBar);
     private readonly router = inject(Router);
 
@@ -241,6 +258,7 @@ export class PosComponent implements OnInit {
     customers = signal<CustomerDto[]>([]);
     cart = signal<CartLine[]>([]);
     promo = signal<PromotionDiscountPreview | null>(null);
+    currentShift = signal<ShiftDto | null>(null);
     finalizing = signal(false);
 
     outletId: string | null = null;
@@ -309,6 +327,7 @@ export class PosComponent implements OnInit {
             const match = remembered && o.find(x => x.id === remembered);
             this.outletId = match ? match.id : o[0].id;
             this.currentOutlet.set(this.outletId);
+            this.refreshShift();
         });
         this.productsApi.getAll({ isActive: true }).subscribe(p => this.products.set(p));
         this.customersApi.getAll().subscribe(c => this.customers.set(c));
@@ -316,6 +335,15 @@ export class PosComponent implements OnInit {
 
     onOutletChange(): void {
         this.currentOutlet.set(this.outletId);
+        this.refreshShift();
+    }
+
+    private refreshShift(): void {
+        if (!this.outletId) { this.currentShift.set(null); return; }
+        this.shiftsApi.current(this.outletId).subscribe({
+            next: s => this.currentShift.set(s ?? null),
+            error: () => this.currentShift.set(null),
+        });
     }
 
     addToCart(p: ProductDto): void {
