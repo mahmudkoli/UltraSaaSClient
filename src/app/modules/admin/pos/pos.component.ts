@@ -88,6 +88,20 @@ interface CartLine extends CreateSaleLine {
                             </mat-select>
                         </mat-form-field>
                     </div>
+                    @if (selectedCustomer(); as c) {
+                        @if (c.loyaltyPoints > 0) {
+                            <div class="flex items-center gap-2 mt-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+                                <mat-icon class="icon-size-5 text-amber-600">stars</mat-icon>
+                                <div class="flex flex-col flex-1">
+                                    <span class="text-xs text-amber-700 dark:text-amber-300">Loyalty balance: <strong>{{ c.loyaltyPoints | number:'1.0-2' }}</strong> pts</span>
+                                </div>
+                                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!my-0 w-32">
+                                    <mat-label>Redeem</mat-label>
+                                    <input matInput type="number" min="0" [max]="maxRedeemable()" step="1" [(ngModel)]="redeemPoints">
+                                </mat-form-field>
+                            </div>
+                        }
+                    }
                 </mat-card>
 
                 <mat-card class="flex-1 overflow-auto !p-2">
@@ -170,6 +184,10 @@ interface CartLine extends CreateSaleLine {
                         <div class="flex justify-between text-sm"><span>Discount</span><span>−{{ totalDiscount() | number:'1.2-2' }}</span></div>
                         <div class="flex justify-between text-sm"><span>Tax</span><span>{{ totalTax() | number:'1.2-2' }}</span></div>
                         <div class="flex justify-between text-lg font-bold border-t pt-1"><span>Total</span><span>{{ grandTotal() | number:'1.2-2' }}</span></div>
+                        @if (effectiveRedeem() > 0) {
+                            <div class="flex justify-between text-sm text-amber-700 dark:text-amber-300"><span>Loyalty redeemed</span><span>−{{ effectiveRedeem() | number:'1.2-2' }}</span></div>
+                            <div class="flex justify-between text-md font-semibold"><span>Amount due</span><span>{{ amountDue() | number:'1.2-2' }}</span></div>
+                        }
                     </div>
                 </mat-card>
 
@@ -189,7 +207,7 @@ interface CartLine extends CreateSaleLine {
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="flex-1 !my-0">
                             <mat-label>Amount tendered</mat-label>
-                            <input matInput type="number" [(ngModel)]="payAmount" [placeholder]="grandTotal().toFixed(2)" />
+                            <input matInput type="number" [(ngModel)]="payAmount" [placeholder]="amountDue().toFixed(2)" />
                         </mat-form-field>
                     </div>
 
@@ -231,6 +249,7 @@ export class PosComponent implements OnInit {
     promoCode = '';
     payMethod: PaymentMethod = 'Cash';
     payAmount: number | null = null;
+    redeemPoints: number = 0;
 
     filteredProducts = computed(() => {
         const q = this.search.trim().toLowerCase();
@@ -259,6 +278,24 @@ export class PosComponent implements OnInit {
         return Math.round(weighted * 100) / 100;
     });
     grandTotal = computed(() => Math.max(0, this.subTotal() - (this.promo()?.eligible ? this.promo()!.discountAmount : 0) + this.totalTax()));
+
+    selectedCustomer = computed(() => this.customers().find(c => c.id === this.customerId) ?? null);
+
+    /** Max points the cashier can redeem on this sale: capped by both balance and grand total. */
+    maxRedeemable = computed(() => {
+        const c = this.selectedCustomer();
+        if (!c) return 0;
+        return Math.floor(Math.min(c.loyaltyPoints, this.grandTotal()));
+    });
+
+    /** Effective points actually redeemed (clamped to what's allowed). */
+    effectiveRedeem = computed(() => {
+        const requested = Number(this.redeemPoints) || 0;
+        return Math.max(0, Math.min(requested, this.maxRedeemable()));
+    });
+
+    /** Amount the cashier still needs to collect after loyalty deduction. */
+    amountDue = computed(() => Math.max(0, this.grandTotal() - this.effectiveRedeem()));
 
     canFinalize = computed(() => !!this.outletId && this.cart().length > 0);
 
@@ -317,7 +354,10 @@ export class PosComponent implements OnInit {
         return Math.round((sub + sub * (l.taxRate / 100)) * 100) / 100;
     }
 
-    onCustomerChange(_id: string | null): void { /* no-op */ }
+    onCustomerChange(_id: string | null): void {
+        // Reset loyalty redemption when the customer changes — points belong to a customer.
+        this.redeemPoints = 0;
+    }
 
     applyPromo(): void {
         const code = this.promoCode.trim();
@@ -336,10 +376,10 @@ export class PosComponent implements OnInit {
 
     finalize(): void {
         if (!this.outletId || this.cart().length === 0) return;
-        const total = this.grandTotal();
-        const payAmt = this.payAmount ?? total;
-        if (payAmt + 0.01 < total) {
-            this.snack.open(`Insufficient payment (${payAmt.toFixed(2)} < ${total.toFixed(2)})`, 'OK', { duration: 3000 });
+        const due = this.amountDue();
+        const payAmt = this.payAmount ?? due;
+        if (payAmt + 0.01 < due) {
+            this.snack.open(`Insufficient payment (${payAmt.toFixed(2)} < ${due.toFixed(2)})`, 'OK', { duration: 3000 });
             return;
         }
 
@@ -372,6 +412,7 @@ export class PosComponent implements OnInit {
             customerPhone: customer?.phone,
             lines: apiLines,
             payments,
+            loyaltyPointsRedeemed: this.effectiveRedeem() > 0 ? this.effectiveRedeem() : undefined,
         }).subscribe({
             next: (id) => {
                 this.finalizing.set(false);
@@ -381,11 +422,14 @@ export class PosComponent implements OnInit {
                 this.salesApi.get(id).subscribe(sale => this.printReceipt(sale));
                 this.snack.open(`Sale finalized! Invoice → /sales/${id}`, 'View', { duration: 5000 })
                     .onAction().subscribe(() => this.router.navigate(['/sales', id]));
+                // Refresh customer list so the next sale sees updated loyalty balance.
+                if (this.customerId) this.customersApi.getAll().subscribe(c => this.customers.set(c));
                 this.cart.set([]);
                 this.promo.set(null);
                 this.promoCode = '';
                 this.payAmount = null;
                 this.customerId = null;
+                this.redeemPoints = 0;
             },
             error: (err) => {
                 this.finalizing.set(false);

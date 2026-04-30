@@ -37,6 +37,8 @@ export interface CreateSaleRequest {
     customerPhone?: string;
     lines: CreateSaleLine[];
     payments: CreateSalePayment[];
+    /** Loyalty points to redeem against this sale. 1 point = 1 currency unit. Requires customerId. */
+    loyaltyPointsRedeemed?: number;
     notes?: string;
 }
 
