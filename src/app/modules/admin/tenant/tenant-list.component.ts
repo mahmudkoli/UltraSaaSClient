@@ -153,13 +153,7 @@ export class TenantListComponent implements OnInit {
     }
 
     createTenant(): void {
-        console.log('Creating tenant...');
         this._router.navigate(['/tenant/create']);
-    }
-
-    createTenantWithInstitute(): void {
-        console.log('Creating tenant with institute...');
-        this._router.navigate(['/tenant/create-with-institute']);
     }
 
     editTenant(tenant: TenantDto): void {
