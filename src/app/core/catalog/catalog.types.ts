@@ -57,3 +57,25 @@ export interface CreateProductRequest {
 }
 
 export type UpdateProductRequest = Partial<CreateProductRequest> & { id: string };
+
+export interface ProductOutletPriceDto {
+    id: string;
+    productId: string;
+    outletId: string;
+    sellingPrice: number;
+    isActive: boolean;
+}
+
+export interface ResolvedPriceDto {
+    productId: string;
+    outletId: string;
+    sellingPrice: number;
+    isOverride: boolean;
+}
+
+export interface SetProductOutletPriceRequest {
+    productId: string;
+    outletId: string;
+    sellingPrice: number;
+    isActive: boolean;
+}

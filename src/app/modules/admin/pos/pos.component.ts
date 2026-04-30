@@ -351,18 +351,40 @@ export class PosComponent implements OnInit {
         if (existing) {
             existing.quantity += 1;
             this.cart.set([...this.cart()]);
-        } else {
-            this.cart.set([...this.cart(), {
-                productId: p.id,
-                productName: p.name,
-                sku: p.sku,
-                quantity: 1,
-                unitPrice: p.sellingPrice,
-                discountAmount: 0,
-                taxRate: p.taxRate,
-            }]);
+            this.recalc();
+            return;
         }
+
+        // Add the line at the base price first (instant feedback), then resolve
+        // the per-outlet override and patch in the override price if any. This
+        // keeps the UI snappy while still honoring outlet-specific pricing.
+        const newLine: CartLine = {
+            productId: p.id,
+            productName: p.name,
+            sku: p.sku,
+            quantity: 1,
+            unitPrice: p.sellingPrice,
+            discountAmount: 0,
+            taxRate: p.taxRate,
+        };
+        this.cart.set([...this.cart(), newLine]);
         this.recalc();
+
+        if (this.outletId) {
+            this.productsApi.resolvePrice(p.id, this.outletId).subscribe({
+                next: r => {
+                    if (r.isOverride) {
+                        const updated = this.cart().map(l =>
+                            l === newLine || (l.productId === p.id && !l.serialNumber && l.unitPrice === p.sellingPrice && l.quantity === 1)
+                                ? { ...l, unitPrice: r.sellingPrice }
+                                : l);
+                        this.cart.set(updated);
+                        this.recalc();
+                    }
+                },
+                error: () => { /* keep base price on lookup failure */ },
+            });
+        }
     }
 
     removeLine(idx: number): void {

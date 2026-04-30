@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
-import { BrandDto, CategoryDto, CreateProductRequest, ProductDto, UnitDto, UpdateProductRequest } from './catalog.types';
+import { BrandDto, CategoryDto, CreateProductRequest, ProductDto, ProductOutletPriceDto, ResolvedPriceDto, SetProductOutletPriceRequest, UnitDto, UpdateProductRequest } from './catalog.types';
 
 const api = environment.apiUrl;
 
@@ -55,4 +55,14 @@ export class ProductsService {
     update = (id: string, req: Partial<UpdateProductRequest>): Observable<string> =>
         this.http.put<string>(`${this.base}/${id}`, { ...req, id });
     delete = (id: string): Observable<string> => this.http.delete<string>(`${this.base}/${id}`);
+
+    // ── Outlet-specific pricing ────────────────────────────────────
+    getPrices = (productId: string): Observable<ProductOutletPriceDto[]> =>
+        this.http.get<ProductOutletPriceDto[]>(`${this.base}/${productId}/prices`);
+    resolvePrice = (productId: string, outletId: string): Observable<ResolvedPriceDto> =>
+        this.http.get<ResolvedPriceDto>(`${this.base}/${productId}/prices/resolve/${outletId}`);
+    setPrice = (productId: string, outletId: string, req: SetProductOutletPriceRequest): Observable<string> =>
+        this.http.put<string>(`${this.base}/${productId}/prices/${outletId}`, req);
+    removePrice = (productId: string, outletId: string): Observable<string> =>
+        this.http.delete<string>(`${this.base}/${productId}/prices/${outletId}`);
 }

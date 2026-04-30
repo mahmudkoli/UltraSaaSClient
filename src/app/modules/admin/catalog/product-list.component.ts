@@ -9,13 +9,15 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { BrandsService, CategoriesService, ProductsService } from 'app/core/catalog/catalog.service';
 import { BrandDto, CategoryDto, ProductDto } from 'app/core/catalog/catalog.types';
+import { ProductPricingDialogComponent } from './product-pricing-dialog.component';
 
 @Component({
     selector: 'app-product-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, MatTableModule, MatTooltipModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -75,6 +77,7 @@ import { BrandDto, CategoryDto, ProductDto } from 'app/core/catalog/catalog.type
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
                                     <button mat-icon-button class="text-blue-600" [routerLink]="['../products', r.id]" matTooltip="Edit"><mat-icon class="icon-size-5">edit</mat-icon></button>
+                                    <button mat-icon-button class="text-amber-600" (click)="manageOutletPrices(r)" matTooltip="Outlet pricing"><mat-icon class="icon-size-5">price_change</mat-icon></button>
                                     <button mat-icon-button class="text-red-600" (click)="remove(r)" matTooltip="Delete"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </div>
                             </td></ng-container>
@@ -97,6 +100,7 @@ export class ProductListComponent implements OnInit {
     private readonly api = inject(ProductsService);
     private readonly cats = inject(CategoriesService);
     private readonly brds = inject(BrandsService);
+    private readonly dialog = inject(MatDialog);
     rows = signal<ProductDto[]>([]);
     categories = signal<CategoryDto[]>([]);
     brands = signal<BrandDto[]>([]);
@@ -131,5 +135,12 @@ export class ProductListComponent implements OnInit {
     remove(r: ProductDto): void {
         if (!confirm(`Delete product "${r.name}"?`)) return;
         this.api.delete(r.id).subscribe(() => this.load());
+    }
+
+    manageOutletPrices(r: ProductDto): void {
+        this.dialog.open(ProductPricingDialogComponent, {
+            width: '640px',
+            data: { product: r },
+        });
     }
 }
