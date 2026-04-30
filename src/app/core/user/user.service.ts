@@ -204,6 +204,24 @@ export class UserService
     }
 
     /**
+     * Get the outlets a user can access (empty list = all outlets)
+     * GET /api/users/{id}/outlets
+     */
+    getUserOutlets(id: string): Observable<string[]>
+    {
+        return this._httpClient.get<string[]>(`${this.baseUrl}/api/users/${id}/outlets`);
+    }
+
+    /**
+     * Replace the outlets a user can access (empty list = all outlets)
+     * PUT /api/users/{id}/outlets
+     */
+    assignUserOutlets(id: string, outletIds: string[]): Observable<string>
+    {
+        return this._httpClient.put<string>(`${this.baseUrl}/api/users/${id}/outlets`, { userId: id, outletIds });
+    }
+
+    /**
      * Self register a new user
      * POST /api/users/self-register
      */

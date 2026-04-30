@@ -25,6 +25,7 @@ import { UserDetailsDto, UserListFilter, PaginationResponseOfUserDetailsDto } fr
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NotificationService } from '../../../core/services/notification.service';
 import { UserRolesDialogComponent } from './user-roles-dialog.component';
+import { UserOutletsDialogComponent } from './user-outlets-dialog.component';
 
 @Component({
     selector: 'user-list',
@@ -241,6 +242,15 @@ export class UserListComponent implements OnInit, OnDestroy {
             data: { userId: user.id, userName: this.getFullName(user) || user.email || user.userName },
         }).afterClosed().subscribe(saved => {
             if (saved) this._notificationService.success('Roles updated');
+        });
+    }
+
+    manageOutlets(user: UserDetailsDto): void {
+        this._dialog.open(UserOutletsDialogComponent, {
+            width: '480px',
+            data: { userId: user.id, userName: this.getFullName(user) || user.email || user.userName },
+        }).afterClosed().subscribe(saved => {
+            if (saved) this._notificationService.success('Outlet access updated');
         });
     }
 
