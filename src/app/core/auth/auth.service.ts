@@ -8,6 +8,7 @@ import {
     RefreshTokenRequest
 } from './auth.types';
 import { UserService } from '../user/user.service';
+import { PermissionsService } from './permissions.service';
 import { TenantService } from '../tenant/tenant.service';
 
 @Injectable({providedIn: 'root'})
@@ -15,6 +16,7 @@ export class AuthService
 {
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
+    private _permissionsService = inject(PermissionsService);
     private _tenantService = inject(TenantService);
     private readonly baseUrl = environment.apiUrl;
 
@@ -84,9 +86,10 @@ export class AuthService
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('refresh_token_expiry');
         localStorage.removeItem('tenant_id');
-        
+
         // Clear user data
         this._userService.user = null;
+        this._permissionsService.clear();
     }
 
     /**
