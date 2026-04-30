@@ -15,6 +15,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { Subject, takeUntil, debounceTime, distinctUntilChanged, BehaviorSubject, filter } from 'rxjs';
 import { fuseAnimations } from '@fuse/animations';
 import { trigger, transition, style, animate } from '@angular/animations';
@@ -23,6 +24,7 @@ import { UserService } from '../../../core/user/user.service';
 import { UserDetailsDto, UserListFilter, PaginationResponseOfUserDetailsDto } from '../../../core/user/user.types';
 import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NotificationService } from '../../../core/services/notification.service';
+import { UserRolesDialogComponent } from './user-roles-dialog.component';
 
 @Component({
     selector: 'user-list',
@@ -45,6 +47,7 @@ import { NotificationService } from '../../../core/services/notification.service
         FormsModule,
         ReactiveFormsModule,
         MatButtonModule,
+        MatDialogModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
@@ -85,7 +88,8 @@ export class UserListComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService,
         private _notificationService: NotificationService,
         private _router: Router,
-        private _activatedRoute: ActivatedRoute
+        private _activatedRoute: ActivatedRoute,
+        private _dialog: MatDialog,
     ) {}
 
     ngOnInit(): void {
@@ -230,6 +234,15 @@ export class UserListComponent implements OnInit, OnDestroy {
 
 
 
+
+    manageRoles(user: UserDetailsDto): void {
+        this._dialog.open(UserRolesDialogComponent, {
+            width: '480px',
+            data: { userId: user.id, userName: this.getFullName(user) || user.email || user.userName },
+        }).afterClosed().subscribe(saved => {
+            if (saved) this._notificationService.success('Roles updated');
+        });
+    }
 
     getFullName(user: UserDetailsDto): string {
         const firstName = user.firstName || '';
