@@ -58,6 +58,7 @@ const posNav: FuseNavigationItem[] = [
     },
     {
         id: 'pharmacy', title: 'Pharmacy', type: 'collapsable', icon: 'heroicons_outline:beaker',
+        meta: { businessType: 'Pharmacy' },
         children: [
             { id: 'pharmacy-batches', title: 'Batches', type: 'basic', icon: 'heroicons_outline:swatch', link: '/batches',
               meta: { permission: 'Permissions.Batches.View' } },
