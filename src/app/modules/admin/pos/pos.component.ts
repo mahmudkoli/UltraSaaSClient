@@ -50,7 +50,7 @@ interface CartLine extends CreateSaleLine {
             <!-- Left: product picker -->
             <div class="lg:w-1/2 flex flex-col gap-3">
                 <mat-card class="!p-3">
-                    <div class="flex items-stretch gap-3">
+                    <div class="flex items-center gap-3">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
                             <mat-label>Outlet</mat-label>
                             <mat-select [(ngModel)]="outletId" (ngModelChange)="onOutletChange()">
