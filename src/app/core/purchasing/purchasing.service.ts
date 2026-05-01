@@ -9,6 +9,10 @@ import {
 
 const api = environment.apiUrl;
 
+export interface SearchSuppliersRequest extends PaginationFilter {
+    isActive?: boolean;
+}
+
 export interface SearchPurchaseOrdersRequest extends PaginationFilter {
     outletId?: string;
     supplierId?: string;
@@ -35,6 +39,8 @@ export class SuppliersService {
     update = (id: string, req: Partial<SupplierDto>): Observable<string> =>
         this.http.put<string>(`${this.base}/${id}`, { ...req, id });
     delete = (id: string): Observable<string> => this.http.delete<string>(`${this.base}/${id}`);
+    search = (req: SearchSuppliersRequest): Observable<PaginationResponse<SupplierDto>> =>
+        this.http.post<PaginationResponse<SupplierDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })

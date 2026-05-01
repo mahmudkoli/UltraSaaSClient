@@ -1,14 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSelectModule } from '@angular/material/select';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { SuppliersService } from 'app/core/purchasing/purchasing.service';
+import { debounceTime, Subject } from 'rxjs';
+import { toOrderBy } from 'app/core/common/pagination.types';
+import { SearchSuppliersRequest, SuppliersService } from 'app/core/purchasing/purchasing.service';
 import { SupplierDto } from 'app/core/purchasing/purchasing.types';
 
 @Component({
@@ -17,7 +22,7 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
     imports: [
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
-        MatTableModule, MatTooltipModule,
+        MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -38,8 +43,16 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Search suppliers</mat-label>
-                    <input matInput [(ngModel)]="search" placeholder="Search by name, contact, phone, email">
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Search by name, contact, phone, email">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
+                </mat-form-field>
+                <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
+                    <mat-label>Status</mat-label>
+                    <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
+                        <mat-option value="all">All</mat-option>
+                        <mat-option value="active">Active only</mat-option>
+                        <mat-option value="inactive">Inactive only</mat-option>
+                    </mat-select>
                 </mat-form-field>
                 <button mat-fab color="primary" routerLink="create" matTooltip="Add new supplier">
                     <mat-icon>add</mat-icon>
@@ -50,9 +63,9 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
-                    <table mat-table [dataSource]="filtered()" class="w-full">
+                    <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
                         <ng-container matColumnDef="name">
-                            <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span></th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.name }}</span>
@@ -90,9 +103,17 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
                         <tr mat-row *matRowDef="let row; columns: cols" class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"></tr>
                     </table>
+
+                    <mat-paginator
+                        [length]="totalCount()"
+                        [pageSize]="pageSize"
+                        [pageSizeOptions]="[10, 25, 50, 100]"
+                        [pageIndex]="pageIndex"
+                        (page)="onPage($event)"
+                        showFirstLastButtons></mat-paginator>
                 </div>
 
-                <div *ngIf="!loading() && filtered().length === 0" class="flex flex-col items-center justify-center p-12">
+                <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg">
                         <mat-icon class="icon-size-16 text-gray-400">local_shipping</mat-icon>
                     </div>
@@ -107,30 +128,51 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
 })
 export class SupplierListComponent implements OnInit {
     private readonly api = inject(SuppliersService);
+
+    @ViewChild(MatPaginator) paginator?: MatPaginator;
+    @ViewChild(MatSort) sort?: MatSort;
+
     rows = signal<SupplierDto[]>([]);
     loading = signal(true);
+    totalCount = signal(0);
+
     search = '';
+    statusFilter: 'all' | 'active' | 'inactive' = 'all';
+
+    pageIndex = 0;
+    pageSize = 25;
+    private orderBy?: string[];
+
     cols = ['name', 'phone', 'email', 'active', 'actions'];
+    searchChanged = new Subject<string>();
 
-    filtered = computed(() => {
-        const q = this.search.trim().toLowerCase();
-        if (!q) return this.rows();
-        return this.rows().filter(r =>
-            r.name.toLowerCase().includes(q)
-            || (r.contactPerson ?? '').toLowerCase().includes(q)
-            || (r.phone ?? '').toLowerCase().includes(q)
-            || (r.email ?? '').toLowerCase().includes(q)
-        );
-    });
+    ngOnInit(): void {
+        this.searchChanged.pipe(debounceTime(300)).subscribe(() => this.resetAndLoad());
+        this.load();
+    }
 
-    ngOnInit(): void { this.load(); }
+    private buildRequest(): SearchSuppliersRequest {
+        return {
+            pageNumber: this.pageIndex + 1,
+            pageSize: this.pageSize,
+            orderBy: this.orderBy,
+            keyword: this.search.trim() || undefined,
+            isActive: this.statusFilter === 'all' ? undefined : this.statusFilter === 'active',
+        };
+    }
+
     load(): void {
         this.loading.set(true);
-        this.api.getAll().subscribe({
-            next: d => { this.rows.set(d); this.loading.set(false); },
+        this.api.search(this.buildRequest()).subscribe({
+            next: r => { this.rows.set(r.data); this.totalCount.set(r.totalCount); this.loading.set(false); },
             error: () => this.loading.set(false),
         });
     }
+
+    resetAndLoad(): void { this.pageIndex = 0; this.load(); }
+    onPage(e: PageEvent): void { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
+    onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
+
     remove(r: SupplierDto): void {
         if (!confirm(`Delete supplier "${r.name}"?`)) return;
         this.api.delete(r.id).subscribe(() => this.load());
