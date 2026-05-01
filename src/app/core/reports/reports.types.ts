@@ -85,3 +85,41 @@ export interface PurchaseSummary {
     byOutlet: { outletId: string; orderCount: number; total: number }[];
     bySupplier: { supplierId: string; supplierName: string; orderCount: number; total: number }[];
 }
+
+export interface ARAgingInvoice {
+    saleId: string;
+    invoiceNumber: string;
+    saleDate: string;
+    daysOutstanding: number;
+    total: number;
+    paidAmount: number;
+    balance: number;
+}
+
+export interface ARAgingByCustomer {
+    customerId?: string;
+    customerName: string;
+    customerPhone?: string;
+    creditLimit: number;
+    bucket0to30: number;
+    bucket31to60: number;
+    bucket61to90: number;
+    bucketOver90: number;
+    totalOutstanding: number;
+    invoiceCount: number;
+    oldestInvoiceDate?: string;
+    invoices: ARAgingInvoice[];
+}
+
+export interface ARAgingSummary {
+    asOf: string;
+    outletId?: string;
+    bucket0to30: number;
+    bucket31to60: number;
+    bucket61to90: number;
+    bucketOver90: number;
+    totalOutstanding: number;
+    customerCount: number;
+    invoiceCount: number;
+    byCustomer: ARAgingByCustomer[];
+}

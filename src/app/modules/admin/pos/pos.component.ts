@@ -29,6 +29,7 @@ import { PromotionsService } from 'app/core/marketing/marketing.service';
 import { PromotionDiscountPreview } from 'app/core/marketing/marketing.types';
 import { SaleLookupDialogComponent } from './sale-lookup-dialog.component';
 import { ParkedCartsDialogComponent } from './parked-carts-dialog.component';
+import { ManagerOverrideDialogComponent, ManagerOverrideResult } from './manager-override-dialog.component';
 
 interface CartLine extends CreateSaleLine {
     productName: string;
@@ -522,16 +523,25 @@ export class PosComponent implements OnInit {
 
         const payments: CreateSalePayment[] = [{ amount: payAmt, method: this.payMethod }];
         const customer = this.customers().find(c => c.id === this.customerId);
+        this.submitSale(apiLines, payments, customer);
+    }
 
+    private submitSale(
+        apiLines: CreateSaleLine[],
+        payments: CreateSalePayment[],
+        customer: CustomerDto | undefined,
+        discountAuthorizedByUserId?: string,
+    ): void {
         this.finalizing.set(true);
         this.salesApi.create({
-            outletId: this.outletId,
+            outletId: this.outletId!,
             customerId: this.customerId ?? undefined,
             customerName: customer?.name,
             customerPhone: customer?.phone,
             lines: apiLines,
             payments,
             loyaltyPointsRedeemed: this.effectiveRedeem() > 0 ? this.effectiveRedeem() : undefined,
+            discountAuthorizedByUserId,
         }).subscribe({
             next: (id) => {
                 this.finalizing.set(false);
@@ -553,6 +563,27 @@ export class PosComponent implements OnInit {
             error: (err) => {
                 this.finalizing.set(false);
                 const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Sale failed';
+                // Strict-pricing rejection: server says price doesn't match resolved price.
+                // If the cashier hasn't already obtained a manager override, prompt for one.
+                const looksLikePriceOverride = err?.status === 403
+                    && typeof msg === 'string'
+                    && /Unit price .* does not match resolved price/i.test(msg)
+                    && !discountAuthorizedByUserId;
+                if (looksLikePriceOverride) {
+                    const ref = this.dialog.open(ManagerOverrideDialogComponent, {
+                        width: '460px',
+                        data: {
+                            requiredPermission: 'Permissions.Sales.Discount',
+                            reason: 'A unit price on this sale differs from the resolved price. A manager with discount permission must authorize.',
+                        },
+                    });
+                    ref.afterClosed().subscribe((result: ManagerOverrideResult | null) => {
+                        if (!result) return;
+                        this.snack.open(`Approved by ${result.authorizedUserName} — finalizing…`, 'OK', { duration: 3000 });
+                        this.submitSale(apiLines, payments, customer, result.authorizedUserId);
+                    });
+                    return;
+                }
                 this.snack.open(msg, 'OK', { duration: 6000 });
             },
         });

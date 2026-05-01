@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
 import {
-    ExpiringBatch, InventoryOnHandRow, LowStockAlert, PurchaseSummary, SalesSummary, TopProduct,
+    ARAgingSummary, ExpiringBatch, InventoryOnHandRow, LowStockAlert, PurchaseSummary, SalesSummary, TopProduct,
 } from './reports.types';
 
 const api = environment.apiUrl;
@@ -30,6 +30,9 @@ export class ReportsService {
 
     purchaseSummary = (params?: { fromDate?: string; toDate?: string; outletId?: string }): Observable<PurchaseSummary> =>
         this.http.get<PurchaseSummary>(`${this.base}/purchase-summary${this.qs(params)}`);
+
+    arAging = (params?: { asOf?: string; outletId?: string; includeWalkIns?: boolean }): Observable<ARAgingSummary> =>
+        this.http.get<ARAgingSummary>(`${this.base}/ar-aging${this.qs(params)}`);
 
     private qs(p: Record<string, any> | undefined): string {
         if (!p) return '';

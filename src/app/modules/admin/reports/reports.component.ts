@@ -12,7 +12,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ReportsService } from 'app/core/reports/reports.service';
 import {
-    ExpiringBatch, InventoryOnHandRow, LowStockAlert, PurchaseSummary, SalesSummary, TopProduct,
+    ARAgingSummary, ExpiringBatch, InventoryOnHandRow, LowStockAlert, PurchaseSummary, SalesSummary, TopProduct,
 } from 'app/core/reports/reports.types';
 
 @Component({
@@ -220,6 +220,55 @@ import {
                         }
                     </mat-tab>
 
+                    <mat-tab>
+                        <ng-template mat-tab-label><mat-icon class="icon-size-5 mr-2">request_quote</mat-icon>AR Aging</ng-template>
+                        @if (arAging(); as ar) {
+                            <div class="p-6">
+                                <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+                                    <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-900/40">
+                                        <div class="flex items-center space-x-2 text-emerald-700 dark:text-emerald-300 text-sm font-medium"><mat-icon class="icon-size-5">today</mat-icon><span>0–30 days</span></div>
+                                        <div class="text-2xl font-bold mt-2 text-gray-900 dark:text-white">{{ ar.bucket0to30 | number:'1.2-2' }}</div>
+                                    </div>
+                                    <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-900/40">
+                                        <div class="flex items-center space-x-2 text-amber-700 dark:text-amber-300 text-sm font-medium"><mat-icon class="icon-size-5">access_time</mat-icon><span>31–60 days</span></div>
+                                        <div class="text-2xl font-bold mt-2 text-gray-900 dark:text-white">{{ ar.bucket31to60 | number:'1.2-2' }}</div>
+                                    </div>
+                                    <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-br from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-900/40">
+                                        <div class="flex items-center space-x-2 text-orange-700 dark:text-orange-300 text-sm font-medium"><mat-icon class="icon-size-5">schedule</mat-icon><span>61–90 days</span></div>
+                                        <div class="text-2xl font-bold mt-2 text-gray-900 dark:text-white">{{ ar.bucket61to90 | number:'1.2-2' }}</div>
+                                    </div>
+                                    <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-br from-rose-50 to-rose-100 dark:from-rose-900/20 dark:to-rose-900/40">
+                                        <div class="flex items-center space-x-2 text-rose-700 dark:text-rose-300 text-sm font-medium"><mat-icon class="icon-size-5">priority_high</mat-icon><span>90+ days</span></div>
+                                        <div class="text-2xl font-bold mt-2 text-gray-900 dark:text-white">{{ ar.bucketOver90 | number:'1.2-2' }}</div>
+                                    </div>
+                                    <div class="rounded-xl border border-gray-200 dark:border-gray-700 p-4 bg-gradient-to-br from-indigo-50 to-indigo-100 dark:from-indigo-900/20 dark:to-indigo-900/40">
+                                        <div class="flex items-center space-x-2 text-indigo-700 dark:text-indigo-300 text-sm font-medium"><mat-icon class="icon-size-5">summarize</mat-icon><span>Total Outstanding</span></div>
+                                        <div class="text-2xl font-bold mt-2 text-gray-900 dark:text-white">{{ ar.totalOutstanding | number:'1.2-2' }}</div>
+                                    </div>
+                                </div>
+
+                                <div class="text-sm text-gray-600 dark:text-gray-400 mb-3">
+                                    {{ ar.customerCount }} customers · {{ ar.invoiceCount }} unpaid invoices · As of {{ ar.asOf | date:'shortDate' }}
+                                </div>
+
+                                <div class="rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+                                    <table mat-table [dataSource]="ar.byCustomer" class="w-full">
+                                        <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-4"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</span></th><td mat-cell *matCellDef="let r" class="pl-4 font-medium">{{ r.customerName }} <span class="text-xs text-gray-500" *ngIf="r.customerPhone">({{ r.customerPhone }})</span></td></ng-container>
+                                        <ng-container matColumnDef="invoices"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Invoices</span></th><td mat-cell *matCellDef="let r" class="!text-right">{{ r.invoiceCount }}</td></ng-container>
+                                        <ng-container matColumnDef="b1"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">0–30</span></th><td mat-cell *matCellDef="let r" class="!text-right">{{ r.bucket0to30 | number:'1.2-2' }}</td></ng-container>
+                                        <ng-container matColumnDef="b2"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">31–60</span></th><td mat-cell *matCellDef="let r" class="!text-right">{{ r.bucket31to60 | number:'1.2-2' }}</td></ng-container>
+                                        <ng-container matColumnDef="b3"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">61–90</span></th><td mat-cell *matCellDef="let r" class="!text-right">{{ r.bucket61to90 | number:'1.2-2' }}</td></ng-container>
+                                        <ng-container matColumnDef="b4"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">90+</span></th><td mat-cell *matCellDef="let r" class="!text-right text-rose-700 font-semibold">{{ r.bucketOver90 | number:'1.2-2' }}</td></ng-container>
+                                        <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef class="pr-4 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</span></th><td mat-cell *matCellDef="let r" class="pr-4 !text-right font-bold">{{ r.totalOutstanding | number:'1.2-2' }}</td></ng-container>
+                                        <tr mat-header-row *matHeaderRowDef="['name','invoices','b1','b2','b3','b4','total']" class="bg-gray-50 dark:bg-gray-700"></tr>
+                                        <tr mat-row *matRowDef="let row; columns: ['name','invoices','b1','b2','b3','b4','total']"></tr>
+                                    </table>
+                                </div>
+                                <div *ngIf="ar.byCustomer.length === 0" class="p-8 text-center text-sm text-gray-500">No outstanding balances. Every finalized sale is paid in full.</div>
+                            </div>
+                        }
+                    </mat-tab>
+
                 </mat-tab-group>
             </div>
         </div>
@@ -240,6 +289,7 @@ export class ReportsComponent implements OnInit {
     lowStock = signal<LowStockAlert[]>([]);
     expiring = signal<ExpiringBatch[]>([]);
     purchases = signal<PurchaseSummary | null>(null);
+    arAging = signal<ARAgingSummary | null>(null);
 
     ngOnInit(): void {
         const today = new Date();
@@ -258,5 +308,6 @@ export class ReportsComponent implements OnInit {
         this.api.lowStock({ take: 100 }).subscribe(d => this.lowStock.set(d));
         this.api.expiringBatches({ withinDays: 365, take: 100 }).subscribe(d => this.expiring.set(d));
         this.api.purchaseSummary(params).subscribe(d => this.purchases.set(d));
+        this.api.arAging({ includeWalkIns: false }).subscribe(d => this.arAging.set(d));
     }
 }

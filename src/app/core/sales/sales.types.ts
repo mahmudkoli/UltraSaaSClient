@@ -39,6 +39,8 @@ export interface CreateSaleRequest {
     payments: CreateSalePayment[];
     /** Loyalty points to redeem against this sale. 1 point = 1 currency unit. Requires customerId. */
     loyaltyPointsRedeemed?: number;
+    /** UserId of a manager who authorized a price override on this sale (set after the verify-override flow). */
+    discountAuthorizedByUserId?: string;
     notes?: string;
 }
 
