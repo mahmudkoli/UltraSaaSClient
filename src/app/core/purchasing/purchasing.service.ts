@@ -2,11 +2,27 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
+import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
 import {
     CreateGoodsReceiptRequest, CreatePurchaseOrderRequest, GoodsReceiptDto, PurchaseOrderDto, SupplierDto,
 } from './purchasing.types';
 
 const api = environment.apiUrl;
+
+export interface SearchPurchaseOrdersRequest extends PaginationFilter {
+    outletId?: string;
+    supplierId?: string;
+    fromDate?: string;
+    toDate?: string;
+    status?: 'Draft' | 'Submitted' | 'PartiallyReceived' | 'Received' | 'Cancelled';
+}
+
+export interface SearchGoodsReceiptsRequest extends PaginationFilter {
+    outletId?: string;
+    purchaseOrderId?: string;
+    fromDate?: string;
+    toDate?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class SuppliersService {
@@ -35,6 +51,8 @@ export class PurchaseOrdersService {
     create = (req: CreatePurchaseOrderRequest): Observable<string> => this.http.post<string>(this.base, req);
     submit = (id: string): Observable<string> => this.http.post<string>(`${this.base}/${id}/submit`, {});
     cancel = (id: string): Observable<string> => this.http.post<string>(`${this.base}/${id}/cancel`, {});
+    search = (req: SearchPurchaseOrdersRequest): Observable<PaginationResponse<PurchaseOrderDto>> =>
+        this.http.post<PaginationResponse<PurchaseOrderDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })
@@ -49,4 +67,6 @@ export class GoodsReceiptsService {
     };
     get = (id: string): Observable<GoodsReceiptDto> => this.http.get<GoodsReceiptDto>(`${this.base}/${id}`);
     create = (req: CreateGoodsReceiptRequest): Observable<string> => this.http.post<string>(this.base, req);
+    search = (req: SearchGoodsReceiptsRequest): Observable<PaginationResponse<GoodsReceiptDto>> =>
+        this.http.post<PaginationResponse<GoodsReceiptDto>>(`${this.base}/search`, req);
 }
