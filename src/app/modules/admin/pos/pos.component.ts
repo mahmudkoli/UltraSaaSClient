@@ -129,7 +129,7 @@ interface CartLine extends CreateSaleLine {
                             <thead class="border-b">
                                 <tr>
                                     <th class="text-left px-1">Product</th>
-                                    <th class="px-1 w-16">Qty</th>
+                                    <th class="px-1 w-28">Qty</th>
                                     <th class="text-right px-1 w-20">Price</th>
                                     <th class="text-right px-1 w-24">Total</th>
                                     <th class="w-8"></th>
@@ -143,10 +143,25 @@ interface CartLine extends CreateSaleLine {
                                             <div class="text-xs text-gray-500">{{ line.sku }}</div>
                                         </td>
                                         <td class="px-1">
-                                            <input type="number" min="1" step="0.01"
-                                                   [(ngModel)]="line.quantity"
-                                                   (ngModelChange)="recalc()"
-                                                   class="w-full border rounded px-1 py-0.5 text-right" />
+                                            <div class="flex items-center justify-center gap-1">
+                                                <button type="button"
+                                                        (click)="nudgeQty(line, -1)"
+                                                        [disabled]="line.quantity <= 1"
+                                                        class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                        aria-label="Decrease quantity">
+                                                    <mat-icon class="icon-size-4">remove</mat-icon>
+                                                </button>
+                                                <input type="number" min="1" step="0.01"
+                                                       [(ngModel)]="line.quantity"
+                                                       (ngModelChange)="recalc()"
+                                                       class="w-12 border rounded px-1 py-0.5 text-right" />
+                                                <button type="button"
+                                                        (click)="nudgeQty(line, 1)"
+                                                        class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                        aria-label="Increase quantity">
+                                                    <mat-icon class="icon-size-4">add</mat-icon>
+                                                </button>
+                                            </div>
                                         </td>
                                         <td class="text-right px-1">
                                             <input type="number" min="0" step="0.01"
@@ -391,6 +406,13 @@ export class PosComponent implements OnInit {
         const next = [...this.cart()];
         next.splice(idx, 1);
         this.cart.set(next);
+        this.recalc();
+    }
+
+    nudgeQty(line: CartLine, delta: number): void {
+        const next = Math.max(1, (line.quantity ?? 0) + delta);
+        if (next === line.quantity) return;
+        line.quantity = next;
         this.recalc();
     }
 
