@@ -5,6 +5,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
 import { SalesService } from 'app/core/sales/sales.service';
 import { SaleDto } from 'app/core/sales/sales.types';
 
@@ -126,6 +127,7 @@ import { SaleDto } from 'app/core/sales/sales.types';
 export class SaleDetailComponent implements OnInit {
     private readonly api = inject(SalesService);
     private readonly route = inject(ActivatedRoute);
+    private readonly receiptPrint = inject(ReceiptPrintService);
     sale = signal<SaleDto | null>(null);
 
     ngOnInit(): void {
@@ -134,48 +136,6 @@ export class SaleDetailComponent implements OnInit {
     }
 
     print(sale: SaleDto): void {
-        const fmt = (n: number) => n.toFixed(2);
-        const esc = (s: string) => (s ?? '')
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-        const items = sale.items.map(i => `
-            <tr>
-                <td style="padding:2px 0">${esc(i.productName)}<br><span style="color:#666;font-size:10px">${esc(i.sku)}${i.serialNumber ? ' · SN ' + esc(i.serialNumber) : ''}</span></td>
-                <td style="text-align:right;padding:2px 0">${i.quantity} × ${fmt(i.unitPrice)}</td>
-                <td style="text-align:right;padding:2px 0">${fmt(i.lineTotal)}</td>
-            </tr>`).join('');
-        const payments = sale.payments.map(p => `
-            <tr><td>${esc(p.method)}${p.reference ? ' (' + esc(p.reference) + ')' : ''}</td><td style="text-align:right">${fmt(p.amount)}</td></tr>`).join('');
-        const html = `<!doctype html><html><head><meta charset="utf-8"><title>${esc(sale.invoiceNumber)}</title>
-<style>
-    body{font-family:'Courier New',Courier,monospace;font-size:12px;color:#000;margin:0;padding:8px;width:280px}
-    h2{margin:4px 0}
-    .center{text-align:center}
-    table{width:100%;border-collapse:collapse}
-    .totals .grand{border-top:1px dashed #000;font-weight:bold;font-size:14px;padding-top:4px}
-    hr{border:none;border-top:1px dashed #000;margin:6px 0}
-    @media print { @page { margin:0 } body { padding:8px } }
-</style></head><body>
-<div class="center">
-    <h2>Invoice ${esc(sale.invoiceNumber)}</h2>
-    <div>${new Date(sale.saleDate).toLocaleString()}</div>
-    ${sale.customerName ? `<div>Customer: ${esc(sale.customerName)}</div>` : ''}
-</div>
-<hr><table>${items}</table><hr>
-<table class="totals">
-    <tr><td>Subtotal</td><td style="text-align:right">${fmt(sale.subTotal)}</td></tr>
-    ${sale.discountAmount ? `<tr><td>Discount</td><td style="text-align:right">−${fmt(sale.discountAmount)}</td></tr>` : ''}
-    ${sale.taxAmount ? `<tr><td>Tax</td><td style="text-align:right">${fmt(sale.taxAmount)}</td></tr>` : ''}
-    <tr class="grand"><td>Total</td><td style="text-align:right">${fmt(sale.total)}</td></tr>
-</table>
-<hr><table>${payments}</table>
-<hr><div class="center">Thank you!</div>
-</body></html>`;
-        const w = window.open('', '_blank', 'width=380,height=720');
-        if (!w) return;
-        w.document.open();
-        w.document.write(html);
-        w.document.close();
-        w.onload = () => { try { w.focus(); w.print(); } finally { /* leave open */ } };
+        this.receiptPrint.print(sale);
     }
 }

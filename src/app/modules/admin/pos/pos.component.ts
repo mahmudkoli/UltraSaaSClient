@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -10,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { ProductsService } from 'app/core/catalog/catalog.service';
 import { ProductDto } from 'app/core/catalog/catalog.types';
@@ -19,10 +21,12 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 import { ShiftsService } from 'app/core/sales/shifts.service';
 import { ShiftDto } from 'app/core/sales/shifts.types';
 import { RouterModule } from '@angular/router';
+import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
 import { CustomersService, SalesService } from 'app/core/sales/sales.service';
 import { CreateSaleLine, CreateSalePayment, CustomerDto, PaymentMethod, SaleDto } from 'app/core/sales/sales.types';
 import { PromotionsService } from 'app/core/marketing/marketing.service';
 import { PromotionDiscountPreview } from 'app/core/marketing/marketing.types';
+import { SaleLookupDialogComponent } from './sale-lookup-dialog.component';
 
 interface CartLine extends CreateSaleLine {
     productName: string;
@@ -35,8 +39,8 @@ interface CartLine extends CreateSaleLine {
     standalone: true,
     imports: [
         CommonModule, FormsModule, RouterModule,
-        MatButtonModule, MatCardModule, MatFormFieldModule, MatIconModule, MatInputModule,
-        MatSelectModule, MatSnackBarModule, MatTableModule, MatChipsModule,
+        MatButtonModule, MatCardModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
+        MatSelectModule, MatSnackBarModule, MatTableModule, MatChipsModule, MatTooltipModule,
     ],
     template: `
         <div class="flex flex-col lg:flex-row gap-4 p-4 h-full">
@@ -56,6 +60,12 @@ interface CartLine extends CreateSaleLine {
                             <mat-label>Search SKU / name</mat-label>
                             <input matInput [(ngModel)]="search" placeholder="e.g. PARA, iPhone..." />
                         </mat-form-field>
+                        <button mat-stroked-button class="!min-w-0 !px-3 h-14 self-center"
+                                (click)="openSaleLookup()"
+                                matTooltip="Find a previous sale and re-print the receipt">
+                            <mat-icon class="icon-size-5">receipt_long</mat-icon>
+                            <span class="hidden lg:inline ml-1">Find sale</span>
+                        </button>
                     </div>
                     @if (currentShift(); as cs) {
                         <div class="mt-2 flex items-center gap-2 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-xs">
@@ -267,6 +277,8 @@ export class PosComponent implements OnInit {
     private readonly shiftsApi = inject(ShiftsService);
     private readonly snack = inject(MatSnackBar);
     private readonly router = inject(Router);
+    private readonly dialog = inject(MatDialog);
+    private readonly receiptPrint = inject(ReceiptPrintService);
 
     outlets = signal<OutletDto[]>([]);
     products = signal<ProductDto[]>([]);
@@ -511,75 +523,16 @@ export class PosComponent implements OnInit {
         });
     }
 
-    /**
-     * Open the receipt in a new window so the print dialog doesn't pull in
-     * the app's CSS or chrome. The user can dismiss the dialog without
-     * disrupting their next sale.
-     */
     private printReceipt(sale: SaleDto): void {
-        const w = window.open('', '_blank', 'width=380,height=720');
-        if (!w) return;
-        const html = this.buildReceiptHtml(sale);
-        w.document.open();
-        w.document.write(html);
-        w.document.close();
-        // Wait a tick for layout, then trigger print. window.print() blocks,
-        // so close after it returns.
-        w.onload = () => {
-            try { w.focus(); w.print(); } finally { /* leave window open so user can re-print */ }
-        };
+        const outletName = this.outlets().find(o => o.id === sale.outletId)?.name;
+        this.receiptPrint.print(sale, outletName);
     }
 
-    private buildReceiptHtml(sale: SaleDto): string {
-        const fmt = (n: number) => n.toFixed(2);
-        const outletName = this.outlets().find(o => o.id === sale.outletId)?.name ?? '';
-        const items = sale.items.map(i => `
-            <tr>
-                <td style="padding:2px 0">${this.escape(i.productName)}<br><span style="color:#666;font-size:10px">${this.escape(i.sku)}${i.serialNumber ? ' · SN ' + this.escape(i.serialNumber) : ''}</span></td>
-                <td style="text-align:right;padding:2px 0">${i.quantity} × ${fmt(i.unitPrice)}</td>
-                <td style="text-align:right;padding:2px 0">${fmt(i.lineTotal)}</td>
-            </tr>`).join('');
-        const payments = sale.payments.map(p => `
-            <tr><td>${this.escape(p.method)}${p.reference ? ' (' + this.escape(p.reference) + ')' : ''}</td><td style="text-align:right">${fmt(p.amount)}</td></tr>`).join('');
-        return `<!doctype html><html><head><meta charset="utf-8"><title>${this.escape(sale.invoiceNumber)}</title>
-<style>
-    body{font-family:'Courier New',Courier,monospace;font-size:12px;color:#000;margin:0;padding:8px;width:280px}
-    h1,h2,h3{margin:4px 0}
-    .center{text-align:center}
-    table{width:100%;border-collapse:collapse}
-    .totals td{padding:1px 0}
-    .totals .grand{border-top:1px dashed #000;font-weight:bold;font-size:14px;padding-top:4px}
-    hr{border:none;border-top:1px dashed #000;margin:6px 0}
-    @media print { @page { margin:0 } body { padding:8px } }
-</style></head><body>
-<div class="center">
-    <h2>${this.escape(outletName)}</h2>
-    <div>Invoice ${this.escape(sale.invoiceNumber)}</div>
-    <div>${new Date(sale.saleDate).toLocaleString()}</div>
-    ${sale.customerName ? `<div>Customer: ${this.escape(sale.customerName)}</div>` : ''}
-</div>
-<hr>
-<table>${items}</table>
-<hr>
-<table class="totals">
-    <tr><td>Subtotal</td><td style="text-align:right">${fmt(sale.subTotal)}</td></tr>
-    ${sale.discountAmount ? `<tr><td>Discount</td><td style="text-align:right">−${fmt(sale.discountAmount)}</td></tr>` : ''}
-    ${sale.taxAmount ? `<tr><td>Tax</td><td style="text-align:right">${fmt(sale.taxAmount)}</td></tr>` : ''}
-    <tr class="grand"><td>Total</td><td style="text-align:right">${fmt(sale.total)}</td></tr>
-</table>
-<hr>
-<table>${payments}</table>
-<hr>
-<div class="center">Thank you!</div>
-</body></html>`;
-    }
-
-    private escape(s: string): string {
-        return (s ?? '')
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
+    openSaleLookup(): void {
+        const outlet = this.outlets().find(o => o.id === this.outletId);
+        this.dialog.open(SaleLookupDialogComponent, {
+            width: '720px',
+            data: { outletId: this.outletId || undefined, outletName: outlet?.name },
+        });
     }
 }
