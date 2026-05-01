@@ -1,14 +1,16 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletType } from 'app/core/outlets/outlets.types';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
     selector: 'app-outlet-form',
@@ -84,6 +86,45 @@ import { OutletType } from 'app/core/outlets/outlets.types';
                         </div>
                     </div>
 
+                    @if (id) {
+                        <div class="mb-6">
+                            <div class="flex items-center space-x-3 mb-4">
+                                <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center"><mat-icon class="text-purple-600 dark:text-purple-400 text-lg">palette</mat-icon></div>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Branding</h3>
+                            </div>
+                            <p class="text-xs text-gray-500 mb-3">The logo and tax ID print on every receipt and invoice from this outlet.</p>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <mat-form-field class="w-full" appearance="outline"><mat-label>Tax / VAT / GST Number</mat-label><input matInput formControlName="taxId" placeholder="e.g. BIN 123-456-789"></mat-form-field>
+                                <mat-form-field class="w-full" appearance="outline"><mat-label>Brand Color (hex)</mat-label><input matInput formControlName="primaryColor" placeholder="#4F46E5"></mat-form-field>
+                            </div>
+                            <div class="mt-4 flex items-start gap-4">
+                                <div class="w-32 h-32 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
+                                    @if (logoPreview()) {
+                                        <img [src]="logoPreview()" alt="Logo" class="max-w-full max-h-full object-contain">
+                                    } @else {
+                                        <mat-icon class="text-gray-300 icon-size-12">image</mat-icon>
+                                    }
+                                </div>
+                                <div class="flex flex-col gap-2 flex-1">
+                                    <input #fileInput type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden (change)="onLogoPicked($event)">
+                                    <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="logoUploading()">
+                                        <mat-icon class="icon-size-5 mr-1">upload</mat-icon>
+                                        <span>{{ logoUploading() ? 'Uploading…' : (hasLogo() ? 'Replace Logo' : 'Upload Logo') }}</span>
+                                    </button>
+                                    @if (hasLogo()) {
+                                        <button type="button" mat-stroked-button color="warn" (click)="removeLogo()" [disabled]="logoUploading()">
+                                            <mat-icon class="icon-size-5 mr-1">delete</mat-icon><span>Remove Logo</span>
+                                        </button>
+                                    }
+                                    <p class="text-xs text-gray-500 mt-1">PNG / JPG / WebP / SVG · max 1 MB · square works best</p>
+                                    @if (logoError()) {
+                                        <p class="text-xs text-rose-600">{{ logoError() }}</p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+
                     <div class="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <button mat-button type="button" routerLink="/outlet">Cancel</button>
                         <button mat-flat-button color="primary" type="submit" class="h-12 px-6 rounded-lg shadow-lg" [disabled]="form.invalid || saving"><mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? 'Saving...' : 'Save' }}</span></button>
@@ -100,9 +141,15 @@ export class OutletFormComponent implements OnInit {
     private readonly fb = inject(FormBuilder);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly snack = inject(MatSnackBar);
+    private readonly sanitizer = inject(DomSanitizer);
 
     id: string | null = null;
     saving = false;
+    hasLogo = signal(false);
+    logoPreview = signal<SafeUrl | null>(null);
+    logoUploading = signal(false);
+    logoError = signal<string | null>(null);
     form: FormGroup = this.fb.group({
         code: ['', Validators.required],
         name: ['', Validators.required],
@@ -115,6 +162,8 @@ export class OutletFormComponent implements OnInit {
         state: [''],
         country: [''],
         postalCode: [''],
+        primaryColor: [''],
+        taxId: [''],
     });
 
     ngOnInit(): void {
@@ -126,11 +175,62 @@ export class OutletFormComponent implements OnInit {
                     contactEmail: o.contactEmail, contactPhone: o.contactPhone,
                     addressLine: o.addressLine, city: o.city, state: o.state,
                     country: o.country, postalCode: o.postalCode,
+                    primaryColor: o.primaryColor, taxId: o.taxId,
                 });
                 this.form.get('code')?.disable();
                 this.form.get('tenantId')?.disable();
+                this.hasLogo.set(!!o.hasLogo);
+                if (o.hasLogo) this.refreshLogoPreview();
             });
         }
+    }
+
+    private refreshLogoPreview(): void {
+        if (!this.id) return;
+        const url = this.api.logoUrl(this.id);
+        this.logoPreview.set(this.sanitizer.bypassSecurityTrustUrl(url));
+    }
+
+    onLogoPicked(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        input.value = '';
+        if (!file || !this.id) return;
+        if (file.size > 1_048_576) {
+            this.logoError.set('File too large. Max 1 MB.');
+            return;
+        }
+        this.logoError.set(null);
+        this.logoUploading.set(true);
+        this.api.uploadLogo(this.id, file).subscribe({
+            next: () => {
+                this.logoUploading.set(false);
+                this.hasLogo.set(true);
+                this.refreshLogoPreview();
+                this.snack.open('Logo uploaded', 'OK', { duration: 3000 });
+            },
+            error: err => {
+                this.logoUploading.set(false);
+                const msg = err?.error?.exception ?? err?.error ?? err?.message ?? 'Upload failed';
+                this.logoError.set(typeof msg === 'string' ? msg : 'Upload failed');
+            },
+        });
+    }
+
+    removeLogo(): void {
+        if (!this.id) return;
+        this.api.deleteLogo(this.id).subscribe({
+            next: () => {
+                this.hasLogo.set(false);
+                this.logoPreview.set(null);
+                this.logoError.set(null);
+                this.snack.open('Logo removed', 'OK', { duration: 3000 });
+            },
+            error: err => {
+                const msg = err?.error?.exception ?? err?.error ?? err?.message ?? 'Delete failed';
+                this.logoError.set(typeof msg === 'string' ? msg : 'Delete failed');
+            },
+        });
     }
 
     save(): void {

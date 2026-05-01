@@ -590,15 +590,15 @@ export class PosComponent implements OnInit {
     }
 
     private printReceipt(sale: SaleDto): void {
-        const outletName = this.outlets().find(o => o.id === sale.outletId)?.name;
-        this.receiptPrint.print(sale, outletName);
+        const outlet = this.outlets().find(o => o.id === sale.outletId);
+        this.receiptPrint.print(sale, outlet);
     }
 
     openSaleLookup(): void {
         const outlet = this.outlets().find(o => o.id === this.outletId);
         this.dialog.open(SaleLookupDialogComponent, {
             width: '720px',
-            data: { outletId: this.outletId || undefined, outletName: outlet?.name },
+            data: { outletId: this.outletId || undefined, outletName: outlet?.name, outlet: outlet ?? undefined },
         });
     }
 

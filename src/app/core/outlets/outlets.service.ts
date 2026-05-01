@@ -41,4 +41,21 @@ export class OutletsService {
     archive(id: string): Observable<string> {
         return this.http.post<string>(`${this.base}/${id}/archive`, {});
     }
+
+    uploadLogo(id: string, file: File): Observable<string> {
+        const fd = new FormData();
+        fd.append('file', file, file.name);
+        return this.http.put<string>(`${this.base}/${id}/logo`, fd);
+    }
+
+    deleteLogo(id: string): Observable<string> {
+        return this.http.delete<string>(`${this.base}/${id}/logo`);
+    }
+
+    /** Public URL for an outlet's logo image, suitable for <img src>. Adds a
+     * cache-bust token tied to the logo mime type so re-uploads refresh. */
+    logoUrl(id: string, cacheBust?: string): string {
+        const v = cacheBust ?? Date.now().toString();
+        return `${this.base}/${id}/logo?v=${v}`;
+    }
 }

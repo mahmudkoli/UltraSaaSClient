@@ -22,8 +22,12 @@ export interface OutletDto {
     currency: string;
     language: string;
 
-    logoUrl?: string;
+    /** True when the outlet has uploaded a logo. Fetch via /api/outlets/{id}/logo. */
+    hasLogo?: boolean;
+    logoMimeType?: string;
     primaryColor?: string;
+    /** Tax/VAT/GST registration number printed on receipts. */
+    taxId?: string;
 
     lastActivityDate?: string;
 
@@ -60,8 +64,8 @@ export interface UpdateOutletRequest {
     state?: string;
     country?: string;
     postalCode?: string;
-    logoUrl?: string;
     primaryColor?: string;
+    taxId?: string;
     timeZone?: string;
     currency?: string;
     language?: string;

@@ -8,6 +8,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
 import { SalesService } from 'app/core/sales/sales.service';
 import { SaleDto } from 'app/core/sales/sales.types';
+import { OutletsService } from 'app/core/outlets/outlets.service';
 
 @Component({
     selector: 'app-sale-detail',
@@ -128,6 +129,7 @@ export class SaleDetailComponent implements OnInit {
     private readonly api = inject(SalesService);
     private readonly route = inject(ActivatedRoute);
     private readonly receiptPrint = inject(ReceiptPrintService);
+    private readonly outletsApi = inject(OutletsService);
     sale = signal<SaleDto | null>(null);
 
     ngOnInit(): void {
@@ -136,6 +138,9 @@ export class SaleDetailComponent implements OnInit {
     }
 
     print(sale: SaleDto): void {
-        this.receiptPrint.print(sale);
+        this.outletsApi.get(sale.outletId).subscribe({
+            next: outlet => this.receiptPrint.print(sale, outlet),
+            error: () => this.receiptPrint.print(sale),
+        });
     }
 }

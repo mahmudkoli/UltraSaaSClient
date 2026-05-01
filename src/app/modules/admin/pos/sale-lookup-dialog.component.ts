@@ -13,10 +13,13 @@ import { debounceTime, Subject } from 'rxjs';
 import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
 import { SalesService } from 'app/core/sales/sales.service';
 import { SaleDto } from 'app/core/sales/sales.types';
+import { OutletDto } from 'app/core/outlets/outlets.types';
 
 export interface SaleLookupDialogData {
     outletId?: string;
     outletName?: string;
+    /** Full outlet DTO when caller has it; used to brand the re-printed receipt. */
+    outlet?: OutletDto;
 }
 
 /**
@@ -122,7 +125,9 @@ export class SaleLookupDialogComponent implements OnInit {
 
     reprint(s: SaleDto): void {
         // Re-fetch the full sale to get items + payments, then print.
-        this.api.get(s.id).subscribe(full => this.print.print(full, this.data.outletName));
+        // Pass the outlet DTO if we have it so the receipt is fully branded.
+        this.api.get(s.id).subscribe(full =>
+            this.print.print(full, this.data.outlet ?? this.data.outletName));
     }
 
     open(s: SaleDto): void {
