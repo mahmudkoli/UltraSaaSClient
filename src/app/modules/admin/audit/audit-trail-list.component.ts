@@ -61,7 +61,7 @@ import { AuditTrailDto, AuditTrailService, SearchAuditTrailsRequest } from 'app/
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
-                    <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
+                    <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" multiTemplateDataRows class="w-full">
                         <ng-container matColumnDef="dateTime"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">When</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 text-xs">{{ r.dateTime | date:'short' }}</td></ng-container>
                         <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Action</span></th>
