@@ -26,3 +26,32 @@ export interface CloseShiftRequest {
     closingFloat: number;
     notes?: string;
 }
+
+export interface ShiftReportDto {
+    shiftId: string;
+    reportType: 'X' | 'Z';
+    outletId: string;
+    outletName: string;
+    outletCode: string;
+    openedAt: string;
+    closedAt?: string;
+    openedByUserId: string;
+    closedByUserId?: string;
+    status: ShiftStatus;
+    printedAt: string;
+    openingFloat: number;
+    closingFloat?: number;
+    expectedCash?: number;
+    variance?: number;
+    salesCount: number;
+    voidedCount: number;
+    grossSubtotal: number;
+    totalDiscount: number;
+    totalTax: number;
+    netTotal: number;
+    returnsCount: number;
+    refundsTotal: number;
+    byPaymentMethod: { method: string; count: number; total: number }[];
+    topItems: { sku: string; productName: string; quantity: number; revenue: number }[];
+    notes?: string;
+}

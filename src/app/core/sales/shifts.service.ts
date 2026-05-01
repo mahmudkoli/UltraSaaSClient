@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
 import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
-import { CloseShiftRequest, OpenShiftRequest, ShiftDto } from './shifts.types';
+import { CloseShiftRequest, OpenShiftRequest, ShiftDto, ShiftReportDto } from './shifts.types';
 
 export interface SearchShiftsRequest extends PaginationFilter {
     outletId?: string;
@@ -41,4 +41,8 @@ export class ShiftsService {
 
     search = (req: SearchShiftsRequest): Observable<PaginationResponse<ShiftDto>> =>
         this.http.post<PaginationResponse<ShiftDto>>(`${this.base}/search`, req);
+
+    /** X-report (open shift snapshot) or Z-report (closed shift permanent record) — same endpoint, server picks. */
+    report = (id: string): Observable<ShiftReportDto> =>
+        this.http.get<ShiftReportDto>(`${this.base}/${id}/report`);
 }

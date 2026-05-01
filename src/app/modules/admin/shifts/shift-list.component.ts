@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { RouterModule } from '@angular/router';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
@@ -22,7 +23,7 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
     selector: 'app-shift-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule,
+        CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule,
         MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
@@ -93,6 +94,14 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
                                     <mat-icon class="icon-size-4 mr-1">{{ r.status === 'Open' ? 'play_circle' : 'check_circle' }}</mat-icon>{{ r.status }}
                                 </span>
                             </td></ng-container>
+                        <ng-container matColumnDef="report"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Report</span></th>
+                            <td mat-cell *matCellDef="let r" class="!text-right">
+                                <button mat-stroked-button class="!min-w-0 !px-2 !h-8 !leading-7"
+                                        [routerLink]="['/shifts', r.id, 'report']"
+                                        [matTooltip]="r.status === 'Open' ? 'X-report (live snapshot)' : 'Z-report (closed shift record)'">
+                                    <mat-icon class="icon-size-4 mr-1">summarize</mat-icon>{{ r.status === 'Open' ? 'X' : 'Z' }}
+                                </button>
+                            </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
                         <tr mat-row *matRowDef="let row; columns: cols"></tr>
                     </table>
@@ -137,7 +146,7 @@ export class ShiftListComponent implements OnInit {
     pageSize = 25;
     private orderBy?: string[];
 
-    cols = ['outlet', 'openedAt', 'closedAt', 'opening', 'closing', 'expected', 'variance', 'status'];
+    cols = ['outlet', 'openedAt', 'closedAt', 'opening', 'closing', 'expected', 'variance', 'status', 'report'];
 
     activeOutletId = computed(() => this.filterOutletId || this.currentOutlet.outletId());
 
