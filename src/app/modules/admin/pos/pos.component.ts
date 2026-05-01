@@ -207,11 +207,11 @@ interface CartLine extends CreateSaleLine {
                 <!-- Promo + totals -->
                 <mat-card class="!p-3">
                     <div class="flex items-center gap-2 mb-3">
-                        <mat-form-field appearance="outline" class="flex-1 !my-0">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
                             <mat-label>Promo code</mat-label>
                             <input matInput [(ngModel)]="promoCode" />
                         </mat-form-field>
-                        <button mat-stroked-button (click)="applyPromo()" [disabled]="!promoCode || cart().length === 0">
+                        <button mat-stroked-button class="!h-14" (click)="applyPromo()" [disabled]="!promoCode || cart().length === 0">
                             Apply
                         </button>
                         @if (promo()) {
