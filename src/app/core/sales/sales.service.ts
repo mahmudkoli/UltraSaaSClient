@@ -2,9 +2,18 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
+import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
 import {
     CreateSaleRequest, CreateSaleReturnRequest, CustomerDto, SaleDto, SaleReturnDto, WarrantyDto,
 } from './sales.types';
+
+export interface SearchSalesRequest extends PaginationFilter {
+    outletId?: string;
+    customerId?: string;
+    fromDate?: string;
+    toDate?: string;
+    status?: 'Draft' | 'Finalized' | 'Voided';
+}
 
 const api = environment.apiUrl;
 
@@ -36,6 +45,9 @@ export class SalesService {
     };
     get = (id: string): Observable<SaleDto> => this.http.get<SaleDto>(`${this.base}/${id}`);
     create = (req: CreateSaleRequest): Observable<string> => this.http.post<string>(this.base, req);
+    /** Server-side paginated / sortable / filterable search. */
+    search = (req: SearchSalesRequest): Observable<PaginationResponse<SaleDto>> =>
+        this.http.post<PaginationResponse<SaleDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })
