@@ -22,11 +22,13 @@ import { ShiftsService } from 'app/core/sales/shifts.service';
 import { ShiftDto } from 'app/core/sales/shifts.types';
 import { RouterModule } from '@angular/router';
 import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
+import { ParkedCartsService, RecalledCartDto } from 'app/core/sales/parked-cart.service';
 import { CustomersService, SalesService } from 'app/core/sales/sales.service';
 import { CreateSaleLine, CreateSalePayment, CustomerDto, PaymentMethod, SaleDto } from 'app/core/sales/sales.types';
 import { PromotionsService } from 'app/core/marketing/marketing.service';
 import { PromotionDiscountPreview } from 'app/core/marketing/marketing.types';
 import { SaleLookupDialogComponent } from './sale-lookup-dialog.component';
+import { ParkedCartsDialogComponent } from './parked-carts-dialog.component';
 
 interface CartLine extends CreateSaleLine {
     productName: string;
@@ -65,6 +67,15 @@ interface CartLine extends CreateSaleLine {
                                 matTooltip="Find a previous sale and re-print the receipt">
                             <mat-icon class="icon-size-5">receipt_long</mat-icon>
                             <span class="hidden lg:inline ml-1">Find sale</span>
+                        </button>
+                        <button mat-stroked-button class="!min-w-0 !px-3 h-14 self-center relative"
+                                (click)="openParkedCarts()"
+                                [matTooltip]="parkedCount() > 0 ? parkedCount() + ' parked cart(s)' : 'No parked carts'">
+                            <mat-icon class="icon-size-5">pause_circle</mat-icon>
+                            <span class="hidden lg:inline ml-1">Recall</span>
+                            @if (parkedCount() > 0) {
+                                <span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ parkedCount() }}</span>
+                            }
                         </button>
                     </div>
                     @if (currentShift(); as cs) {
@@ -252,15 +263,24 @@ interface CartLine extends CreateSaleLine {
                         </mat-form-field>
                     </div>
 
-                    <button mat-flat-button color="primary" class="w-full !text-lg !py-2"
-                            [disabled]="!canFinalize() || finalizing()"
-                            (click)="finalize()">
-                        @if (finalizing()) {
-                            Processing…
-                        } @else {
-                            Finalize Sale ({{ grandTotal() | number:'1.2-2' }})
-                        }
-                    </button>
+                    <div class="flex gap-2">
+                        <button mat-flat-button color="primary" class="flex-1 !text-lg !py-2"
+                                [disabled]="!canFinalize() || finalizing()"
+                                (click)="finalize()">
+                            @if (finalizing()) {
+                                Processing…
+                            } @else {
+                                Finalize ({{ grandTotal() | number:'1.2-2' }})
+                            }
+                        </button>
+                        <button mat-stroked-button color="accent" class="!text-base !py-2 !px-3"
+                                [disabled]="!canFinalize() || parking()"
+                                (click)="park()"
+                                matTooltip="Save this cart for later — customer stepping away?">
+                            <mat-icon class="icon-size-5 mr-1">pause_circle</mat-icon>
+                            <span>Park</span>
+                        </button>
+                    </div>
                 </mat-card>
             </div>
         </div>
@@ -279,6 +299,11 @@ export class PosComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly dialog = inject(MatDialog);
     private readonly receiptPrint = inject(ReceiptPrintService);
+    private readonly parkedApi = inject(ParkedCartsService);
+
+    // Number of parked carts at the current outlet (badge on the Recall button).
+    parkedCount = signal(0);
+    parking = signal(false);
 
     outlets = signal<OutletDto[]>([]);
     products = signal<ProductDto[]>([]);
@@ -355,6 +380,7 @@ export class PosComponent implements OnInit {
             this.outletId = match ? match.id : o[0].id;
             this.currentOutlet.set(this.outletId);
             this.refreshShift();
+            this.refreshParkedCount();
         });
         this.productsApi.getAll({ isActive: true }).subscribe(p => this.products.set(p));
         this.customersApi.getAll().subscribe(c => this.customers.set(c));
@@ -363,6 +389,15 @@ export class PosComponent implements OnInit {
     onOutletChange(): void {
         this.currentOutlet.set(this.outletId);
         this.refreshShift();
+        this.refreshParkedCount();
+    }
+
+    private refreshParkedCount(): void {
+        if (!this.outletId) { this.parkedCount.set(0); return; }
+        this.parkedApi.byOutlet(this.outletId).subscribe({
+            next: list => this.parkedCount.set(list.length),
+            error: () => this.parkedCount.set(0),
+        });
     }
 
     private refreshShift(): void {
@@ -533,6 +568,86 @@ export class PosComponent implements OnInit {
         this.dialog.open(SaleLookupDialogComponent, {
             width: '720px',
             data: { outletId: this.outletId || undefined, outletName: outlet?.name },
+        });
+    }
+
+    park(): void {
+        if (!this.outletId || this.cart().length === 0) return;
+        const customer = this.selectedCustomer();
+        const label = prompt(
+            `Park this cart? Optional label (e.g. "Mr. Karim — blue shirt"):`,
+            customer?.name ?? '');
+        if (label === null) return;  // cancelled
+
+        this.parking.set(true);
+        this.parkedApi.park({
+            outletId: this.outletId,
+            customerId: this.customerId,
+            customerName: customer?.name,
+            customerPhone: customer?.phone,
+            label: label || null,
+            lines: this.cart().map(l => ({
+                productId: l.productId,
+                productName: l.productName,
+                sku: l.sku,
+                quantity: l.quantity,
+                unitPrice: l.unitPrice,
+                discountAmount: l.discountAmount,
+                serialNumber: l.serialNumber,
+                batchNumber: l.batchNumber,
+                weightKg: l.weightKg,
+            })),
+            promoCode: this.promoCode || undefined,
+            loyaltyPointsRedeemed: this.redeemPoints || undefined,
+        }).subscribe({
+            next: () => {
+                this.parking.set(false);
+                this.snack.open('Cart parked. Recall from the toolbar when the customer returns.', 'OK', { duration: 4000 });
+                this.cart.set([]);
+                this.promo.set(null);
+                this.promoCode = '';
+                this.payAmount = null;
+                this.customerId = null;
+                this.redeemPoints = 0;
+                this.refreshParkedCount();
+            },
+            error: err => {
+                this.parking.set(false);
+                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Park failed';
+                this.snack.open(msg, 'OK', { duration: 6000 });
+            },
+        });
+    }
+
+    openParkedCarts(): void {
+        if (!this.outletId) return;
+        const outlet = this.outlets().find(o => o.id === this.outletId);
+        const ref = this.dialog.open(ParkedCartsDialogComponent, {
+            width: '720px',
+            data: { outletId: this.outletId, outletName: outlet?.name },
+        });
+        ref.afterClosed().subscribe((recalled: RecalledCartDto | undefined) => {
+            this.refreshParkedCount();
+            if (!recalled) return;
+
+            // Restore cart state. Cart lines already carry productName/sku snapshots.
+            this.cart.set(recalled.lines.map(l => ({
+                productId: l.productId,
+                productName: l.productName ?? '(recalled item)',
+                sku: l.sku ?? '',
+                taxRate: 0,  // best-effort; the active product list will re-resolve when re-touched
+                quantity: l.quantity,
+                unitPrice: l.unitPrice,
+                discountAmount: l.discountAmount,
+                serialNumber: l.serialNumber,
+                batchNumber: l.batchNumber,
+                weightKg: l.weightKg,
+            })));
+            this.customerId = recalled.customerId ?? null;
+            this.promoCode = recalled.promoCode ?? '';
+            this.redeemPoints = recalled.loyaltyPointsRedeemed ?? 0;
+            this.recalc();
+            this.snack.open(`Recalled ${recalled.label || recalled.customerName || 'parked cart'}`, 'OK', { duration: 3000 });
         });
     }
 }
