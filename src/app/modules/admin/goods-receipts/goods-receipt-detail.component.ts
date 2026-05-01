@@ -3,6 +3,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { GoodsReceiptsService } from 'app/core/purchasing/purchasing.service';
 import { GoodsReceiptDto } from 'app/core/purchasing/purchasing.types';
@@ -10,7 +11,7 @@ import { GoodsReceiptDto } from 'app/core/purchasing/purchasing.types';
 @Component({
     selector: 'app-goods-receipt-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatTableModule],
+    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -33,6 +34,10 @@ import { GoodsReceiptDto } from 'app/core/purchasing/purchasing.types';
                           }">
                         <mat-icon class="icon-size-4 mr-1">{{ g.status === 'Completed' ? 'check_circle' : g.status === 'Voided' ? 'cancel' : 'schedule' }}</mat-icon>{{ g.status }}
                     </span>
+                    <button mat-stroked-button color="warn" class="h-12 px-6 rounded-lg" *ngIf="g.status === 'Completed'"
+                            [routerLink]="['/purchase-returns/from', g.id, 'new']" matTooltip="Send damaged / wrong / excess goods back to the supplier">
+                        <mat-icon class="icon-size-5 mr-2">assignment_return</mat-icon><span>Send back to supplier</span>
+                    </button>
                     <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/goods-receipts"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Back</span></button>
                 </div>
             </div>
