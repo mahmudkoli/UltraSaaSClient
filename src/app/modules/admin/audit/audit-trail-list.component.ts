@@ -89,7 +89,7 @@ import { AuditTrailDto, AuditTrailService, SearchAuditTrailsRequest } from 'app/
                             </td></ng-container>
                         <ng-container matColumnDef="diff">
                             <td mat-cell *matCellDef="let r" [attr.colspan]="cols.length" class="!p-0 !border-b-0">
-                                <div [style.display]="expanded() === r.id ? 'block' : 'none'" class="p-4 bg-slate-50 dark:bg-slate-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+                                <div class="p-4 bg-slate-50 dark:bg-slate-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                                     <div>
                                         <div class="font-semibold text-gray-500 mb-1">Affected columns</div>
                                         <pre class="whitespace-pre-wrap break-all bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700">{{ r.affectedColumns || '—' }}</pre>
@@ -108,7 +108,7 @@ import { AuditTrailDto, AuditTrailService, SearchAuditTrailsRequest } from 'app/
 
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
                         <tr mat-row *matRowDef="let row; columns: cols" class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"></tr>
-                        <tr mat-row *matRowDef="let row; columns: ['diff']" class="!h-0"></tr>
+                        <tr mat-row *matRowDef="let row; columns: ['diff']" [hidden]="expanded() !== row.id"></tr>
                     </table>
 
                     <mat-paginator
