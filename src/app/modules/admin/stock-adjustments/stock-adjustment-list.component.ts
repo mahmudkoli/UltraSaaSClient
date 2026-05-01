@@ -1,14 +1,17 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
-import { StockAdjustmentsService } from 'app/core/inventory/inventory.service';
+import { toOrderBy } from 'app/core/common/pagination.types';
+import { SearchStockAdjustmentsRequest, StockAdjustmentsService } from 'app/core/inventory/inventory.service';
 import { StockAdjustmentDto } from 'app/core/inventory/inventory.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
@@ -19,7 +22,7 @@ import { ProductDto } from 'app/core/catalog/catalog.types';
 @Component({
     selector: 'app-stock-adjustment-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatSelectModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -35,9 +38,22 @@ import { ProductDto } from 'app/core/catalog/catalog.types';
             <div class="flex items-center gap-3">
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-48">
                     <mat-label>Outlet</mat-label>
-                    <mat-select [(ngModel)]="outletFilter" (ngModelChange)="load()">
+                    <mat-select [(ngModel)]="outletFilter" (ngModelChange)="resetAndLoad()">
                         <mat-option [value]="''">All</mat-option>
                         @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
+                    <mat-label>Reason</mat-label>
+                    <mat-select [(ngModel)]="reasonFilter" (ngModelChange)="resetAndLoad()">
+                        <mat-option value="all">All</mat-option>
+                        <mat-option value="PhysicalCount">Physical count</mat-option>
+                        <mat-option value="Damage">Damage</mat-option>
+                        <mat-option value="Loss">Loss</mat-option>
+                        <mat-option value="Expiry">Expiry</mat-option>
+                        <mat-option value="Correction">Correction</mat-option>
+                        <mat-option value="OpeningBalance">Opening Balance</mat-option>
+                        <mat-option value="Other">Other</mat-option>
                     </mat-select>
                 </mat-form-field>
                 <button mat-fab color="primary" routerLink="create" matTooltip="New adjustment"><mat-icon>add</mat-icon></button>
@@ -47,18 +63,18 @@ import { ProductDto } from 'app/core/catalog/catalog.types';
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
-                    <table mat-table [dataSource]="rows()" class="w-full">
-                        <ng-container matColumnDef="when"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">When</span></th>
+                    <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
+                        <ng-container matColumnDef="adjustedOn"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">When</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">{{ r.adjustedOn | date:'short' }}</td></ng-container>
                         <ng-container matColumnDef="product"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
                             <td mat-cell *matCellDef="let r">{{ productName(r.productId) }}</td></ng-container>
                         <ng-container matColumnDef="outlet"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Outlet</span></th>
                             <td mat-cell *matCellDef="let r">{{ outletName(r.outletId) }}</td></ng-container>
-                        <ng-container matColumnDef="reason"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</span></th>
+                        <ng-container matColumnDef="reason"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.reason }}</td></ng-container>
-                        <ng-container matColumnDef="old"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">From</span></th>
+                        <ng-container matColumnDef="oldQuantity"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">From</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.oldQuantity | number:'1.0-3' }}</td></ng-container>
-                        <ng-container matColumnDef="new"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">To</span></th>
+                        <ng-container matColumnDef="newQuantity"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">To</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.newQuantity | number:'1.0-3' }}</td></ng-container>
                         <ng-container matColumnDef="delta"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Δ</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-semibold" [class.text-emerald-700]="r.delta >= 0" [class.text-rose-700]="r.delta < 0">
@@ -69,6 +85,14 @@ import { ProductDto } from 'app/core/catalog/catalog.types';
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
                         <tr mat-row *matRowDef="let row; columns: cols"></tr>
                     </table>
+
+                    <mat-paginator
+                        [length]="totalCount()"
+                        [pageSize]="pageSize"
+                        [pageSizeOptions]="[10, 25, 50, 100]"
+                        [pageIndex]="pageIndex"
+                        (page)="onPage($event)"
+                        showFirstLastButtons></mat-paginator>
                 </div>
                 <div *ngIf="rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">tune</mat-icon></div>
@@ -87,11 +111,21 @@ export class StockAdjustmentListComponent implements OnInit {
     private readonly productsApi = inject(ProductsService);
     private readonly currentOutlet = inject(CurrentOutletService);
 
+    @ViewChild(MatPaginator) paginator?: MatPaginator;
+    @ViewChild(MatSort) sort?: MatSort;
+
     rows = signal<StockAdjustmentDto[]>([]);
     outlets = signal<OutletDto[]>([]);
     products = signal<ProductDto[]>([]);
+    totalCount = signal(0);
+
     outletFilter = '';
-    cols = ['when', 'product', 'outlet', 'reason', 'old', 'new', 'delta', 'notes'];
+    reasonFilter: 'all' | string = 'all';
+
+    pageIndex = 0;
+    pageSize = 25;
+    private orderBy?: string[];
+    cols = ['adjustedOn', 'product', 'outlet', 'reason', 'oldQuantity', 'newQuantity', 'delta', 'notes'];
 
     outletName(id: string): string { return this.outlets().find(o => o.id === id)?.name ?? '—'; }
     productName(id: string): string { return this.products().find(p => p.id === id)?.name ?? '—'; }
@@ -106,7 +140,24 @@ export class StockAdjustmentListComponent implements OnInit {
         this.productsApi.getAll({ isActive: true }).subscribe(p => this.products.set(p));
     }
 
-    load(): void {
-        this.api.search({ outletId: this.outletFilter || undefined, take: 200 }).subscribe(r => this.rows.set(r ?? []));
+    private buildRequest(): SearchStockAdjustmentsRequest {
+        return {
+            pageNumber: this.pageIndex + 1,
+            pageSize: this.pageSize,
+            orderBy: this.orderBy,
+            outletId: this.outletFilter || undefined,
+            reason: this.reasonFilter === 'all' ? undefined : this.reasonFilter,
+        };
     }
+
+    load(): void {
+        this.api.search(this.buildRequest()).subscribe(r => {
+            this.rows.set(r.data);
+            this.totalCount.set(r.totalCount);
+        });
+    }
+
+    resetAndLoad(): void { this.pageIndex = 0; this.load(); }
+    onPage(e: PageEvent): void { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
+    onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 }

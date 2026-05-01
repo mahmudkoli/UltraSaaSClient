@@ -2,9 +2,32 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
+import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
 import { CreateStockAdjustmentRequest, CreateStockTransferRequest, ProductElectronicsDto, StockAdjustmentDto, StockDto, StockMovementDto, StockSerialDto, StockTransferDto } from './inventory.types';
 
 const api = environment.apiUrl;
+
+export interface SearchStockSerialsRequest extends PaginationFilter {
+    productId?: string;
+    outletId?: string;
+    status?: string;
+}
+
+export interface SearchStockTransfersRequest extends PaginationFilter {
+    fromOutletId?: string;
+    toOutletId?: string;
+    fromDate?: string;
+    toDate?: string;
+    status?: 'Draft' | 'InTransit' | 'Received' | 'Cancelled';
+}
+
+export interface SearchStockAdjustmentsRequest extends PaginationFilter {
+    outletId?: string;
+    productId?: string;
+    fromDate?: string;
+    toDate?: string;
+    reason?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class StocksService {
@@ -37,6 +60,8 @@ export class StockSerialsService {
     bySerial = (sn: string): Observable<StockSerialDto> =>
         this.http.get<StockSerialDto>(`${this.base}/by-serial/${encodeURIComponent(sn)}`);
     create = (req: Partial<StockSerialDto>): Observable<string> => this.http.post<string>(this.base, req);
+    search = (req: SearchStockSerialsRequest): Observable<PaginationResponse<StockSerialDto>> =>
+        this.http.post<PaginationResponse<StockSerialDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })
@@ -69,13 +94,16 @@ export class StockTransfersService {
     get = (id: string): Observable<StockTransferDto> =>
         this.http.get<StockTransferDto>(`${this.base}/${id}`);
 
-    search = (params?: { fromOutletId?: string; toOutletId?: string; take?: number }): Observable<StockTransferDto[]> => {
+    getAll = (params?: { fromOutletId?: string; toOutletId?: string; take?: number }): Observable<StockTransferDto[]> => {
         const qs = new URLSearchParams();
         if (params?.fromOutletId) qs.append('fromOutletId', params.fromOutletId);
         if (params?.toOutletId) qs.append('toOutletId', params.toOutletId);
         if (params?.take !== undefined) qs.append('take', String(params.take));
         return this.http.get<StockTransferDto[]>(qs.toString() ? `${this.base}?${qs}` : this.base);
     };
+
+    search = (req: SearchStockTransfersRequest): Observable<PaginationResponse<StockTransferDto>> =>
+        this.http.post<PaginationResponse<StockTransferDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })
@@ -86,11 +114,14 @@ export class StockAdjustmentsService {
     create = (req: CreateStockAdjustmentRequest): Observable<string> =>
         this.http.post<string>(this.base, req);
 
-    search = (params?: { productId?: string; outletId?: string; take?: number }): Observable<StockAdjustmentDto[]> => {
+    getAll = (params?: { productId?: string; outletId?: string; take?: number }): Observable<StockAdjustmentDto[]> => {
         const qs = new URLSearchParams();
         if (params?.productId) qs.append('productId', params.productId);
         if (params?.outletId) qs.append('outletId', params.outletId);
         if (params?.take !== undefined) qs.append('take', String(params.take));
         return this.http.get<StockAdjustmentDto[]>(qs.toString() ? `${this.base}?${qs}` : this.base);
     };
+
+    search = (req: SearchStockAdjustmentsRequest): Observable<PaginationResponse<StockAdjustmentDto>> =>
+        this.http.post<PaginationResponse<StockAdjustmentDto>>(`${this.base}/search`, req);
 }

@@ -1,15 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
-import { SaleReturnsService } from 'app/core/sales/sales.service';
+import { debounceTime, Subject } from 'rxjs';
+import { toOrderBy } from 'app/core/common/pagination.types';
+import { SaleReturnsService, SearchSaleReturnsRequest } from 'app/core/sales/sales.service';
 import { SaleReturnDto } from 'app/core/sales/sales.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
@@ -21,7 +25,7 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
     imports: [
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
-        MatSelectModule, MatTableModule, MatTooltipModule,
+        MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -38,12 +42,12 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Search returns</mat-label>
-                    <input matInput [(ngModel)]="search" placeholder="Return # / invoice / customer">
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Return # / invoice / customer">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Outlet</mat-label>
-                    <mat-select [(ngModel)]="outletFilter" (ngModelChange)="onOutletChange()">
+                    <mat-select [(ngModel)]="outletFilter" (ngModelChange)="resetAndLoad()">
                         <mat-option [value]="''">All outlets</mat-option>
                         @for (o of outlets(); track o.id) {
                             <mat-option [value]="o.id">{{ o.name }}</mat-option>
@@ -52,7 +56,7 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Status</mat-label>
-                    <mat-select [(ngModel)]="statusFilter">
+                    <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
                         <mat-option value="all">All Status</mat-option>
                         <mat-option value="Completed">Completed</mat-option>
                         <mat-option value="Voided">Voided</mat-option>
@@ -66,12 +70,12 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
-                    <table mat-table [dataSource]="filtered()" class="w-full">
-                        <ng-container matColumnDef="number"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Return #</span></th>
+                    <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
+                        <ng-container matColumnDef="returnNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Return #</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.returnNumber }}</td></ng-container>
                         <ng-container matColumnDef="invoice"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</span></th>
                             <td mat-cell *matCellDef="let r" class="font-mono text-xs text-gray-600 dark:text-gray-400">{{ r.originalInvoiceNumber }}</td></ng-container>
-                        <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</span></th>
+                        <ng-container matColumnDef="returnDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.returnDate | date:'short' }}</td></ng-container>
                         <ng-container matColumnDef="customer"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.customerName || 'Walk-in' }}</td></ng-container>
@@ -79,9 +83,9 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
                             <td mat-cell *matCellDef="let r">{{ r.reason }}</td></ng-container>
                         <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Items</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.items.length }}</td></ng-container>
-                        <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</span></th>
+                        <ng-container matColumnDef="refundAmount"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-semibold text-rose-600 dark:text-rose-400">{{ r.refundAmount | number:'1.2-2' }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="{
@@ -95,15 +99,23 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
                         <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" (click)="view(r)" matTooltip="View"><mat-icon class="icon-size-5">visibility</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); view(r)" matTooltip="View"><mat-icon class="icon-size-5">visibility</mat-icon></button>
                                 </div>
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
                         <tr mat-row *matRowDef="let row; columns: cols" class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors cursor-pointer" (click)="view(row)"></tr>
                     </table>
+
+                    <mat-paginator
+                        [length]="totalCount()"
+                        [pageSize]="pageSize"
+                        [pageSizeOptions]="[10, 25, 50, 100]"
+                        [pageIndex]="pageIndex"
+                        (page)="onPage($event)"
+                        showFirstLastButtons></mat-paginator>
                 </div>
 
-                <div *ngIf="!loading() && filtered().length === 0" class="flex flex-col items-center justify-center p-12">
+                <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">undo</mat-icon></div>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No returns yet</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Returns are created from a finalized sale. Open a sale and click "Process Return".</p>
@@ -120,26 +132,28 @@ export class ReturnsListComponent implements OnInit {
     private readonly outletsApi = inject(OutletsService);
     private readonly currentOutlet = inject(CurrentOutletService);
     private readonly router = inject(Router);
+
+    @ViewChild(MatPaginator) paginator?: MatPaginator;
+    @ViewChild(MatSort) sort?: MatSort;
+
     rows = signal<SaleReturnDto[]>([]);
     outlets = signal<OutletDto[]>([]);
     loading = signal(true);
+    totalCount = signal(0);
+
     search = '';
     outletFilter = '';
-    statusFilter: 'all' | SaleReturnDto['status'] = 'all';
-    cols = ['number', 'invoice', 'date', 'customer', 'reason', 'items', 'total', 'status', 'actions'];
+    statusFilter: 'all' | 'Draft' | 'Completed' | 'Voided' = 'all';
 
-    filtered = computed(() => {
-        const q = this.search.trim().toLowerCase();
-        return this.rows().filter(r =>
-            (this.statusFilter === 'all' || r.status === this.statusFilter)
-            && (!q
-                || r.returnNumber.toLowerCase().includes(q)
-                || r.originalInvoiceNumber.toLowerCase().includes(q)
-                || (r.customerName ?? '').toLowerCase().includes(q))
-        );
-    });
+    pageIndex = 0;
+    pageSize = 25;
+    private orderBy?: string[];
+
+    cols = ['returnNumber', 'invoice', 'returnDate', 'customer', 'reason', 'items', 'refundAmount', 'status', 'actions'];
+    searchChanged = new Subject<string>();
 
     ngOnInit(): void {
+        this.searchChanged.pipe(debounceTime(300)).subscribe(() => this.resetAndLoad());
         this.outletsApi.getAll().subscribe(o => {
             this.outlets.set(o);
             const remembered = this.currentOutlet.outletId();
@@ -147,13 +161,28 @@ export class ReturnsListComponent implements OnInit {
             this.load();
         });
     }
+
+    private buildRequest(): SearchSaleReturnsRequest {
+        return {
+            pageNumber: this.pageIndex + 1,
+            pageSize: this.pageSize,
+            orderBy: this.orderBy,
+            keyword: this.search.trim() || undefined,
+            outletId: this.outletFilter || undefined,
+            status: this.statusFilter === 'all' ? undefined : this.statusFilter,
+        };
+    }
+
     load(): void {
         this.loading.set(true);
-        this.api.getAll({ outletId: this.outletFilter || undefined }).subscribe({
-            next: d => { this.rows.set(d); this.loading.set(false); },
+        this.api.search(this.buildRequest()).subscribe({
+            next: r => { this.rows.set(r.data); this.totalCount.set(r.totalCount); this.loading.set(false); },
             error: () => this.loading.set(false),
         });
     }
-    onOutletChange(): void { this.load(); }
+
+    resetAndLoad(): void { this.pageIndex = 0; this.load(); }
+    onPage(e: PageEvent): void { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
+    onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
     view(r: SaleReturnDto): void { this.router.navigate(['/returns', r.id]); }
 }

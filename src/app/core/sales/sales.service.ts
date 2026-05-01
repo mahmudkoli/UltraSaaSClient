@@ -15,6 +15,14 @@ export interface SearchSalesRequest extends PaginationFilter {
     status?: 'Draft' | 'Finalized' | 'Voided';
 }
 
+export interface SearchSaleReturnsRequest extends PaginationFilter {
+    outletId?: string;
+    customerId?: string;
+    fromDate?: string;
+    toDate?: string;
+    status?: 'Draft' | 'Completed' | 'Voided';
+}
+
 const api = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
@@ -64,6 +72,8 @@ export class SaleReturnsService {
     getBySale = (saleId: string): Observable<SaleReturnDto[]> =>
         this.http.get<SaleReturnDto[]>(`${this.base}/by-sale/${saleId}`);
     create = (req: CreateSaleReturnRequest): Observable<string> => this.http.post<string>(this.base, req);
+    search = (req: SearchSaleReturnsRequest): Observable<PaginationResponse<SaleReturnDto>> =>
+        this.http.post<PaginationResponse<SaleReturnDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })

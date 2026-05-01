@@ -1,17 +1,21 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { debounceTime, Subject } from 'rxjs';
+import { toOrderBy } from 'app/core/common/pagination.types';
 import { ProductsService } from 'app/core/catalog/catalog.service';
 import { ProductDto } from 'app/core/catalog/catalog.types';
-import { StockSerialsService } from 'app/core/inventory/inventory.service';
+import { SearchStockSerialsRequest, StockSerialsService } from 'app/core/inventory/inventory.service';
 import { StockSerialDto } from 'app/core/inventory/inventory.types';
 import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 import { OutletsService } from 'app/core/outlets/outlets.service';
@@ -25,7 +29,7 @@ type SerialStatus = StockSerialDto['status'];
     imports: [
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
-        MatSelectModule, MatTableModule, MatTooltipModule,
+        MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -42,19 +46,19 @@ type SerialStatus = StockSerialDto['status'];
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Search</mat-label>
-                    <input matInput [(ngModel)]="search" placeholder="Serial / IMEI">
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Serial / IMEI">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Outlet</mat-label>
-                    <mat-select [(ngModel)]="outletFilter" (ngModelChange)="onFilterChange()">
+                    <mat-select [(ngModel)]="outletFilter" (ngModelChange)="resetAndLoad()">
                         <mat-option [value]="''">All outlets</mat-option>
                         @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Status</mat-label>
-                    <mat-select [(ngModel)]="statusFilter" (ngModelChange)="onFilterChange()">
+                    <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
                         <mat-option value="">All</mat-option>
                         <mat-option value="InStock">In stock</mat-option>
                         <mat-option value="Reserved">Reserved</mat-option>
@@ -70,8 +74,8 @@ type SerialStatus = StockSerialDto['status'];
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
-                    <table mat-table [dataSource]="filtered()" class="w-full">
-                        <ng-container matColumnDef="serial"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Serial</span></th>
+                    <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
+                        <ng-container matColumnDef="serialNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Serial</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.serialNumber }}</td></ng-container>
                         <ng-container matColumnDef="imei"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">IMEI</span></th>
                             <td mat-cell *matCellDef="let r" class="font-mono text-xs text-gray-600 dark:text-gray-400">{{ r.imei || '—' }}</td></ng-container>
@@ -79,13 +83,13 @@ type SerialStatus = StockSerialDto['status'];
                             <td mat-cell *matCellDef="let r">{{ productName(r.productId) }}</td></ng-container>
                         <ng-container matColumnDef="outlet"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Outlet</span></th>
                             <td mat-cell *matCellDef="let r">{{ outletName(r.outletId) }}</td></ng-container>
-                        <ng-container matColumnDef="cost"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</span></th>
+                        <ng-container matColumnDef="purchaseCost"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.purchaseCost | number:'1.2-2' }}</td></ng-container>
-                        <ng-container matColumnDef="received"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Received</span></th>
+                        <ng-container matColumnDef="receivedOn"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Received</span></th>
                             <td mat-cell *matCellDef="let r" class="text-gray-600 dark:text-gray-400">{{ r.receivedOn | date:'shortDate' }}</td></ng-container>
-                        <ng-container matColumnDef="sold"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Sold</span></th>
+                        <ng-container matColumnDef="soldOn"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Sold</span></th>
                             <td mat-cell *matCellDef="let r" class="text-gray-600 dark:text-gray-400">{{ r.soldOn ? (r.soldOn | date:'shortDate') : '—' }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pr-4 sm:pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" [ngClass]="badgeClass(r.status)">
                                     <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ r.status }}
@@ -94,8 +98,16 @@ type SerialStatus = StockSerialDto['status'];
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
                         <tr mat-row *matRowDef="let row; columns: cols" class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"></tr>
                     </table>
+
+                    <mat-paginator
+                        [length]="totalCount()"
+                        [pageSize]="pageSize"
+                        [pageSizeOptions]="[10, 25, 50, 100]"
+                        [pageIndex]="pageIndex"
+                        (page)="onPage($event)"
+                        showFirstLastButtons></mat-paginator>
                 </div>
-                <div *ngIf="!loading() && filtered().length === 0" class="flex flex-col items-center justify-center p-12">
+                <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">qr_code_2</mat-icon></div>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No serials</h3>
                     <p class="text-sm text-gray-600 dark:text-gray-400">Serials are auto-created when goods receipts include serial-tracked products.</p>
@@ -112,23 +124,24 @@ export class StockSerialListComponent implements OnInit {
     private readonly outletsApi = inject(OutletsService);
     private readonly currentOutlet = inject(CurrentOutletService);
 
+    @ViewChild(MatPaginator) paginator?: MatPaginator;
+    @ViewChild(MatSort) sort?: MatSort;
+
     rows = signal<StockSerialDto[]>([]);
     products = signal<ProductDto[]>([]);
     outlets = signal<OutletDto[]>([]);
     loading = signal(true);
+    totalCount = signal(0);
+
     search = '';
     outletFilter = '';
     statusFilter: SerialStatus | '' = '';
-    cols = ['serial', 'imei', 'product', 'outlet', 'cost', 'received', 'sold', 'status'];
 
-    filtered = computed(() => {
-        const q = this.search.trim().toLowerCase();
-        return this.rows().filter(r =>
-            (!q
-                || r.serialNumber.toLowerCase().includes(q)
-                || (r.imei ?? '').toLowerCase().includes(q))
-        );
-    });
+    pageIndex = 0;
+    pageSize = 25;
+    private orderBy?: string[];
+    cols = ['serialNumber', 'imei', 'product', 'outlet', 'purchaseCost', 'receivedOn', 'soldOn', 'status'];
+    searchChanged = new Subject<string>();
 
     productName(id: string): string { return this.products().find(p => p.id === id)?.name ?? ''; }
     outletName(id: string): string { return this.outlets().find(o => o.id === id)?.name ?? ''; }
@@ -157,6 +170,7 @@ export class StockSerialListComponent implements OnInit {
     }
 
     ngOnInit(): void {
+        this.searchChanged.pipe(debounceTime(300)).subscribe(() => this.resetAndLoad());
         this.outletsApi.getAll().subscribe(o => {
             this.outlets.set(o);
             const remembered = this.currentOutlet.outletId();
@@ -166,16 +180,26 @@ export class StockSerialListComponent implements OnInit {
         });
     }
 
-    onFilterChange(): void { this.load(); }
+    private buildRequest(): SearchStockSerialsRequest {
+        return {
+            pageNumber: this.pageIndex + 1,
+            pageSize: this.pageSize,
+            orderBy: this.orderBy,
+            keyword: this.search.trim() || undefined,
+            outletId: this.outletFilter || undefined,
+            status: this.statusFilter || undefined,
+        };
+    }
 
     load(): void {
         this.loading.set(true);
-        this.api.getAll({
-            outletId: this.outletFilter || undefined,
-            status: this.statusFilter || undefined,
-        }).subscribe({
-            next: d => { this.rows.set(d); this.loading.set(false); },
+        this.api.search(this.buildRequest()).subscribe({
+            next: r => { this.rows.set(r.data); this.totalCount.set(r.totalCount); this.loading.set(false); },
             error: () => this.loading.set(false),
         });
     }
+
+    resetAndLoad(): void { this.pageIndex = 0; this.load(); }
+    onPage(e: PageEvent): void { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
+    onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 }
