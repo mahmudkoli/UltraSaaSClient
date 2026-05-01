@@ -81,11 +81,11 @@ import { StockCountDto } from 'app/core/inventory/inventory.types';
             <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 flex items-center gap-3">
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
                     <mat-label>Search SKU or product</mat-label>
-                    <input matInput [(ngModel)]="search" (ngModelChange)="onSearchChange()">
+                    <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)">
                 </mat-form-field>
-                <button mat-stroked-button (click)="hideCounted = !hideCounted" [class.!bg-emerald-50]="hideCounted">
-                    <mat-icon class="icon-size-5 mr-1">{{ hideCounted ? 'visibility_off' : 'visibility' }}</mat-icon>
-                    {{ hideCounted ? 'Showing uncounted only' : 'Show all' }}
+                <button mat-stroked-button (click)="hideCounted.set(!hideCounted())" [class.!bg-emerald-50]="hideCounted()">
+                    <mat-icon class="icon-size-5 mr-1">{{ hideCounted() ? 'visibility_off' : 'visibility' }}</mat-icon>
+                    {{ hideCounted() ? 'Showing uncounted only' : 'Show all' }}
                 </button>
             </div>
 
@@ -142,17 +142,18 @@ export class StockCountDetailComponent implements OnInit {
 
     count = signal<StockCountDto | null>(null);
     draft: Record<string, number> = {};
-    search = '';
-    hideCounted = false;
+    search = signal('');
+    hideCounted = signal(false);
     busy = false;
     cols = ['sku', 'product', 'expected', 'counted', 'variance'];
 
     visibleLines = computed(() => {
         const c = this.count();
         if (!c) return [];
-        const q = this.search.trim().toLowerCase();
+        const q = this.search().trim().toLowerCase();
+        const hide = this.hideCounted();
         return c.lines.filter(l => {
-            if (this.hideCounted && l.hasCount) return false;
+            if (hide && l.hasCount) return false;
             if (!q) return true;
             return l.productName.toLowerCase().includes(q) || l.sku.toLowerCase().includes(q);
         });
@@ -164,8 +165,6 @@ export class StockCountDetailComponent implements OnInit {
         const id = this.route.snapshot.paramMap.get('id');
         if (id) this.reload(id);
     }
-
-    onSearchChange(): void { /* signals re-compute via this.search rebind */ }
 
     private reload(id: string): void {
         this.api.get(id).subscribe(c => this.count.set(c));

@@ -30,7 +30,7 @@ import { CategoryDto } from 'app/core/catalog/catalog.types';
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Search categories</mat-label>
-                    <input matInput [(ngModel)]="search">
+                    <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <button mat-fab color="primary" routerLink="../categories/create" matTooltip="Add new category"><mat-icon>add</mat-icon></button>
@@ -64,7 +64,7 @@ import { CategoryDto } from 'app/core/catalog/catalog.types';
                 <div *ngIf="!loading() && filtered().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">tag</mat-icon></div>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No categories yet</h3>
-                    <button *ngIf="!search" mat-flat-button color="primary" routerLink="../categories/create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Category</span></button>
+                    <button *ngIf="!search()" mat-flat-button color="primary" routerLink="../categories/create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Category</span></button>
                 </div>
             </div>
         </div>
@@ -76,11 +76,11 @@ export class CategoryListComponent implements OnInit {
     private readonly api = inject(CategoriesService);
     rows = signal<CategoryDto[]>([]);
     loading = signal(true);
-    search = '';
+    search = signal('');
     cols = ['name', 'parent', 'order', 'active', 'actions'];
 
     filtered = computed(() => {
-        const q = this.search.trim().toLowerCase();
+        const q = this.search().trim().toLowerCase();
         if (!q) return this.rows();
         return this.rows().filter(r => r.name.toLowerCase().includes(q));
     });

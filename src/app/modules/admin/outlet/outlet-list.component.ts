@@ -38,12 +38,12 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Search outlets</mat-label>
-                    <input matInput [(ngModel)]="search" placeholder="Search by code, name, city">
+                    <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search by code, name, city">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Type</mat-label>
-                    <mat-select [(ngModel)]="typeFilter">
+                    <mat-select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
                         <mat-option value="all">All Types</mat-option>
                         <mat-option value="Retail">Retail</mat-option>
                         <mat-option value="Warehouse">Warehouse</mat-option>
@@ -52,7 +52,7 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Status</mat-label>
-                    <mat-select [(ngModel)]="statusFilter">
+                    <mat-select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
                         <mat-option value="all">All Status</mat-option>
                         <mat-option value="Active">Active</mat-option>
                         <mat-option value="Suspended">Suspended</mat-option>
@@ -127,8 +127,8 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
                 <div *ngIf="!loading() && filtered().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">storefront</mat-icon></div>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No outlets found</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ search || typeFilter !== 'all' || statusFilter !== 'all' ? 'Try adjusting your filters.' : 'Add your first outlet to get started.' }}</p>
-                    <button *ngIf="!search && typeFilter === 'all' && statusFilter === 'all'" mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Outlet</span></button>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ search() || typeFilter() !== 'all' || statusFilter() !== 'all' ? 'Try adjusting your filters.' : 'Add your first outlet to get started.' }}</p>
+                    <button *ngIf="!search() && typeFilter() === 'all' && statusFilter() === 'all'" mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Outlet</span></button>
                 </div>
             </div>
         </div>
@@ -140,16 +140,18 @@ export class OutletListComponent implements OnInit {
     private readonly api = inject(OutletsService);
     rows = signal<OutletDto[]>([]);
     loading = signal(true);
-    search = '';
-    typeFilter: 'all' | OutletType = 'all';
-    statusFilter: 'all' | OutletStatus = 'all';
+    search = signal('');
+    typeFilter = signal<'all' | OutletType>('all');
+    statusFilter = signal<'all' | OutletStatus>('all');
     cols = ['code', 'name', 'type', 'city', 'status', 'actions'];
 
     filtered = computed(() => {
-        const q = this.search.trim().toLowerCase();
+        const q = this.search().trim().toLowerCase();
+        const type = this.typeFilter();
+        const status = this.statusFilter();
         return this.rows().filter(r =>
-            (this.typeFilter === 'all' || r.type === this.typeFilter)
-            && (this.statusFilter === 'all' || r.status === this.statusFilter)
+            (type === 'all' || r.type === type)
+            && (status === 'all' || r.status === status)
             && (!q
                 || r.code.toLowerCase().includes(q)
                 || r.name.toLowerCase().includes(q)

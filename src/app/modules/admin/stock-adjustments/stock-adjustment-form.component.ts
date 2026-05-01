@@ -121,17 +121,17 @@ export class StockAdjustmentFormComponent implements OnInit {
     notes = '';
     saving = false;
 
-    productOptions = computed(() => {
+    productOptions(): ProductDto[] {
         const q = (typeof this.productSearch === 'string' ? this.productSearch : '').trim().toLowerCase();
         const list = this.products().filter(p => p.isActive);
         if (!q) return list.slice(0, 30);
         return list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)).slice(0, 30);
-    });
+    }
 
-    canSubmit = computed(() =>
-        !!this.productId && !!this.outletId
-        && this.newQuantity != null && this.newQuantity >= 0
-    );
+    canSubmit(): boolean {
+        return !!this.productId && !!this.outletId
+            && this.newQuantity != null && this.newQuantity >= 0;
+    }
 
     disabledReason(): string {
         if (!this.productId) return 'Pick a product.';

@@ -192,22 +192,22 @@ export class PurchaseOrderFormComponent implements OnInit {
 
     productSearch: any = '';
 
-    productOptions = computed(() => {
+    productOptions(): ProductDto[] {
         const q = (typeof this.productSearch === 'string' ? this.productSearch : '').trim().toLowerCase();
         if (!q) return this.products().slice(0, 30);
         return this.products()
             .filter(p => p.isActive && (p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)))
             .slice(0, 30);
-    });
+    }
 
     total = computed(() => this.lines().reduce((s, l) => s + l.quantity * l.unitCost, 0));
     totalQty = computed(() => this.lines().reduce((s, l) => s + (Number(l.quantity) || 0), 0));
 
-    canSubmit = computed(() =>
-        !!this.outletId && !!this.supplierId
-        && this.lines().length > 0
-        && this.lines().every(l => l.quantity > 0 && l.unitCost >= 0)
-    );
+    canSubmit(): boolean {
+        return !!this.outletId && !!this.supplierId
+            && this.lines().length > 0
+            && this.lines().every(l => l.quantity > 0 && l.unitCost >= 0);
+    }
 
     disabledReason(): string {
         if (!this.outletId) return 'Pick an outlet.';

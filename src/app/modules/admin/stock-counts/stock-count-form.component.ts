@@ -118,12 +118,12 @@ export class StockCountFormComponent implements OnInit {
     notes = '';
     saving = false;
 
-    canSubmit = computed(() => {
+    canSubmit(): boolean {
         if (!this.outletId) return false;
         if (this.scope === 'ByCategory' && !this.categoryId) return false;
         if (this.scope === 'ByBrand' && !this.brandId) return false;
         return true;
-    });
+    }
 
     disabledReason(): string {
         if (!this.outletId) return 'Pick an outlet.';

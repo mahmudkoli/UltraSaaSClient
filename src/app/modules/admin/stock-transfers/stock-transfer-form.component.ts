@@ -153,20 +153,20 @@ export class StockTransferFormComponent implements OnInit {
     saving = false;
     productSearch: any = '';
 
-    productOptions = computed(() => {
+    productOptions(): ProductDto[] {
         const q = (typeof this.productSearch === 'string' ? this.productSearch : '').trim().toLowerCase();
         const list = this.products().filter(p => p.isActive);
         if (!q) return list.slice(0, 30);
         return list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)).slice(0, 30);
-    });
+    }
 
     totalQty = computed(() => this.lines().reduce((s, l) => s + (Number(l.quantity) || 0), 0));
 
-    canSubmit = computed(() =>
-        !!this.fromOutletId && !!this.toOutletId && this.fromOutletId !== this.toOutletId
-        && this.lines().length > 0
-        && this.lines().every(l => l.quantity > 0)
-    );
+    canSubmit(): boolean {
+        return !!this.fromOutletId && !!this.toOutletId && this.fromOutletId !== this.toOutletId
+            && this.lines().length > 0
+            && this.lines().every(l => l.quantity > 0);
+    }
 
     disabledReason(): string {
         if (!this.fromOutletId || !this.toOutletId) return 'Pick both outlets.';
