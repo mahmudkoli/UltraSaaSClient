@@ -93,6 +93,7 @@ export const appRoutes: Route[] = [
             {path: 'audit', loadChildren: () => import('app/modules/admin/audit/audit.routes')},
             {path: 'stock-transfers', loadChildren: () => import('app/modules/admin/stock-transfers/stock-transfers.routes')},
             {path: 'stock-adjustments', loadChildren: () => import('app/modules/admin/stock-adjustments/stock-adjustments.routes')},
+            {path: 'stock-counts', loadChildren: () => import('app/modules/admin/stock-counts/stock-counts.routes')},
             {path: 'inventory', loadChildren: () => import('app/modules/admin/inventory/inventory.routes')},
             {path: 'batches', loadChildren: () => import('app/modules/admin/pharmacy/pharmacy.routes')},
             {path: 'prescriptions', loadChildren: () => import('app/modules/admin/pharmacy/prescriptions.routes')},

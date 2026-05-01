@@ -83,6 +83,58 @@ export interface CreateStockTransferRequest {
     notes?: string;
 }
 
+export type StockCountStatus = 'InProgress' | 'Completed' | 'Cancelled';
+export type StockCountScope = 'AllProducts' | 'ByCategory' | 'ByBrand';
+
+export interface StockCountLineDto {
+    id: string;
+    stockCountId: string;
+    productId: string;
+    productName: string;
+    sku: string;
+    expectedQty: number;
+    countedQty?: number;
+    countedAt?: string;
+    lineNotes?: string;
+    variance: number;
+    hasCount: boolean;
+}
+
+export interface StockCountDto {
+    id: string;
+    outletId: string;
+    countNumber: string;
+    sequenceNumber: number;
+    scope: StockCountScope;
+    categoryId?: string;
+    brandId?: string;
+    status: StockCountStatus;
+    startedByUserId: string;
+    startedAt: string;
+    completedByUserId?: string;
+    completedAt?: string;
+    notes?: string;
+    lineCount: number;
+    countedLines: number;
+    totalAbsVariance: number;
+    lines: StockCountLineDto[];
+}
+
+export interface StartStockCountRequest {
+    outletId: string;
+    scope: StockCountScope;
+    categoryId?: string;
+    brandId?: string;
+    notes?: string;
+}
+
+export interface RecordStockCountLineRequest {
+    countId: string;
+    lineId: string;
+    countedQty: number;
+    lineNotes?: string;
+}
+
 export type StockAdjustmentReason =
     | 'PhysicalCount' | 'Damage' | 'Loss' | 'Expiry' | 'Correction' | 'OpeningBalance' | 'Other';
 

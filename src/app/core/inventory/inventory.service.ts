@@ -3,7 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
 import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
-import { CreateStockAdjustmentRequest, CreateStockTransferRequest, ProductElectronicsDto, StockAdjustmentDto, StockDto, StockMovementDto, StockSerialDto, StockTransferDto } from './inventory.types';
+import { CreateStockAdjustmentRequest, CreateStockTransferRequest, ProductElectronicsDto, RecordStockCountLineRequest, StartStockCountRequest, StockAdjustmentDto, StockCountDto, StockCountStatus, StockDto, StockMovementDto, StockSerialDto, StockTransferDto } from './inventory.types';
 
 const api = environment.apiUrl;
 
@@ -35,6 +35,13 @@ export interface SearchStockMovementsRequest extends PaginationFilter {
     fromDate?: string;
     toDate?: string;
     movementType?: string;
+}
+
+export interface SearchStockCountsRequest extends PaginationFilter {
+    outletId?: string;
+    status?: StockCountStatus;
+    fromDate?: string;
+    toDate?: string;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -134,4 +141,28 @@ export class StockAdjustmentsService {
 
     search = (req: SearchStockAdjustmentsRequest): Observable<PaginationResponse<StockAdjustmentDto>> =>
         this.http.post<PaginationResponse<StockAdjustmentDto>>(`${this.base}/search`, req);
+}
+
+@Injectable({ providedIn: 'root' })
+export class StockCountsService {
+    private readonly http = inject(HttpClient);
+    private readonly base = `${api}/api/stockcounts`;
+
+    start = (req: StartStockCountRequest): Observable<string> =>
+        this.http.post<string>(this.base, req);
+
+    recordLine = (id: string, req: RecordStockCountLineRequest): Observable<string> =>
+        this.http.post<string>(`${this.base}/${id}/lines`, req);
+
+    complete = (id: string, notes?: string): Observable<string> =>
+        this.http.post<string>(`${this.base}/${id}/complete`, { notes });
+
+    cancel = (id: string, reason?: string): Observable<string> =>
+        this.http.post<string>(`${this.base}/${id}/cancel`, { reason });
+
+    get = (id: string): Observable<StockCountDto> =>
+        this.http.get<StockCountDto>(`${this.base}/${id}`);
+
+    search = (req: SearchStockCountsRequest): Observable<PaginationResponse<StockCountDto>> =>
+        this.http.post<PaginationResponse<StockCountDto>>(`${this.base}/search`, req);
 }

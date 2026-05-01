@@ -54,6 +54,8 @@ const posNav: FuseNavigationItem[] = [
               meta: { permission: 'Permissions.StockTransfers.View' } },
             { id: 'stock-adjustments', title: 'Stock Adjustments', type: 'basic', icon: 'heroicons_outline:adjustments-horizontal', link: '/stock-adjustments',
               meta: { permission: 'Permissions.StockAdjustments.View' } },
+            { id: 'stock-counts', title: 'Cycle Counts', type: 'basic', icon: 'heroicons_outline:clipboard-document-check', link: '/stock-counts',
+              meta: { permission: 'Permissions.StockCounts.View' } },
             { id: 'purchase-returns', title: 'Purchase Returns', type: 'basic', icon: 'heroicons_outline:arrow-uturn-up', link: '/purchase-returns',
               meta: { permission: 'Permissions.PurchaseReturns.View' } },
         ],
