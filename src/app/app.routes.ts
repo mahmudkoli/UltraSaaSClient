@@ -90,6 +90,7 @@ export const appRoutes: Route[] = [
             {path: 'purchase-orders', loadChildren: () => import('app/modules/admin/purchase-orders/purchase-orders.routes')},
             {path: 'goods-receipts', loadChildren: () => import('app/modules/admin/goods-receipts/goods-receipts.routes')},
             {path: 'purchase-returns', loadChildren: () => import('app/modules/admin/purchase-returns/purchase-returns.routes')},
+            {path: 'audit', loadChildren: () => import('app/modules/admin/audit/audit.routes')},
             {path: 'stock-transfers', loadChildren: () => import('app/modules/admin/stock-transfers/stock-transfers.routes')},
             {path: 'stock-adjustments', loadChildren: () => import('app/modules/admin/stock-adjustments/stock-adjustments.routes')},
             {path: 'inventory', loadChildren: () => import('app/modules/admin/inventory/inventory.routes')},
