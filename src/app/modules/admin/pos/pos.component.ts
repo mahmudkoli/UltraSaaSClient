@@ -50,8 +50,8 @@ interface CartLine extends CreateSaleLine {
             <!-- Left: product picker -->
             <div class="lg:w-1/2 flex flex-col gap-3">
                 <mat-card class="!p-3">
-                    <div class="flex items-center gap-3">
-                        <mat-form-field appearance="outline" class="flex-1 !my-0">
+                    <div class="flex items-stretch gap-3">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
                             <mat-label>Outlet</mat-label>
                             <mat-select [(ngModel)]="outletId" (ngModelChange)="onOutletChange()">
                                 @for (o of outlets(); track o.id) {
@@ -59,17 +59,17 @@ interface CartLine extends CreateSaleLine {
                                 }
                             </mat-select>
                         </mat-form-field>
-                        <mat-form-field appearance="outline" class="flex-1 !my-0">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
                             <mat-label>Search SKU / name</mat-label>
-                            <input matInput [(ngModel)]="search" placeholder="e.g. PARA, iPhone..." />
+                            <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="e.g. PARA, iPhone..." />
                         </mat-form-field>
-                        <button mat-stroked-button class="!min-w-0 !px-3 h-14 self-center"
+                        <button mat-stroked-button class="!min-w-0 !px-3 !h-14"
                                 (click)="openSaleLookup()"
                                 matTooltip="Find a previous sale and re-print the receipt">
                             <mat-icon class="icon-size-5">receipt_long</mat-icon>
                             <span class="hidden lg:inline ml-1">Find sale</span>
                         </button>
-                        <button mat-stroked-button class="!min-w-0 !px-3 h-14 self-center relative"
+                        <button mat-stroked-button class="!min-w-0 !px-3 !h-14 relative"
                                 (click)="openParkedCarts()"
                                 [matTooltip]="parkedCount() > 0 ? parkedCount() + ' parked cart(s)' : 'No parked carts'">
                             <mat-icon class="icon-size-5">pause_circle</mat-icon>
@@ -316,14 +316,14 @@ export class PosComponent implements OnInit {
 
     outletId: string | null = null;
     customerId: string | null = null;
-    search = '';
+    search = signal('');
     promoCode = '';
     payMethod: PaymentMethod = 'Cash';
     payAmount: number | null = null;
     redeemPoints: number = 0;
 
     filteredProducts = computed(() => {
-        const q = this.search.trim().toLowerCase();
+        const q = this.search().trim().toLowerCase();
         const all = this.products();
         if (!q) return all.slice(0, 60);
         return all.filter(p =>
