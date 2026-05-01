@@ -6,6 +6,16 @@ export const ROOT_EMAIL = 'admin@root.com';
 export const ELECTRO_TENANT = 'electroplus';
 export const ELECTRO_EMAIL = 'admin@electroplus.com';
 
+// Phase 2.7z demo tenants — one per BusinessType.
+export const GENERIC_TENANT = 'compumart';
+export const GENERIC_EMAIL = 'admin@compumart.com';
+
+export const PHARMACY_TENANT = 'mediplus';
+export const PHARMACY_EMAIL = 'admin@mediplus.com';
+
+export const SUPERMARKET_TENANT = 'freshmart';
+export const SUPERMARKET_EMAIL = 'admin@freshmart.com';
+
 export const ADMIN_PASSWORD = '123Pa$$word!';
 
 // Backward-compat constants for the original e2e.spec.ts.

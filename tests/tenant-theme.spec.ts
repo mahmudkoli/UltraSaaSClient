@@ -209,10 +209,10 @@ test.describe('Tenant Theme Settings E2E', () => {
         await page.waitForLoadState('networkidle');
         await expect(page.locator('text=electroplus').first()).toBeVisible({ timeout: 10000 });
 
-        // Visit greenwood theme settings
-        await page.goto('/tenant/greenwood/theme-settings');
+        // Visit a different tenant's theme settings (compumart from Phase 2.7z seed).
+        await page.goto('/tenant/compumart/theme-settings');
         await page.waitForLoadState('networkidle');
-        await expect(page.locator('text=greenwood').first()).toBeVisible({ timeout: 10000 });
+        await expect(page.locator('text=compumart').first()).toBeVisible({ timeout: 10000 });
     });
 
     // ════════════════════════════════════════════════════════════
