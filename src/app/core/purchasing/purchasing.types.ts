@@ -100,3 +100,73 @@ export interface GoodsReceiptDto {
     notes?: string;
     items: GoodsReceiptItemDto[];
 }
+
+export type PurchaseReturnStatus = 'Draft' | 'Completed' | 'Voided';
+export type PurchaseReturnReason = 'Damaged' | 'WrongItem' | 'Excess' | 'Expired' | 'QualityFailure' | 'Other';
+export type SupplierCreditMethod = 'CreditNote' | 'CashRefund' | 'BankRefund' | 'Replacement' | 'InvoiceAdjustment';
+
+export interface PurchaseReturnItemDto {
+    id: string;
+    purchaseReturnId: string;
+    goodsReceiptItemId: string;
+    purchaseOrderItemId: string;
+    productId: string;
+    productName: string;
+    sku: string;
+    quantity: number;
+    unitCost: number;
+    lineTotal: number;
+    serialNumber?: string;
+    batchNumber?: string;
+}
+
+export interface SupplierCreditDto {
+    id: string;
+    purchaseReturnId: string;
+    amount: number;
+    method: SupplierCreditMethod;
+    reference?: string;
+    recordedOn: string;
+    recordedByUserId: string;
+}
+
+export interface PurchaseReturnDto {
+    id: string;
+    goodsReceiptId: string;
+    originalReceiptNumber: string;
+    purchaseOrderId: string;
+    originalPONumber: string;
+    outletId: string;
+    supplierId: string;
+    returnNumber: string;
+    sequenceNumber: number;
+    returnDate: string;
+    total: number;
+    creditAmount: number;
+    balance: number;
+    status: PurchaseReturnStatus;
+    reason: PurchaseReturnReason;
+    notes?: string;
+    items: PurchaseReturnItemDto[];
+    credits: SupplierCreditDto[];
+}
+
+export interface CreatePurchaseReturnLine {
+    goodsReceiptItemId: string;
+    quantity: number;
+    serialNumber?: string;
+}
+
+export interface CreatePurchaseReturnCredit {
+    amount: number;
+    method: SupplierCreditMethod;
+    reference?: string;
+}
+
+export interface CreatePurchaseReturnRequest {
+    goodsReceiptId: string;
+    reason: PurchaseReturnReason;
+    lines: CreatePurchaseReturnLine[];
+    credits: CreatePurchaseReturnCredit[];
+    notes?: string;
+}

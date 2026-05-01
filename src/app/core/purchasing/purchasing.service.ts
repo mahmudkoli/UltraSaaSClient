@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
 import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
 import {
-    CreateGoodsReceiptRequest, CreatePurchaseOrderRequest, GoodsReceiptDto, PurchaseOrderDto, SupplierDto,
+    CreateGoodsReceiptRequest, CreatePurchaseOrderRequest, CreatePurchaseReturnRequest,
+    GoodsReceiptDto, PurchaseOrderDto, PurchaseReturnDto, PurchaseReturnStatus, SupplierDto,
 } from './purchasing.types';
 
 const api = environment.apiUrl;
@@ -26,6 +27,15 @@ export interface SearchGoodsReceiptsRequest extends PaginationFilter {
     purchaseOrderId?: string;
     fromDate?: string;
     toDate?: string;
+}
+
+export interface SearchPurchaseReturnsRequest extends PaginationFilter {
+    outletId?: string;
+    supplierId?: string;
+    goodsReceiptId?: string;
+    fromDate?: string;
+    toDate?: string;
+    status?: PurchaseReturnStatus;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -75,4 +85,22 @@ export class GoodsReceiptsService {
     create = (req: CreateGoodsReceiptRequest): Observable<string> => this.http.post<string>(this.base, req);
     search = (req: SearchGoodsReceiptsRequest): Observable<PaginationResponse<GoodsReceiptDto>> =>
         this.http.post<PaginationResponse<GoodsReceiptDto>>(`${this.base}/search`, req);
+}
+
+@Injectable({ providedIn: 'root' })
+export class PurchaseReturnsService {
+    private readonly http = inject(HttpClient);
+    private readonly base = `${api}/api/purchasereturns`;
+
+    create = (req: CreatePurchaseReturnRequest): Observable<string> =>
+        this.http.post<string>(this.base, req);
+
+    get = (id: string): Observable<PurchaseReturnDto> =>
+        this.http.get<PurchaseReturnDto>(`${this.base}/${id}`);
+
+    getByReceipt = (goodsReceiptId: string): Observable<PurchaseReturnDto[]> =>
+        this.http.get<PurchaseReturnDto[]>(`${this.base}/by-receipt/${goodsReceiptId}`);
+
+    search = (req: SearchPurchaseReturnsRequest): Observable<PaginationResponse<PurchaseReturnDto>> =>
+        this.http.post<PaginationResponse<PurchaseReturnDto>>(`${this.base}/search`, req);
 }
