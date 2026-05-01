@@ -1,5 +1,7 @@
-import { Component, OnInit, OnDestroy, ViewEncapsulation } from '@angular/core';
+import { Component, OnInit, OnDestroy, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpClient } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -9,6 +11,8 @@ import { FuseConfigService } from '@fuse/services/config';
 import { take } from 'rxjs';
 import { TenantThemeService, ThemeConfig } from 'app/core/tenant/tenant-theme.service';
 import { NotificationService } from 'app/core/services/notification.service';
+import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { environment } from 'environments/environment';
 
 @Component({
     selector: 'tenant-theme-settings',
@@ -17,6 +21,7 @@ import { NotificationService } from 'app/core/services/notification.service';
     standalone: true,
     imports: [
         CommonModule,
+        FormsModule,
         MatButtonModule,
         MatIconModule,
         MatProgressSpinnerModule,
@@ -43,6 +48,18 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
         { id: 'theme-purple', name: 'Purple' },
         { id: 'theme-amber', name: 'Amber' },
     ];
+
+    // Brand identity (Phase 2.20b — tenant fallback for outlets)
+    hasLogo = false;
+    logoPreview: SafeUrl | null = null;
+    logoUploading = false;
+    logoError: string | null = null;
+    brandPrimaryColor = '';
+    brandTaxId = '';
+    brandingSaving = false;
+
+    private readonly http = inject(HttpClient);
+    private readonly sanitizer = inject(DomSanitizer);
 
     layouts = [
         { id: 'classic', name: 'Classic', icon: 'heroicons_outline:view-columns' },
@@ -102,6 +119,85 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
                 this.selectedTheme = config.theme || 'theme-default';
                 this.selectedLayout = config.layout || 'classy';
             }
+        });
+
+        // Load branding (logo + color + tax id)
+        this.http.get<any>(`${environment.apiUrl}/api/tenants/${this.tenantId}`).subscribe({
+            next: t => {
+                this.brandPrimaryColor = t.brandPrimaryColor || '';
+                this.brandTaxId = t.brandTaxId || '';
+            },
+        });
+        this.refreshLogoState();
+    }
+
+    private refreshLogoState(): void {
+        const url = `${environment.apiUrl}/api/tenants/${this.tenantId}/logo`;
+        this.http.head(url, { observe: 'response' }).subscribe({
+            next: () => {
+                this.hasLogo = true;
+                this.logoPreview = this.sanitizer.bypassSecurityTrustUrl(`${url}?v=${Date.now()}`);
+            },
+            error: () => {
+                this.hasLogo = false;
+                this.logoPreview = null;
+            },
+        });
+    }
+
+    onLogoPicked(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const file = input.files?.[0];
+        input.value = '';
+        if (!file || !this.tenantId) return;
+        if (file.size > 1_048_576) {
+            this.logoError = 'File too large. Max 1 MB.';
+            return;
+        }
+        this.logoError = null;
+        this.logoUploading = true;
+        const fd = new FormData();
+        fd.append('file', file, file.name);
+        this.http.put(`${environment.apiUrl}/api/tenants/${this.tenantId}/logo`, fd, { responseType: 'text' }).subscribe({
+            next: () => {
+                this.logoUploading = false;
+                this.refreshLogoState();
+                this.notificationService.success('Logo uploaded');
+            },
+            error: err => {
+                this.logoUploading = false;
+                this.logoError = err?.error?.exception ?? err?.error ?? err?.message ?? 'Upload failed';
+            },
+        });
+    }
+
+    removeLogo(): void {
+        this.http.delete(`${environment.apiUrl}/api/tenants/${this.tenantId}/logo`, { responseType: 'text' }).subscribe({
+            next: () => {
+                this.hasLogo = false;
+                this.logoPreview = null;
+                this.notificationService.success('Logo removed');
+            },
+            error: err => {
+                this.logoError = err?.error?.exception ?? err?.error ?? err?.message ?? 'Delete failed';
+            },
+        });
+    }
+
+    saveBranding(): void {
+        this.brandingSaving = true;
+        this.http.put(`${environment.apiUrl}/api/tenants/${this.tenantId}/branding`, {
+            primaryColor: this.brandPrimaryColor || null,
+            taxId: this.brandTaxId || null,
+        }, { responseType: 'text' }).subscribe({
+            next: () => {
+                this.brandingSaving = false;
+                this.notificationService.success('Branding saved');
+            },
+            error: () => {
+                this.brandingSaving = false;
+                this.notificationService.error('Could not save branding');
+            },
         });
     }
 

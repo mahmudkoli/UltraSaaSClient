@@ -3,6 +3,7 @@ import { Injectable, inject } from '@angular/core';
 import { firstValueFrom } from 'rxjs';
 import { environment } from 'environments/environment';
 import { OutletDto } from 'app/core/outlets/outlets.types';
+import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { SaleDto } from './sales.types';
 
 export interface ReceiptOutlet {
@@ -35,6 +36,7 @@ export interface ReceiptOutlet {
 @Injectable({ providedIn: 'root' })
 export class ReceiptPrintService {
     private readonly http = inject(HttpClient);
+    private readonly tenantInfo = inject(TenantInfoService);
 
     async print(sale: SaleDto, outlet?: OutletDto | string): Promise<void> {
         const ctx = await this.resolveOutlet(outlet);
@@ -59,6 +61,11 @@ export class ReceiptPrintService {
         if (!outlet) return undefined;
         if (typeof outlet === 'string') return { name: outlet };
 
+        // Outlet-specific fields win when set; otherwise we inherit from the
+        // tenant's parent branding (logo / accent color / tax id). This means
+        // a single tenant-level upload covers every outlet receipt automatically.
+        const tenant = this.tenantInfo.info();
+
         const ctx: ReceiptOutlet = {
             name: outlet.name,
             addressLine: outlet.addressLine,
@@ -68,14 +75,18 @@ export class ReceiptPrintService {
             postalCode: outlet.postalCode,
             contactPhone: outlet.contactPhone,
             contactEmail: outlet.contactEmail,
-            taxId: outlet.taxId,
-            primaryColor: outlet.primaryColor,
+            taxId: outlet.taxId || tenant?.taxId || undefined,
+            primaryColor: outlet.primaryColor || tenant?.primaryColor || undefined,
         };
 
-        if (outlet.hasLogo) {
+        // Logo resolution: outlet's own > tenant's parent > none.
+        const logoSource: { url: string } | null =
+            outlet.hasLogo ? { url: `${environment.apiUrl}/api/outlets/${outlet.id}/logo` }
+            : tenant?.hasLogo ? { url: `${environment.apiUrl}/api/tenants/${tenant.id}/logo` }
+            : null;
+        if (logoSource) {
             try {
-                const url = `${environment.apiUrl}/api/outlets/${outlet.id}/logo`;
-                const blob = await firstValueFrom(this.http.get(url, { responseType: 'blob' }));
+                const blob = await firstValueFrom(this.http.get(logoSource.url, { responseType: 'blob' }));
                 ctx.logoDataUrl = await this.blobToDataUrl(blob);
             } catch {
                 // Logo fetch failed — fall back to text-only header.

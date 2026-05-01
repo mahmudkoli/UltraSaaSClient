@@ -131,8 +131,9 @@ test.describe('Tenant Theme Settings E2E', () => {
         await page.locator('text=Dark').first().click();
         await page.locator('text=Compact').first().click();
 
-        // Save
-        await page.locator('button:has-text("Save")').click();
+        // Save — use the header Save button (exact match avoids the
+        // "Save brand color & tax ID" button added in the Brand Identity section).
+        await page.getByRole('button', { name: 'Save', exact: true }).click();
 
         // Should redirect to tenant list
         await expect(page).toHaveURL(/.*tenant/, { timeout: 15000 });

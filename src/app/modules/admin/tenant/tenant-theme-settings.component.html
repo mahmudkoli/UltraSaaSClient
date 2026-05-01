@@ -112,6 +112,66 @@
             </div>
         </div>
 
+        <!-- Brand Identity (logo + color + tax id) — applies to every outlet's
+             receipts that haven't set their own override. -->
+        <div class="bg-card rounded-2xl shadow p-6 mb-6">
+            <div class="text-lg font-semibold mb-2">Brand Identity</div>
+            <p class="text-sm text-secondary mb-4">
+                These settings cover every outlet of this tenant. Outlets that upload their own logo or set their own color/tax-id will use those instead.
+            </p>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Logo upload -->
+                <div>
+                    <div class="text-sm font-medium mb-2">Logo</div>
+                    <div class="flex items-start gap-4">
+                        <div class="w-32 h-32 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
+                            <ng-container *ngIf="logoPreview; else noLogo">
+                                <img [src]="logoPreview" alt="Logo" class="max-w-full max-h-full object-contain">
+                            </ng-container>
+                            <ng-template #noLogo>
+                                <mat-icon class="text-gray-300 icon-size-12" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                            </ng-template>
+                        </div>
+                        <div class="flex flex-col gap-2 flex-1">
+                            <input #fileInput type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden (change)="onLogoPicked($event)">
+                            <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="logoUploading">
+                                <mat-icon [svgIcon]="'heroicons_outline:arrow-up-tray'"></mat-icon>
+                                <span class="ml-1">{{ logoUploading ? 'Uploading…' : (hasLogo ? 'Replace Logo' : 'Upload Logo') }}</span>
+                            </button>
+                            <button *ngIf="hasLogo" type="button" mat-stroked-button color="warn" (click)="removeLogo()" [disabled]="logoUploading">
+                                <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                <span class="ml-1">Remove Logo</span>
+                            </button>
+                            <p class="text-xs text-secondary mt-1">PNG / JPG / WebP / SVG · max 1 MB · square works best</p>
+                            <p *ngIf="logoError" class="text-xs text-rose-600">{{ logoError }}</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color + Tax ID -->
+                <div class="flex flex-col gap-3">
+                    <div>
+                        <label class="text-sm font-medium block mb-1">Brand color (hex)</label>
+                        <div class="flex items-center gap-2">
+                            <input type="color" [(ngModel)]="brandPrimaryColor" class="w-10 h-10 border rounded cursor-pointer">
+                            <input type="text" [(ngModel)]="brandPrimaryColor" placeholder="#4F46E5" class="flex-1 px-3 py-2 rounded border bg-card font-mono text-sm">
+                        </div>
+                        <p class="text-xs text-secondary mt-1">Used as the accent strip on receipts.</p>
+                    </div>
+                    <div>
+                        <label class="text-sm font-medium block mb-1">Tax / VAT / GST registration</label>
+                        <input type="text" [(ngModel)]="brandTaxId" placeholder="e.g. BIN 123-456-789" class="w-full px-3 py-2 rounded border bg-card text-sm">
+                        <p class="text-xs text-secondary mt-1">Printed on every outlet receipt unless that outlet has its own.</p>
+                    </div>
+                    <button type="button" mat-stroked-button color="primary" (click)="saveBranding()" [disabled]="brandingSaving" class="self-start mt-2">
+                        <mat-icon *ngIf="!brandingSaving" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                        <mat-progress-spinner *ngIf="brandingSaving" [diameter]="18" [mode]="'indeterminate'"></mat-progress-spinner>
+                        <span class="ml-2">{{ brandingSaving ? 'Saving…' : 'Save brand color & tax ID' }}</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
         <!-- Layout -->
         <div class="bg-card rounded-2xl shadow p-6">
             <div class="text-lg font-semibold mb-4">Layout</div>

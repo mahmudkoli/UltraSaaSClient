@@ -10,6 +10,13 @@ export interface TenantInfoDto {
     name: string;
     businessType: BusinessType;
     outletLabel: string;
+    /** True when the tenant has uploaded a logo. Outlets without their own fall back to this. */
+    hasLogo?: boolean;
+    logoMimeType?: string;
+    /** Tenant-level brand accent color (hex). Used as fallback for outlet receipts. */
+    primaryColor?: string;
+    /** Tenant-level tax/VAT/GST registration. Used as fallback for outlet receipts. */
+    taxId?: string;
 }
 
 /**
