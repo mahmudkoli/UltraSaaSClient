@@ -368,7 +368,7 @@ export class PosComponent implements OnInit {
     /** Amount the cashier still needs to collect after loyalty deduction. */
     amountDue = computed(() => Math.max(0, this.grandTotal() - this.effectiveRedeem()));
 
-    canFinalize = computed(() => !!this.outletId && this.cart().length > 0);
+    canFinalize = computed(() => this.cart().length > 0 && !!this.outletId);
 
     ngOnInit(): void {
         this.outletsApi.getAll().subscribe(o => {
