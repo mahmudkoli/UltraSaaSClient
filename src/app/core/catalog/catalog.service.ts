@@ -13,6 +13,10 @@ export interface SearchProductsRequest extends PaginationFilter {
     isActive?: boolean;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-interface
+export interface SearchBrandsRequest extends PaginationFilter {
+}
+
 @Injectable({ providedIn: 'root' })
 export class CategoriesService {
     private readonly http = inject(HttpClient);
@@ -33,6 +37,8 @@ export class BrandsService {
     create = (req: Partial<BrandDto>): Observable<string> => this.http.post<string>(this.base, req);
     update = (id: string, req: Partial<BrandDto>): Observable<string> => this.http.put<string>(`${this.base}/${id}`, { ...req, id });
     delete = (id: string): Observable<string> => this.http.delete<string>(`${this.base}/${id}`);
+    search = (req: SearchBrandsRequest): Observable<PaginationResponse<BrandDto>> =>
+        this.http.post<PaginationResponse<BrandDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })
