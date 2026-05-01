@@ -148,6 +148,64 @@ test.describe('UltraPOS — go-live phases (2.10–2.14)', () => {
     });
 
     // ════════════════════════════════════════════════════════════
+    // Phase 2.15 — AR Aging report
+    // ════════════════════════════════════════════════════════════
+
+    test('2.15 — /api/reports/ar-aging returns the expected shape', async ({ request }) => {
+        const auth = await request.post('http://localhost:5000/api/tokens', {
+            headers: { 'Content-Type': 'application/json', tenant: ELECTRO_TENANT },
+            data: { email: ELECTRO_EMAIL, password: '123Pa$$word!' },
+        });
+        const { token } = await auth.json();
+        const res = await request.get('http://localhost:5000/api/reports/ar-aging', {
+            headers: { tenant: ELECTRO_TENANT, Authorization: `Bearer ${token}` },
+        });
+        expect(res.ok()).toBeTruthy();
+        const body = await res.json();
+        expect(body).toHaveProperty('asOf');
+        expect(body).toHaveProperty('bucket0to30');
+        expect(body).toHaveProperty('bucket31to60');
+        expect(body).toHaveProperty('bucket61to90');
+        expect(body).toHaveProperty('bucketOver90');
+        expect(body).toHaveProperty('totalOutstanding');
+        expect(Array.isArray(body.byCustomer)).toBeTruthy();
+    });
+
+    test('2.15 — Reports page exposes the AR Aging tab', async ({ page }) => {
+        await login(page, { tenant: ELECTRO_TENANT, email: ELECTRO_EMAIL });
+        await page.goto('/reports?layout=classy');
+        await page.waitForLoadState('networkidle');
+        await expect(page.locator('body')).toContainText(/AR\s*Aging/i);
+    });
+
+    // ════════════════════════════════════════════════════════════
+    // Phase 2.16 — Manager override for strict pricing
+    // ════════════════════════════════════════════════════════════
+
+    test('2.16 — verify-override accepts admin credentials and rejects bad password', async ({ request }) => {
+        const auth = await request.post('http://localhost:5000/api/tokens', {
+            headers: { 'Content-Type': 'application/json', tenant: ELECTRO_TENANT },
+            data: { email: ELECTRO_EMAIL, password: '123Pa$$word!' },
+        });
+        const { token } = await auth.json();
+
+        const ok = await request.post('http://localhost:5000/api/personal/verify-override', {
+            headers: { 'Content-Type': 'application/json', tenant: ELECTRO_TENANT, Authorization: `Bearer ${token}` },
+            data: { email: ELECTRO_EMAIL, password: '123Pa$$word!', requiredPermission: 'Permissions.Sales.Discount' },
+        });
+        expect(ok.ok()).toBeTruthy();
+        const body = await ok.json();
+        expect(body.authorizedUserId).toBeTruthy();
+        expect(body.permission).toBe('Permissions.Sales.Discount');
+
+        const bad = await request.post('http://localhost:5000/api/personal/verify-override', {
+            headers: { 'Content-Type': 'application/json', tenant: ELECTRO_TENANT, Authorization: `Bearer ${token}` },
+            data: { email: ELECTRO_EMAIL, password: 'wrong-password', requiredPermission: 'Permissions.Sales.Discount' },
+        });
+        expect(bad.status()).toBe(401);
+    });
+
+    // ════════════════════════════════════════════════════════════
     // Phase 2.11 — Z/X-reports (open shift snapshot)
     // ════════════════════════════════════════════════════════════
 
