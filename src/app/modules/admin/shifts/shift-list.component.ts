@@ -1,16 +1,19 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { toOrderBy } from 'app/core/common/pagination.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
-import { ShiftsService } from 'app/core/sales/shifts.service';
+import { SearchShiftsRequest, ShiftsService } from 'app/core/sales/shifts.service';
 import { ShiftDto } from 'app/core/sales/shifts.types';
 import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dialogs.component';
@@ -21,7 +24,7 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
     imports: [
         CommonModule, FormsModule,
         MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule,
-        MatSelectModule, MatTableModule, MatTooltipModule,
+        MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -38,9 +41,17 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
             <div class="flex items-center gap-3">
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-56">
                     <mat-label>Outlet</mat-label>
-                    <mat-select [(ngModel)]="filterOutletId" (ngModelChange)="load()">
+                    <mat-select [(ngModel)]="filterOutletId" (ngModelChange)="resetAndLoad()">
                         <mat-option [value]="''">All</mat-option>
                         @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
+                    </mat-select>
+                </mat-form-field>
+                <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
+                    <mat-label>Status</mat-label>
+                    <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
+                        <mat-option value="all">All</mat-option>
+                        <mat-option value="Open">Open</mat-option>
+                        <mat-option value="Closed">Closed</mat-option>
                     </mat-select>
                 </mat-form-field>
                 @if (currentShift(); as cs) {
@@ -58,12 +69,12 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
-                    <table mat-table [dataSource]="rows()" class="w-full">
+                    <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
                         <ng-container matColumnDef="outlet"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Outlet</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">{{ outletName(r.outletId) }}</td></ng-container>
-                        <ng-container matColumnDef="opened"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Opened</span></th>
+                        <ng-container matColumnDef="openedAt"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Opened</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.openedAt | date:'short' }}</td></ng-container>
-                        <ng-container matColumnDef="closed"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Closed</span></th>
+                        <ng-container matColumnDef="closedAt"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Closed</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.closedAt ? (r.closedAt | date:'short') : '—' }}</td></ng-container>
                         <ng-container matColumnDef="opening"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Opening</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.openingFloat | number:'1.2-2' }}</td></ng-container>
@@ -85,6 +96,14 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
                         <tr mat-row *matRowDef="let row; columns: cols"></tr>
                     </table>
+
+                    <mat-paginator
+                        [length]="totalCount()"
+                        [pageSize]="pageSize"
+                        [pageSizeOptions]="[10, 25, 50, 100]"
+                        [pageIndex]="pageIndex"
+                        (page)="onPage($event)"
+                        showFirstLastButtons></mat-paginator>
                 </div>
                 <div *ngIf="rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">point_of_sale</mat-icon></div>
@@ -103,11 +122,22 @@ export class ShiftListComponent implements OnInit {
     private readonly dialog = inject(MatDialog);
     private readonly currentOutlet = inject(CurrentOutletService);
 
+    @ViewChild(MatPaginator) paginator?: MatPaginator;
+    @ViewChild(MatSort) sort?: MatSort;
+
     rows = signal<ShiftDto[]>([]);
     outlets = signal<OutletDto[]>([]);
     currentShift = signal<ShiftDto | null>(null);
+    totalCount = signal(0);
+
     filterOutletId = '';
-    cols = ['outlet', 'opened', 'closed', 'opening', 'closing', 'expected', 'variance', 'status'];
+    statusFilter: 'all' | 'Open' | 'Closed' = 'all';
+
+    pageIndex = 0;
+    pageSize = 25;
+    private orderBy?: string[];
+
+    cols = ['outlet', 'openedAt', 'closedAt', 'opening', 'closing', 'expected', 'variance', 'status'];
 
     activeOutletId = computed(() => this.filterOutletId || this.currentOutlet.outletId());
 
@@ -122,11 +152,27 @@ export class ShiftListComponent implements OnInit {
         });
     }
 
+    private buildRequest(): SearchShiftsRequest {
+        return {
+            pageNumber: this.pageIndex + 1,
+            pageSize: this.pageSize,
+            orderBy: this.orderBy,
+            outletId: this.filterOutletId || undefined,
+            status: this.statusFilter === 'all' ? undefined : this.statusFilter,
+        };
+    }
+
     load(): void {
-        const outletId = this.filterOutletId || undefined;
-        this.api.search({ outletId, take: 200 }).subscribe(r => this.rows.set(r ?? []));
+        this.api.search(this.buildRequest()).subscribe(r => {
+            this.rows.set(r.data);
+            this.totalCount.set(r.totalCount);
+        });
         this.refreshCurrent();
     }
+
+    resetAndLoad(): void { this.pageIndex = 0; this.load(); }
+    onPage(e: PageEvent): void { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
+    onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
     refreshCurrent(): void {
         const id = this.activeOutletId();

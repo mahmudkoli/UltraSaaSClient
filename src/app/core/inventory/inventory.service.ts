@@ -29,6 +29,14 @@ export interface SearchStockAdjustmentsRequest extends PaginationFilter {
     reason?: string;
 }
 
+export interface SearchStockMovementsRequest extends PaginationFilter {
+    outletId?: string;
+    productId?: string;
+    fromDate?: string;
+    toDate?: string;
+    movementType?: string;
+}
+
 @Injectable({ providedIn: 'root' })
 export class StocksService {
     private readonly http = inject(HttpClient);
@@ -44,6 +52,8 @@ export class StocksService {
         if (params.take !== undefined) qs.append('take', String(params.take));
         return this.http.get<StockMovementDto[]>(`${this.base}/movements?${qs}`);
     };
+    searchMovements = (req: SearchStockMovementsRequest): Observable<PaginationResponse<StockMovementDto>> =>
+        this.http.post<PaginationResponse<StockMovementDto>>(`${this.base}/movements/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })

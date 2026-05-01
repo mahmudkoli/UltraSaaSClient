@@ -23,6 +23,17 @@ export interface SearchSaleReturnsRequest extends PaginationFilter {
     status?: 'Draft' | 'Completed' | 'Voided';
 }
 
+export interface SearchCustomersRequest extends PaginationFilter {
+    customerType?: 'Retail' | 'Wholesale' | 'Corporate';
+    isActive?: boolean;
+}
+
+export interface SearchWarrantiesRequest extends PaginationFilter {
+    customerId?: string;
+    status?: 'Active' | 'Expired' | 'Void';
+    onlyActive?: boolean;
+}
+
 const api = environment.apiUrl;
 
 @Injectable({ providedIn: 'root' })
@@ -36,6 +47,8 @@ export class CustomersService {
     update = (id: string, req: Partial<CustomerDto>): Observable<string> =>
         this.http.put<string>(`${this.base}/${id}`, { ...req, id });
     delete = (id: string): Observable<string> => this.http.delete<string>(`${this.base}/${id}`);
+    search = (req: SearchCustomersRequest): Observable<PaginationResponse<CustomerDto>> =>
+        this.http.post<PaginationResponse<CustomerDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })
@@ -88,4 +101,6 @@ export class WarrantiesService {
     };
     bySerial = (serial: string): Observable<WarrantyDto | null> =>
         this.http.get<WarrantyDto | null>(`${this.base}/by-serial/${encodeURIComponent(serial)}`);
+    search = (req: SearchWarrantiesRequest): Observable<PaginationResponse<WarrantyDto>> =>
+        this.http.post<PaginationResponse<WarrantyDto>>(`${this.base}/search`, req);
 }

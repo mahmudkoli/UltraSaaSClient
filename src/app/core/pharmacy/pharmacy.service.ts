@@ -2,9 +2,24 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
+import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
 import { BatchDto, PrescriptionDto, ProductPharmacyDto } from './pharmacy.types';
 
 const api = environment.apiUrl;
+
+export interface SearchBatchesRequest extends PaginationFilter {
+    productId?: string;
+    outletId?: string;
+    status?: 'Active' | 'Exhausted' | 'Expired' | 'Recalled';
+    onlyAvailable?: boolean;
+}
+
+export interface SearchPrescriptionsRequest extends PaginationFilter {
+    patientPhone?: string;
+    status?: 'Active' | 'Dispensed' | 'Expired' | 'Cancelled';
+    fromDate?: string;
+    toDate?: string;
+}
 
 @Injectable({ providedIn: 'root' })
 export class ProductPharmacyService {
@@ -30,6 +45,8 @@ export class BatchesService {
     get = (id: string): Observable<BatchDto> => this.http.get<BatchDto>(`${this.base}/${id}`);
     recall = (id: string, reason?: string): Observable<string> =>
         this.http.post<string>(`${this.base}/${id}/recall`, { reason });
+    search = (req: SearchBatchesRequest): Observable<PaginationResponse<BatchDto>> =>
+        this.http.post<PaginationResponse<BatchDto>>(`${this.base}/search`, req);
 }
 
 @Injectable({ providedIn: 'root' })
@@ -48,4 +65,6 @@ export class PrescriptionsService {
     create = (req: Partial<PrescriptionDto>): Observable<string> => this.http.post<string>(this.base, req);
     cancel = (id: string, reason?: string): Observable<string> =>
         this.http.post<string>(`${this.base}/${id}/cancel`, { reason });
+    search = (req: SearchPrescriptionsRequest): Observable<PaginationResponse<PrescriptionDto>> =>
+        this.http.post<PaginationResponse<PrescriptionDto>>(`${this.base}/search`, req);
 }

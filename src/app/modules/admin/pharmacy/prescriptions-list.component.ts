@@ -1,16 +1,20 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { MatPaginator, MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
-import { PrescriptionsService } from 'app/core/pharmacy/pharmacy.service';
+import { debounceTime, Subject } from 'rxjs';
+import { toOrderBy } from 'app/core/common/pagination.types';
+import { PrescriptionsService, SearchPrescriptionsRequest } from 'app/core/pharmacy/pharmacy.service';
 import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
 
 @Component({
@@ -19,7 +23,7 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
     imports: [
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
-        MatSelectModule, MatSnackBarModule, MatTableModule, MatTooltipModule,
+        MatPaginatorModule, MatSelectModule, MatSnackBarModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -36,18 +40,21 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Search</mat-label>
-                    <input matInput [(ngModel)]="search" placeholder="Rx # / patient / doctor">
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Rx # / patient / doctor">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Patient phone</mat-label>
-                    <input matInput [(ngModel)]="phoneFilter" (ngModelChange)="onFilterChange()">
+                    <input matInput [(ngModel)]="phoneFilter" (ngModelChange)="phoneChanged.next($event)">
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Show</mat-label>
-                    <mat-select [(ngModel)]="onlyValidFilter" (ngModelChange)="onFilterChange()">
-                        <mat-option [value]="false">All</mat-option>
-                        <mat-option [value]="true">Valid only</mat-option>
+                    <mat-label>Status</mat-label>
+                    <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
+                        <mat-option value="all">All</mat-option>
+                        <mat-option value="Active">Active</mat-option>
+                        <mat-option value="Dispensed">Dispensed</mat-option>
+                        <mat-option value="Expired">Expired</mat-option>
+                        <mat-option value="Cancelled">Cancelled</mat-option>
                     </mat-select>
                 </mat-form-field>
                 <button mat-fab color="primary" routerLink="create" matTooltip="Record new prescription"><mat-icon>add</mat-icon></button>
@@ -56,10 +63,10 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
-                    <table mat-table [dataSource]="filtered()" class="w-full">
-                        <ng-container matColumnDef="number"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Rx #</span></th>
+                    <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
+                        <ng-container matColumnDef="prescriptionNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Rx #</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.prescriptionNumber }}</td></ng-container>
-                        <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</span></th>
+                        <ng-container matColumnDef="prescriptionDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.prescriptionDate | date:'shortDate' }}</td></ng-container>
                         <ng-container matColumnDef="doctor"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</span></th>
                             <td mat-cell *matCellDef="let r">
@@ -94,8 +101,16 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
                         <tr mat-row *matRowDef="let row; columns: cols" class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"></tr>
                     </table>
+
+                    <mat-paginator
+                        [length]="totalCount()"
+                        [pageSize]="pageSize"
+                        [pageSizeOptions]="[10, 25, 50, 100]"
+                        [pageIndex]="pageIndex"
+                        (page)="onPage($event)"
+                        showFirstLastButtons></mat-paginator>
                 </div>
-                <div *ngIf="!loading() && filtered().length === 0" class="flex flex-col items-center justify-center p-12">
+                <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">prescriptions</mat-icon></div>
                     <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No prescriptions</h3>
                     <button mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Record Prescription</span></button>
@@ -110,22 +125,24 @@ export class PrescriptionsListComponent implements OnInit {
     private readonly api = inject(PrescriptionsService);
     private readonly snack = inject(MatSnackBar);
 
+    @ViewChild(MatPaginator) paginator?: MatPaginator;
+    @ViewChild(MatSort) sort?: MatSort;
+
     rows = signal<PrescriptionDto[]>([]);
     loading = signal(true);
+    totalCount = signal(0);
+
     search = '';
     phoneFilter = '';
-    onlyValidFilter: boolean = false;
-    cols = ['number', 'date', 'doctor', 'patient', 'validUntil', 'status', 'actions'];
+    statusFilter: 'all' | 'Active' | 'Dispensed' | 'Expired' | 'Cancelled' = 'all';
 
-    filtered = computed(() => {
-        const q = this.search.trim().toLowerCase();
-        return this.rows().filter(r =>
-            !q
-            || r.prescriptionNumber.toLowerCase().includes(q)
-            || r.patientName.toLowerCase().includes(q)
-            || r.doctorName.toLowerCase().includes(q)
-        );
-    });
+    pageIndex = 0;
+    pageSize = 25;
+    private orderBy?: string[];
+
+    cols = ['prescriptionNumber', 'prescriptionDate', 'doctor', 'patient', 'validUntil', 'status', 'actions'];
+    searchChanged = new Subject<string>();
+    phoneChanged = new Subject<string>();
 
     statusIcon(s: PrescriptionDto['status']): string {
         switch (s) {
@@ -146,20 +163,34 @@ export class PrescriptionsListComponent implements OnInit {
         };
     }
 
-    ngOnInit(): void { this.load(); }
+    ngOnInit(): void {
+        this.searchChanged.pipe(debounceTime(300)).subscribe(() => this.resetAndLoad());
+        this.phoneChanged.pipe(debounceTime(300)).subscribe(() => this.resetAndLoad());
+        this.load();
+    }
 
-    onFilterChange(): void { this.load(); }
+    private buildRequest(): SearchPrescriptionsRequest {
+        return {
+            pageNumber: this.pageIndex + 1,
+            pageSize: this.pageSize,
+            orderBy: this.orderBy,
+            keyword: this.search.trim() || undefined,
+            patientPhone: this.phoneFilter.trim() || undefined,
+            status: this.statusFilter === 'all' ? undefined : this.statusFilter,
+        };
+    }
 
     load(): void {
         this.loading.set(true);
-        this.api.getAll({
-            patientPhone: this.phoneFilter.trim() || undefined,
-            onlyValid: this.onlyValidFilter || undefined,
-        }).subscribe({
-            next: d => { this.rows.set(d); this.loading.set(false); },
+        this.api.search(this.buildRequest()).subscribe({
+            next: r => { this.rows.set(r.data); this.totalCount.set(r.totalCount); this.loading.set(false); },
             error: () => this.loading.set(false),
         });
     }
+
+    resetAndLoad(): void { this.pageIndex = 0; this.load(); }
+    onPage(e: PageEvent): void { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
+    onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
     cancel(r: PrescriptionDto): void {
         const reason = prompt(`Cancel prescription "${r.prescriptionNumber}"?\n\nOptional reason:`);

@@ -2,9 +2,16 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
+import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
 import { BrandDto, CategoryDto, CreateProductRequest, ProductDto, ProductOutletPriceDto, ResolvedPriceDto, SetProductOutletPriceRequest, UnitDto, UpdateProductRequest } from './catalog.types';
 
 const api = environment.apiUrl;
+
+export interface SearchProductsRequest extends PaginationFilter {
+    categoryId?: string;
+    brandId?: string;
+    isActive?: boolean;
+}
 
 @Injectable({ providedIn: 'root' })
 export class CategoriesService {
@@ -65,4 +72,6 @@ export class ProductsService {
         this.http.put<string>(`${this.base}/${productId}/prices/${outletId}`, req);
     removePrice = (productId: string, outletId: string): Observable<string> =>
         this.http.delete<string>(`${this.base}/${productId}/prices/${outletId}`);
+    search = (req: SearchProductsRequest): Observable<PaginationResponse<ProductDto>> =>
+        this.http.post<PaginationResponse<ProductDto>>(`${this.base}/search`, req);
 }
