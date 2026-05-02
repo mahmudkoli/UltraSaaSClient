@@ -10,6 +10,7 @@ import { MatNativeDateModule } from '@angular/material/core';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTabsModule } from '@angular/material/tabs';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { fuseAnimations } from '@fuse/animations';
 import { PersonalService } from '../../../core/personal/personal.service';
@@ -46,6 +47,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
     isSaving = false;
     isChangingPassword = false;
     activeTab = 0;
+    forcePasswordChange = false;
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -55,6 +57,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _notificationService: NotificationService,
         private _dateUtils: DateUtils,
+        private _activatedRoute: ActivatedRoute,
+        private _router: Router,
     ) {
         this.profileForm = this._formBuilder.group({
             firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -74,6 +78,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        // Sign-in component routes here with `?force_password_change=true` when
+        // the user is on the seed password. Pin them on the Change Password tab
+        // and surface a banner so they know what's expected.
+        if (this._activatedRoute.snapshot.queryParamMap.get('force_password_change') === 'true') {
+            this.forcePasswordChange = true;
+            this.activeTab = 1;
+        }
         this.loadProfile();
     }
 
@@ -171,6 +182,15 @@ export class ProfileComponent implements OnInit, OnDestroy {
                     this.passwordForm.reset();
                     this._changeDetectorRef.markForCheck();
                     this._notificationService.success('Password changed successfully');
+
+                    // If we got here via the forced-change flow, drop the
+                    // banner and route the user into the app proper. The next
+                    // token they get (refresh or re-login) won't carry the
+                    // claim anymore — backend already cleared the flag.
+                    if (this.forcePasswordChange) {
+                        this.forcePasswordChange = false;
+                        this._router.navigateByUrl('/signed-in-redirect');
+                    }
                 },
                 error: () => {
                     this.isChangingPassword = false;

@@ -123,6 +123,34 @@ export class AuthService
     }
 
     /**
+     * Whether the current access token's `must_change_password` claim is set.
+     * Set by the backend when the user is on the seed password and needs to
+     * rotate before normal app access. Returns false on missing token / bad
+     * decode so the rest of auth fails open rather than closed (the server
+     * is the real gate).
+     */
+    mustChangePasswordFromToken(): boolean
+    {
+        const token = this.getAccessToken();
+        if (!token) return false;
+
+        try
+        {
+            const payload = token.split('.')[1];
+            if (!payload) return false;
+            // base64url → base64
+            const base64 = payload.replace(/-/g, '+').replace(/_/g, '/');
+            const json = atob(base64);
+            const claims = JSON.parse(json);
+            return claims['must_change_password'] === 'true';
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    /**
      * Set tenant ID
      */
     setTenantId(tenantId: string): void

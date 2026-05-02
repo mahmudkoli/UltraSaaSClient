@@ -115,6 +115,16 @@ export class AuthSignInComponent implements OnInit
                     // Apply tenant theme after successful login
                     this._tenantThemeService.loadAndApply();
 
+                    // Force-change-password takes priority over any deep-link
+                    // redirect — the server already issued a JWT but the user
+                    // is on a seed password and needs to rotate before the
+                    // session is "real."
+                    if (this._authService.mustChangePasswordFromToken())
+                    {
+                        this._router.navigate(['/profile'], { queryParams: { force_password_change: 'true' } });
+                        return;
+                    }
+
                     const redirectURL = this._activatedRoute.snapshot.queryParamMap.get('redirectURL') || '/signed-in-redirect';
                     this._router.navigateByUrl(redirectURL);
                 },
