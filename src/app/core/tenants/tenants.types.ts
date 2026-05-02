@@ -15,6 +15,10 @@ export interface TenantDto {
     businessType: BusinessType;
     outletLabel: string;
 
+    // ============= POS =============
+    /** POS sale-screen layout name. Frontend registry maps this to a component; null/unknown → default. */
+    posLayout?: string;
+
     // ============= TECHNICAL CONFIGURATION =============
     isShared: boolean;
     issuer?: string;
@@ -117,6 +121,10 @@ export interface CreateTenantRequest {
     businessType?: BusinessType;
     outletLabel?: string;
 
+    // ============= POS =============
+    /** Layout name; null/unknown → default. */
+    posLayout?: string;
+
     // ============= OPTIONAL TECHNICAL FIELDS =============
     connectionString?: string;
     isShared?: boolean;
@@ -181,6 +189,10 @@ export interface UpdateTenantRequest {
     connectionString?: string;
     customDomain?: string;
     issuer?: string;
+
+    // ============= POS =============
+    /** Layout name; null/unknown → default. */
+    posLayout?: string;
 
     // ============= BILLING FIELDS =============
     billingPlan?: string;

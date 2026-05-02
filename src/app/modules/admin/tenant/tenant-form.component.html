@@ -157,6 +157,18 @@
                                         <mat-hint>Display name for branches: e.g. "Outlet", "Store", "Branch", "Pharmacy", "Warehouse"</mat-hint>
                                     </mat-form-field>
 
+                                    <!-- POS Sale Layout -->
+                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
+                                        <mat-label>POS Sale Layout</mat-label>
+                                        <mat-select formControlName="posLayout">
+                                            <mat-option *ngFor="let l of posLayouts" [value]="l.name">
+                                                {{ l.label }}<span *ngIf="l.description"> — {{ l.description }}</span>
+                                            </mat-option>
+                                        </mat-select>
+                                        <mat-icon matSuffix class="text-secondary">view_quilt</mat-icon>
+                                        <mat-hint>Which POS sale-screen layout this tenant sees at /pos. Default works for most.</mat-hint>
+                                    </mat-form-field>
+
                                     <!-- Change Vertical action (edit mode only) -->
                                     <div *ngIf="isEditMode" class="lg:col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-900/20">
                                         <div class="flex items-start gap-3">

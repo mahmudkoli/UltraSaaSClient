@@ -17,6 +17,8 @@ export interface TenantInfoDto {
     primaryColor?: string;
     /** Tenant-level tax/VAT/GST registration. Used as fallback for outlet receipts. */
     taxId?: string;
+    /** POS sale-screen layout name. Frontend registry maps this to a component; null/unknown → default. */
+    posLayout?: string;
 }
 
 /**
@@ -33,6 +35,7 @@ export class TenantInfoService {
     private readonly _info = signal<TenantInfoDto | null>(null);
     readonly info = this._info.asReadonly();
     readonly businessType = computed<BusinessType | null>(() => this._info()?.businessType ?? null);
+    readonly posLayout = computed<string | null>(() => this._info()?.posLayout ?? null);
 
     load(): Observable<TenantInfoDto | null> {
         return this.http

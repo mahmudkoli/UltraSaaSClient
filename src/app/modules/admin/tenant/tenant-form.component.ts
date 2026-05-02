@@ -16,6 +16,7 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { TranslocoModule } from '@ngneat/transloco';
 import { TenantDto, CreateTenantRequest, UpdateTenantRequest } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
+import { POS_LAYOUTS } from '../pos/pos-layout-registry';
 
 @Component({
     selector: 'tenant-form',
@@ -46,6 +47,10 @@ export class TenantFormComponent implements OnInit {
     saving: boolean = false;
     themeLabel: string = 'Not configured';
 
+    // Static POS layout options sourced from the registry — drives the
+    // dropdown. Adding a layout = registry entry, no change here.
+    posLayouts = POS_LAYOUTS;
+
     // Original vertical loaded from server — used to detect dirty changes
     // and to revert if root cancels the confirmation dialog.
     originalBusinessType: string = 'Generic';
@@ -74,6 +79,9 @@ export class TenantFormComponent implements OnInit {
             // Vertical (set at creation; root-only edit deferred)
             businessType: ['Generic', [Validators.required]],
             outletLabel: ['Outlet', [Validators.required, Validators.maxLength(40)]],
+
+            // POS layout (defaults to 'default')
+            posLayout: ['default'],
 
             // Billing & Subscription
             billingPlan: ['Basic', [Validators.required]],
@@ -145,6 +153,9 @@ export class TenantFormComponent implements OnInit {
                     // Vertical (read-only on edit; changed via changeVertical())
                     businessType: tenant.businessType || 'Generic',
                     outletLabel: tenant.outletLabel || 'Outlet',
+
+                    // POS layout
+                    posLayout: tenant.posLayout || 'default',
 
                     // Billing & Subscription
                     billingPlan: tenant.billingPlan || 'Basic',
@@ -225,6 +236,9 @@ export class TenantFormComponent implements OnInit {
                 issuer: formData.issuer || undefined,
                 customDomain: formData.customDomain || undefined,
 
+                // POS layout
+                posLayout: formData.posLayout || undefined,
+
                 // Billing & Subscription
                 billingPlan: formData.billingPlan,
                 monthlyFee: formData.monthlyFee,
@@ -303,6 +317,9 @@ export class TenantFormComponent implements OnInit {
                 // Vertical (root-immutable after creation)
                 businessType: formData.businessType,
                 outletLabel: formData.outletLabel,
+
+                // POS layout
+                posLayout: formData.posLayout || undefined,
 
                 // Billing & Subscription
                 billingPlan: formData.billingPlan,
