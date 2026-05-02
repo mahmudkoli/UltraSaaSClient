@@ -16,36 +16,28 @@ import { PosComponent } from './pos.component';
     standalone: true,
     imports: [PosComponent],
     encapsulation: ViewEncapsulation.None,
-    template: `<div class="pos-layout-express"><app-pos></app-pos></div>`,
+    host: { class: 'flex-1 flex flex-col min-h-0' },
+    template: `<div class="pos-layout-express flex-1 flex flex-col min-h-0"><app-pos></app-pos></div>`,
     styles: [`
-        /* 35/65 split — small product picker, big cart with payment focus */
+        /* 40/60 split — small product picker, big cart with payment focus */
         @media (min-width: 1024px) {
-            .pos-layout-express > div > .lg\\:w-1\\/2:first-child { width: 40% !important; flex-basis: 40% !important; }
-            .pos-layout-express > div > .lg\\:w-1\\/2:last-child  { width: 60% !important; flex-basis: 60% !important; }
+            .pos-layout-express app-pos > div > .lg\\:w-1\\/2:first-child { width: 40% !important; flex-basis: 40% !important; }
+            .pos-layout-express app-pos > div > .lg\\:w-1\\/2:last-child  { width: 60% !important; flex-basis: 60% !important; }
         }
 
-        /* Hide the entire Customer mat-card on the right column. The customer
-           card is the first mat-card under the right pane and contains an h3
-           with the literal text "Customer"; we target it by structure since
-           it has no semantic id. */
-        .pos-layout-express > div > .lg\\:w-1\\/2:last-child > mat-card:first-of-type:has(h3) {
+        /* Hide the entire Customer mat-card on the right column. It's the
+           first mat-card under the right pane (with an h3 reading "Customer").
+           No semantic id available, so we target by structural position. */
+        .pos-layout-express app-pos > div > .lg\\:w-1\\/2:last-child > mat-card:first-of-type:has(h3) {
             display: none !important;
         }
 
-        /* Cart card stretches to fill the freed space */
-        .pos-layout-express > div > .lg\\:w-1\\/2:last-child > mat-card.flex-1 {
+        /* Cart card sits flush at the top now that the customer card is gone. */
+        .pos-layout-express app-pos > div > .lg\\:w-1\\/2:last-child > mat-card.flex-1 {
             margin-top: 0 !important;
         }
 
-        /* Hide promo input — usually the second mat-card with a promo input.
-           Keeping a fallback rule that hides any mat-form-field with a label
-           starting with "Promo" inside the right pane. */
-        .pos-layout-express mat-form-field mat-label:not(:empty) {
-            /* no-op anchor; real rule below */
-        }
-
-        /* Emphasize Finalize: any mat-mdc-raised-button gets a bigger
-           treatment in this layout. */
+        /* Emphasize Finalize: any raised button gets a larger treatment. */
         .pos-layout-express button.mat-mdc-raised-button {
             min-height: 64px !important;
             font-size: 18px !important;

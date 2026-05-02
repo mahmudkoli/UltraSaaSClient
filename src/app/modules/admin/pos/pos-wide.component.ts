@@ -14,11 +14,12 @@ import { PosComponent } from './pos.component';
     standalone: true,
     imports: [PosComponent],
     encapsulation: ViewEncapsulation.None,
-    template: `<div class="pos-layout-wide"><app-pos></app-pos></div>`,
+    host: { class: 'flex-1 flex flex-col min-h-0' },
+    template: `<div class="pos-layout-wide flex-1 flex flex-col min-h-0"><app-pos></app-pos></div>`,
     styles: [`
         @media (min-width: 1024px) {
-            .pos-layout-wide > div > .lg\\:w-1\\/2:first-child { width: 65% !important; flex-basis: 65% !important; }
-            .pos-layout-wide > div > .lg\\:w-1\\/2:last-child  { width: 35% !important; flex-basis: 35% !important; }
+            .pos-layout-wide app-pos > div > .lg\\:w-1\\/2:first-child { width: 65% !important; flex-basis: 65% !important; }
+            .pos-layout-wide app-pos > div > .lg\\:w-1\\/2:last-child  { width: 35% !important; flex-basis: 35% !important; }
         }
         .pos-layout-wide .grid.grid-cols-2 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
         @media (min-width: 768px) {

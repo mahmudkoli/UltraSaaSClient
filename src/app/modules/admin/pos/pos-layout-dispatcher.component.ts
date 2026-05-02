@@ -15,6 +15,10 @@ import { resolvePosLayoutComponent } from './pos-layout-registry';
     selector: 'app-pos-layout-dispatcher',
     standalone: true,
     imports: [CommonModule],
+    // host fills the router-outlet's flex slot — without this the dispatcher's
+    // host is inline-default and the `h-full` cascade inside PosComponent
+    // resolves to 0 (the default layout would render at 0px height).
+    host: { class: 'flex-1 flex flex-col min-h-0' },
     template: `<ng-container *ngComponentOutlet="layout()"></ng-container>`,
 })
 export class PosLayoutDispatcherComponent {

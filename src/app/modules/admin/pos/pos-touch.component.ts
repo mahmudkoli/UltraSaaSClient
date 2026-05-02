@@ -11,7 +11,8 @@ import { PosComponent } from './pos.component';
     standalone: true,
     imports: [PosComponent],
     encapsulation: ViewEncapsulation.None,
-    template: `<div class="pos-layout-touch"><app-pos></app-pos></div>`,
+    host: { class: 'flex-1 flex flex-col min-h-0' },
+    template: `<div class="pos-layout-touch flex-1 flex flex-col min-h-0"><app-pos></app-pos></div>`,
     styles: [`
         .pos-layout-touch { font-size: 16px; }
         .pos-layout-touch h3 { font-size: 18px; }
