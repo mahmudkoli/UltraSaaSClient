@@ -1,5 +1,9 @@
 import { Type } from '@angular/core';
 import { PosComponent } from './pos.component';
+import { PosCompactComponent } from './pos-compact.component';
+import { PosTouchComponent } from './pos-touch.component';
+import { PosWideComponent } from './pos-wide.component';
+import { PosExpressComponent } from './pos-express.component';
 
 /**
  * Static registry mapping a tenant's `posLayout` name to its component.
@@ -24,15 +28,40 @@ export interface PosLayoutOption {
     readonly component: Type<unknown>;
 }
 
+// Each layout is a real component that wraps the standard PosComponent and
+// applies layout-class-scoped CSS to change visual treatment. Sale logic is
+// shared — only the visuals differ.
 export const POS_LAYOUTS: readonly PosLayoutOption[] = [
     {
         name: 'default',
         label: 'Default',
-        description: 'Standard POS sale screen with cart panel and product search.',
+        description: 'Balanced 50/50 split. Cart on the right, product search and grid on the left.',
         component: PosComponent,
     },
-    // Add more entries as new layouts ship. Example:
-    // { name: 'compact', label: 'Compact', description: 'Tablet-friendly with bigger buttons.', component: PosCompactComponent },
+    {
+        name: 'compact',
+        label: 'Compact',
+        description: 'Tighter spacing, smaller text — fits more on screen for laptops or small terminals.',
+        component: PosCompactComponent,
+    },
+    {
+        name: 'touch',
+        label: 'Touch / Kiosk',
+        description: 'Larger fonts and 56-pixel-tall buttons — friendly to touchscreens and fat fingers.',
+        component: PosTouchComponent,
+    },
+    {
+        name: 'wide',
+        label: 'Wide',
+        description: '65/35 split with a 5-column product grid — see many SKUs at a glance.',
+        component: PosWideComponent,
+    },
+    {
+        name: 'express',
+        label: 'Express',
+        description: '40/60 split, hides the customer card, emphasizes Finalize. Optimized for walk-in volume.',
+        component: PosExpressComponent,
+    },
 ];
 
 export const DEFAULT_POS_LAYOUT_NAME = 'default';
