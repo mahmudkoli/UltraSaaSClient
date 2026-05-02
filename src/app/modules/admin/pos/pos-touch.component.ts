@@ -14,9 +14,9 @@ import { PosComponent } from './pos.component';
     host: { class: 'flex-1 flex flex-col min-h-0' },
     template: `<div class="pos-layout-touch flex-1 flex flex-col min-h-0"><app-pos></app-pos></div>`,
     styles: [`
-        /* Vertical stack on lg+ — the structural change that distinguishes
-           Touch from Default. Each half gets flex 1 so its inner
-           overflow-auto cart/product cards still claim a finite height. */
+        /* Vertical stack on lg+ — products on top, cart below. Each half
+           scrolls independently. Finalize is sticky to the bottom of the
+           cart column so it stays accessible even with many cart items. */
         @media (min-width: 1024px) {
             .pos-layout-touch app-pos > div {
                 flex-direction: column !important;
@@ -24,18 +24,42 @@ import { PosComponent } from './pos.component';
             .pos-layout-touch app-pos > div > .lg\\:w-1\\/2 {
                 width: 100% !important;
                 min-height: 0 !important;
+                overflow-y: auto;
             }
-            /* Products section gets ~55% of the height (browsing area),
-               cart section gets ~45% (functional area). Avoids the 50/50
-               feeling cramped on small laptops while keeping cart visible
-               without scrolling the page. */
-            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:first-child  { flex: 0 0 55% !important; }
+            /* Products top half ~45%, cart bottom half ~55% — cart needs
+               more room because it stacks customer + items + totals +
+               payment vertically. */
+            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:first-child  { flex: 0 0 45% !important; }
             .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:last-child   { flex: 1 1 0% !important; }
-        }
 
-        /* Visual divider between products and cart sections so the vertical
-           split reads as two distinct regions, not one long scroll. */
-        @media (min-width: 1024px) {
+            /* Override the inner cards' flex-1 + overflow-auto so the
+               whole column scrolls naturally instead of nested scroll
+               boxes (which fight with sticky positioning + look broken
+               at vertical orientations). */
+            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2 > mat-card.flex-1 {
+                flex: 0 0 auto !important;
+                overflow: visible !important;
+            }
+
+            /* Sticky Finalize: the Payment card is the last mat-card in
+               the cart column. It anchors to the bottom of the
+               scrollable column so the Finalize button is always
+               visible — critical UX for a kiosk. */
+            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:last-child > mat-card:last-of-type {
+                position: sticky !important;
+                bottom: 0;
+                z-index: 5;
+                background: var(--fuse-bg-card, white);
+                box-shadow: 0 -8px 16px -4px rgba(0, 0, 0, 0.08);
+                border-top: 1px solid rgba(99, 102, 241, 0.2);
+            }
+            :host-context(.dark) .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:last-child > mat-card:last-of-type,
+            .dark .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:last-child > mat-card:last-of-type {
+                background: var(--fuse-bg-card, #1f2937);
+                box-shadow: 0 -8px 16px -4px rgba(0, 0, 0, 0.4);
+            }
+
+            /* Visual divider between products section and cart section. */
             .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:last-child {
                 border-top: 2px solid rgba(99, 102, 241, 0.18);
                 padding-top: 0.5rem;
