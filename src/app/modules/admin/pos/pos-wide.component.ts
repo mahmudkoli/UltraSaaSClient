@@ -17,16 +17,20 @@ import { PosComponent } from './pos.component';
     host: { class: 'flex-1 flex flex-col min-h-0' },
     template: `<div class="pos-layout-wide flex-1 flex flex-col min-h-0"><app-pos></app-pos></div>`,
     styles: [`
+        /* 65/35 split — products take more horizontal space. */
         @media (min-width: 1024px) {
             .pos-layout-wide app-pos > div > .lg\\:w-1\\/2:first-child { width: 65% !important; flex-basis: 65% !important; }
             .pos-layout-wide app-pos > div > .lg\\:w-1\\/2:last-child  { width: 35% !important; flex-basis: 35% !important; }
         }
+        /* Product grid: 3 cols on small screens, 4 cols on lg+ — more
+           than Default (2/3) but readable. 5 was too dense for product
+           names + SKU + price stacked together. */
         .pos-layout-wide .grid.grid-cols-2 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
-        @media (min-width: 768px) {
-            .pos-layout-wide .grid.md\\:grid-cols-3 { grid-template-columns: repeat(5, minmax(0, 1fr)) !important; }
+        @media (min-width: 1024px) {
+            .pos-layout-wide .grid.md\\:grid-cols-3 { grid-template-columns: repeat(4, minmax(0, 1fr)) !important; }
         }
-        .pos-layout-wide .grid > button { padding: 0.75rem 0.5rem !important; }
-        .pos-layout-wide .grid > button .text-sm { font-size: 12px !important; }
+        /* Product card padding scales with the wider grid. */
+        .pos-layout-wide .grid > button { padding: 0.875rem !important; }
     `],
 })
 export class PosWideComponent {}

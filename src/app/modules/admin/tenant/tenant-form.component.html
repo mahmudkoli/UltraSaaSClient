@@ -158,24 +158,28 @@
                                     </mat-form-field>
 
                                     <!-- POS Sale Layout -->
-                                    <div class="w-full lg:col-span-2 flex items-start gap-2">
-                                        <mat-form-field appearance="outline" class="flex-1">
-                                            <mat-label>POS Sale Layout</mat-label>
-                                            <mat-select formControlName="posLayout">
-                                                <mat-option *ngFor="let l of posLayouts" [value]="l.name">
-                                                    {{ l.label }}<span *ngIf="l.description"> — {{ l.description }}</span>
-                                                </mat-option>
-                                            </mat-select>
-                                            <mat-icon matSuffix class="text-secondary">view_quilt</mat-icon>
-                                            <mat-hint>Which POS sale-screen layout this tenant sees at /pos. Default works for most.</mat-hint>
-                                        </mat-form-field>
-                                        <button mat-stroked-button type="button" color="primary"
-                                                class="!h-14 !min-w-0 !px-4"
-                                                (click)="previewPosLayout()"
-                                                matTooltip="Open the selected layout in a new tab — won't save anything">
-                                            <mat-icon class="icon-size-5 mr-1">visibility</mat-icon>
-                                            Preview
-                                        </button>
+                                    <div class="w-full lg:col-span-2">
+                                        <div class="flex items-start gap-2">
+                                            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
+                                                <mat-label>POS Sale Layout</mat-label>
+                                                <mat-select formControlName="posLayout">
+                                                    <mat-option *ngFor="let l of posLayouts" [value]="l.name">
+                                                        {{ l.label }}<span *ngIf="l.description"> — {{ l.description }}</span>
+                                                    </mat-option>
+                                                </mat-select>
+                                                <mat-icon matSuffix class="text-secondary">view_quilt</mat-icon>
+                                            </mat-form-field>
+                                            <button mat-stroked-button type="button" color="primary"
+                                                    class="!h-14 !min-w-0 !px-4"
+                                                    (click)="previewPosLayout()"
+                                                    matTooltip="Open the selected layout in a new tab — won't save anything">
+                                                <mat-icon class="icon-size-5 mr-1">visibility</mat-icon>
+                                                Preview
+                                            </button>
+                                        </div>
+                                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 ml-1">
+                                            Which POS sale-screen layout this tenant sees at /pos. Default works for most. Use Preview to see a layout before saving.
+                                        </p>
                                     </div>
 
                                     <!-- Change Vertical action (edit mode only) -->
