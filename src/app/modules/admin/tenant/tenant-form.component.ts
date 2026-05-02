@@ -12,6 +12,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { TranslocoModule } from '@ngneat/transloco';
 import { TenantDto, CreateTenantRequest, UpdateTenantRequest } from '../../../core/tenants/tenants.types';
@@ -36,6 +37,7 @@ import { POS_LAYOUTS } from '../pos/pos-layout-registry';
         MatSelectModule,
         MatSlideToggleModule,
         MatTabsModule,
+        MatTooltipModule,
         TranslocoModule,
     ],
 })
@@ -50,6 +52,17 @@ export class TenantFormComponent implements OnInit {
     // Static POS layout options sourced from the registry — drives the
     // dropdown. Adding a layout = registry entry, no change here.
     posLayouts = POS_LAYOUTS;
+
+    /**
+     * Open `/pos?previewLayout=<name>` in a new tab so the admin can see what
+     * the layout looks like *before* saving the choice. Uses the value
+     * currently selected in the dropdown, not the persisted value, so a user
+     * can flip through options without committing each one.
+     */
+    previewPosLayout(): void {
+        const name = (this.tenantForm.get('posLayout')?.value as string | null) || 'default';
+        window.open(`/pos?previewLayout=${encodeURIComponent(name)}`, '_blank');
+    }
 
     // Original vertical loaded from server — used to detect dirty changes
     // and to revert if root cancels the confirmation dialog.

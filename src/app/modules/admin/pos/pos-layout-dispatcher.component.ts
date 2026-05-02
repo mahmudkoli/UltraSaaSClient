@@ -1,15 +1,20 @@
 import { CommonModule } from '@angular/common';
 import { Component, computed, inject } from '@angular/core';
+import { toSignal } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { resolvePosLayoutComponent } from './pos-layout-registry';
 
 /**
- * Thin dispatcher at the `/pos` route. Reads the current tenant's
- * `posLayout` from `TenantInfoService` and renders the matching component
- * from `POS_LAYOUTS`. Unknown / null layout names fall back to the default.
+ * Thin dispatcher at the `/pos` route. Picks which POS layout to render:
  *
- * Keeps `pos.routes.ts` agnostic of which actual layout component is in
- * play — the registry owns that mapping.
+ *   1. `?previewLayout=<name>` query param wins if present — used by the
+ *      tenant edit form's "Preview" button so root admins can see a layout
+ *      before saving the choice. Unknown names still fall back to default
+ *      via resolvePosLayoutComponent.
+ *   2. Otherwise the current tenant's saved `posLayout` from
+ *      TenantInfoService.
+ *   3. Otherwise the default registry entry.
  */
 @Component({
     selector: 'app-pos-layout-dispatcher',
@@ -23,6 +28,17 @@ import { resolvePosLayoutComponent } from './pos-layout-registry';
 })
 export class PosLayoutDispatcherComponent {
     private readonly tenantInfo = inject(TenantInfoService);
+    private readonly route = inject(ActivatedRoute);
 
-    readonly layout = computed(() => resolvePosLayoutComponent(this.tenantInfo.posLayout()));
+    /** Live signal of the `previewLayout` query param. */
+    private readonly previewLayout = toSignal(
+        this.route.queryParamMap,
+        { initialValue: this.route.snapshot.queryParamMap },
+    );
+
+    readonly layout = computed(() => {
+        const preview = this.previewLayout().get('previewLayout');
+        const name = preview ?? this.tenantInfo.posLayout();
+        return resolvePosLayoutComponent(name);
+    });
 }
