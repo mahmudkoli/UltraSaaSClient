@@ -26,10 +26,12 @@ import { PosComponent } from './pos.component';
                 min-height: 0 !important;
                 overflow-y: auto;
             }
-            /* Products top half ~45%, cart bottom half ~55% — cart needs
-               more room because it stacks customer + items + totals +
-               payment vertically. */
-            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:first-child  { flex: 0 0 45% !important; }
+            /* Cart dominates: products get 32% of vertical height (search
+               + a scrollable product strip), cart gets 68% (line items,
+               totals, sticky Finalize). The cashier's eye lives on the
+               cart 90% of the time during a sale; product browsing is
+               intermittent. */
+            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:first-child  { flex: 0 0 32% !important; }
             .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:last-child   { flex: 1 1 0% !important; }
 
             /* Override the inner cards' flex-1 + overflow-auto so the
