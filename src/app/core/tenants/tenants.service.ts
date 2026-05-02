@@ -5,8 +5,6 @@ import {
     TenantDto,
     CreateTenantRequest,
     UpdateTenantRequest,
-    CreateTenantWithInstituteRequest,
-    CreateTenantWithInstituteResponse,
     UpgradeSubscriptionRequest,
     TenantWithPermissionsDto,
     UpdateTenantPermissionsRequest,
@@ -74,15 +72,6 @@ export class TenantsService extends BaseApiService {
      */
     update(id: string, request: UpdateTenantRequest): Observable<string> {
         return this.putText(`/api/tenants/${id}`, request);
-    }
-
-    // ============= TENANT WITH INSTITUTE =============
-
-    /**
-     * Create a new tenant with institute in a single operation
-     */
-    createWithInstitute(request: CreateTenantWithInstituteRequest): Observable<CreateTenantWithInstituteResponse> {
-        return this.post<CreateTenantWithInstituteResponse>('/api/tenants/with-institute', request);
     }
 
     // ============= STATUS MANAGEMENT =============
