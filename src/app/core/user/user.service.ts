@@ -186,6 +186,22 @@ export class UserService
     }
 
     /**
+     * Admin-power reset of another user's password.
+     * POST /api/users/{id}/admin-reset-password
+     *
+     * No old password required. Server flips MustChangePassword=true on the
+     * target user, so they're routed to Change Password on next sign-in.
+     */
+    adminResetPassword(id: string, password: string): Observable<string>
+    {
+        return this._httpClient.post<string>(
+            `${this.baseUrl}/api/users/${id}/admin-reset-password`,
+            { password, confirmPassword: password },
+            { responseType: 'text' as 'json' }
+        );
+    }
+
+    /**
      * Get user roles
      * GET /api/users/{id}/roles
      */

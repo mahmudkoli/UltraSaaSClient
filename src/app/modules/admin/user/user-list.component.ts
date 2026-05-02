@@ -26,6 +26,7 @@ import { Router, RouterModule, ActivatedRoute } from '@angular/router';
 import { NotificationService } from '../../../core/services/notification.service';
 import { UserRolesDialogComponent } from './user-roles-dialog.component';
 import { UserOutletsDialogComponent } from './user-outlets-dialog.component';
+import { UserAdminResetPasswordDialogComponent } from './user-admin-reset-password-dialog.component';
 
 @Component({
     selector: 'user-list',
@@ -251,6 +252,15 @@ export class UserListComponent implements OnInit, OnDestroy {
             data: { userId: user.id, userName: this.getFullName(user) || user.email || user.userName },
         }).afterClosed().subscribe(saved => {
             if (saved) this._notificationService.success('Outlet access updated');
+        });
+    }
+
+    resetPassword(user: UserDetailsDto): void {
+        this._dialog.open(UserAdminResetPasswordDialogComponent, {
+            width: '480px',
+            data: { userId: user.id, userName: this.getFullName(user) || user.email || user.userName },
+        }).afterClosed().subscribe(saved => {
+            if (saved) this._notificationService.success('Password reset. User must change it on next sign-in.');
         });
     }
 

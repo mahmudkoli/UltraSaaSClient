@@ -207,6 +207,15 @@
                                             <mat-icon class="icon-size-5">store</mat-icon>
                                         </button>
 
+                                        <!-- Reset Password Button -->
+                                        <button
+                                            mat-icon-button
+                                            (click)="resetPassword(user)"
+                                            class="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all duration-200 rounded-full"
+                                            matTooltip="Reset Password">
+                                            <mat-icon class="icon-size-5">lock_reset</mat-icon>
+                                        </button>
+
                                         <!-- More Options Button -->
                                         <button
                                             mat-icon-button
@@ -227,6 +236,10 @@
                                             <button mat-menu-item (click)="manageOutlets(user)" class="hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-emerald-600 dark:text-emerald-400">store</mat-icon>
                                                 <span class="ml-2">Manage Outlet Access</span>
+                                            </button>
+                                            <button mat-menu-item (click)="resetPassword(user)" class="hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-rose-600 dark:text-rose-400">lock_reset</mat-icon>
+                                                <span class="ml-2">Reset Password</span>
                                             </button>
                                             <button mat-menu-item (click)="toggleUserStatus(user)" class="hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5" [class]="user.isActive ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
