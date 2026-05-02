@@ -83,8 +83,9 @@ import { PosComponent } from './pos.component';
             padding-right: 24px !important;
         }
         .pos-layout-touch button.mat-mdc-icon-button { width: 48px !important; height: 48px !important; }
-        .pos-layout-touch mat-card { padding: 16px !important; }
-        .pos-layout-touch input { font-size: 17px !important; padding: 12px !important; }
+        .pos-layout-touch mat-card { padding: 12px !important; }
+        /* Inputs use Material defaults — the previous 12px padding bloated
+           the in-cart qty/price/serial inputs into oversized boxes. */
         .pos-layout-touch .gap-3 { gap: 1rem !important; }
         .pos-layout-touch .gap-4 { gap: 1.25rem !important; }
         .pos-layout-touch .grid { gap: 1rem !important; }
