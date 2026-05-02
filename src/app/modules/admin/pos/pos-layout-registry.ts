@@ -31,6 +31,14 @@ export interface PosLayoutOption {
 // Each layout is a real component that wraps the standard PosComponent and
 // applies layout-class-scoped CSS to change visual treatment. Sale logic is
 // shared — only the visuals differ.
+//
+// IMPORTANT: every layout must remain business-type compatible. Pharmacy
+// (batch picker, prescription input), Electronics (serial scanner, warranty),
+// Supermarket (loyalty redemption, promotion preview), and Generic features
+// must all be reachable in any layout. Don't add `display: none` rules that
+// hide functional UI — restyle / collapse / reorder instead. A tenant who
+// picks the "wrong" layout for their vertical should still be able to do
+// every business-relevant action, just at a different visual density.
 export const POS_LAYOUTS: readonly PosLayoutOption[] = [
     {
         name: 'default',
@@ -47,7 +55,7 @@ export const POS_LAYOUTS: readonly PosLayoutOption[] = [
     {
         name: 'touch',
         label: 'Touch / Kiosk',
-        description: 'Larger fonts and 56-pixel-tall buttons — friendly to touchscreens and fat fingers.',
+        description: 'Vertical full-width stack (products on top, cart below) with 56-pixel-tall buttons. Tablet / kiosk friendly.',
         component: PosTouchComponent,
     },
     {
@@ -59,7 +67,7 @@ export const POS_LAYOUTS: readonly PosLayoutOption[] = [
     {
         name: 'express',
         label: 'Express',
-        description: '40/60 split, hides the customer card, emphasizes Finalize. Optimized for walk-in volume.',
+        description: '40/60 cart-dominant split, slim customer row, emphasized Finalize. Walk-in volume.',
         component: PosExpressComponent,
     },
 ];

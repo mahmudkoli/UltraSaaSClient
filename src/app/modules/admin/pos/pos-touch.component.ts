@@ -14,6 +14,23 @@ import { PosComponent } from './pos.component';
     host: { class: 'flex-1 flex flex-col min-h-0' },
     template: `<div class="pos-layout-touch flex-1 flex flex-col min-h-0"><app-pos></app-pos></div>`,
     styles: [`
+        /* Vertical stack on lg+ — the structural change that distinguishes
+           Touch from Default. Below lg, the original flex-col already
+           applies, so this only overrides the lg:flex-row breakpoint
+           behavior. Each half gets flex 1 so its inner overflow-auto
+           cart/product cards still claim a finite height + scroll correctly. */
+        @media (min-width: 1024px) {
+            .pos-layout-touch app-pos > div {
+                flex-direction: column !important;
+            }
+            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2 {
+                width: 100% !important;
+                flex: 1 1 0% !important;
+                min-height: 0 !important;
+            }
+        }
+
+        /* Sizing — bigger fonts, taller buttons, more breathing room. */
         .pos-layout-touch { font-size: 16px; }
         .pos-layout-touch h3 { font-size: 18px; }
         .pos-layout-touch .text-base { font-size: 17px !important; }
