@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -338,7 +338,11 @@ interface CartLine extends CreateSaleLine {
     `,
     styles: [`:host { display: block; height: calc(100vh - 4rem); }`],
 })
-export class PosComponent implements OnInit {
+export class PosComponent implements OnInit, AfterViewInit {
+    /** Native ref to the product search input — focused on view init and again
+     * after every Finalize / Park so the cashier can immediately type or scan
+     * the next item without clicking. */
+    @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
     private readonly outletsApi = inject(OutletsService);
     private readonly productsApi = inject(ProductsService);
     private readonly unitsApi = inject(UnitsService);
@@ -477,6 +481,18 @@ export class PosComponent implements OnInit {
     amountDue = computed(() => Math.max(0, this.grandTotal() - this.effectiveRedeem()));
 
     canFinalize = computed(() => this.cart().length > 0 && !!this.outletId);
+
+    ngAfterViewInit(): void {
+        // Land on the search box ready to type / scan. setTimeout pushes the
+        // focus call past Material's own focus management for the page chrome.
+        setTimeout(() => this.focusSearch(), 0);
+    }
+
+    /** Focus the search input. Tolerant of the ref not being available yet
+     * (e.g. early-lifecycle or while a dialog has trapped focus). */
+    private focusSearch(): void {
+        try { this.searchInput?.nativeElement.focus(); } catch { /* noop */ }
+    }
 
     ngOnInit(): void {
         this.outletsApi.getAll().subscribe(o => {
@@ -756,6 +772,9 @@ export class PosComponent implements OnInit {
                 this.payAmount = null;
                 this.customerId = null;
                 this.redeemPoints = 0;
+                // Return focus to the search box so the next customer can be
+                // rung up immediately by typing / scanning.
+                setTimeout(() => this.focusSearch(), 0);
             },
             error: (err) => {
                 this.finalizing.set(false);
@@ -838,6 +857,8 @@ export class PosComponent implements OnInit {
                 this.customerId = null;
                 this.redeemPoints = 0;
                 this.refreshParkedCount();
+                // Cart cleared post-park; cashier can ring up the next customer immediately.
+                setTimeout(() => this.focusSearch(), 0);
             },
             error: err => {
                 this.parking.set(false);
