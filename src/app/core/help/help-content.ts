@@ -267,4 +267,424 @@ export const HELP_CONTENT: HelpFeature[] = [
             },
         ],
     },
+
+    // ───────────── Catalog ─────────────
+    {
+        id: 'catalog',
+        routePrefix: '/catalog',
+        icon: 'heroicons_outline:cube',
+        title: { en: 'Catalog — Products, Brands, Categories, Units', bn: 'ক্যাটালগ — পণ্য, ব্র্যান্ড, ক্যাটাগরি, ইউনিট' },
+        summary: {
+            en: 'Master data for everything you sell. Set up categories first, then brands, units, and finally products.',
+            bn: 'যা কিছু বিক্রি করেন তার মাস্টার ডেটা। আগে ক্যাটাগরি, তারপর ব্র্যান্ড, ইউনিট, এবং সবশেষে পণ্য তৈরি করুন।',
+        },
+        questions: [
+            {
+                q: { en: 'In what order should I set up the catalog?', bn: 'ক্যাটালগ কোন ক্রমে সেটআপ করব?' },
+                a: {
+                    en: '1) Categories (Mobile, Accessories…) — can be hierarchical. 2) Brands (Apple, Samsung…). 3) Units (Each, kg, liter — mark IsWeight for kg/liter). 4) Products — each one needs SKU, name, category, brand, unit, cost price, selling price, tax rate. Optional: barcode, reorder level. SKU must be unique within your tenant.',
+                    bn: '১) ক্যাটাগরি (Mobile, Accessories…) — এগুলো nested হতে পারে। ২) ব্র্যান্ড (Apple, Samsung…)। ৩) ইউনিট (Each, kg, liter — kg/liter এর জন্য IsWeight চেক করুন)। ৪) পণ্য — প্রতিটিতে SKU, নাম, ক্যাটাগরি, ব্র্যান্ড, ইউনিট, ক্রয়মূল্য, বিক্রয়মূল্য, ট্যাক্স রেট লাগে। অপশনাল: বারকোড, রিঅর্ডার লেভেল। SKU অবশ্যই Tenant-এর মধ্যে ইউনিক হতে হবে।',
+                },
+            },
+            {
+                q: { en: 'What\'s the difference between cost price and selling price?', bn: 'Cost price আর Selling price-এর পার্থক্য কী?' },
+                a: {
+                    en: 'Cost price = what you pay your supplier (drives margin reports). Selling price = what the customer pays at POS (the default; cashiers can override per sale if they have Sales.Discount permission). Both should be net of tax — tax is added separately based on TaxRate.',
+                    bn: 'Cost price = সরবরাহকারীকে আপনি যা দেন (মার্জিন রিপোর্ট এর জন্য)। Selling price = POS-এ গ্রাহক যা দেয় (ডিফল্ট; Sales.Discount অনুমতি থাকলে ক্যাশিয়ার বিক্রি ভিত্তিতে পরিবর্তন করতে পারেন)। দুটোই ট্যাক্স ছাড়া হওয়া উচিত — TaxRate অনুযায়ী আলাদাভাবে ট্যাক্স যোগ হয়।',
+                },
+            },
+            {
+                q: { en: 'How do I make a product require a serial / batch / weight?', bn: 'কোনো পণ্যে সিরিয়াল / ব্যাচ / ওজন কীভাবে বাধ্যতামূলক করব?' },
+                a: {
+                    en: 'After creating the product, look for vertical-specific buttons on its row: Electronics → opens "Electronics details" (RequiresSerial / IMEI / WarrantyMonths). Pharmacy → opens "Pharmacy details" (RequiresBatch / Prescription / Controlled). Weight-tracked products use a unit with IsWeight = true. The POS will then enforce capture on every sale of that product.',
+                    bn: 'পণ্য তৈরির পরে রো-এর উপর vertical-নির্দিষ্ট বোতাম পাবেন: Electronics → "Electronics details" খোলে (RequiresSerial / IMEI / WarrantyMonths)। Pharmacy → "Pharmacy details" খোলে (RequiresBatch / Prescription / Controlled)। ওজন-ট্র্যাকড পণ্যের জন্য IsWeight = true সহ ইউনিট ব্যবহার করুন। POS তখন বিক্রির সময় ক্যাপচার বাধ্যতামূলক করবে।',
+                },
+            },
+            {
+                q: { en: 'Can I price a product differently at different outlets?', bn: 'আউটলেট ভেদে কি পণ্যের আলাদা মূল্য দেওয়া যাবে?' },
+                a: {
+                    en: 'Yes — open the product row, click "Pricing" — set per-outlet overrides (e.g. airport store sells higher). Outlets without an override use the base SellingPrice. The cashier sees the resolved per-outlet price at POS.',
+                    bn: 'হ্যাঁ — পণ্য রো-তে ক্লিক করে "Pricing" ক্লিক করুন — আউটলেট-ভিত্তিক ওভাররাইড সেট করুন (যেমন এয়ারপোর্ট স্টোর বেশি দামে বিক্রি)। যেসব আউটলেটে ওভাররাইড নেই, তারা মূল SellingPrice ব্যবহার করে। POS-এ ক্যাশিয়ার আউটলেট অনুযায়ী রেজল্ভড দাম দেখতে পান।',
+                },
+            },
+            {
+                q: { en: 'I deactivated a product but old sales still show it. Why?', bn: 'একটি পণ্য নিষ্ক্রিয় (deactivate) করেছি, কিন্তু পুরনো বিক্রিতে এখনও দেখাচ্ছে — কেন?' },
+                a: {
+                    en: 'On purpose. Sale lines snapshot the product name and SKU at the moment of finalize so historical receipts stay readable even after a product is renamed or retired. Deactivating only hides the product from the POS picker — it does not back-port to old sales.',
+                    bn: 'এটি ইচ্ছাকৃত। বিক্রির লাইন Finalize-এর মুহূর্তে পণ্যের নাম ও SKU snapshot করে রাখে যাতে পরে rename/retire করলেও পুরনো রিসিট পঠনযোগ্য থাকে। নিষ্ক্রিয় করলে শুধু POS পিকার থেকে পণ্যটি লুকায় — পুরনো বিক্রি অপরিবর্তিত থাকে।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Inventory ─────────────
+    {
+        id: 'inventory',
+        routePrefix: '/inventory',
+        icon: 'heroicons_outline:archive-box',
+        title: { en: 'Inventory — Stock, Movements, Serials', bn: 'ইনভেন্টরি — স্টক, মুভমেন্ট, সিরিয়াল' },
+        summary: {
+            en: 'See what\'s on the shelf, what moved, and individual serial-tracked units.',
+            bn: 'শেলফে কী আছে, কী সরিয়েছে, এবং সিরিয়াল-ট্র্যাকড প্রতিটি ইউনিট দেখুন।',
+        },
+        questions: [
+            {
+                q: { en: 'How is stock count maintained?', bn: 'স্টক কাউন্ট কীভাবে রক্ষণাবেক্ষণ হয়?' },
+                a: {
+                    en: 'A running total per (product × outlet). Goods Receipts +increase; Sales / Stock Adjustments / Stock Transfers (out) -decrease. Every change writes a StockMovement row (append-only audit log). The system blocks any operation that would push stock negative.',
+                    bn: '(পণ্য × আউটলেট) প্রতি একটি রানিং টোটাল। Goods Receipts +বৃদ্ধি; বিক্রি / Stock Adjustments / Stock Transfers (আউট) -হ্রাস। প্রতিটি পরিবর্তন একটি StockMovement রো লেখে (append-only অডিট লগ)। স্টক নেগেটিভ হবে এমন কোনো অপারেশন সিস্টেম ব্লক করে।',
+                },
+            },
+            {
+                q: { en: 'When should I use a Stock Adjustment vs a Cycle Count?', bn: 'কখন Stock Adjustment আর কখন Cycle Count ব্যবহার করব?' },
+                a: {
+                    en: 'Stock Adjustment = a single line correction with a reason (e.g. one box damaged, one item found behind a shelf). Cycle Count = a structured stocktake covering many products at once — you snapshot expected quantities, count physically, the system posts adjustments only for the variances. Use Cycle Count for monthly or year-end physical inventory.',
+                    bn: 'Stock Adjustment = একটি কারণসহ একক লাইন সংশোধন (যেমন একটি বাক্স নষ্ট হয়েছে, একটি আইটেম শেলফের পিছনে পাওয়া গেছে)। Cycle Count = একসাথে অনেক পণ্যের সংগঠিত স্টকটেক — আশা করা পরিমাণ snapshot করুন, ভৌতভাবে গণনা করুন, সিস্টেম শুধু variance-এর জন্য adjustment পোস্ট করে। মাসিক বা বছর-শেষের ভৌতিক ইনভেন্টরির জন্য Cycle Count ব্যবহার করুন।',
+                },
+            },
+            {
+                q: { en: 'How do I move stock between outlets?', bn: 'এক আউটলেট থেকে অন্য আউটলেটে স্টক কীভাবে সরাব?' },
+                a: {
+                    en: 'Stock Transfers in the left nav. Create a transfer (Draft) at the source — pick the destination outlet and the items + quantity. Click Dispatch (decrements source stock, sets InTransit). When the goods arrive, the destination opens it and clicks Receive (increments destination stock). Both sides see the transfer in their history.',
+                    bn: 'বাঁ পাশের নেভিগেশনে Stock Transfers। উৎস আউটলেটে একটি Transfer (Draft) তৈরি করুন — গন্তব্য আউটলেট ও আইটেম + পরিমাণ বেছে নিন। Dispatch ক্লিক করুন (উৎস স্টক হ্রাস, InTransit সেট)। পণ্য পৌঁছানোর পর গন্তব্য তা খুলে Receive ক্লিক করেন (গন্তব্য স্টক বৃদ্ধি)। উভয় পক্ষ ইতিহাসে Transfer দেখতে পান।',
+                },
+            },
+            {
+                q: { en: 'Where do I see individual serial numbers?', bn: 'প্রতিটি সিরিয়াল নম্বর কোথায় দেখা যাবে?' },
+                a: {
+                    en: 'Stock Serials in the left nav. Each serial has a Status: InStock (available to sell) / Sold / Returned / UnderRepair / WrittenOff / Transferred. Look up by serial number directly via the search box. The serial is created by a Goods Receipt for serial-tracked products and flips through statuses based on subsequent sales / returns / transfers.',
+                    bn: 'বাঁ পাশের নেভিগেশনে Stock Serials। প্রতিটি সিরিয়ালের একটি Status থাকে: InStock (বিক্রির জন্য উপলব্ধ) / Sold / Returned / UnderRepair / WrittenOff / Transferred। সার্চ বক্স দিয়ে সরাসরি সিরিয়াল নম্বর খুঁজুন। সিরিয়াল-ট্র্যাকড পণ্যের জন্য Goods Receipt-এ সিরিয়াল তৈরি হয় এবং পরবর্তী বিক্রি / রিটার্ন / ট্রান্সফার অনুযায়ী Status পরিবর্তিত হয়।',
+                },
+            },
+            {
+                q: { en: 'Why does the Movements list have so many entries?', bn: 'Movements তালিকায় এত এন্ট্রি কেন?' },
+                a: {
+                    en: 'Every change to stock writes one — by design. It\'s the audit trail. Sale → one Movement(Sale, -qty) per line. Goods Receipt → one Movement(GoodsReceipt, +qty) per line. Adjustment, Transfer in/out, Return, Damage, Recount — all logged. If a stock count looks wrong, the Movements list is your source of truth for "what happened, when, by whom."',
+                    bn: 'স্টকের প্রতিটি পরিবর্তনে একটি এন্ট্রি — পরিকল্পনাগতভাবে। এটিই অডিট ট্রেইল। বিক্রি → প্রতি লাইনে একটি Movement(Sale, -পরিমাণ)। Goods Receipt → প্রতি লাইনে একটি Movement(GoodsReceipt, +পরিমাণ)। Adjustment, Transfer in/out, Return, Damage, Recount — সব লগ হয়। স্টক কাউন্ট ভুল মনে হলে "কখন, কী হয়েছিল, কে করেছে" তার সত্যের উৎস হলো Movements তালিকা।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Customers ─────────────
+    {
+        id: 'customers',
+        routePrefix: '/customers',
+        icon: 'heroicons_outline:user-group',
+        title: { en: 'Customers', bn: 'গ্রাহক' },
+        summary: {
+            en: 'Linked customers earn loyalty, can buy on credit, and get warranties registered to them.',
+            bn: 'লিংকড গ্রাহক লয়্যালটি পয়েন্ট জমান, ক্রেডিটে কিনতে পারেন, এবং তাদের নামে ওয়ারেন্টি নিবন্ধিত হয়।',
+        },
+        questions: [
+            {
+                q: { en: 'What\'s the difference between Retail / Wholesale / Corporate types?', bn: 'Retail / Wholesale / Corporate প্রকারের পার্থক্য কী?' },
+                a: {
+                    en: 'A label that helps you segment customers in reports. None of them gate features automatically — credit limit, loyalty, etc. are all set per customer regardless of type. Pick the one that matches how your business thinks about that customer.',
+                    bn: 'রিপোর্টে গ্রাহকদের সেগমেন্ট করতে সাহায্য করে এমন একটি লেবেল। কোনোটিই স্বয়ংক্রিয়ভাবে ফিচার সীমিত করে না — ক্রেডিট লিমিট, লয়্যালটি ইত্যাদি প্রকার নির্বিশেষে গ্রাহক ভিত্তিতে সেট হয়। যেটি আপনার ব্যবসা সেই গ্রাহককে যেভাবে দেখে তার সাথে মেলে সেটি বেছে নিন।',
+                },
+            },
+            {
+                q: { en: 'How does Credit Limit work?', bn: 'Credit Limit কীভাবে কাজ করে?' },
+                a: {
+                    en: 'Set on the customer profile. When a sale\'s payments don\'t cover the total AND the customer has a credit limit, the unpaid amount goes onto their account up to that limit. CurrentBalance shows what they owe. Walk-ins can\'t use credit. Use Customers → row → Adjust Balance to record a payment received later.',
+                    bn: 'গ্রাহক প্রোফাইলে সেট। বিক্রির পেমেন্ট মোট বিল কভার না করলে এবং গ্রাহকের ক্রেডিট লিমিট থাকলে, বাকি টাকা সেই লিমিট পর্যন্ত তাদের অ্যাকাউন্টে যোগ হয়। CurrentBalance তাদের বকেয়া দেখায়। Walk-in ক্রেডিট ব্যবহার করতে পারে না। পরে পেমেন্ট পেলে Customers → রো → Adjust Balance থেকে রেকর্ড করুন।',
+                },
+            },
+            {
+                q: { en: 'How do I award a customer bonus loyalty points?', bn: 'কোনো গ্রাহককে বোনাস লয়্যালটি পয়েন্ট কীভাবে দেব?' },
+                a: {
+                    en: 'Customers → row → Adjust Loyalty (manager / admin only). Enter a positive amount + reason (e.g. "Sign-up bonus", "Complaint compensation"). The transaction is logged in the LoyaltyTransactions table so you can always trace where points came from.',
+                    bn: 'Customers → রো → Adjust Loyalty (শুধু manager / admin)। ধনাত্মক পরিমাণ + কারণ লিখুন (যেমন "Sign-up bonus", "Complaint compensation")। লেনদেন LoyaltyTransactions টেবিলে লগ হয় যাতে পয়েন্ট কোথা থেকে এলো তা সবসময় ট্রেস করা যায়।',
+                },
+            },
+            {
+                q: { en: 'A customer asks "what was my last visit?" — where do I look?', bn: 'গ্রাহক জিজ্ঞেস করছে "আমার শেষ ভিজিট কখন ছিল?" — কোথায় দেখব?' },
+                a: {
+                    en: 'POS → Find Sale → search by their phone or name. Or Sales in the left nav — filter by customer. The detail page shows every line, payment, and balance.',
+                    bn: 'POS → Find Sale → ফোন বা নাম দিয়ে সার্চ। বা বাঁ পাশের নেভিগেশনে Sales — গ্রাহক দিয়ে ফিল্টার। ডিটেইল পেজে প্রতিটি লাইন, পেমেন্ট, ব্যালেন্স দেখা যাবে।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Suppliers ─────────────
+    {
+        id: 'suppliers',
+        routePrefix: '/suppliers',
+        icon: 'heroicons_outline:truck',
+        title: { en: 'Suppliers', bn: 'সরবরাহকারী' },
+        summary: {
+            en: 'Vendors and wholesalers feeding your inventory. Used by Purchase Orders.',
+            bn: 'যেসব ভেন্ডর / পাইকার আপনার ইনভেন্টরিতে পণ্য সরবরাহ করেন। Purchase Orders-এ ব্যবহৃত হয়।',
+        },
+        questions: [
+            {
+                q: { en: 'Do I have to create a supplier before placing a PO?', bn: 'PO তৈরির আগে কি Supplier তৈরি করতে হবে?' },
+                a: {
+                    en: 'Yes — every Purchase Order points at exactly one supplier. Create suppliers first, then POs. Even one-off purchases need a supplier row (you can label it "Misc Local Vendor" if you don\'t want to track each).',
+                    bn: 'হ্যাঁ — প্রতিটি Purchase Order ঠিক একটি সরবরাহকারীকে নির্দেশ করে। আগে Supplier তৈরি করুন, তারপর PO। একবারের কেনাকাটাতেও Supplier রো লাগে (প্রতিটি আলাদা ট্র্যাক না করতে চাইলে "Misc Local Vendor" নামে একটি বানিয়ে রাখুন)।',
+                },
+            },
+            {
+                q: { en: 'Why can\'t I delete a supplier?', bn: 'একটি Supplier কেন ডিলিট করতে পারছি না?' },
+                a: {
+                    en: 'They have one or more Purchase Orders or Goods Receipts linked. Deleting would break audit history. Switch their Active toggle off — they stop appearing in the PO supplier picker but historical records stay intact.',
+                    bn: 'তাদের সাথে এক বা একাধিক Purchase Order বা Goods Receipt লিংকড আছে। ডিলিট করলে অডিট ইতিহাস ভেঙে যাবে। Active টগল বন্ধ করুন — তারা PO supplier পিকার থেকে অদৃশ্য হবে, কিন্তু ঐতিহাসিক রেকর্ড অটুট থাকে।',
+                },
+            },
+            {
+                q: { en: 'How do I track money I owe a supplier?', bn: 'একজন Supplier-কে আমি কত টাকা পাওনা — কীভাবে দেখব?' },
+                a: {
+                    en: 'Each Goods Receipt records what you received and the cost; payments to suppliers are recorded outside the PO flow today. Reports → Supplier Summary aggregates totals received per supplier. Detailed AP (accounts payable) tracking is on the roadmap.',
+                    bn: 'প্রতিটি Goods Receipt কী রিসিভ করেছেন ও খরচ রেকর্ড করে; Supplier-কে পেমেন্ট আজ PO flow-এর বাইরে রেকর্ড হয়। Reports → Supplier Summary প্রতি Supplier-এ মোট রিসিভড সংগ্রহ করে। বিস্তারিত AP (Accounts Payable) ট্র্যাকিং রোডম্যাপে আছে।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Purchasing (POs + GRs + PRs) ─────────────
+    {
+        id: 'purchasing',
+        routePrefix: '/purchase-orders',
+        icon: 'heroicons_outline:clipboard-document-list',
+        title: { en: 'Purchasing — POs, Receipts, Returns', bn: 'ক্রয় — PO, রিসিট, রিটার্ন' },
+        summary: {
+            en: 'Order from suppliers, receive goods (which increases stock), send back what didn\'t meet spec.',
+            bn: 'সরবরাহকারী থেকে অর্ডার দিন, পণ্য রিসিভ করুন (যা স্টক বাড়ায়), যা স্পেক না মেলে ফেরত পাঠান।',
+        },
+        questions: [
+            {
+                q: { en: 'PO statuses — what do they mean?', bn: 'PO-এর স্ট্যাটাসগুলো কী অর্থ বহন করে?' },
+                a: {
+                    en: 'Draft (you\'re still editing) → Submitted (sent to supplier, locked from edit) → PartiallyReceived (some lines arrived, others outstanding) → Received (everything in). Cancelled is a one-way exit any time before Received. Status updates roll up automatically as Goods Receipts post against the PO.',
+                    bn: 'Draft (এখনো এডিট করছেন) → Submitted (Supplier-কে পাঠানো হয়েছে, এডিট লক) → PartiallyReceived (কিছু লাইন এসেছে, বাকি অপেক্ষায়) → Received (সব এসেছে)। Received-এর আগে যেকোনো সময় Cancelled একমুখী এক্সিট। Goods Receipts PO-তে পোস্ট হলে স্ট্যাটাস স্বয়ংক্রিয়ভাবে আপডেট হয়।',
+                },
+            },
+            {
+                q: { en: 'How do I receive goods that arrived?', bn: 'এসে পৌঁছানো পণ্য কীভাবে রিসিভ করব?' },
+                a: {
+                    en: 'Open the PO → "New Goods Receipt from PO". Pick which lines and how many of each are arriving. For serial-tracked products, scan or type each serial. For batch-tracked (pharmacy), enter batch number + expiry per line. Click Complete — stock increases, serials are created, batches are upserted, and the PO\'s outstanding qty drops. Multiple receipts per PO are fine for partial deliveries.',
+                    bn: 'PO খুলুন → "New Goods Receipt from PO"। কোন লাইন এবং প্রতিটির কত আসছে বেছে নিন। সিরিয়াল-ট্র্যাকড পণ্যের জন্য প্রতিটি সিরিয়াল স্ক্যান বা টাইপ করুন। Batch-ট্র্যাকড (Pharmacy) এর জন্য প্রতি লাইনে batch number + expiry লিখুন। Complete ক্লিক করুন — স্টক বাড়ে, সিরিয়াল তৈরি হয়, ব্যাচ আপসার্ট হয়, PO-এর outstanding পরিমাণ কমে। আংশিক ডেলিভারির জন্য একই PO-তে একাধিক রিসিট ঠিক আছে।',
+                },
+            },
+            {
+                q: { en: 'Why is the PO\'s "remaining" count wrong after a damaged delivery?', bn: 'একটি ক্ষতিগ্রস্ত ডেলিভারির পরে PO-এর "remaining" কাউন্ট ভুল কেন?' },
+                a: {
+                    en: 'Receive what physically arrived as a Goods Receipt first (so stock matches reality), then create a Purchase Return for the damaged units. The return decrements stock back AND restores the PO\'s outstanding qty so the supplier can re-send. The PO will roll Received → PartiallyReceived automatically.',
+                    bn: 'প্রথমে যা ভৌতভাবে এসেছে তা একটি Goods Receipt হিসেবে রিসিভ করুন (যাতে স্টক বাস্তবের সাথে মেলে), তারপর ক্ষতিগ্রস্ত ইউনিটের জন্য একটি Purchase Return তৈরি করুন। Return স্টক কমায় এবং PO-এর outstanding পরিমাণ ফিরিয়ে আনে যাতে Supplier পুনরায় পাঠাতে পারে। PO Received → PartiallyReceived-এ স্বয়ংক্রিয়ভাবে যাবে।',
+                },
+            },
+            {
+                q: { en: 'Purchase Return — when do I get a credit vs a refund vs a replacement?', bn: 'Purchase Return-এ কখন ক্রেডিট, কখন রিফান্ড, কখন রিপ্লেসমেন্ট পাব?' },
+                a: {
+                    en: 'You pick on the return form. CreditNote = supplier credits you against future POs (most common). CashRefund / BankRefund = supplier sends money back. Replacement = supplier ships replacement units (zero credit needed). Adjustment = invoice line correction. The total credit must match the return cost unless every line is Replacement.',
+                    bn: 'Return ফর্মে আপনি বেছে নেন। CreditNote = ভবিষ্যতের PO-এর বিপরীতে Supplier ক্রেডিট দেয় (সবচেয়ে সাধারণ)। CashRefund / BankRefund = Supplier টাকা ফেরত পাঠায়। Replacement = Supplier প্রতিস্থাপন ইউনিট পাঠায় (ক্রেডিট লাগে না)। Adjustment = invoice লাইন সংশোধন। প্রতিটি লাইন Replacement না হলে মোট ক্রেডিট অবশ্যই Return খরচের সমান হতে হবে।',
+                },
+            },
+            {
+                q: { en: 'Per-outlet PO numbering — what does OUTLETCODE-PO-000001 mean?', bn: 'প্রতি আউটলেটে PO numbering — OUTLETCODE-PO-000001 মানে কী?' },
+                a: {
+                    en: 'Each outlet has its own counter for POs (PO-NNNNNN), Goods Receipts (GR-NNNNNN), and Purchase Returns (PR-NNNNNN). The prefix matches the outlet code. So MAIN-PO-000042 is Main outlet\'s 42nd PO. The counter is concurrency-safe — two managers can\'t collide on the same number.',
+                    bn: 'প্রতিটি আউটলেটের নিজস্ব কাউন্টার আছে PO (PO-NNNNNN), Goods Receipts (GR-NNNNNN), এবং Purchase Returns (PR-NNNNNN) এর জন্য। প্রিফিক্স আউটলেট কোডের সাথে মেলে। তাই MAIN-PO-000042 হলো Main আউটলেটের ৪২তম PO। কাউন্টার concurrency-safe — দুজন manager একই নম্বর পাবেন না।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Shifts ─────────────
+    {
+        id: 'shifts',
+        routePrefix: '/shifts',
+        icon: 'heroicons_outline:clock',
+        title: { en: 'Shifts — Open / Close / X-Z reports', bn: 'শিফট — Open / Close / X-Z রিপোর্ট' },
+        summary: {
+            en: 'A shift is a cashier session. Open at start of day, close at end — system shows expected cash and variance.',
+            bn: 'একটি শিফট হলো একজন ক্যাশিয়ারের সেশন। দিনের শুরুতে খুলুন, শেষে বন্ধ করুন — সিস্টেম প্রত্যাশিত নগদ ও পার্থক্য দেখায়।',
+        },
+        questions: [
+            {
+                q: { en: 'How do I open a shift?', bn: 'একটি শিফট কীভাবে খুলব?' },
+                a: {
+                    en: 'Shifts → Open Shift. Count the cash in your drawer, enter as opening float. The shift status chip in the POS toolbar turns green. Every sale you ring up while the shift is open attaches to that shift.',
+                    bn: 'Shifts → Open Shift। আপনার ড্রয়ারে নগদ গণনা করুন, opening float হিসেবে লিখুন। POS টুলবারের shift status চিপ সবুজ হবে। শিফট খোলা থাকা অবস্থায় আপনি যত বিক্রি করবেন, সব সেই শিফটে অ্যাটাচ হবে।',
+                },
+            },
+            {
+                q: { en: 'How does the variance get calculated at close?', bn: 'বন্ধ করার সময় variance কীভাবে গণনা হয়?' },
+                a: {
+                    en: 'expected cash = opening float + cash payments received - cash refunds paid out. Closing float = what you count physically in the drawer at end of day. Variance = closing float − expected cash. Negative = short; positive = over. Investigate any non-zero variance.',
+                    bn: 'expected cash = opening float + প্রাপ্ত নগদ পেমেন্ট - প্রদত্ত নগদ রিফান্ড। Closing float = দিনের শেষে আপনি ড্রয়ারে যা ভৌতভাবে গণনা করেন। Variance = closing float − expected cash। ঋণাত্মক = ঘাটতি; ধনাত্মক = বেশি। যেকোনো অশূন্য variance তদন্ত করুন।',
+                },
+            },
+            {
+                q: { en: 'X-report vs Z-report — what\'s the difference?', bn: 'X-report ও Z-report পার্থক্য কী?' },
+                a: {
+                    en: 'X-report = live snapshot of an OPEN shift (what\'s happened so far today). Z-report = permanent record of a CLOSED shift (the day\'s archive). Many tax jurisdictions require Z-reports for end-of-day. Both reports include float reconciliation, sales rollup, returns rollup, payment-method breakdown, top 5 items.',
+                    bn: 'X-report = খোলা শিফটের লাইভ snapshot (আজ এখন পর্যন্ত যা হয়েছে)। Z-report = বন্ধ শিফটের স্থায়ী রেকর্ড (দিনের আর্কাইভ)। অনেক ট্যাক্স এখতিয়ারে দিনশেষে Z-report প্রয়োজন। উভয় রিপোর্টে float reconciliation, sales rollup, returns rollup, payment-method breakdown, top 5 items থাকে।',
+                },
+            },
+            {
+                q: { en: 'I forgot to open a shift before ringing sales. What happens?', bn: 'বিক্রি শুরুর আগে শিফট খুলতে ভুলে গেছি — কী হবে?' },
+                a: {
+                    en: 'Sales still go through — they just don\'t attach to a shift (Sale.ShiftId stays null). The POS shows an amber warning chip telling you. Z-report won\'t include those sales. Open a shift retroactively isn\'t supported — best practice is open before your first sale.',
+                    bn: 'বিক্রি চলবে — শুধু কোনো শিফটে অ্যাটাচ হবে না (Sale.ShiftId নাল থাকবে)। POS-এ একটি কমলা সতর্ক চিপ দেখাবে। Z-report-এ সেই বিক্রি থাকবে না। পশ্চাৎমুখী (retroactively) শিফট খোলা সাপোর্ট নেই — সবচেয়ে ভাল অভ্যাস হলো প্রথম বিক্রির আগেই শিফট খোলা।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Promotions / Loyalty ─────────────
+    {
+        id: 'marketing',
+        routePrefix: '/promotions',
+        icon: 'heroicons_outline:megaphone',
+        title: { en: 'Promotions & Loyalty', bn: 'প্রোমোশন ও লয়্যালটি' },
+        summary: {
+            en: 'Discount campaigns and loyalty points — keep customers coming back.',
+            bn: 'ছাড়ের ক্যাম্পেইন ও লয়্যালটি পয়েন্ট — গ্রাহক ফিরিয়ে আনতে।',
+        },
+        questions: [
+            {
+                q: { en: 'What kinds of promotions can I configure?', bn: 'কী ধরনের প্রোমোশন কনফিগার করা যাবে?' },
+                a: {
+                    en: 'Three types × three scopes. Types: PercentageOff (10% off), FixedAmountOff (50 BDT off), BuyXGetY (buy 2 get 1 free). Scopes: Cart (whole sale), Product (specific SKUs), Category (e.g. all Mobiles). Set start / end dates, optional minimum cart value, and a promo code customers enter at POS.',
+                    bn: 'তিন ধরন × তিন স্কোপ। ধরন: PercentageOff (১০% ছাড়), FixedAmountOff (৫০ টাকা ছাড়), BuyXGetY (২ কিনলে ১ ফ্রি)। স্কোপ: Cart (পুরো বিক্রি), Product (নির্দিষ্ট SKU), Category (যেমন সব Mobile)। শুরু / শেষ তারিখ, optional ন্যূনতম cart মূল্য, এবং POS-এ গ্রাহক যে promo কোড লেখেন — সব সেট করুন।',
+                },
+            },
+            {
+                q: { en: 'Promo + loyalty + tax — in what order are they applied?', bn: 'Promo + loyalty + ট্যাক্স — কোন ক্রমে প্রয়োগ হয়?' },
+                a: {
+                    en: 'Subtotal → minus promotion discount → minus loyalty redemption → plus tax = grand total. Loyalty earned is calculated on the net total (after redemption) so customers can\'t earn points on points they redeemed.',
+                    bn: 'Subtotal → বিয়োগ promotion discount → বিয়োগ loyalty redemption → যোগ tax = মোট। অর্জিত লয়্যালটি net total-এর উপর হিসাব হয় (redemption-এর পরে) যাতে গ্রাহকরা যে পয়েন্ট redeem করেছেন সেগুলোতে পয়েন্ট পান না।',
+                },
+            },
+            {
+                q: { en: 'How do customers earn points?', bn: 'গ্রাহক কীভাবে পয়েন্ট অর্জন করেন?' },
+                a: {
+                    en: '1 point per integer currency unit of the net total — automatically, on every Finalized sale where a customer is linked. Walk-ins don\'t earn. Adjustments (manager bonus, complaint compensation) can be added manually via Customers → row → Adjust Loyalty.',
+                    bn: 'প্রতি পূর্ণ মুদ্রা ইউনিট net total-এ ১ পয়েন্ট — স্বয়ংক্রিয়ভাবে, প্রতিটি Finalized বিক্রিতে যেখানে গ্রাহক লিংকড। Walk-in পান না। Adjustment (manager বোনাস, অভিযোগের ক্ষতিপূরণ) ম্যানুয়ালি Customers → রো → Adjust Loyalty থেকে যোগ করা যায়।',
+                },
+            },
+            {
+                q: { en: 'Can a cashier preview the discount before finalizing?', bn: 'Finalize-এর আগে ক্যাশিয়ার কি ছাড়ের পরিমাণ প্রিভিউ করতে পারেন?' },
+                a: {
+                    en: 'Yes. Type the promo code in the POS, click Preview — the cart shows the resolved discount amount or a rejection reason ("minimum cart not met", "expired", "wrong product"). Nothing is committed until Finalize.',
+                    bn: 'হ্যাঁ। POS-এ promo কোড টাইপ করুন, Preview ক্লিক করুন — cart resolved ছাড়ের পরিমাণ বা প্রত্যাখ্যানের কারণ দেখায় ("minimum cart not met", "expired", "wrong product")। Finalize না করা পর্যন্ত কিছুই কমিট হয় না।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Reports ─────────────
+    {
+        id: 'reports',
+        routePrefix: '/reports',
+        icon: 'heroicons_outline:chart-bar',
+        title: { en: 'Reports', bn: 'রিপোর্ট' },
+        summary: {
+            en: 'Read-only rollups for sales, inventory, AR aging, and more.',
+            bn: 'বিক্রি, ইনভেন্টরি, AR aging ইত্যাদির শুধু-পঠন রোলআপ।',
+        },
+        questions: [
+            {
+                q: { en: 'Which reports are shipped today?', bn: 'বর্তমানে কোন রিপোর্টগুলো আছে?' },
+                a: {
+                    en: 'Sales summary (by-day / by-method / by-outlet), Top products, Inventory on-hand, Low stock, Expiring batches (pharmacy), Purchase summary, AR Aging (credit-sale balances bucketed 0-30 / 31-60 / 61-90 / 90+ days). Use the date-range and outlet filters to slice each report.',
+                    bn: 'Sales summary (দিন-ভিত্তিক / পদ্ধতি-ভিত্তিক / আউটলেট-ভিত্তিক), Top products, Inventory on-hand, Low stock, Expiring batches (Pharmacy), Purchase summary, AR Aging (ক্রেডিট-বিক্রির ব্যালেন্স ০-৩০ / ৩১-৬০ / ৬১-৯০ / ৯০+ দিনে ভাগ)। প্রতিটি রিপোর্ট slice করতে date-range ও আউটলেট ফিল্টার ব্যবহার করুন।',
+                },
+            },
+            {
+                q: { en: 'What does AR Aging tell me?', bn: 'AR Aging কী বলে?' },
+                a: {
+                    en: 'Who owes you money, sliced by how long it\'s been outstanding. Each row = one customer; columns = 0-30 days / 31-60 / 61-90 / 90+. Walk-in sales aren\'t counted (they can\'t buy on credit). Use it to chase overdue accounts.',
+                    bn: 'কে আপনার কাছে কত টাকা পাওনা, কতদিন ধরে — তার ভিত্তিতে slice। প্রতিটি রো = একজন গ্রাহক; কলাম = ০-৩০ দিন / ৩১-৬০ / ৬১-৯০ / ৯০+। Walk-in বিক্রি গণনা হয় না (তারা ক্রেডিটে কিনতে পারে না)। বকেয়া অ্যাকাউন্ট তাড়া করতে এটি ব্যবহার করুন।',
+                },
+            },
+            {
+                q: { en: 'Can I export reports to Excel?', bn: 'রিপোর্ট কি Excel-এ export করা যায়?' },
+                a: {
+                    en: 'Not natively today — reports render in the browser. Most report tables can be selected and pasted into Excel directly. CSV export is on the post-launch roadmap.',
+                    bn: 'আজ নেটিভভাবে না — রিপোর্ট ব্রাউজারে render হয়। বেশিরভাগ report টেবিল সিলেক্ট করে সরাসরি Excel-এ পেস্ট করা যায়। CSV export পোস্ট-লঞ্চ রোডম্যাপে আছে।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Audit Trail ─────────────
+    {
+        id: 'audit',
+        routePrefix: '/audit',
+        icon: 'heroicons_outline:shield-check',
+        title: { en: 'Audit Trail', bn: 'অডিট ট্রেইল' },
+        summary: {
+            en: 'Every Create / Update / Delete in the tenant DB is logged with old/new values. Use it for forensics.',
+            bn: 'Tenant DB-এ প্রতিটি Create / Update / Delete পুরনো/নতুন মান সহ লগ হয়। তদন্তের জন্য ব্যবহার করুন।',
+        },
+        questions: [
+            {
+                q: { en: 'Who can view the audit trail?', bn: 'অডিট ট্রেইল কে দেখতে পারেন?' },
+                a: {
+                    en: 'Admin by default. The "View Audit Trail" permission can also be granted to a custom role (e.g. an internal compliance role). The page is read-only by design — nobody can edit or delete trail rows.',
+                    bn: 'ডিফল্টভাবে Admin। "View Audit Trail" অনুমতি একটি কাস্টম role-কেও (যেমন অভ্যন্তরীণ compliance role) দেওয়া যায়। পৃষ্ঠাটি ডিজাইন অনুযায়ী শুধু-পঠন — কেউ trail রো এডিট বা ডিলিট করতে পারেন না।',
+                },
+            },
+            {
+                q: { en: 'How long are trail entries kept?', bn: 'Trail এন্ট্রি কতদিন রাখা হয়?' },
+                a: {
+                    en: 'Per-tenant retention (default 365 days). A daily background job at 02:00 UTC purges rows older than the cutoff. Set to 0 to keep forever. Configurable per tenant by root admin.',
+                    bn: 'প্রতি Tenant ভিত্তিক retention (ডিফল্ট ৩৬৫ দিন)। UTC ০২:০০-এ একটি দৈনিক background জব cut-off-এর চেয়ে পুরনো রো পরিষ্কার করে। চিরতরে রাখতে ০ সেট করুন। Root admin Tenant ভিত্তিক কনফিগার করতে পারেন।',
+                },
+            },
+            {
+                q: { en: 'How do I find who changed a specific record?', bn: 'একটি নির্দিষ্ট রেকর্ড কে পরিবর্তন করেছে — কীভাবে খুঁজব?' },
+                a: {
+                    en: 'Audit page → filter by Table (e.g. "Products") + Type (Update). Each row\'s expand arrow shows old vs new values side by side as JSON, plus the user id and timestamp. Filter further by date range or user id if you know them.',
+                    bn: 'Audit পৃষ্ঠা → Table দিয়ে ফিল্টার (যেমন "Products") + Type (Update)। প্রতিটি রো-এর expand তীর পুরনো বনাম নতুন মান JSON হিসেবে পাশাপাশি দেখায়, সাথে user id ও timestamp। জানা থাকলে date-range বা user id দিয়ে আরও ফিল্টার করুন।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Users & Roles ─────────────
+    {
+        id: 'users',
+        routePrefix: '/users',
+        icon: 'heroicons_outline:users',
+        title: { en: 'Users & Roles', bn: 'ইউজার ও রোল' },
+        summary: {
+            en: 'Add staff, assign roles (Manager / Cashier / InventoryClerk), scope them to specific outlets.',
+            bn: 'কর্মী যোগ করুন, রোল (Manager / Cashier / InventoryClerk) দিন, নির্দিষ্ট আউটলেটে scope করুন।',
+        },
+        questions: [
+            {
+                q: { en: 'What roles ship by default?', bn: 'ডিফল্টভাবে কোন কোন রোল আছে?' },
+                a: {
+                    en: 'Five built-in: Admin (everything), Manager (POS + back-office + reports + override authorization), Cashier (POS only — sell, return, park, look up sales, view their own shift), InventoryClerk (catalog + inventory + purchasing + transfers + reports — no POS), Basic (read-only personal profile). You can also build custom roles via Users → Roles.',
+                    bn: 'পাঁচটি বিল্ট-ইন: Admin (সব), Manager (POS + ব্যাক-অফিস + রিপোর্ট + override অনুমোদন), Cashier (শুধু POS — বিক্রি, রিটার্ন, park, sale খোঁজা, নিজের শিফট দেখা), InventoryClerk (catalog + inventory + purchasing + transfers + রিপোর্ট — POS নয়), Basic (শুধু-পঠন ব্যক্তিগত প্রোফাইল)। Users → Roles থেকে কাস্টম role-ও তৈরি করা যায়।',
+                },
+            },
+            {
+                q: { en: 'How do I scope a user to a specific outlet?', bn: 'একজন ইউজারকে নির্দিষ্ট আউটলেটে কীভাবে scope করব?' },
+                a: {
+                    en: 'Users → row → emerald store icon ("Manage Outlets") → tick the outlets they should access. Empty assignment = all outlets (default). One outlet ticked = they only see / sell / receive at that outlet. Admin / root always see everything.',
+                    bn: 'Users → রো → পান্না সবুজ store আইকন ("Manage Outlets") → তারা যেসব আউটলেটে অ্যাক্সেস পাবেন সেগুলো টিক করুন। কিছু না দিলে = সব আউটলেট (ডিফল্ট)। একটি আউটলেট টিক করলে = শুধু সেই আউটলেটে দেখা / বিক্রি / রিসিভ। Admin / root সবসময় সব দেখেন।',
+                },
+            },
+            {
+                q: { en: 'Can a user have multiple roles?', bn: 'একজন ইউজার কি একাধিক রোল পেতে পারেন?' },
+                a: {
+                    en: 'Yes — Users → row → violet roles icon ("Manage Roles") → tick all that apply. Permissions are the union: a user with both Manager + Cashier sees everything either role could.',
+                    bn: 'হ্যাঁ — Users → রো → বেগুনি roles আইকন ("Manage Roles") → প্রযোজ্য সব টিক করুন। অনুমতি union হয়: Manager + Cashier দুটো থাকলে দুটোর সব অনুমতি পাবেন।',
+                },
+            },
+            {
+                q: { en: 'A user forgot their password — how do I reset it without sending an email?', bn: 'একজন ইউজার পাসওয়ার্ড ভুলে গেছে — ইমেল না পাঠিয়ে কীভাবে রিসেট করব?' },
+                a: {
+                    en: 'Users → row → rose lock_reset icon. The dialog generates a strong temporary password (or you can type one). Tell the user via a secure channel — they\'ll be forced to change it on first sign-in. Requires "Update Users" permission.',
+                    bn: 'Users → রো → গোলাপী lock_reset আইকন। ডায়ালগ একটি শক্তিশালী অস্থায়ী পাসওয়ার্ড জেনারেট করে (অথবা আপনি টাইপ করতে পারেন)। ইউজারকে একটি নিরাপদ চ্যানেলে দিন — প্রথম সাইন-ইনে তিনি পাসওয়ার্ড পরিবর্তন করতে বাধ্য হবেন। "Update Users" অনুমতি প্রয়োজন।',
+                },
+            },
+        ],
+    },
 ];
