@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
+import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -9,11 +10,13 @@ import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
 import { SalesService } from 'app/core/sales/sales.service';
 import { SaleDto } from 'app/core/sales/sales.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
+import { BrandingProfilesService } from 'app/core/branding/branding.service';
+import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/branding.types';
 
 @Component({
     selector: 'app-sale-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatMenuModule, MatTableModule, MatTooltipModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -37,7 +40,22 @@ import { OutletsService } from 'app/core/outlets/outlets.service';
                           }">
                         <mat-icon class="icon-size-4 mr-1">{{ s.status === 'Finalized' ? 'check_circle' : s.status === 'Voided' ? 'cancel' : 'schedule' }}</mat-icon>{{ s.status }}
                     </span>
-                    <button mat-stroked-button class="h-12 px-6 rounded-lg" (click)="print(s)" *ngIf="s.status === 'Finalized'"><mat-icon class="icon-size-5 mr-2">print</mat-icon><span>Print Receipt</span></button>
+                    @if (s.status === 'Finalized') {
+                        <button mat-stroked-button class="h-12 px-6 rounded-lg" (click)="print(s)"><mat-icon class="icon-size-5 mr-2">print</mat-icon><span>Print Receipt</span></button>
+                        @if (profiles().length > 0) {
+                            <button mat-icon-button class="h-12 w-12 rounded-lg" [matMenuTriggerFor]="printMenu" matTooltip="Re-print as…"><mat-icon>more_vert</mat-icon></button>
+                            <mat-menu #printMenu="matMenu">
+                                <button mat-menu-item (click)="print(s)"><mat-icon>print</mat-icon><span>As saved (default)</span></button>
+                                <div class="text-xs text-gray-500 px-4 py-1 uppercase tracking-wider">Override profile</div>
+                                @for (p of profiles(); track p.id) {
+                                    <button mat-menu-item (click)="printAs(s, p.id)">
+                                        <mat-icon>receipt_long</mat-icon>
+                                        <span>{{ p.name }} · {{ paperLabels[p.paperFormat] }}</span>
+                                    </button>
+                                }
+                            </mat-menu>
+                        }
+                    }
                     <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/sales"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Back</span></button>
                 </div>
             </div>
@@ -109,6 +127,12 @@ import { OutletsService } from 'app/core/outlets/outlets.service';
                                 <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>Total</span><span>{{ s.total | number:'1.2-2' }}</span></div>
                                 <div class="flex justify-between text-sm pt-2"><span class="text-gray-600 dark:text-gray-400">Paid</span><span class="text-green-600 font-medium">{{ s.paidAmount | number:'1.2-2' }}</span></div>
                                 <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">Balance</span><span class="font-medium" [class.text-red-600]="s.balance > 0">{{ s.balance | number:'1.2-2' }}</span></div>
+                                @if (resolvedProfile(); as rp) {
+                                    <div class="flex justify-between text-xs pt-2 border-t border-gray-100 dark:border-gray-700 mt-1">
+                                        <span class="text-gray-500">Receipt template</span>
+                                        <span class="text-gray-700 dark:text-gray-300 font-medium">{{ rp.name }} · {{ paperLabels[rp.paperFormat] }}</span>
+                                    </div>
+                                }
                             </div>
                         </div>
 
@@ -130,17 +154,41 @@ export class SaleDetailComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly receiptPrint = inject(ReceiptPrintService);
     private readonly outletsApi = inject(OutletsService);
+    private readonly brandingApi = inject(BrandingProfilesService);
+
     sale = signal<SaleDto | null>(null);
+    profiles = signal<BrandingProfileDto[]>([]);
+    paperLabels = PAPER_FORMAT_LABELS;
+
+    /** The profile actually used for this sale (snapshotted at finalize time). */
+    resolvedProfile = computed(() => {
+        const s = this.sale();
+        if (!s?.brandingProfileId) return null;
+        return this.profiles().find(p => p.id === s.brandingProfileId) ?? null;
+    });
 
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id')!;
         this.api.get(id).subscribe(s => this.sale.set(s));
+        // Profiles list drives the override menu + the resolved-profile-name lookup.
+        this.brandingApi.getAll().subscribe({
+            next: rows => this.profiles.set((rows ?? []).filter(p => p.isActive)),
+            error: () => this.profiles.set([]),
+        });
     }
 
     print(sale: SaleDto): void {
         this.outletsApi.get(sale.outletId).subscribe({
             next: outlet => this.receiptPrint.print(sale, outlet),
             error: () => this.receiptPrint.print(sale),
+        });
+    }
+
+    /** Re-print using a specific profile id, ignoring the snapshotted one. */
+    printAs(sale: SaleDto, profileId: string): void {
+        this.outletsApi.get(sale.outletId).subscribe({
+            next: outlet => this.receiptPrint.print(sale, outlet, profileId),
+            error: () => this.receiptPrint.print(sale, undefined, profileId),
         });
     }
 }

@@ -29,6 +29,9 @@ export interface OutletDto {
     /** Tax/VAT/GST registration number printed on receipts. */
     taxId?: string;
 
+    /** Optional FK into BrandingProfiles. Drives the default receipt look at this outlet. */
+    defaultBrandingProfileId?: string;
+
     lastActivityDate?: string;
 
     createdOn: string;
@@ -66,6 +69,7 @@ export interface UpdateOutletRequest {
     postalCode?: string;
     primaryColor?: string;
     taxId?: string;
+    defaultBrandingProfileId?: string | null;
     timeZone?: string;
     currency?: string;
     language?: string;

@@ -25,6 +25,8 @@ import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
 import { ParkedCartsService, RecalledCartDto } from 'app/core/sales/parked-cart.service';
 import { CustomersService, SalesService } from 'app/core/sales/sales.service';
 import { CreateSaleLine, CreateSalePayment, CustomerDto, PaymentMethod, SaleDto } from 'app/core/sales/sales.types';
+import { BrandingProfilesService } from 'app/core/branding/branding.service';
+import { BrandingProfileDto } from 'app/core/branding/branding.types';
 import { PromotionsService } from 'app/core/marketing/marketing.service';
 import { PromotionDiscountPreview } from 'app/core/marketing/marketing.types';
 import { SaleLookupDialogComponent } from './sale-lookup-dialog.component';
@@ -125,6 +127,18 @@ interface CartLine extends CreateSaleLine {
                                 }
                             </mat-select>
                         </mat-form-field>
+                        @if (brandingProfiles().length > 0) {
+                            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!my-0 w-48"
+                                            matTooltip="Receipt template — falls back to outlet default if unset">
+                                <mat-label>Receipt</mat-label>
+                                <mat-select [(ngModel)]="brandingProfileId">
+                                    <mat-option [value]="null">— Outlet default —</mat-option>
+                                    @for (p of brandingProfiles(); track p.id) {
+                                        <mat-option [value]="p.id">{{ p.name }}</mat-option>
+                                    }
+                                </mat-select>
+                            </mat-form-field>
+                        }
                     </div>
                     @if (selectedCustomer(); as c) {
                         @if (c.loyaltyPoints > 0) {
@@ -304,10 +318,14 @@ export class PosComponent implements OnInit {
     private readonly dialog = inject(MatDialog);
     private readonly receiptPrint = inject(ReceiptPrintService);
     private readonly parkedApi = inject(ParkedCartsService);
+    private readonly brandingApi = inject(BrandingProfilesService);
 
     // Number of parked carts at the current outlet (badge on the Recall button).
     parkedCount = signal(0);
     parking = signal(false);
+
+    /** Active branding profiles available to the current tenant — drives the per-sale picker. */
+    brandingProfiles = signal<BrandingProfileDto[]>([]);
 
     outlets = signal<OutletDto[]>([]);
     products = signal<ProductDto[]>([]);
@@ -319,6 +337,8 @@ export class PosComponent implements OnInit {
 
     outletId: string | null = null;
     customerId: string | null = null;
+    /** Per-sale branding profile override. Pre-fills from outlet default on outlet change; null = use outlet default. */
+    brandingProfileId: string | null = null;
     search = signal('');
     promoCode = '';
     payMethod: PaymentMethod = 'Cash';
@@ -383,17 +403,31 @@ export class PosComponent implements OnInit {
             const match = remembered && o.find(x => x.id === remembered);
             this.outletId = match ? match.id : o[0].id;
             this.currentOutlet.set(this.outletId);
+            this.brandingProfileId = this.outletDefaultBranding();
             this.refreshShift();
             this.refreshParkedCount();
         });
         this.productsApi.getAll({ isActive: true }).subscribe(p => this.products.set(p));
         this.customersApi.getAll().subscribe(c => this.customers.set(c));
+        // Quietly ignore failures — cashier without View permission still gets a working POS,
+        // they just don't see the override picker (server falls back to outlet default).
+        this.brandingApi.getAll().subscribe({
+            next: rows => this.brandingProfiles.set((rows ?? []).filter(p => p.isActive)),
+            error: () => this.brandingProfiles.set([]),
+        });
     }
 
     onOutletChange(): void {
         this.currentOutlet.set(this.outletId);
+        this.brandingProfileId = this.outletDefaultBranding();
         this.refreshShift();
         this.refreshParkedCount();
+    }
+
+    /** The current outlet's default branding profile id, or null. */
+    private outletDefaultBranding(): string | null {
+        const o = this.outlets().find(x => x.id === this.outletId);
+        return o?.defaultBrandingProfileId ?? null;
     }
 
     private refreshParkedCount(): void {
@@ -545,6 +579,7 @@ export class PosComponent implements OnInit {
             payments,
             loyaltyPointsRedeemed: this.effectiveRedeem() > 0 ? this.effectiveRedeem() : undefined,
             discountAuthorizedByUserId,
+            brandingProfileId: this.brandingProfileId ?? undefined,
         }).subscribe({
             next: (id) => {
                 this.finalizing.set(false);

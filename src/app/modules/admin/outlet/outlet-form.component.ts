@@ -10,6 +10,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletType } from 'app/core/outlets/outlets.types';
+import { BrandingProfilesService } from 'app/core/branding/branding.service';
+import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/branding.types';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 
 @Component({
@@ -97,6 +99,16 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
                                 <mat-form-field class="w-full" appearance="outline"><mat-label>Tax / VAT / GST Number</mat-label><input matInput formControlName="taxId" placeholder="e.g. BIN 123-456-789"></mat-form-field>
                                 <mat-form-field class="w-full" appearance="outline"><mat-label>Brand Color (hex)</mat-label><input matInput formControlName="primaryColor" placeholder="#4F46E5"></mat-form-field>
                             </div>
+                            <mat-form-field class="w-full" appearance="outline">
+                                <mat-label>Default branding profile</mat-label>
+                                <mat-select formControlName="defaultBrandingProfileId">
+                                    <mat-option [value]="null">— Use outlet branding fields above —</mat-option>
+                                    @for (p of brandingProfiles(); track p.id) {
+                                        <mat-option [value]="p.id">{{ p.name }} · {{ paperLabels[p.paperFormat] }}</mat-option>
+                                    }
+                                </mat-select>
+                                <mat-hint>Drives the receipt look at this outlet. Per-sale override is still possible at POS.</mat-hint>
+                            </mat-form-field>
                             <div class="mt-4 flex items-start gap-4">
                                 <div class="w-32 h-32 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
                                     @if (logoPreview()) {
@@ -138,6 +150,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 })
 export class OutletFormComponent implements OnInit {
     private readonly api = inject(OutletsService);
+    private readonly brandingApi = inject(BrandingProfilesService);
     private readonly fb = inject(FormBuilder);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
@@ -150,6 +163,8 @@ export class OutletFormComponent implements OnInit {
     logoPreview = signal<SafeUrl | null>(null);
     logoUploading = signal(false);
     logoError = signal<string | null>(null);
+    brandingProfiles = signal<BrandingProfileDto[]>([]);
+    paperLabels = PAPER_FORMAT_LABELS;
     form: FormGroup = this.fb.group({
         code: ['', Validators.required],
         name: ['', Validators.required],
@@ -164,10 +179,13 @@ export class OutletFormComponent implements OnInit {
         postalCode: [''],
         primaryColor: [''],
         taxId: [''],
+        defaultBrandingProfileId: [null as string | null],
     });
 
     ngOnInit(): void {
         this.id = this.route.snapshot.paramMap.get('id');
+        // Profiles list populates the default-branding select for both create and edit.
+        this.brandingApi.getAll().subscribe(rows => this.brandingProfiles.set((rows ?? []).filter(p => p.isActive)));
         if (this.id) {
             this.api.get(this.id).subscribe(o => {
                 this.form.patchValue({
@@ -176,6 +194,7 @@ export class OutletFormComponent implements OnInit {
                     addressLine: o.addressLine, city: o.city, state: o.state,
                     country: o.country, postalCode: o.postalCode,
                     primaryColor: o.primaryColor, taxId: o.taxId,
+                    defaultBrandingProfileId: o.defaultBrandingProfileId ?? null,
                 });
                 this.form.get('code')?.disable();
                 this.form.get('tenantId')?.disable();

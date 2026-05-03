@@ -86,6 +86,8 @@ const sysNav: FuseNavigationItem = {
           meta: { permission: 'Permissions.Tenants.View' } },
         { id: 'outlet-management', title: 'Outlets', type: 'basic', icon: 'heroicons_outline:building-storefront', link: '/outlet',
           meta: { permission: 'Permissions.Outlets.View' } },
+        { id: 'branding-profiles', title: 'Branding Profiles', type: 'basic', icon: 'heroicons_outline:document-text', link: '/branding-profiles',
+          meta: { permission: 'Permissions.BrandingProfiles.View' } },
         { id: 'audit-trail', title: 'Audit Trail', type: 'basic', icon: 'heroicons_outline:clock', link: '/audit',
           meta: { permission: 'Permissions.AuditTrails.View' } },
     ],

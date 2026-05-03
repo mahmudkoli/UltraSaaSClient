@@ -77,6 +77,7 @@ export const appRoutes: Route[] = [
             {path: 'users', loadChildren: () => import('app/modules/admin/user/user.routes')},
             {path: 'tenant', loadChildren: () => import('app/modules/admin/tenant/tenant.routes')},
             {path: 'outlet', loadChildren: () => import('app/modules/admin/outlet/outlet.routes')},
+            {path: 'branding-profiles', loadChildren: () => import('app/modules/admin/branding/branding.routes')},
             {path: 'profile', loadChildren: () => import('app/modules/admin/profile/profile.routes')},
 
             // POS

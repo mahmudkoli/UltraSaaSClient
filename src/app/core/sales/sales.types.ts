@@ -41,6 +41,8 @@ export interface CreateSaleRequest {
     loyaltyPointsRedeemed?: number;
     /** UserId of a manager who authorized a price override on this sale (set after the verify-override flow). */
     discountAuthorizedByUserId?: string;
+    /** Optional override for the receipt branding profile. When omitted, the server falls back to the outlet's default. */
+    brandingProfileId?: string;
     notes?: string;
 }
 
@@ -89,6 +91,8 @@ export interface SaleDto {
     balance: number;
     status: 'Draft' | 'Finalized' | 'Voided';
     cashierUserId: string;
+    /** Snapshot of the branding profile chosen at finalize time (or the outlet default at that moment). Null when no profile applied. */
+    brandingProfileId?: string;
     notes?: string;
     items: SaleItemDto[];
     payments: PaymentDto[];
