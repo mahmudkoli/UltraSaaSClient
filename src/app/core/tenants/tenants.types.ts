@@ -60,6 +60,8 @@ export interface TenantDto {
     dataResidency: string;
     requiresGDPR: boolean;
     dataRetentionDays: number;
+    /** Days to keep Trail audit-log rows for this tenant before the daily purge job deletes them. Default 365; 0 = keep forever. */
+    auditRetentionDays: number;
     requires2FA: boolean;
     ipWhitelist?: string;
 
@@ -156,6 +158,8 @@ export interface CreateTenantRequest {
     maxOutlets?: number;
     maxUsers?: number;
     maxInstitutes?: number;
+    /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. Default 365. */
+    auditRetentionDays?: number;
 
     // ============= FEATURE FLAGS =============
     enableAdvancedReporting?: boolean;
@@ -221,6 +225,8 @@ export interface UpdateTenantRequest {
     maxOutlets?: number;
     maxUsers?: number;
     maxInstitutes?: number;
+    /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. */
+    auditRetentionDays?: number;
 
     // ============= FEATURE FLAGS =============
     enableAdvancedReporting?: boolean;
@@ -338,6 +344,8 @@ export interface UpdateResourceLimitsRequest {
     maxConcurrentUsers?: number;
     maxOutlets?: number;
     maxUsers?: number;
+    /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. */
+    auditRetentionDays?: number;
 }
 
 export interface ExtendValidityRequest {

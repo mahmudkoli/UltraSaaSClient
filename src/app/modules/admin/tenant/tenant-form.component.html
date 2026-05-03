@@ -354,6 +354,14 @@
                                         <mat-hint>Only active users count toward this limit.</mat-hint>
                                     </mat-form-field>
 
+                                    <!-- Audit Retention -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Audit Retention (days)</mat-label>
+                                        <input matInput formControlName="auditRetentionDays" type="number" min="0" max="3650" placeholder="365">
+                                        <mat-icon matSuffix>history</mat-icon>
+                                        <mat-hint>Days to keep Trail audit-log rows. Daily 02:00 UTC purge job deletes older. Set 0 to keep forever.</mat-hint>
+                                    </mat-form-field>
+
                                     <!-- Data Residency -->
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Data Residency</mat-label>

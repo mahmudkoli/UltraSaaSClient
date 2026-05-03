@@ -112,6 +112,7 @@ export class TenantFormComponent implements OnInit {
             maxConcurrentUsers: [50, [Validators.required, Validators.min(1)]],
             maxOutlets: [3, [Validators.required, Validators.min(1)]],
             maxUsers: [10, [Validators.required, Validators.min(1)]],
+            auditRetentionDays: [365, [Validators.min(0), Validators.max(3650)]],
             dataResidency: ['US', [Validators.required]],
             dataRetentionDays: [365, [Validators.required, Validators.min(30)]],
 
@@ -186,6 +187,7 @@ export class TenantFormComponent implements OnInit {
                     maxConcurrentUsers: tenant.maxConcurrentUsers || 50,
                     maxOutlets: tenant.maxOutlets || 3,
                     maxUsers: tenant.maxUsers || 10,
+                    auditRetentionDays: tenant.auditRetentionDays ?? 365,
                     dataResidency: tenant.dataResidency || 'US',
                     dataRetentionDays: tenant.dataRetentionDays || 365,
 
@@ -268,6 +270,7 @@ export class TenantFormComponent implements OnInit {
                 maxConcurrentUsers: formData.maxConcurrentUsers,
                 maxOutlets: formData.maxOutlets,
                 maxUsers: formData.maxUsers,
+                auditRetentionDays: formData.auditRetentionDays,
                 dataResidency: formData.dataResidency,
                 dataRetentionDays: formData.dataRetentionDays,
 
@@ -350,6 +353,7 @@ export class TenantFormComponent implements OnInit {
                 maxConcurrentUsers: formData.maxConcurrentUsers,
                 maxOutlets: formData.maxOutlets,
                 maxUsers: formData.maxUsers,
+                auditRetentionDays: formData.auditRetentionDays,
                 dataResidency: formData.dataResidency,
                 dataRetentionDays: formData.dataRetentionDays,
 
