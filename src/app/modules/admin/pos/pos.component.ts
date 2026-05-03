@@ -63,8 +63,12 @@ interface CartLine extends CreateSaleLine {
                             </mat-select>
                         </mat-form-field>
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
-                            <mat-label>Search SKU / name</mat-label>
-                            <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="e.g. PARA, iPhone..." />
+                            <mat-label>Search SKU / name / scan barcode</mat-label>
+                            <input matInput #searchInput
+                                   [ngModel]="search()" (ngModelChange)="search.set($event)"
+                                   (keyup.enter)="onSearchEnter()"
+                                   placeholder="Type or scan to add..." />
+                            <mat-icon matSuffix class="text-gray-400" matTooltip="Tip: scan a barcode to auto-add. Or type and press Enter to add the matching SKU.">qr_code_scanner</mat-icon>
                         </mat-form-field>
                         <button mat-stroked-button class="!min-w-0 !px-3 !h-14"
                                 (click)="openSaleLookup()"
@@ -546,6 +550,32 @@ export class PosComponent implements OnInit {
             next: s => this.currentShift.set(s ?? null),
             error: () => this.currentShift.set(null),
         });
+    }
+
+    /**
+     * Auto-add on Enter: resolves the search term to exactly one product
+     * (barcode match wins, falls back to exact SKU). Most barcode scanners
+     * end every scan with Enter, so this is the cashier's main scan path —
+     * one scan = one cart line, no click. Manual typing-then-Enter follows
+     * the same path. Multiple matches or no match: no-op (cashier keeps
+     * looking, no surprise add).
+     */
+    onSearchEnter(): void {
+        const term = this.search().trim();
+        if (!term) return;
+        const all = this.products();
+        // Barcode match is exact, case-sensitive (real barcodes are numeric).
+        let match = all.find(p => p.barcode && p.barcode === term);
+        if (!match) {
+            // SKU match is exact, case-insensitive (matches the domain's
+            // ToUpperInvariant on Product.SKU).
+            const lower = term.toLowerCase();
+            const skuMatches = all.filter(p => p.sku.toLowerCase() === lower);
+            if (skuMatches.length === 1) match = skuMatches[0];
+        }
+        if (!match) return; // ambiguous / no hit — let the cashier click manually
+        this.addToCart(match);
+        this.search.set('');
     }
 
     addToCart(p: ProductDto): void {
