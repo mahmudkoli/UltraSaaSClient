@@ -605,10 +605,11 @@ export class PosComponent implements OnInit, AfterViewInit {
             existing.quantity += 1;
             this.cart.set([...this.cart()]);
             this.recalc();
-            // Return focus to search so the cashier can scan / type the next item.
-            // Important when this came from a tile click — the click moved
-            // focus onto the button. The Enter / scan path already kept
-            // focus, but calling focusSearch in both paths is harmless.
+            // Clear the search and return focus so the cashier can immediately
+            // type / scan the next item. Mirrors the Enter / scan auto-add
+            // path (Phase 2.32) — having the typed-then-clicked path stay
+            // stuck on the previous query was an asymmetry / minor bug.
+            this.search.set('');
             setTimeout(() => this.focusSearch(), 0);
             return;
         }
@@ -643,8 +644,9 @@ export class PosComponent implements OnInit, AfterViewInit {
                 error: () => { /* keep base price on lookup failure */ },
             });
         }
-        // Same intent as the duplicate-line path above — refocus search after
-        // every add so a fast cashier can keep adding without re-clicking.
+        // Clear the search + refocus, so a fast cashier can keep adding without
+        // re-clicking or manually deleting the previous query.
+        this.search.set('');
         setTimeout(() => this.focusSearch(), 0);
     }
 
@@ -780,6 +782,10 @@ export class PosComponent implements OnInit, AfterViewInit {
                 this.payAmount = null;
                 this.customerId = null;
                 this.redeemPoints = 0;
+                // Refresh stock — the just-finalized sale decremented quantities
+                // server-side; the chips would otherwise stay stale until the
+                // cashier switches outlets or reloads.
+                this.refreshStock();
                 // Return focus to the search box so the next customer can be
                 // rung up immediately by typing / scanning.
                 setTimeout(() => this.focusSearch(), 0);
