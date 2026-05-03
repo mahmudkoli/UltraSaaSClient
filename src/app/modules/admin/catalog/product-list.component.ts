@@ -21,6 +21,7 @@ import { ProductPricingDialogComponent } from './product-pricing-dialog.componen
 import { ProductPharmacyDialogComponent } from './product-pharmacy-dialog.component';
 import { ProductElectronicsDialogComponent } from './product-electronics-dialog.component';
 import { ImportDialogComponent, ImportDialogConfig } from 'app/core/import/import-dialog.component';
+import { PrintLabelsDialogComponent, PrintLabelsDialogData } from 'app/core/barcode/print-labels-dialog.component';
 
 @Component({
     selector: 'app-product-list',
@@ -86,6 +87,7 @@ import { ImportDialogComponent, ImportDialogConfig } from 'app/core/import/impor
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
                                     <button mat-icon-button class="text-blue-600" [routerLink]="['../products', r.id]" matTooltip="Edit"><mat-icon class="icon-size-5">edit</mat-icon></button>
+                                    <button mat-icon-button class="text-teal-600" (click)="printLabels(r)" matTooltip="Print barcode labels"><mat-icon class="icon-size-5">qr_code_2</mat-icon></button>
                                     <button mat-icon-button class="text-amber-600" (click)="manageOutletPrices(r)" matTooltip="Outlet pricing"><mat-icon class="icon-size-5">price_change</mat-icon></button>
                                     @if (showElectronics()) {
                                         <button mat-icon-button class="text-sky-600" (click)="manageElectronics(r)" matTooltip="Electronics details"><mat-icon class="icon-size-5">memory</mat-icon></button>
@@ -217,5 +219,10 @@ export class ProductListComponent implements OnInit {
         };
         const ref = this.dialog.open(ImportDialogComponent, { width: '640px', data: config, disableClose: true });
         ref.afterClosed().subscribe(result => { if (result) this.load(); });
+    }
+
+    printLabels(r: ProductDto): void {
+        const data: PrintLabelsDialogData = { product: r };
+        this.dialog.open(PrintLabelsDialogComponent, { width: '520px', data });
     }
 }

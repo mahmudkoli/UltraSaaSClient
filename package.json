@@ -26,6 +26,7 @@
     "@angular/router": "17.0.3",
     "@ngneat/transloco": "6.0.0",
     "apexcharts": "3.44.0",
+    "bwip-js": "^4.10.1",
     "crypto-js": "^4.2.0",
     "highlight.js": "11.9.0",
     "lodash-es": "4.17.21",
