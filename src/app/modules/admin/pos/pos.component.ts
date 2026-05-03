@@ -160,7 +160,7 @@ interface CartLine extends CreateSaleLine {
             <div class="lg:w-1/2 flex flex-col gap-3">
                 <mat-card class="!p-2">
                     <div class="flex items-center gap-2">
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0 !max-w-md">
                             <mat-label>Customer (optional)</mat-label>
                             <mat-select [(ngModel)]="customerId" (ngModelChange)="onCustomerChange($event)">
                                 <mat-option [value]="null">— Walk-in —</mat-option>
