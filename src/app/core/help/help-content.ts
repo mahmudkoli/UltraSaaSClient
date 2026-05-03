@@ -69,6 +69,27 @@ export const HELP_CONTENT: HelpFeature[] = [
                     bn: 'না। Finalize হলে বিল আর পরিবর্তন করা যায় না — পেমেন্ট নেওয়া হয়ে গেছে, স্টক কেটে গেছে, ইনভয়েস নম্বর জেনারেট হয়ে গেছে। সংশোধন করতে হলে Returns ব্যবহার করতে হবে: বিক্রি ওপেন করুন, Process Return ক্লিক করুন, যে লাইন এবং কন্ডিশন (Resellable / Damaged) এবং রিফান্ড পদ্ধতি বেছে নিন।',
                 },
             },
+            {
+                q: { en: 'What does the small chip on each product card mean?', bn: 'প্রতিটি পণ্য কার্ডের ছোট চিপটি কী?' },
+                a: {
+                    en: 'It\'s the available stock at the current outlet, with the unit (e.g. "12 PCS", "2.5 KG", "0 PCS"). Color-coded: red when out of stock, amber when at or below the product\'s reorder level, gray otherwise. Hover for an explanation. The number reflects the live total — it updates after every sale, return, transfer, or stock adjustment.',
+                    bn: 'বর্তমান আউটলেটে উপলব্ধ স্টক, ইউনিট সহ (যেমন "12 PCS", "2.5 KG", "0 PCS")। রঙ অনুযায়ী: লাল = স্টক শূন্য, কমলা = পণ্যের রিঅর্ডার লেভেল বা তার নিচে, ধূসর = পর্যাপ্ত স্টক। ব্যাখ্যার জন্য মাউস ধরে রাখুন। সংখ্যাটি লাইভ — প্রতিটি বিক্রি, রিটার্ন, ট্রান্সফার, বা স্টক অ্যাডজাস্টমেন্টের পরে আপডেট হয়।',
+                },
+            },
+            {
+                q: { en: 'Some products look greyed out. Why?', bn: 'কিছু পণ্য ধূসর দেখাচ্ছে — কেন?' },
+                a: {
+                    en: 'They\'re out of stock at the current outlet (quantity ≤ 0). They stay clickable — the system will block the sale at finalize time if stock truly is 0, but you can still ring up "we have one in the back" sales by adding to cart. Use the "In stock only" toggle above the grid to hide them entirely.',
+                    bn: 'বর্তমান আউটলেটে স্টক শূন্য (পরিমাণ ≤ ০)। তবুও ক্লিকযোগ্য থাকে — যদি স্টক সত্যিই ০ হয় তবে সিস্টেম Finalize-এর সময় বিক্রি ব্লক করবে, কিন্তু "আমাদের একটি পিছনে আছে" এমন বিক্রি কার্টে যোগ করা যাবে। পুরোপুরি লুকাতে চাইলে গ্রিডের উপরে "In stock only" টগল ব্যবহার করুন।',
+                },
+            },
+            {
+                q: { en: 'Where is the "In stock only" toggle, and what does it do?', bn: '"In stock only" টগল কোথায়, এবং এটি কী করে?' },
+                a: {
+                    en: 'Just above the product grid, between the product count and the price column. ON (default) hides products with 0 stock at the current outlet. OFF shows everything. Useful when a back-room item arrived but hasn\'t been counted yet, or for a "we\'ll restock tomorrow" credit sale. Your preference resets per session.',
+                    bn: 'পণ্য গ্রিডের ঠিক উপরে, পণ্য সংখ্যা ও মূল্যের কলামের মাঝখানে। চালু (ডিফল্ট) — বর্তমান আউটলেটে শূন্য স্টকের পণ্য লুকায়। বন্ধ — সব পণ্য দেখায়। গুদামে আসা কিন্তু এখনও গণনা হয়নি এমন আইটেম, বা "কাল রিস্টক হবে" এমন ক্রেডিট বিক্রির জন্য উপযোগী। প্রতিটি সেশনে পছন্দ রিসেট হয়।',
+                },
+            },
         ],
     },
 
@@ -314,6 +335,13 @@ export const HELP_CONTENT: HelpFeature[] = [
                     bn: 'এটি ইচ্ছাকৃত। বিক্রির লাইন Finalize-এর মুহূর্তে পণ্যের নাম ও SKU snapshot করে রাখে যাতে পরে rename/retire করলেও পুরনো রিসিট পঠনযোগ্য থাকে। নিষ্ক্রিয় করলে শুধু POS পিকার থেকে পণ্যটি লুকায় — পুরনো বিক্রি অপরিবর্তিত থাকে।',
                 },
             },
+            {
+                q: { en: 'How do I bulk-import products from Excel?', bn: 'Excel থেকে একসাথে অনেক পণ্য কীভাবে আমদানি করব?' },
+                a: {
+                    en: 'On the Products list, click the "Import" button next to the + Add button. Download the template first (it shows the exact required columns: SKU, Name, Category, Brand, Unit, CostPrice, SellingPrice, TaxRate, plus optional Barcode / ReorderLevel / Description / IsActive). Fill in your data, save as .xlsx, upload. Pick a Mode: AutoCreate (default — missing categories / brands / units are created automatically; existing SKUs skipped), Update (existing SKUs get overwritten), or Strict (any missing reference fails the row). The result screen shows created / updated / skipped / failed counts plus row-level errors.',
+                    bn: 'Products তালিকায়, "+" Add বোতামের পাশে "Import" বোতামে ক্লিক করুন। প্রথমে টেমপ্লেট ডাউনলোড করুন (যা সঠিক প্রয়োজনীয় কলাম দেখায়: SKU, Name, Category, Brand, Unit, CostPrice, SellingPrice, TaxRate, এবং ঐচ্ছিক Barcode / ReorderLevel / Description / IsActive)। আপনার ডেটা পূরণ করুন, .xlsx হিসেবে সেভ করুন, আপলোড করুন। একটি Mode বাছুন: AutoCreate (ডিফল্ট — অনুপস্থিত categories / brands / units স্বয়ংক্রিয়ভাবে তৈরি হয়; বিদ্যমান SKU বাদ পড়ে), Update (বিদ্যমান SKU ওভাররাইট হয়), বা Strict (যেকোনো অনুপস্থিত রেফারেন্স রো ব্যর্থ করে)। ফলাফল স্ক্রিনে created / updated / skipped / failed সংখ্যা ও রো-ভিত্তিক ত্রুটি দেখানো হয়।',
+                },
+            },
         ],
     },
 
@@ -361,6 +389,20 @@ export const HELP_CONTENT: HelpFeature[] = [
                 a: {
                     en: 'Every change to stock writes one — by design. It\'s the audit trail. Sale → one Movement(Sale, -qty) per line. Goods Receipt → one Movement(GoodsReceipt, +qty) per line. Adjustment, Transfer in/out, Return, Damage, Recount — all logged. If a stock count looks wrong, the Movements list is your source of truth for "what happened, when, by whom."',
                     bn: 'স্টকের প্রতিটি পরিবর্তনে একটি এন্ট্রি — পরিকল্পনাগতভাবে। এটিই অডিট ট্রেইল। বিক্রি → প্রতি লাইনে একটি Movement(Sale, -পরিমাণ)। Goods Receipt → প্রতি লাইনে একটি Movement(GoodsReceipt, +পরিমাণ)। Adjustment, Transfer in/out, Return, Damage, Recount — সব লগ হয়। স্টক কাউন্ট ভুল মনে হলে "কখন, কী হয়েছিল, কে করেছে" তার সত্যের উৎস হলো Movements তালিকা।',
+                },
+            },
+            {
+                q: { en: 'How do I load opening-balance stock for the first time?', bn: 'প্রথমবারের জন্য opening-balance স্টক কীভাবে লোড করব?' },
+                a: {
+                    en: 'On Inventory > Stock On Hand, click the "Import" button at the top, OR use the on-screen "Import opening balances" banner that appears when an outlet has no stock yet. Download the template (columns: OutletCode, SKU, Quantity, optional Notes). Fill it in — one row per (outlet × SKU) combination — and upload as .xlsx. Each row creates a StockAdjustment with reason "OpeningBalance" so the audit trail clearly distinguishes bulk imports from manual corrections. Re-uploading the same file is idempotent: matching quantities are skipped, not failed.',
+                    bn: 'Inventory > Stock On Hand-এ, উপরে "Import" বোতাম ক্লিক করুন, বা যখন একটি আউটলেটে স্টক নেই তখন প্রদর্শিত "Import opening balances" ব্যানার ব্যবহার করুন। টেমপ্লেট ডাউনলোড করুন (কলাম: OutletCode, SKU, Quantity, ঐচ্ছিক Notes)। পূরণ করুন — প্রতি (আউটলেট × SKU) জোড়ার জন্য একটি রো — এবং .xlsx হিসেবে আপলোড করুন। প্রতিটি রো একটি StockAdjustment তৈরি করে কারণ "OpeningBalance" সহ যাতে অডিট ট্রেইল ম্যানুয়াল সংশোধন থেকে বাল্ক ইম্পোর্টকে আলাদা রাখে। একই ফাইল পুনরায় আপলোড করা idempotent: মিলে যাওয়া পরিমাণ skipped হয়, failed নয়।',
+                },
+            },
+            {
+                q: { en: 'Why does my product not appear at this outlet even though I imported it?', bn: 'আমি একটি পণ্য ইম্পোর্ট করার পরেও কেন এই আউটলেটে দেখা যাচ্ছে না?' },
+                a: {
+                    en: 'Products are tenant-wide (same catalog at every outlet), but stock is per-outlet. Importing a product creates the catalog row but not stock. To see the product on POS at a given outlet, either run the initial-stock import (recommended for migration), receive a Goods Receipt against that outlet, or post a manual Stock Adjustment with the desired opening quantity.',
+                    bn: 'পণ্য Tenant-ব্যাপী (প্রতিটি আউটলেটে একই ক্যাটালগ), কিন্তু স্টক প্রতি আউটলেটে। একটি পণ্য ইম্পোর্ট করলে ক্যাটালগ সারি তৈরি হয়, স্টক নয়। POS-এ একটি নির্দিষ্ট আউটলেটে পণ্য দেখতে: হয় initial-stock import চালান (মাইগ্রেশনের জন্য recommended), অথবা সেই আউটলেটে Goods Receipt রিসিভ করুন, বা পছন্দসই opening quantity সহ একটি ম্যানুয়াল Stock Adjustment পোস্ট করুন।',
                 },
             },
         ],
