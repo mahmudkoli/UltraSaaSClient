@@ -34,12 +34,18 @@ import { PosComponent } from './pos.component';
             .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:first-child  { flex: 0 0 32% !important; }
             .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:last-child   { flex: 1 1 0% !important; }
 
-            /* Override the inner cards' flex-1 + overflow-auto so the
-               whole column scrolls naturally instead of nested scroll
-               boxes (which fight with sticky positioning + look broken
-               at vertical orientations). */
-            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2 > mat-card.flex-1 {
+            /* Products column: the section is the scroll container, so the
+               product-grid card must be content-sized (no inner scroll box).
+               Otherwise we get nested scrolls that fight sticky positioning. */
+            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:first-child > mat-card.flex-1 {
                 flex: 0 0 auto !important;
+                overflow: visible !important;
+            }
+            /* Cart column: keep flex:1 so the cart card stretches to fill the
+               column when nearly empty (closes the dead band between Customer
+               and the sticky Payment row). Only kill the inner scroll so the
+               column itself scrolls when many lines are added. */
+            .pos-layout-touch app-pos > div > .lg\\:w-1\\/2:last-child > mat-card.flex-1 {
                 overflow: visible !important;
             }
 

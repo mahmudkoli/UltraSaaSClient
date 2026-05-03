@@ -145,7 +145,10 @@ interface CartLine extends CreateSaleLine {
                 <mat-card class="flex-1 overflow-auto !p-2">
                     <h3 class="font-semibold px-1 mb-2">Cart ({{ cart().length }} items)</h3>
                     @if (cart().length === 0) {
-                        <div class="text-center py-6 text-gray-500">Click a product on the left to add it.</div>
+                        <div class="flex flex-col items-center justify-center text-center py-10 text-gray-500 min-h-32">
+                            <mat-icon class="icon-size-12 text-gray-300 dark:text-gray-600 mb-2">shopping_cart</mat-icon>
+                            <div>Add a product to start.</div>
+                        </div>
                     } @else {
                         <table class="w-full text-sm">
                             <thead class="border-b">
