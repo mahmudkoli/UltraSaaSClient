@@ -69,7 +69,14 @@ interface CartLine extends CreateSaleLine {
                                    [ngModel]="search()" (ngModelChange)="search.set($event)"
                                    (keyup.enter)="onSearchEnter()"
                                    placeholder="Type or scan to add..." />
-                            <mat-icon matSuffix class="text-gray-400" matTooltip="Tip: scan a barcode to auto-add. Or type and press Enter to add the matching SKU.">qr_code_scanner</mat-icon>
+                            @if (search()) {
+                                <button matSuffix mat-icon-button type="button" aria-label="Clear search"
+                                        (click)="clearSearch()">
+                                    <mat-icon class="icon-size-5">close</mat-icon>
+                                </button>
+                            } @else {
+                                <mat-icon matSuffix class="text-gray-400" matTooltip="Tip: scan a barcode to auto-add. Or type and press Enter to add the matching SKU.">qr_code_scanner</mat-icon>
+                            }
                         </mat-form-field>
                         <button mat-stroked-button class="!min-w-0 !px-3 !h-14"
                                 (click)="openSaleLookup()"
@@ -492,6 +499,12 @@ export class PosComponent implements OnInit, AfterViewInit {
      * (e.g. early-lifecycle or while a dialog has trapped focus). */
     private focusSearch(): void {
         try { this.searchInput?.nativeElement.focus(); } catch { /* noop */ }
+    }
+
+    /** X-button handler: wipe the box and refocus so the cashier can type fresh. */
+    clearSearch(): void {
+        this.search.set('');
+        this.focusSearch();
     }
 
     ngOnInit(): void {
