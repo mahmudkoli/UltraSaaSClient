@@ -80,4 +80,14 @@ export class ProductsService {
         this.http.delete<string>(`${this.base}/${productId}/prices/${outletId}`);
     search = (req: SearchProductsRequest): Observable<PaginationResponse<ProductDto>> =>
         this.http.post<PaginationResponse<ProductDto>>(`${this.base}/search`, req);
+
+    // ── Bulk import (Phase 2.28) ───────────────────────────────────
+    /** Returns the URL of the .xlsx template (anonymous-readable; safe to put in an href). */
+    importTemplateUrl = (): string => `${this.base}/import/template`;
+    import = (file: File, mode: 'AutoCreate' | 'Strict' | 'Update' = 'AutoCreate') => {
+        const fd = new FormData();
+        fd.append('file', file, file.name);
+        return this.http.post<import('app/core/import/import.types').ProductImportSummary>(
+            `${this.base}/import?mode=${mode}`, fd);
+    };
 }

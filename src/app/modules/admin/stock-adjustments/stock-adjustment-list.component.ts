@@ -18,11 +18,13 @@ import { OutletDto } from 'app/core/outlets/outlets.types';
 import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 import { ProductsService } from 'app/core/catalog/catalog.service';
 import { ProductDto } from 'app/core/catalog/catalog.types';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { ImportDialogComponent, ImportDialogConfig } from 'app/core/import/import-dialog.component';
 
 @Component({
     selector: 'app-stock-adjustment-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -56,6 +58,7 @@ import { ProductDto } from 'app/core/catalog/catalog.types';
                         <mat-option value="Other">Other</mat-option>
                     </mat-select>
                 </mat-form-field>
+                <button mat-stroked-button class="!h-12 !px-4" (click)="openImport()" matTooltip="Bulk-import opening-balance stock"><mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon><span>Import</span></button>
                 <button mat-fab color="primary" routerLink="create" matTooltip="New adjustment"><mat-icon>add</mat-icon></button>
             </div>
         </div>
@@ -110,6 +113,7 @@ export class StockAdjustmentListComponent implements OnInit {
     private readonly outletsApi = inject(OutletsService);
     private readonly productsApi = inject(ProductsService);
     private readonly currentOutlet = inject(CurrentOutletService);
+    private readonly dialog = inject(MatDialog);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -160,4 +164,17 @@ export class StockAdjustmentListComponent implements OnInit {
     resetAndLoad(): void { this.pageIndex = 0; this.load(); }
     onPage(e: PageEvent): void { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
     onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
+
+    openImport(): void {
+        const config: ImportDialogConfig = {
+            title: 'Import opening-balance stock',
+            subtitle: 'Bulk-load stock counts per outlet from an Excel file. Run the Product import first — SKUs and outlet codes must already exist.',
+            templateUrl: this.api.importTemplateUrl(),
+            showModeSelector: false,
+            icon: 'archive_box',
+            submit: (file) => this.api.importInitialStock(file),
+        };
+        const ref = this.dialog.open(ImportDialogComponent, { width: '640px', data: config, disableClose: true });
+        ref.afterClosed().subscribe(result => { if (result) this.load(); });
+    }
 }

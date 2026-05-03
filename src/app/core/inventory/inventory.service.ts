@@ -141,6 +141,15 @@ export class StockAdjustmentsService {
 
     search = (req: SearchStockAdjustmentsRequest): Observable<PaginationResponse<StockAdjustmentDto>> =>
         this.http.post<PaginationResponse<StockAdjustmentDto>>(`${this.base}/search`, req);
+
+    // ── Bulk initial-stock import (Phase 2.29) ─────────────────────
+    importTemplateUrl = (): string => `${this.base}/import/template`;
+    importInitialStock = (file: File) => {
+        const fd = new FormData();
+        fd.append('file', file, file.name);
+        return this.http.post<import('app/core/import/import.types').InitialStockImportSummary>(
+            `${this.base}/import`, fd);
+    };
 }
 
 @Injectable({ providedIn: 'root' })

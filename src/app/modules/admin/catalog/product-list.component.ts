@@ -20,6 +20,7 @@ import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { ProductPricingDialogComponent } from './product-pricing-dialog.component';
 import { ProductPharmacyDialogComponent } from './product-pharmacy-dialog.component';
 import { ProductElectronicsDialogComponent } from './product-electronics-dialog.component';
+import { ImportDialogComponent, ImportDialogConfig } from 'app/core/import/import-dialog.component';
 
 @Component({
     selector: 'app-product-list',
@@ -50,6 +51,7 @@ import { ProductElectronicsDialogComponent } from './product-electronics-dialog.
                         @for (c of categories(); track c.id) { <mat-option [value]="c.id">{{ c.name }}</mat-option> }
                     </mat-select>
                 </mat-form-field>
+                <button mat-stroked-button class="!h-12 !px-4" (click)="openImport()" matTooltip="Bulk-import products from .xlsx"><mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon><span>Import</span></button>
                 <button mat-fab color="primary" routerLink="../products/create" matTooltip="Add new product"><mat-icon>add</mat-icon></button>
             </div>
         </div>
@@ -202,5 +204,18 @@ export class ProductListComponent implements OnInit {
             width: '640px',
             data: { product: r },
         });
+    }
+
+    openImport(): void {
+        const config: ImportDialogConfig = {
+            title: 'Import products',
+            subtitle: 'Bulk-create or update SKUs from an Excel file. Categories / brands / units auto-create when missing.',
+            templateUrl: this.api.importTemplateUrl(),
+            showModeSelector: true,
+            icon: 'cube',
+            submit: (file, mode) => this.api.import(file, mode),
+        };
+        const ref = this.dialog.open(ImportDialogComponent, { width: '640px', data: config, disableClose: true });
+        ref.afterClosed().subscribe(result => { if (result) this.load(); });
     }
 }
