@@ -158,8 +158,7 @@ interface CartLine extends CreateSaleLine {
 
             <!-- Right: cart + payment -->
             <div class="lg:w-1/2 flex flex-col gap-3">
-                <mat-card class="!p-3">
-                    <h3 class="font-semibold mb-2">Customer</h3>
+                <mat-card class="!p-2">
                     <div class="flex items-center gap-2">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
                             <mat-label>Customer (optional)</mat-label>
@@ -300,49 +299,49 @@ interface CartLine extends CreateSaleLine {
                 </mat-card>
 
                 <!-- Promo + totals -->
-                <mat-card class="!p-3">
-                    <div class="flex items-center gap-2 mb-3">
+                <mat-card class="!p-2">
+                    <div class="flex items-center gap-1 mb-1">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
                             <mat-label>Promo code</mat-label>
                             <input matInput [(ngModel)]="promoCode" />
                         </mat-form-field>
-                        <button mat-stroked-button class="!h-14" (click)="applyPromo()" [disabled]="!promoCode || cart().length === 0">
+                        <button mat-stroked-button class="!h-10 !min-w-0 !px-3" (click)="applyPromo()" [disabled]="!promoCode || cart().length === 0">
                             Apply
                         </button>
                         @if (promo()) {
-                            <button mat-icon-button (click)="clearPromo()" title="Clear promo">
-                                <mat-icon>close</mat-icon>
+                            <button mat-icon-button class="!w-8 !h-8" (click)="clearPromo()" title="Clear promo">
+                                <mat-icon class="icon-size-4">close</mat-icon>
                             </button>
                         }
                     </div>
                     @if (promo()) {
-                        <div class="text-sm" [class.text-green-600]="promo()!.eligible" [class.text-red-600]="!promo()!.eligible">
+                        <div class="text-xs" [class.text-green-600]="promo()!.eligible" [class.text-red-600]="!promo()!.eligible">
                             @if (promo()!.eligible) {
-                                <mat-icon class="!text-base align-middle mr-1">check_circle</mat-icon>
+                                <mat-icon class="!text-sm align-middle mr-1">check_circle</mat-icon>
                                 {{ promo()!.code }}: −{{ promo()!.discountAmount | number:'1.2-2' }}
                             } @else {
-                                <mat-icon class="!text-base align-middle mr-1">error</mat-icon>
+                                <mat-icon class="!text-sm align-middle mr-1">error</mat-icon>
                                 {{ promo()!.rejectionReason }}
                             }
                         </div>
                     }
 
-                    <div class="border-t pt-2 mt-2 space-y-1">
-                        <div class="flex justify-between text-sm"><span>Subtotal</span><span>{{ subTotal() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-sm"><span>Discount</span><span>−{{ totalDiscount() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-sm"><span>Tax</span><span>{{ totalTax() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-lg font-bold border-t pt-1"><span>Total</span><span>{{ grandTotal() | number:'1.2-2' }}</span></div>
+                    <div class="border-t pt-1.5 mt-1.5 space-y-0.5">
+                        <div class="flex justify-between text-xs"><span>Subtotal</span><span>{{ subTotal() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-xs"><span>Discount</span><span>−{{ totalDiscount() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-xs"><span>Tax</span><span>{{ totalTax() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-base font-bold border-t pt-0.5"><span>Total</span><span>{{ grandTotal() | number:'1.2-2' }}</span></div>
                         @if (effectiveRedeem() > 0) {
-                            <div class="flex justify-between text-sm text-amber-700 dark:text-amber-300"><span>Loyalty redeemed</span><span>−{{ effectiveRedeem() | number:'1.2-2' }}</span></div>
-                            <div class="flex justify-between text-md font-semibold"><span>Amount due</span><span>{{ amountDue() | number:'1.2-2' }}</span></div>
+                            <div class="flex justify-between text-xs text-amber-700 dark:text-amber-300"><span>Loyalty redeemed</span><span>−{{ effectiveRedeem() | number:'1.2-2' }}</span></div>
+                            <div class="flex justify-between text-sm font-semibold"><span>Amount due</span><span>{{ amountDue() | number:'1.2-2' }}</span></div>
                         }
                     </div>
                 </mat-card>
 
                 <!-- Payment -->
-                <mat-card class="!p-3">
-                    <div class="flex items-center gap-2 mb-2">
-                        <mat-form-field appearance="outline" class="!my-0">
+                <mat-card class="!p-2">
+                    <div class="flex items-center gap-1 mb-1">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!my-0 w-32">
                             <mat-label>Method</mat-label>
                             <mat-select [(ngModel)]="payMethod">
                                 <mat-option value="Cash">Cash</mat-option>
@@ -353,7 +352,7 @@ interface CartLine extends CreateSaleLine {
                                 <mat-option value="Credit">Credit (account)</mat-option>
                             </mat-select>
                         </mat-form-field>
-                        <mat-form-field appearance="outline" class="flex-1 !my-0">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
                             <mat-label>Amount tendered</mat-label>
                             <input matInput type="number" [(ngModel)]="payAmount" [placeholder]="amountDue().toFixed(2)" />
                         </mat-form-field>
