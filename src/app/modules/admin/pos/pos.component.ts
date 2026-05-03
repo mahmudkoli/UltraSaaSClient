@@ -33,6 +33,7 @@ import { PromotionDiscountPreview } from 'app/core/marketing/marketing.types';
 import { SaleLookupDialogComponent } from './sale-lookup-dialog.component';
 import { ParkedCartsDialogComponent } from './parked-carts-dialog.component';
 import { ManagerOverrideDialogComponent, ManagerOverrideResult } from './manager-override-dialog.component';
+import { QuickAddCustomerDialogComponent } from './quick-add-customer-dialog.component';
 
 interface CartLine extends CreateSaleLine {
     productName: string;
@@ -150,6 +151,10 @@ interface CartLine extends CreateSaleLine {
                             <mat-label>Customer (optional)</mat-label>
                             <mat-select [(ngModel)]="customerId" (ngModelChange)="onCustomerChange($event)">
                                 <mat-option [value]="null">— Walk-in —</mat-option>
+                                <mat-option [value]="ADD_CUSTOMER_SENTINEL" class="!text-emerald-700 dark:!text-emerald-300">
+                                    <mat-icon class="icon-size-4 align-middle mr-1">person_add</mat-icon>
+                                    <span class="align-middle">Add new customer…</span>
+                                </mat-option>
                                 @for (c of customers(); track c.id) {
                                     <mat-option [value]="c.id">{{ c.name }}{{ c.phone ? ' (' + c.phone + ')' : '' }}</mat-option>
                                 }
@@ -643,7 +648,29 @@ export class PosComponent implements OnInit {
         return Math.round((sub + sub * (l.taxRate / 100)) * 100) / 100;
     }
 
-    onCustomerChange(_id: string | null): void {
+    /**
+     * Sentinel option in the customer dropdown — picking it opens the quick-add
+     * dialog instead of selecting a real customer. String form so it never
+     * collides with a real Guid.
+     */
+    readonly ADD_CUSTOMER_SENTINEL = '__add_new_customer__';
+
+    onCustomerChange(id: string | null): void {
+        if (id === this.ADD_CUSTOMER_SENTINEL) {
+            // Reset selection immediately so the dropdown doesn't visually stay
+            // on "Add new customer…" while the dialog is open.
+            this.customerId = null;
+            const ref = this.dialog.open(QuickAddCustomerDialogComponent, { width: '460px' });
+            ref.afterClosed().subscribe((created: CustomerDto | undefined) => {
+                if (!created) return;
+                // Optimistic insert at the top of the list so the cashier sees
+                // the new row immediately; full refresh would also work but
+                // costs an extra round-trip during checkout flow.
+                this.customers.set([created, ...this.customers()]);
+                this.customerId = created.id;
+            });
+            return;
+        }
         // Reset loyalty redemption when the customer changes — points belong to a customer.
         this.redeemPoints = 0;
     }
