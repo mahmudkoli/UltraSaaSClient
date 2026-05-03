@@ -15,7 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { ProductsService, UnitsService } from 'app/core/catalog/catalog.service';
 import { ProductDto, UnitDto } from 'app/core/catalog/catalog.types';
-import { StocksService } from 'app/core/inventory/inventory.service';
+import { StocksService, StockSerialsService } from 'app/core/inventory/inventory.service';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
 import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
@@ -39,6 +39,13 @@ interface CartLine extends CreateSaleLine {
     productName: string;
     sku: string;
     taxRate: number;
+    /** Phase 2.36e — client-side validation state of `serialNumber`.
+     * 'pending' while the by-serial GET is in flight; 'valid' on a clean
+     * `InStock + correct outlet + correct product` match; 'invalid'
+     * otherwise. Pure UX hint — server is still authoritative at finalize. */
+    serialValidation?: 'pending' | 'valid' | 'invalid';
+    /** Human-readable reason when serialValidation === 'invalid'. */
+    serialError?: string;
 }
 
 @Component({
@@ -204,6 +211,12 @@ interface CartLine extends CreateSaleLine {
                             <span>One or more lines exceed available stock at this outlet. Adjust the qty before finalizing.</span>
                         </div>
                     }
+                    @if (cartHasSerialIssue()) {
+                        <div class="mb-2 p-2 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-sm text-rose-700 dark:text-rose-300 flex items-center gap-2">
+                            <mat-icon class="icon-size-5">error</mat-icon>
+                            <span>One or more serial numbers are not valid for this outlet / product. Hover the red icon for details.</span>
+                        </div>
+                    }
                     @if (cart().length === 0) {
                         <div class="flex flex-col items-center justify-center text-center py-10 text-gray-500 min-h-32">
                             <mat-icon class="icon-size-12 text-gray-300 dark:text-gray-600 mb-2">shopping_cart</mat-icon>
@@ -226,6 +239,22 @@ interface CartLine extends CreateSaleLine {
                                         <td class="px-1 py-2">
                                             <div class="font-medium">{{ line.productName }}</div>
                                             <div class="text-xs text-gray-500">{{ line.sku }}</div>
+                                            <div class="flex items-center gap-1 mt-1">
+                                                <input type="text"
+                                                       [(ngModel)]="line.serialNumber"
+                                                       (blur)="validateLineSerial(line)"
+                                                       placeholder="Serial / IMEI (optional)"
+                                                       class="text-[11px] font-mono w-40 border rounded px-1 py-0.5"
+                                                       [class.!border-rose-400]="line.serialValidation === 'invalid'"
+                                                       [class.!border-emerald-400]="line.serialValidation === 'valid'" />
+                                                @if (line.serialValidation === 'pending') {
+                                                    <mat-icon class="icon-size-4 text-gray-400 animate-pulse">hourglass_empty</mat-icon>
+                                                } @else if (line.serialValidation === 'valid') {
+                                                    <mat-icon class="icon-size-4 text-emerald-600" matTooltip="Serial is in stock at this outlet">check_circle</mat-icon>
+                                                } @else if (line.serialValidation === 'invalid') {
+                                                    <mat-icon class="icon-size-4 text-rose-600" [matTooltip]="line.serialError ?? 'Invalid serial'">error</mat-icon>
+                                                }
+                                            </div>
                                         </td>
                                         <td class="px-1">
                                             <div class="flex items-center justify-center gap-1">
@@ -363,6 +392,7 @@ export class PosComponent implements OnInit, AfterViewInit {
     private readonly productsApi = inject(ProductsService);
     private readonly unitsApi = inject(UnitsService);
     private readonly stocksApi = inject(StocksService);
+    private readonly serialsApi = inject(StockSerialsService);
     private readonly customersApi = inject(CustomersService);
     private readonly salesApi = inject(SalesService);
     private readonly promosApi = inject(PromotionsService);
@@ -510,11 +540,59 @@ export class PosComponent implements OnInit, AfterViewInit {
      * the same evaluation. */
     cartHasStockIssue = computed(() => this.cart().some(l => this.lineExceedsStock(l)));
 
+    /** True when any cart line has a typed-but-invalid serial. Pending state
+     * is tolerated (still in flight); only confirmed 'invalid' blocks. */
+    cartHasSerialIssue = computed(() => this.cart().some(l => l.serialValidation === 'invalid'));
+
     canFinalize = computed(() =>
         this.cart().length > 0
         && !!this.outletId
         && !this.cartHasStockIssue()
+        && !this.cartHasSerialIssue()
     );
+
+    /**
+     * Validate the typed serial on a cart line: GET /api/stockserials/by-serial/{sn}
+     * → check status === 'InStock' AND outletId matches the active outlet AND
+     * productId matches the line's product. Updates the line's
+     * serialValidation / serialError fields in place. Pure UX — server still
+     * does the authoritative check at finalize.
+     */
+    validateLineSerial(line: CartLine): void {
+        const sn = (line.serialNumber ?? '').trim();
+        if (!sn) {
+            line.serialValidation = undefined;
+            line.serialError = undefined;
+            return;
+        }
+        line.serialValidation = 'pending';
+        line.serialError = undefined;
+        this.serialsApi.bySerial(sn).subscribe({
+            next: (s) => {
+                if (s.status !== 'InStock') {
+                    line.serialValidation = 'invalid';
+                    line.serialError = `Serial is ${s.status}, not InStock.`;
+                } else if (s.outletId !== this.outletId) {
+                    line.serialValidation = 'invalid';
+                    line.serialError = 'Serial belongs to a different outlet.';
+                } else if (s.productId !== line.productId) {
+                    line.serialValidation = 'invalid';
+                    line.serialError = `Serial belongs to a different product.`;
+                } else {
+                    line.serialValidation = 'valid';
+                    line.serialError = undefined;
+                }
+                // Trigger a signal change so the template re-evaluates the
+                // cartHasSerialIssue computed.
+                this.cart.set([...this.cart()]);
+            },
+            error: () => {
+                line.serialValidation = 'invalid';
+                line.serialError = 'Serial not found.';
+                this.cart.set([...this.cart()]);
+            },
+        });
+    }
 
     ngAfterViewInit(): void {
         // Land on the search box ready to type / scan. setTimeout pushes the
@@ -657,9 +735,60 @@ export class PosComponent implements OnInit, AfterViewInit {
             const skuMatches = all.filter(p => p.sku.toLowerCase() === lower);
             if (skuMatches.length === 1) match = skuMatches[0];
         }
-        if (!match) return; // ambiguous / no hit — let the cashier click manually
-        this.addToCart(match);
-        this.search.set('');
+        if (match) {
+            this.addToCart(match);
+            this.search.set('');
+            return;
+        }
+        // No product match — the term might be a stock-serial number scanned
+        // off an electronics item's box. Try the by-serial lookup; on hit at
+        // the current outlet, add the product line with the serial pre-set.
+        // Killer feature for electronics shops: scan once, no manual typing.
+        this.serialsApi.bySerial(term).subscribe({
+            next: (serial) => {
+                if (serial.status !== 'InStock' || serial.outletId !== this.outletId) return;
+                const sProduct = all.find(p => p.id === serial.productId);
+                if (!sProduct) return;
+                this.addToCartWithSerial(sProduct, term);
+                this.search.set('');
+            },
+            error: () => { /* not a serial either — leave the search term, cashier picks manually */ },
+        });
+    }
+
+    /** Adds a fresh cart line for a serial-tracked item with the serial
+     * already populated + validated. Skips the duplicate-line merge from
+     * regular `addToCart` because each serial is a separate physical unit. */
+    addToCartWithSerial(p: ProductDto, serialNumber: string): void {
+        const newLine: CartLine = {
+            productId: p.id,
+            productName: p.name,
+            sku: p.sku,
+            quantity: 1,
+            unitPrice: p.sellingPrice,
+            discountAmount: 0,
+            taxRate: p.taxRate,
+            serialNumber,
+            serialValidation: 'valid',
+        };
+        this.cart.set([...this.cart(), newLine]);
+        this.recalc();
+        // Resolve outlet pricing (if any) — same path as addToCart, just for
+        // the just-pushed line.
+        if (this.outletId) {
+            this.productsApi.resolvePrice(p.id, this.outletId).subscribe({
+                next: r => {
+                    if (r.isOverride) {
+                        const updated = this.cart().map(l =>
+                            l === newLine ? { ...l, unitPrice: r.sellingPrice } : l);
+                        this.cart.set(updated);
+                        this.recalc();
+                    }
+                },
+                error: () => { /* keep base price */ },
+            });
+        }
+        setTimeout(() => this.focusSearch(), 0);
     }
 
     addToCart(p: ProductDto): void {
