@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { ProductsService } from 'app/core/catalog/catalog.service';
 import { ProductDto } from 'app/core/catalog/catalog.types';
+import { StocksService } from 'app/core/inventory/inventory.service';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
 import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
@@ -97,18 +98,41 @@ interface CartLine extends CreateSaleLine {
                 </mat-card>
 
                 <mat-card class="flex-1 overflow-auto !p-2">
+                    <!-- Stock filter toggle: hides products with 0 at the current outlet. -->
+                    <div class="flex items-center justify-between gap-2 px-1 py-1 mb-1.5 text-xs">
+                        <span class="text-gray-500">{{ filteredProducts().length }} product{{ filteredProducts().length === 1 ? '' : 's' }}</span>
+                        <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
+                            <input type="checkbox" [checked]="inStockOnly()" (change)="inStockOnly.set($any($event.target).checked)" class="accent-indigo-600">
+                            <span class="text-gray-600 dark:text-gray-300">In stock only</span>
+                        </label>
+                    </div>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
                         @for (p of filteredProducts(); track p.id) {
-                            <button class="border rounded p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700"
+                            <button class="border rounded p-2 text-left hover:bg-gray-50 dark:hover:bg-gray-700 relative"
+                                    [class.opacity-60]="stockFor(p.id) <= 0"
                                     (click)="addToCart(p)">
                                 <div class="font-medium text-sm">{{ p.name }}</div>
                                 <div class="text-xs text-gray-500">{{ p.sku }}</div>
-                                <div class="text-base font-semibold mt-1">{{ p.sellingPrice | number:'1.2-2' }}</div>
+                                <div class="flex items-center justify-between gap-2 mt-1">
+                                    <div class="text-base font-semibold">{{ p.sellingPrice | number:'1.2-2' }}</div>
+                                    <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
+                                          [class]="stockChipClass(p)"
+                                          [matTooltip]="stockFor(p.id) <= 0 ? 'Out of stock at this outlet' : (p.reorderLevel > 0 && stockFor(p.id) <= p.reorderLevel ? 'At or below reorder level (' + p.reorderLevel + ')' : 'In stock')">
+                                        {{ stockFor(p.id) | number:'1.0-3' }}
+                                    </span>
+                                </div>
                             </button>
                         }
                     </div>
                     @if (filteredProducts().length === 0) {
-                        <div class="text-center py-10 text-gray-500">No products. Create some in /catalog/products.</div>
+                        <div class="text-center py-10 text-gray-500">
+                            @if (inStockOnly() && products().length > 0) {
+                                <span>Nothing in stock at this outlet matches.</span>
+                                <button class="text-blue-600 underline ml-1" (click)="inStockOnly.set(false)">Show all anyway</button>
+                            } @else {
+                                <span>No products. Create some in /catalog/products.</span>
+                            }
+                        </div>
                     }
                 </mat-card>
             </div>
@@ -308,6 +332,7 @@ interface CartLine extends CreateSaleLine {
 export class PosComponent implements OnInit {
     private readonly outletsApi = inject(OutletsService);
     private readonly productsApi = inject(ProductsService);
+    private readonly stocksApi = inject(StocksService);
     private readonly customersApi = inject(CustomersService);
     private readonly salesApi = inject(SalesService);
     private readonly promosApi = inject(PromotionsService);
@@ -326,6 +351,17 @@ export class PosComponent implements OnInit {
 
     /** Active branding profiles available to the current tenant — drives the per-sale picker. */
     brandingProfiles = signal<BrandingProfileDto[]>([]);
+
+    /** Per-product stock at the *current* outlet. Map productId → quantity.
+     * Refreshed on outlet change. Empty map = "stock data not available yet"
+     * — we still let the cashier add to cart; the domain layer enforces the
+     * negative-stock guard at finalize time. */
+    stockByProduct = signal<Map<string, number>>(new Map());
+
+    /** When true (default), the product picker hides items with quantity ≤ 0
+     * at the current outlet. Toggle off to ring up "we have one in the back"
+     * sales — the finalize step will reject if stock truly is 0. */
+    inStockOnly = signal(true);
 
     outlets = signal<OutletDto[]>([]);
     products = signal<ProductDto[]>([]);
@@ -347,14 +383,35 @@ export class PosComponent implements OnInit {
 
     filteredProducts = computed(() => {
         const q = this.search().trim().toLowerCase();
+        const stocks = this.stockByProduct();
+        const inStockOnly = this.inStockOnly();
         const all = this.products();
-        if (!q) return all.slice(0, 60);
-        return all.filter(p =>
-            p.name.toLowerCase().includes(q)
-            || p.sku.toLowerCase().includes(q)
-            || (p.barcode ?? '').toLowerCase().includes(q)
-        ).slice(0, 60);
+        const matchesSearch = (p: ProductDto) =>
+            !q || p.name.toLowerCase().includes(q)
+               || p.sku.toLowerCase().includes(q)
+               || (p.barcode ?? '').toLowerCase().includes(q);
+        // Filter on stock only when we actually have stock data; an unfilled
+        // map means "stock not loaded yet" — show everything rather than hide
+        // the whole catalog while the request is in flight.
+        const passesStockFilter = (p: ProductDto) => {
+            if (!inStockOnly || stocks.size === 0) return true;
+            return (stocks.get(p.id) ?? 0) > 0;
+        };
+        return all.filter(p => matchesSearch(p) && passesStockFilter(p)).slice(0, 60);
     });
+
+    /** Stock quantity for a product at the current outlet. 0 if no stock row yet (never received). */
+    stockFor(productId: string): number {
+        return this.stockByProduct().get(productId) ?? 0;
+    }
+
+    /** CSS class for the stock chip — red ≤0, amber at/below reorder level, gray otherwise. */
+    stockChipClass(p: ProductDto): string {
+        const qty = this.stockFor(p.id);
+        if (qty <= 0) return 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300';
+        if (p.reorderLevel > 0 && qty <= p.reorderLevel) return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-300';
+        return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
+    }
 
     subTotal = computed(() =>
         this.cart().reduce((s, l) => s + Math.max(0, l.unitPrice * l.quantity - l.discountAmount), 0));
@@ -406,6 +463,7 @@ export class PosComponent implements OnInit {
             this.brandingProfileId = this.outletDefaultBranding();
             this.refreshShift();
             this.refreshParkedCount();
+            this.refreshStock();
         });
         this.productsApi.getAll({ isActive: true }).subscribe(p => this.products.set(p));
         this.customersApi.getAll().subscribe(c => this.customers.set(c));
@@ -422,6 +480,21 @@ export class PosComponent implements OnInit {
         this.brandingProfileId = this.outletDefaultBranding();
         this.refreshShift();
         this.refreshParkedCount();
+        this.refreshStock();
+    }
+
+    private refreshStock(): void {
+        if (!this.outletId) { this.stockByProduct.set(new Map()); return; }
+        this.stocksApi.byOutlet(this.outletId).subscribe({
+            next: rows => {
+                const map = new Map<string, number>();
+                for (const s of rows ?? []) map.set(s.productId, s.quantity);
+                this.stockByProduct.set(map);
+            },
+            // Quietly fall back to "no stock data" — the picker will show every
+            // product, and the finalize step still enforces stock invariants.
+            error: () => this.stockByProduct.set(new Map()),
+        });
     }
 
     /** The current outlet's default branding profile id, or null. */
