@@ -198,6 +198,12 @@ interface CartLine extends CreateSaleLine {
 
                 <mat-card class="flex-1 overflow-auto !p-2">
                     <h3 class="font-semibold px-1 mb-2">Cart ({{ cart().length }} items)</h3>
+                    @if (cartHasStockIssue()) {
+                        <div class="mb-2 p-2 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-sm text-rose-700 dark:text-rose-300 flex items-center gap-2">
+                            <mat-icon class="icon-size-5">error</mat-icon>
+                            <span>One or more lines exceed available stock at this outlet. Adjust the qty before finalizing.</span>
+                        </div>
+                    }
                     @if (cart().length === 0) {
                         <div class="flex flex-col items-center justify-center text-center py-10 text-gray-500 min-h-32">
                             <mat-icon class="icon-size-12 text-gray-300 dark:text-gray-600 mb-2">shopping_cart</mat-icon>
@@ -233,7 +239,10 @@ interface CartLine extends CreateSaleLine {
                                                 <input type="number" min="1" step="0.01"
                                                        [(ngModel)]="line.quantity"
                                                        (ngModelChange)="recalc()"
-                                                       class="w-12 border rounded px-1 py-0.5 text-right" />
+                                                       class="w-12 border rounded px-1 py-0.5 text-right"
+                                                       [class.!border-rose-400]="lineExceedsStock(line)"
+                                                       [class.!text-rose-600]="lineExceedsStock(line)"
+                                                       [matTooltip]="lineExceedsStock(line) ? ('Only ' + stockFor(line.productId) + ' in stock at this outlet') : ''" />
                                                 <button type="button"
                                                         (click)="nudgeQty(line, 1)"
                                                         class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
@@ -487,7 +496,25 @@ export class PosComponent implements OnInit, AfterViewInit {
     /** Amount the cashier still needs to collect after loyalty deduction. */
     amountDue = computed(() => Math.max(0, this.grandTotal() - this.effectiveRedeem()));
 
-    canFinalize = computed(() => this.cart().length > 0 && !!this.outletId);
+    /** True for any cart line whose quantity exceeds available stock at the
+     * current outlet. Stock-data-not-loaded → no warning (don't block sales
+     * because the chip data hasn't arrived yet). */
+    lineExceedsStock = (line: CartLine): boolean => {
+        const stockMap = this.stockByProduct();
+        if (stockMap.size === 0) return false;
+        const available = stockMap.get(line.productId) ?? 0;
+        return line.quantity > available;
+    };
+
+    /** Computed once per change so the Finalize button + warning banner share
+     * the same evaluation. */
+    cartHasStockIssue = computed(() => this.cart().some(l => this.lineExceedsStock(l)));
+
+    canFinalize = computed(() =>
+        this.cart().length > 0
+        && !!this.outletId
+        && !this.cartHasStockIssue()
+    );
 
     ngAfterViewInit(): void {
         // Land on the search box ready to type / scan. setTimeout pushes the
@@ -516,6 +543,7 @@ export class PosComponent implements OnInit, AfterViewInit {
             const remembered = this.currentOutlet.outletId();
             const match = remembered && o.find(x => x.id === remembered);
             this.outletId = match ? match.id : o[0].id;
+            this.prevOutletId = this.outletId;
             this.currentOutlet.set(this.outletId);
             this.brandingProfileId = this.outletDefaultBranding();
             this.refreshShift();
@@ -542,7 +570,29 @@ export class PosComponent implements OnInit, AfterViewInit {
         });
     }
 
+    /** Previous outletId, captured BEFORE ngModel applies the new value, so we
+     * can revert if the cashier cancels the "discard cart?" confirm. */
+    private prevOutletId: string | null = null;
+
     onOutletChange(): void {
+        // Guard: switching outlets mid-sale silently abandoned the cart pre-2.36d.
+        // Now we confirm — cancel rolls the picker back, OK clears the cart so
+        // the new outlet's stock chips / shift / parked-cart state align.
+        if (this.cart().length > 0 && this.prevOutletId && this.outletId !== this.prevOutletId) {
+            const n = this.cart().length;
+            const ok = confirm(`Switching outlets will discard your cart of ${n} item${n === 1 ? '' : 's'}. Continue?`);
+            if (!ok) {
+                this.outletId = this.prevOutletId;
+                return;
+            }
+            this.cart.set([]);
+            this.promo.set(null);
+            this.promoCode = '';
+            this.payAmount = null;
+            this.customerId = null;
+            this.redeemPoints = 0;
+        }
+        this.prevOutletId = this.outletId;
         this.currentOutlet.set(this.outletId);
         this.brandingProfileId = this.outletDefaultBranding();
         this.refreshShift();
