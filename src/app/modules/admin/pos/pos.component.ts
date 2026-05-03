@@ -341,7 +341,7 @@ interface CartLine extends CreateSaleLine {
                 <!-- Payment -->
                 <mat-card class="!p-2">
                     <div class="flex items-center gap-1 mb-1">
-                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!my-0 w-32">
+                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!my-0 w-44">
                             <mat-label>Method</mat-label>
                             <mat-select [(ngModel)]="payMethod">
                                 <mat-option value="Cash">Cash</mat-option>
