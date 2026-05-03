@@ -326,14 +326,14 @@ interface CartLine extends CreateSaleLine {
                         </div>
                     }
 
-                    <div class="border-t pt-1.5 mt-1.5 space-y-0.5">
-                        <div class="flex justify-between text-xs"><span>Subtotal</span><span>{{ subTotal() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-xs"><span>Discount</span><span>−{{ totalDiscount() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-xs"><span>Tax</span><span>{{ totalTax() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-base font-bold border-t pt-0.5"><span>Total</span><span>{{ grandTotal() | number:'1.2-2' }}</span></div>
+                    <div class="border-t pt-2 mt-1.5 space-y-1">
+                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">Subtotal</span><span class="font-medium tabular-nums">{{ subTotal() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">Discount</span><span class="font-medium tabular-nums">−{{ totalDiscount() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">Tax</span><span class="font-medium tabular-nums">{{ totalTax() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-lg font-bold border-t pt-1 mt-0.5"><span>Total</span><span class="tabular-nums">{{ grandTotal() | number:'1.2-2' }}</span></div>
                         @if (effectiveRedeem() > 0) {
-                            <div class="flex justify-between text-xs text-amber-700 dark:text-amber-300"><span>Loyalty redeemed</span><span>−{{ effectiveRedeem() | number:'1.2-2' }}</span></div>
-                            <div class="flex justify-between text-sm font-semibold"><span>Amount due</span><span>{{ amountDue() | number:'1.2-2' }}</span></div>
+                            <div class="flex justify-between text-sm text-amber-700 dark:text-amber-300"><span>Loyalty redeemed</span><span class="font-medium tabular-nums">−{{ effectiveRedeem() | number:'1.2-2' }}</span></div>
+                            <div class="flex justify-between text-base font-semibold"><span>Amount due</span><span class="tabular-nums">{{ amountDue() | number:'1.2-2' }}</span></div>
                         }
                     </div>
                 </mat-card>
