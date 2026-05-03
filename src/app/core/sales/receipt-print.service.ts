@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { firstValueFrom, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
+import bwipjs from 'bwip-js';
 import { environment } from 'environments/environment';
 import { OutletDto } from 'app/core/outlets/outlets.types';
 import { TenantInfoService } from 'app/core/auth/tenant-info.service';
@@ -243,6 +244,8 @@ export class ReceiptPrintService {
     .pmt{border-top:1px dashed #999;padding-top:4px;margin-top:4px}
     hr{border:none;border-top:1px dashed #999;margin:6px 0}
     .footer{text-align:center;font-size:10px;color:#666;margin-top:8px;padding-top:6px;border-top:2px solid ${accent}}
+    .barcode{display:flex;justify-content:center;margin:4px 0 2px}
+    .barcode svg{max-width:100%;height:38px}
     @media print { @page { margin:0 } body { padding:8px;width:auto } }
 </style></head><body>
 <div class="accent-strip"></div>
@@ -250,6 +253,7 @@ ${headerBlock}
 <div class="invoice-meta">
     <div class="num">${e(sale.invoiceNumber)}</div>
     <div>${new Date(sale.saleDate).toLocaleString()}</div>
+    <div class="barcode">${this.renderInvoiceBarcode(sale.invoiceNumber, 'thermal')}</div>
 </div>
 ${sale.customerName ? `<div class="customer">Customer: ${e(sale.customerName)}${sale.customerPhone ? ' · ' + e(sale.customerPhone) : ''}</div>` : ''}
 <hr>
@@ -323,6 +327,8 @@ ${sale.balance && sale.balance > 0 ? `<div style="text-align:right;font-size:11p
     .head .invblock{text-align:right;min-width:200px}
     .head .invblock .num{font-family:'Courier New',monospace;font-weight:700;font-size:16px;letter-spacing:0.5px}
     .head .invblock .meta{font-size:11px;color:#555;line-height:1.5;margin-top:4px}
+    .head .invblock .barcode{display:flex;justify-content:flex-end;margin:6px 0 2px}
+    .head .invblock .barcode svg{max-height:34px;max-width:200px}
     .billing{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:14px}
     .billing .box{border:1px solid #e5e7eb;border-radius:6px;padding:10px 12px;background:#fafafa}
     .billing .box .name{font-weight:700;font-size:13px}
@@ -362,6 +368,7 @@ ${sale.balance && sale.balance > 0 ? `<div style="text-align:right;font-size:11p
     <div class="invblock">
         <h1>Invoice</h1>
         <div class="num">${e(sale.invoiceNumber)}</div>
+        <div class="barcode">${this.renderInvoiceBarcode(sale.invoiceNumber, 'a4')}</div>
         <div class="meta">
             Issued ${new Date(sale.saleDate).toLocaleDateString()}<br>
             Status: ${e(sale.status)}
@@ -419,6 +426,30 @@ ${ctx.headerText ? `<div class="header-text">${e(ctx.headerText)}</div>` : ''}
     <div style="margin-top:2px;font-size:9px">Powered by UltraPOS</div>
 </div>
 </body></html>`;
+    }
+
+    /**
+     * Renders a small Code128 of the invoice number — printed on every
+     * receipt so a return-desk cashier can scan instead of typing into the
+     * Find Sale dialog. Inline SVG so the popup stays self-contained.
+     * Failure mode: invalid Code128 inputs (e.g. very long invoice numbers)
+     * fall back to empty string — the receipt still prints, just without
+     * the scannable barcode.
+     */
+    private renderInvoiceBarcode(invoiceNumber: string, format: 'thermal' | 'a4'): string {
+        try {
+            return bwipjs.toSVG({
+                bcid: 'code128',
+                text: invoiceNumber,
+                scale: format === 'a4' ? 2 : 1.6,
+                height: format === 'a4' ? 8 : 6,
+                includetext: false,
+                paddingwidth: 0,
+                paddingheight: 0,
+            });
+        } catch {
+            return '';
+        }
     }
 
     private escape(s: string): string {
