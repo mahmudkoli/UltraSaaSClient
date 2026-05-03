@@ -13,8 +13,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
-import { ProductsService } from 'app/core/catalog/catalog.service';
-import { ProductDto } from 'app/core/catalog/catalog.types';
+import { ProductsService, UnitsService } from 'app/core/catalog/catalog.service';
+import { ProductDto, UnitDto } from 'app/core/catalog/catalog.types';
 import { StocksService } from 'app/core/inventory/inventory.service';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
@@ -118,7 +118,7 @@ interface CartLine extends CreateSaleLine {
                                     <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
                                           [class]="stockChipClass(p)"
                                           [matTooltip]="stockFor(p.id) <= 0 ? 'Out of stock at this outlet' : (p.reorderLevel > 0 && stockFor(p.id) <= p.reorderLevel ? 'At or below reorder level (' + p.reorderLevel + ')' : 'In stock')">
-                                        {{ stockFor(p.id) | number:'1.0-3' }}
+                                        {{ stockLabel(p) }}
                                     </span>
                                 </div>
                             </button>
@@ -332,6 +332,7 @@ interface CartLine extends CreateSaleLine {
 export class PosComponent implements OnInit {
     private readonly outletsApi = inject(OutletsService);
     private readonly productsApi = inject(ProductsService);
+    private readonly unitsApi = inject(UnitsService);
     private readonly stocksApi = inject(StocksService);
     private readonly customersApi = inject(CustomersService);
     private readonly salesApi = inject(SalesService);
@@ -362,6 +363,10 @@ export class PosComponent implements OnInit {
      * at the current outlet. Toggle off to ring up "we have one in the back"
      * sales — the finalize step will reject if stock truly is 0. */
     inStockOnly = signal(true);
+
+    /** Units indexed by id. Used to render the stock chip with its unit code
+     * (e.g. "12 PCS", "2.5 KG"); a number alone is ambiguous for weight items. */
+    unitsById = signal<Map<string, UnitDto>>(new Map());
 
     outlets = signal<OutletDto[]>([]);
     products = signal<ProductDto[]>([]);
@@ -403,6 +408,20 @@ export class PosComponent implements OnInit {
     /** Stock quantity for a product at the current outlet. 0 if no stock row yet (never received). */
     stockFor(productId: string): number {
         return this.stockByProduct().get(productId) ?? 0;
+    }
+
+    /** Renders the stock chip text — number + unit code with the right decimal
+     * precision. e.g. "12 PCS", "2.5 KG", "0 PCS". Falls back to bare number
+     * when the unit isn't loaded yet. */
+    stockLabel(p: ProductDto): string {
+        const qty = this.stockFor(p.id);
+        const unit = p.unitId ? this.unitsById().get(p.unitId) : undefined;
+        const decimals = unit?.decimalPlaces ?? 0;
+        const num = qty.toLocaleString(undefined, {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: Math.min(decimals, 3),
+        });
+        return unit?.code ? `${num} ${unit.code}` : num;
     }
 
     /** CSS class for the stock chip — red ≤0, amber at/below reorder level, gray otherwise. */
@@ -466,6 +485,16 @@ export class PosComponent implements OnInit {
             this.refreshStock();
         });
         this.productsApi.getAll({ isActive: true }).subscribe(p => this.products.set(p));
+        // Units feed the stock-chip's unit code (e.g. "12 PCS", "2.5 KG").
+        // Tenant-wide list, fetched once at load — units rarely change at runtime.
+        this.unitsApi.getAll().subscribe({
+            next: units => {
+                const map = new Map<string, UnitDto>();
+                for (const u of units ?? []) map.set(u.id, u);
+                this.unitsById.set(map);
+            },
+            error: () => this.unitsById.set(new Map()),
+        });
         this.customersApi.getAll().subscribe(c => this.customers.set(c));
         // Quietly ignore failures — cashier without View permission still gets a working POS,
         // they just don't see the override picker (server falls back to outlet default).
