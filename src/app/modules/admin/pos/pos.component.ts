@@ -605,6 +605,11 @@ export class PosComponent implements OnInit, AfterViewInit {
             existing.quantity += 1;
             this.cart.set([...this.cart()]);
             this.recalc();
+            // Return focus to search so the cashier can scan / type the next item.
+            // Important when this came from a tile click — the click moved
+            // focus onto the button. The Enter / scan path already kept
+            // focus, but calling focusSearch in both paths is harmless.
+            setTimeout(() => this.focusSearch(), 0);
             return;
         }
 
@@ -638,6 +643,9 @@ export class PosComponent implements OnInit, AfterViewInit {
                 error: () => { /* keep base price on lookup failure */ },
             });
         }
+        // Same intent as the duplicate-line path above — refocus search after
+        // every add so a fast cashier can keep adding without re-clicking.
+        setTimeout(() => this.focusSearch(), 0);
     }
 
     removeLine(idx: number): void {
