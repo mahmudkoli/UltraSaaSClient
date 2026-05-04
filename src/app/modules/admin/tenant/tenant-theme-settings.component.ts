@@ -276,6 +276,11 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
         this.tenantThemeService.saveTheme(this.tenantId, config).subscribe({
             next: () => {
                 this.isSaving = false;
+                // Apply to the live Fuse config so the rest of the app picks
+                // up the new theme without a refresh, and clear originalConfig
+                // so ngOnDestroy doesn't revert it on the navigate-away below.
+                this.tenantThemeService.applyTheme(config);
+                this.originalConfig = null;
                 this.notificationService.success('Theme settings saved successfully');
                 this.router.navigate(['/tenant']);
             },
