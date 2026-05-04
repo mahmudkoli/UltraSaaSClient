@@ -235,6 +235,13 @@ export interface UpdateTenantRequest {
     enableBackupRestore?: boolean;
     enableMultipleDatabases?: boolean;
 
+    // ============= VERTICAL (Phase 2.38c) =============
+    /** Pivots the vertical. Backend persists alongside other fields; the frontend
+     * form gates this behind the orphan-data confirmation dialog. */
+    businessType?: BusinessType;
+    /** Outlet display label (default "Outlet"; Pharmacy / Branch / Store / etc.). */
+    outletLabel?: string;
+
     // ============= BACKWARD COMPATIBILITY =============
     /** @deprecated Use systemName instead */
     name?: string;

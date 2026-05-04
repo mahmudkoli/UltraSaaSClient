@@ -240,84 +240,36 @@ export class TenantFormComponent implements OnInit {
         const formData = this.tenantForm.getRawValue();
 
         if (this.isEditMode && this.tenantId) {
-            // Update existing tenant
-            const updateRequest: UpdateTenantRequest = {
-                id: this.tenantId,
-                name: formData.systemName,
-                adminEmail: formData.technicalAdminEmail,
-                url: formData.subdomain,
-                connectionString: formData.connectionString || undefined,
-                isShared: formData.isShared,
-                issuer: formData.issuer || undefined,
-                customDomain: formData.customDomain || undefined,
+            // If the BusinessType / OutletLabel dropdown changed, that's a
+            // vertical pivot — show the orphan-data warning before letting it ride.
+            const newType = (formData.businessType ?? 'Generic') as string;
+            const newLabel = ((formData.outletLabel as string) ?? '').trim() || 'Outlet';
+            const verticalChanged = newType !== this.originalBusinessType
+                || newLabel !== this.originalOutletLabel;
 
-                // POS layout
-                posLayout: formData.posLayout || undefined,
+            if (verticalChanged) {
+                const dlg = this._fuseConfirmationService.open({
+                    title: 'Change Business Type?',
+                    message: `This will change <b>${this.tenantId}</b> from <b>${this.originalBusinessType}</b> (label "${this.originalOutletLabel}") to <b>${newType}</b> (label "${newLabel}"). Existing batches, serials, prescriptions and other vertical-specific data are <b>not</b> migrated — they stay in the database but won't be reachable from the new vertical's UI. Continue?`,
+                    icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+                    actions: { confirm: { label: 'Continue', color: 'warn' }, cancel: { label: 'Cancel' } },
+                });
+                dlg.afterClosed().subscribe(result => {
+                    if (result !== 'confirmed') {
+                        // Revert the vertical fields on the form so the next save doesn't re-trigger.
+                        this.tenantForm.patchValue({
+                            businessType: this.originalBusinessType,
+                            outletLabel: this.originalOutletLabel,
+                        });
+                        this.saving = false;
+                        return;
+                    }
+                    this.persistEditUpdate(formData, newType, newLabel, /*verticalChanged*/ true);
+                });
+                return;
+            }
 
-                // Billing & Subscription
-                billingPlan: formData.billingPlan,
-                monthlyFee: formData.monthlyFee,
-                billingCurrency: formData.billingCurrency,
-                billingEmail: formData.billingEmail,
-                paymentStatus: formData.paymentStatus,
-                supportTier: formData.supportTier,
-                accountManagerEmail: formData.accountManagerEmail || undefined,
-                emergencyContact: formData.emergencyContact || undefined,
-
-                // System Limits
-                maxDatabaseGB: formData.maxDatabaseGB,
-                maxApiCallsPerMonth: formData.maxApiCallsPerMonth,
-                maxConcurrentUsers: formData.maxConcurrentUsers,
-                maxOutlets: formData.maxOutlets,
-                maxUsers: formData.maxUsers,
-                auditRetentionDays: formData.auditRetentionDays,
-                dataResidency: formData.dataResidency,
-                dataRetentionDays: formData.dataRetentionDays,
-
-                // Status & Validity
-                validUpto: formData.validUpto ? new Date(formData.validUpto).toISOString() : undefined,
-                isActive: formData.isSystemActive,
-
-                // Features & Settings
-                requiresGDPR: formData.requiresGDPR,
-                requires2FA: formData.requires2FA,
-                ipWhitelist: formData.ipWhitelist || undefined,
-                enableAdvancedReporting: formData.enableAdvancedReporting,
-                enableCustomBranding: formData.enableCustomBranding,
-                enableApiAccess: formData.enableApiAccess,
-                enableBackupRestore: formData.enableBackupRestore,
-                enableMultipleDatabases: formData.enableMultipleDatabases
-            };
-
-            this._tenantsService.update(this.tenantId, updateRequest).subscribe({
-                next: () => {
-                    this.saving = false;
-                    this._fuseConfirmationService.open({
-                        title: 'Success',
-                        message: 'Tenant updated successfully!',
-                        actions: {
-                            confirm: {
-                                label: 'OK'
-                            }
-                        }
-                    }).afterClosed().subscribe(() => {
-                        this._router.navigate(['/tenant']);
-                    });
-                },
-                error: (error) => {
-                    console.error('Error updating tenant:', error);
-                    this.saving = false;
-                    this._fuseConfirmationService.open({
-                        title: 'Error',
-                        message: 'Failed to update tenant. Please try again.',
-                        actions: {
-                            confirm: {
-                                label: 'OK'
-                            }
-                        }
-                    });
-                }
-            });
+            this.persistEditUpdate(formData, newType, newLabel, /*verticalChanged*/ false);
         } else {
             // Create new tenant
             const createRequest: CreateTenantRequest = {
@@ -399,6 +351,92 @@ export class TenantFormComponent implements OnInit {
                 }
             });
         }
+    }
+
+    /**
+     * Edit-mode PUT. Pulled out of save() so the vertical-change confirmation can
+     * gate it without duplicating the request body.
+     */
+    private persistEditUpdate(formData: any, businessType: string, outletLabel: string, verticalChanged: boolean): void {
+        const updateRequest: UpdateTenantRequest = {
+            id: this.tenantId!,
+            name: formData.systemName,
+            adminEmail: formData.technicalAdminEmail,
+            url: formData.subdomain,
+            connectionString: formData.connectionString || undefined,
+            isShared: formData.isShared,
+            issuer: formData.issuer || undefined,
+            customDomain: formData.customDomain || undefined,
+
+            // POS layout
+            posLayout: formData.posLayout || undefined,
+
+            // Billing & Subscription
+            billingPlan: formData.billingPlan,
+            monthlyFee: formData.monthlyFee,
+            billingCurrency: formData.billingCurrency,
+            billingEmail: formData.billingEmail,
+            paymentStatus: formData.paymentStatus,
+            supportTier: formData.supportTier,
+            accountManagerEmail: formData.accountManagerEmail || undefined,
+            emergencyContact: formData.emergencyContact || undefined,
+
+            // System Limits
+            maxDatabaseGB: formData.maxDatabaseGB,
+            maxApiCallsPerMonth: formData.maxApiCallsPerMonth,
+            maxConcurrentUsers: formData.maxConcurrentUsers,
+            maxOutlets: formData.maxOutlets,
+            maxUsers: formData.maxUsers,
+            auditRetentionDays: formData.auditRetentionDays,
+            dataResidency: formData.dataResidency,
+            dataRetentionDays: formData.dataRetentionDays,
+
+            // Status & Validity
+            validUpto: formData.validUpto ? new Date(formData.validUpto).toISOString() : undefined,
+            isActive: formData.isSystemActive,
+
+            // Vertical (Phase 2.38c — backend now persists these)
+            businessType: businessType as any,
+            outletLabel,
+
+            // Features & Settings
+            requiresGDPR: formData.requiresGDPR,
+            requires2FA: formData.requires2FA,
+            ipWhitelist: formData.ipWhitelist || undefined,
+            enableAdvancedReporting: formData.enableAdvancedReporting,
+            enableCustomBranding: formData.enableCustomBranding,
+            enableApiAccess: formData.enableApiAccess,
+            enableBackupRestore: formData.enableBackupRestore,
+            enableMultipleDatabases: formData.enableMultipleDatabases,
+        };
+
+        this._tenantsService.update(this.tenantId!, updateRequest).subscribe({
+            next: () => {
+                this.saving = false;
+                if (verticalChanged) {
+                    this.originalBusinessType = businessType;
+                    this.originalOutletLabel = outletLabel;
+                }
+                this._fuseConfirmationService.open({
+                    title: 'Success',
+                    message: verticalChanged
+                        ? `Tenant updated. Vertical changed to <b>${businessType}</b> — users on this tenant should refresh to see the updated nav.`
+                        : 'Tenant updated successfully!',
+                    actions: { confirm: { label: 'OK' } },
+                }).afterClosed().subscribe(() => {
+                    this._router.navigate(['/tenant']);
+                });
+            },
+            error: (error) => {
+                console.error('Error updating tenant:', error);
+                this.saving = false;
+                this._fuseConfirmationService.open({
+                    title: 'Error',
+                    message: 'Failed to update tenant. Please try again.',
+                    actions: { confirm: { label: 'OK' } },
+                });
+            },
+        });
     }
 
     cancel(): void {
