@@ -40,7 +40,7 @@ const posNav: FuseNavigationItem[] = [
             { id: 'inventory-stock', title: 'Stock On Hand', type: 'basic', icon: 'heroicons_outline:square-3-stack-3d', link: '/inventory/stock',
               meta: { permission: 'Permissions.Stocks.View' } },
             { id: 'inventory-serials', title: 'Stock Serials', type: 'basic', icon: 'heroicons_outline:qr-code', link: '/inventory/serials',
-              meta: { permission: 'Permissions.StockSerials.View' } },
+              meta: { permission: 'Permissions.StockSerials.View', businessType: 'Electronics' } },
         ],
     },
     {

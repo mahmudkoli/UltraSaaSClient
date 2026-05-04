@@ -10,6 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { GoodsReceiptsService, PurchaseOrdersService } from 'app/core/purchasing/purchasing.service';
 import { CreateGoodsReceiptLine, PurchaseOrderDto } from 'app/core/purchasing/purchasing.types';
 
@@ -60,7 +61,7 @@ interface GRLineDraft {
                             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center"><mat-icon class="text-violet-600 dark:text-violet-400 text-lg">inventory_2</mat-icon></div>
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Items to Receive</h3>
-                                <span class="ml-auto text-xs text-gray-500">Set received qty per line. Optional batch / expiry / serials.</span>
+                                <span class="ml-auto text-xs text-gray-500">Set received qty per line.{{ optionalHint() }}</span>
                             </div>
 
                             <div class="divide-y divide-gray-200 dark:divide-gray-700">
@@ -80,20 +81,24 @@ interface GRLineDraft {
                                             <mat-label>Override unit cost</mat-label>
                                             <input matInput type="number" min="0" step="0.01" [(ngModel)]="l.overrideUnitCost">
                                         </mat-form-field>
-                                        <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic">
-                                            <mat-label>Batch number</mat-label>
-                                            <input matInput [(ngModel)]="l.batchNumber">
-                                        </mat-form-field>
-                                        <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic">
-                                            <mat-label>Expiry date</mat-label>
-                                            <input matInput [matDatepicker]="exp" [(ngModel)]="l.expiryDate">
-                                            <mat-datepicker-toggle matIconSuffix [for]="exp"></mat-datepicker-toggle>
-                                            <mat-datepicker #exp></mat-datepicker>
-                                        </mat-form-field>
-                                        <mat-form-field class="sm:col-span-12 w-full" appearance="outline" subscriptSizing="dynamic">
-                                            <mat-label>Serial numbers (one per line, optional)</mat-label>
-                                            <textarea matInput rows="2" [(ngModel)]="l.serialsText" placeholder="SN001&#10;SN002"></textarea>
-                                        </mat-form-field>
+                                        @if (showPharmacy()) {
+                                            <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic">
+                                                <mat-label>Batch number</mat-label>
+                                                <input matInput [(ngModel)]="l.batchNumber">
+                                            </mat-form-field>
+                                            <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic">
+                                                <mat-label>Expiry date</mat-label>
+                                                <input matInput [matDatepicker]="exp" [(ngModel)]="l.expiryDate">
+                                                <mat-datepicker-toggle matIconSuffix [for]="exp"></mat-datepicker-toggle>
+                                                <mat-datepicker #exp></mat-datepicker>
+                                            </mat-form-field>
+                                        }
+                                        @if (showElectronics()) {
+                                            <mat-form-field class="sm:col-span-12 w-full" appearance="outline" subscriptSizing="dynamic">
+                                                <mat-label>Serial numbers (one per line, optional)</mat-label>
+                                                <textarea matInput rows="2" [(ngModel)]="l.serialsText" placeholder="SN001&#10;SN002"></textarea>
+                                            </mat-form-field>
+                                        }
                                     </div>
                                 </div>
                             </div>
@@ -135,12 +140,22 @@ export class GoodsReceiptFormComponent implements OnInit {
     private readonly poApi = inject(PurchaseOrdersService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly tenantInfo = inject(TenantInfoService);
 
     poId!: string;
     po = signal<PurchaseOrderDto | null>(null);
     lines = signal<GRLineDraft[]>([]);
     notes = '';
     saving = false;
+
+    showPharmacy = (): boolean => this.tenantInfo.isVertical('Pharmacy');
+    showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
+    optionalHint = (): string => {
+        const bits: string[] = [];
+        if (this.showPharmacy()) bits.push('batch / expiry');
+        if (this.showElectronics()) bits.push('serials');
+        return bits.length ? ' Optional ' + bits.join(' / ') + '.' : '';
+    };
 
     activeLineCount = computed(() => this.lines().filter(l => l.quantityReceived > 0).length);
     totalQty = computed(() => this.lines().reduce((s, l) => s + (Number(l.quantityReceived) || 0), 0));

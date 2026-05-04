@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { SaleReturnsService, SalesService } from 'app/core/sales/sales.service';
 import {
     CreateSaleReturnLine, CreateSaleReturnRefund, PaymentMethod,
@@ -77,8 +78,8 @@ interface ReturnLineDraft {
                                         <div class="flex flex-col">
                                             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ l.productName }}</span>
                                             <span class="text-xs text-gray-500 font-mono">{{ l.sku }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="l.serialNumber">SN: {{ l.serialNumber }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="l.batchNumber">Batch: {{ l.batchNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="showElectronics() && l.serialNumber">SN: {{ l.serialNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="showPharmacy() && l.batchNumber">Batch: {{ l.batchNumber }}</span>
                                         </div>
                                     </td></ng-container>
                                 <ng-container matColumnDef="orig"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Sold</span></th>
@@ -202,6 +203,10 @@ export class ReturnFormComponent implements OnInit {
     private readonly returnsApi = inject(SaleReturnsService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly tenantInfo = inject(TenantInfoService);
+
+    showPharmacy = (): boolean => this.tenantInfo.isVertical('Pharmacy');
+    showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
 
     saleId!: string;
     sale = signal<SaleDto | null>(null);
