@@ -13,6 +13,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
+import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { ProductsService, UnitsService } from 'app/core/catalog/catalog.service';
 import { ProductDto, UnitDto } from 'app/core/catalog/catalog.types';
 import { StocksService, StockSerialsService } from 'app/core/inventory/inventory.service';
@@ -238,6 +239,7 @@ interface CartLine extends CreateSaleLine {
                                         <td class="px-1 py-2">
                                             <div class="font-medium">{{ line.productName }}</div>
                                             <div class="text-xs text-gray-500">{{ line.sku }}</div>
+                                            @if (showElectronics()) {
                                             <div class="flex items-center gap-1 mt-1">
                                                 <input type="text"
                                                        [(ngModel)]="line.serialNumber"
@@ -254,6 +256,7 @@ interface CartLine extends CreateSaleLine {
                                                     <mat-icon class="icon-size-4 text-rose-600" [matTooltip]="line.serialError ?? 'Invalid serial'">error</mat-icon>
                                                 }
                                             </div>
+                                            }
                                         </td>
                                         <td class="px-1">
                                             <div class="flex items-center justify-center gap-1">
@@ -401,6 +404,9 @@ export class PosComponent implements OnInit, AfterViewInit {
     private readonly router = inject(Router);
     private readonly dialog = inject(MatDialog);
     private readonly receiptPrint = inject(ReceiptPrintService);
+    private readonly tenantInfo = inject(TenantInfoService);
+
+    showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
     private readonly parkedApi = inject(ParkedCartsService);
     private readonly brandingApi = inject(BrandingProfilesService);
 
@@ -743,6 +749,10 @@ export class PosComponent implements OnInit, AfterViewInit {
         // off an electronics item's box. Try the by-serial lookup; on hit at
         // the current outlet, add the product line with the serial pre-set.
         // Killer feature for electronics shops: scan once, no manual typing.
+        // Skip the by-serial probe entirely for non-Electronics tenants — the
+        // /api/stockserials endpoint is gated [Electronics, Generic] so a
+        // Pharmacy/Supermarket tenant would just get a 403 every scan.
+        if (!this.showElectronics()) return;
         this.serialsApi.bySerial(term).subscribe({
             next: (serial) => {
                 if (serial.status !== 'InStock' || serial.outletId !== this.outletId) return;

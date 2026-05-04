@@ -10,6 +10,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { ReportsService } from 'app/core/reports/reports.service';
 import {
     ARAgingSummary, ExpiringBatch, InventoryOnHandRow, LowStockAlert, PurchaseSummary, SalesSummary, TopProduct,
@@ -34,7 +35,7 @@ import {
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-fuchsia-500 to-pink-600 rounded-xl shadow-lg"><mat-icon class="text-white">analytics</mat-icon></div>
                 <div>
                     <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Reports</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Sales, inventory, expiring batches, and purchasing</p>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Sales, inventory{{ showPharmacy() ? ', expiring batches' : '' }}, and purchasing</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
@@ -164,7 +165,8 @@ import {
                         </div>
                     </mat-tab>
 
-                    <!-- Expiring -->
+                    <!-- Expiring (Pharmacy / Generic only) -->
+                    @if (showPharmacy()) {
                     <mat-tab>
                         <ng-template mat-tab-label><mat-icon class="icon-size-5 mr-2">event_busy</mat-icon>Expiring</ng-template>
                         <div class="p-6">
@@ -185,6 +187,7 @@ import {
                             </div>
                         </div>
                     </mat-tab>
+                    }
 
                     <!-- Purchasing -->
                     <mat-tab>
@@ -281,6 +284,8 @@ import {
 })
 export class ReportsComponent implements OnInit {
     private readonly api = inject(ReportsService);
+    private readonly tenantInfo = inject(TenantInfoService);
+    showPharmacy = (): boolean => this.tenantInfo.isVertical('Pharmacy');
     fromDate = '';
     toDate = '';
     sales = signal<SalesSummary | null>(null);
@@ -306,7 +311,9 @@ export class ReportsComponent implements OnInit {
         this.api.topProducts({ ...params, take: 20 }).subscribe(d => this.topProducts.set(d));
         this.api.inventoryOnHand({ onlyInStock: true, take: 200 }).subscribe(d => this.inventory.set(d));
         this.api.lowStock({ take: 100 }).subscribe(d => this.lowStock.set(d));
-        this.api.expiringBatches({ withinDays: 365, take: 100 }).subscribe(d => this.expiring.set(d));
+        if (this.showPharmacy()) {
+            this.api.expiringBatches({ withinDays: 365, take: 100 }).subscribe(d => this.expiring.set(d));
+        }
         this.api.purchaseSummary(params).subscribe(d => this.purchases.set(d));
         this.api.arAging({ includeWalkIns: false }).subscribe(d => this.arAging.set(d));
     }
