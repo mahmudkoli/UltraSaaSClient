@@ -51,10 +51,19 @@ export interface PrintLabelsDialogData {
         <div class="px-6 py-4 space-y-4 min-w-[460px]">
             <mat-form-field class="w-full" appearance="outline">
                 <mat-label>Quantity per product</mat-label>
-                <input matInput type="number" min="1" max="500" [(ngModel)]="quantity" (ngModelChange)="clampQuantity($event)">
+                <input matInput type="number" min="1" max="500"
+                       [(ngModel)]="quantity"
+                       (ngModelChange)="clampQuantity($event)"
+                       (blur)="clampQuantity(quantity)">
                 <mat-icon matSuffix>tag</mat-icon>
                 <mat-hint>{{ quantity }} label{{ quantity === 1 ? '' : 's' }} × {{ products().length }} product{{ products().length === 1 ? '' : 's' }} = {{ totalLabels() }} total. Max 500 per product.</mat-hint>
             </mat-form-field>
+            @if (quantity > 500) {
+                <div class="-mt-2 px-2 py-1.5 rounded bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
+                    <mat-icon class="icon-size-4">error</mat-icon>
+                    <span>Max 500 labels per product. Lower the quantity to print.</span>
+                </div>
+            }
 
             <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
                 <p class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">Paper format</p>
@@ -108,7 +117,8 @@ export interface PrintLabelsDialogData {
 
         <div class="flex items-center justify-end gap-2 px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
             <button mat-button mat-dialog-close>Cancel</button>
-            <button mat-flat-button color="primary" (click)="print()" [disabled]="!quantity || quantity < 1 || products().length === 0">
+            <button mat-flat-button color="primary" (click)="print()"
+                    [disabled]="!quantity || quantity < 1 || quantity > 500 || products().length === 0">
                 <mat-icon class="icon-size-5 mr-1">print</mat-icon>
                 <span>Print {{ totalLabels() }} label{{ totalLabels() === 1 ? '' : 's' }}</span>
             </button>
