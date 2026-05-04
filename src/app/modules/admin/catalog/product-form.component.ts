@@ -3,6 +3,8 @@ import { Component, OnInit, inject } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatNativeDateModule } from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -14,7 +16,7 @@ import { BrandDto, CategoryDto, UnitDto } from 'app/core/catalog/catalog.types';
 @Component({
     selector: 'app-product-form',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, MatCheckboxModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule, MatCheckboxModule, MatDatepickerModule, MatNativeDateModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -90,6 +92,41 @@ import { BrandDto, CategoryDto, UnitDto } from 'app/core/catalog/catalog.types';
                         <mat-checkbox formControlName="isActive" class="mt-2">Active</mat-checkbox>
                     </div>
 
+                    <div class="mb-6">
+                        <div class="flex items-center space-x-3 mb-4">
+                            <div class="w-8 h-8 bg-rose-100 dark:bg-rose-900 rounded-lg flex items-center justify-center"><mat-icon class="text-rose-600 dark:text-rose-400 text-lg">local_offer</mat-icon></div>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Offer Price <span class="text-xs font-normal text-gray-500">(optional)</span></h3>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                            <mat-form-field class="w-full" appearance="outline">
+                                <mat-label>Type</mat-label>
+                                <mat-select formControlName="offerType">
+                                    <mat-option value="None">None — no offer</mat-option>
+                                    <mat-option value="Flat">Flat — subtract amount</mat-option>
+                                    <mat-option value="Percentage">Percentage — % off base</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                            <mat-form-field class="w-full" appearance="outline">
+                                <mat-label>Value</mat-label>
+                                <input matInput type="number" min="0" formControlName="offerValue">
+                                <span matSuffix class="text-xs text-gray-500 pr-2">{{ form.value.offerType === 'Percentage' ? '%' : '' }}</span>
+                            </mat-form-field>
+                            <mat-form-field class="w-full" appearance="outline">
+                                <mat-label>Start (optional)</mat-label>
+                                <input matInput [matDatepicker]="start" formControlName="offerStartDate">
+                                <mat-datepicker-toggle matIconSuffix [for]="start"></mat-datepicker-toggle>
+                                <mat-datepicker #start></mat-datepicker>
+                            </mat-form-field>
+                            <mat-form-field class="w-full" appearance="outline">
+                                <mat-label>End (optional)</mat-label>
+                                <input matInput [matDatepicker]="end" formControlName="offerEndDate">
+                                <mat-datepicker-toggle matIconSuffix [for]="end"></mat-datepicker-toggle>
+                                <mat-datepicker #end></mat-datepicker>
+                            </mat-form-field>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Resolution chain at sale time: outlet override > active offer > base. Leave start / end blank for an always-on offer.</p>
+                    </div>
+
                     <div class="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <button mat-button type="button" routerLink="/catalog/products">Cancel</button>
                         <button mat-flat-button color="primary" type="submit" class="h-12 px-6 rounded-lg shadow-lg" [disabled]="form.invalid || saving"><mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? 'Saving...' : 'Save' }}</span></button>
@@ -130,6 +167,10 @@ export class ProductFormComponent implements OnInit {
         taxRate: [0],
         reorderLevel: [0],
         isActive: [true],
+        offerType: ['None'],
+        offerValue: [0],
+        offerStartDate: [null],
+        offerEndDate: [null],
     });
 
     ngOnInit(): void {

@@ -141,7 +141,22 @@ interface CartLine extends CreateSaleLine {
                                 <div class="font-medium text-sm">{{ p.name }}</div>
                                 <div class="text-xs text-gray-500">{{ p.sku }}</div>
                                 <div class="flex items-center justify-between gap-2 mt-1">
-                                    <div class="text-base font-semibold">{{ p.sellingPrice | number:'1.2-2' }}</div>
+                                    @if (p.isOutletPriceOverride && p.outletSellingPrice != null) {
+                                        <div class="flex flex-col items-start leading-tight">
+                                            <span class="text-base font-semibold text-emerald-700 dark:text-emerald-400">{{ p.outletSellingPrice | number:'1.2-2' }}</span>
+                                            @if (p.isOfferActive && p.offerPrice != null) {
+                                                <span class="text-[10px] text-amber-600 line-through">{{ p.offerPrice | number:'1.2-2' }}</span>
+                                            }
+                                            <span class="text-[10px] text-gray-500 line-through">{{ p.sellingPrice | number:'1.2-2' }}</span>
+                                        </div>
+                                    } @else if (p.isOfferActive && p.offerPrice != null) {
+                                        <div class="flex flex-col items-start leading-tight">
+                                            <span class="text-base font-semibold text-amber-700 dark:text-amber-400">{{ p.offerPrice | number:'1.2-2' }}</span>
+                                            <span class="text-[10px] text-gray-500 line-through">{{ p.sellingPrice | number:'1.2-2' }}</span>
+                                        </div>
+                                    } @else {
+                                        <div class="text-base font-semibold">{{ p.sellingPrice | number:'1.2-2' }}</div>
+                                    }
                                     <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
                                           [class]="stockChipClass(p)"
                                           [matTooltip]="stockFor(p.id) <= 0 ? 'Out of stock at this outlet' : (p.reorderLevel > 0 && stockFor(p.id) <= p.reorderLevel ? 'At or below reorder level (' + p.reorderLevel + ')' : 'In stock')">
@@ -640,7 +655,11 @@ export class PosComponent implements OnInit, AfterViewInit {
     ngOnInit(): void {
         this.outletsApi.getAll().subscribe(o => {
             this.outlets.set(o);
-            if (o.length === 0) return;
+            if (o.length === 0) {
+                // No outlets at all — fetch products without outlet pricing so the picker still works.
+                this.refreshProducts();
+                return;
+            }
             // Restore the last-used outlet if it's still in the user's allowed list,
             // otherwise fall back to the first available outlet.
             const remembered = this.currentOutlet.outletId();
@@ -652,8 +671,9 @@ export class PosComponent implements OnInit, AfterViewInit {
             this.refreshShift();
             this.refreshParkedCount();
             this.refreshStock();
+            // Re-fetch products now that we have an outletId so cards show outlet-resolved prices.
+            this.refreshProducts();
         });
-        this.productsApi.getAll({ isActive: true }).subscribe(p => this.products.set(p));
         // Units feed the stock-chip's unit code (e.g. "12 PCS", "2.5 KG").
         // Tenant-wide list, fetched once at load — units rarely change at runtime.
         this.unitsApi.getAll().subscribe({
@@ -701,6 +721,15 @@ export class PosComponent implements OnInit, AfterViewInit {
         this.refreshShift();
         this.refreshParkedCount();
         this.refreshStock();
+        // Outlet-resolved prices are stamped server-side from the outletId param —
+        // re-fetch so product cards show the right price after a switch.
+        this.refreshProducts();
+    }
+
+    private refreshProducts(): void {
+        const params: { isActive: boolean; outletId?: string } = { isActive: true };
+        if (this.outletId) params.outletId = this.outletId;
+        this.productsApi.getAll(params).subscribe(p => this.products.set(p));
     }
 
     private refreshStock(): void {
@@ -788,13 +817,23 @@ export class PosComponent implements OnInit, AfterViewInit {
     /** Adds a fresh cart line for a serial-tracked item with the serial
      * already populated + validated. Skips the duplicate-line merge from
      * regular `addToCart` because each serial is a separate physical unit. */
+    /** Price to use for a fresh cart line. Mirrors the server-side resolution
+     * chain: outlet override > active offer > catalog base. The DTO carries
+     * all three so we don't need a round-trip — resolvePrice() still patches
+     * later if outlet pricing changed since the page loaded. */
+    private effectivePrice(p: ProductDto): number {
+        if (p.isOutletPriceOverride && p.outletSellingPrice != null) return p.outletSellingPrice;
+        if (p.isOfferActive && p.offerPrice != null) return p.offerPrice;
+        return p.sellingPrice;
+    }
+
     addToCartWithSerial(p: ProductDto, serialNumber: string): void {
         const newLine: CartLine = {
             productId: p.id,
             productName: p.name,
             sku: p.sku,
             quantity: 1,
-            unitPrice: p.sellingPrice,
+            unitPrice: this.effectivePrice(p),
             discountAmount: 0,
             taxRate: p.taxRate,
             serialNumber,
@@ -846,7 +885,7 @@ export class PosComponent implements OnInit, AfterViewInit {
             productName: p.name,
             sku: p.sku,
             quantity: 1,
-            unitPrice: p.sellingPrice,
+            unitPrice: this.effectivePrice(p),
             discountAmount: 0,
             taxRate: p.taxRate,
             requiresSerial: p.requiresSerial,

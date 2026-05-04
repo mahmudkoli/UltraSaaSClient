@@ -113,6 +113,8 @@ export class TenantFormComponent implements OnInit {
             maxOutlets: [3, [Validators.required, Validators.min(1)]],
             maxUsers: [10, [Validators.required, Validators.min(1)]],
             auditRetentionDays: [365, [Validators.min(0), Validators.max(3650)]],
+            showPriceOnLabel: [true],
+            useOutletPriceOnLabel: [true],
             dataResidency: ['US', [Validators.required]],
             dataRetentionDays: [365, [Validators.required, Validators.min(30)]],
 
@@ -188,6 +190,8 @@ export class TenantFormComponent implements OnInit {
                     maxOutlets: tenant.maxOutlets || 3,
                     maxUsers: tenant.maxUsers || 10,
                     auditRetentionDays: tenant.auditRetentionDays ?? 365,
+                    showPriceOnLabel: tenant.showPriceOnLabel ?? true,
+                    useOutletPriceOnLabel: tenant.useOutletPriceOnLabel ?? true,
                     dataResidency: tenant.dataResidency || 'US',
                     dataRetentionDays: tenant.dataRetentionDays || 365,
 
@@ -306,6 +310,8 @@ export class TenantFormComponent implements OnInit {
                 maxOutlets: formData.maxOutlets,
                 maxUsers: formData.maxUsers,
                 auditRetentionDays: formData.auditRetentionDays,
+                showPriceOnLabel: formData.showPriceOnLabel,
+                useOutletPriceOnLabel: formData.useOutletPriceOnLabel,
                 dataResidency: formData.dataResidency,
                 dataRetentionDays: formData.dataRetentionDays,
 
@@ -432,11 +438,27 @@ export class TenantFormComponent implements OnInit {
                 this.saving = false;
                 this._fuseConfirmationService.open({
                     title: 'Error',
-                    message: 'Failed to update tenant. Please try again.',
+                    message: this.formatBackendError(error) || 'Failed to update tenant. Please try again.',
                     actions: { confirm: { label: 'OK' } },
                 });
             },
         });
+    }
+
+    /** Pull per-field validation messages out of an ASP.NET ProblemDetails 400
+     * response so the user actually sees what the server rejected. Falls back
+     * to the message field, then null (caller picks a generic copy). */
+    private formatBackendError(error: any): string | null {
+        const errors = error?.error?.errors;
+        if (errors && typeof errors === 'object') {
+            const lines: string[] = [];
+            for (const [field, msgs] of Object.entries(errors)) {
+                const list = Array.isArray(msgs) ? msgs : [msgs];
+                for (const m of list) lines.push(`<b>${field}:</b> ${m}`);
+            }
+            if (lines.length > 0) return lines.join('<br>');
+        }
+        return error?.error?.message ?? error?.error?.title ?? null;
     }
 
     cancel(): void {

@@ -18,6 +18,7 @@ import { toOrderBy } from 'app/core/common/pagination.types';
 import { BrandsService, CategoriesService, ProductsService, SearchProductsRequest } from 'app/core/catalog/catalog.service';
 import { BrandDto, CategoryDto, ProductDto } from 'app/core/catalog/catalog.types';
 import { TenantInfoService } from 'app/core/auth/tenant-info.service';
+import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 import { ProductPricingDialogComponent } from './product-pricing-dialog.component';
 import { ProductPharmacyDialogComponent } from './product-pharmacy-dialog.component';
 import { ProductElectronicsDialogComponent } from './product-electronics-dialog.component';
@@ -95,7 +96,24 @@ import { PrintLabelsDialogComponent, PrintLabelsDialogData } from 'app/core/barc
                         <ng-container matColumnDef="costPrice"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.costPrice | number:'1.2-2' }}</td></ng-container>
                         <ng-container matColumnDef="sellingPrice"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Price</span></th>
-                            <td mat-cell *matCellDef="let r" class="!text-right font-semibold">{{ r.sellingPrice | number:'1.2-2' }}</td></ng-container>
+                            <td mat-cell *matCellDef="let r" class="!text-right">
+                                @if (r.isOutletPriceOverride && r.outletSellingPrice != null) {
+                                    <div class="flex flex-col items-end leading-tight">
+                                        <span class="text-sm font-semibold text-emerald-700 dark:text-emerald-400">{{ r.outletSellingPrice | number:'1.2-2' }}</span>
+                                        @if (r.isOfferActive && r.offerPrice != null) {
+                                            <span class="text-[10px] text-amber-600 line-through">{{ r.offerPrice | number:'1.2-2' }}</span>
+                                        }
+                                        <span class="text-[10px] text-gray-500 line-through">{{ r.sellingPrice | number:'1.2-2' }}</span>
+                                    </div>
+                                } @else if (r.isOfferActive && r.offerPrice != null) {
+                                    <div class="flex flex-col items-end leading-tight">
+                                        <span class="text-sm font-semibold text-amber-700 dark:text-amber-400">{{ r.offerPrice | number:'1.2-2' }}</span>
+                                        <span class="text-[10px] text-gray-500 line-through">{{ r.sellingPrice | number:'1.2-2' }}</span>
+                                    </div>
+                                } @else {
+                                    <span class="text-sm font-semibold">{{ r.sellingPrice | number:'1.2-2' }}</span>
+                                }
+                            </td></ng-container>
                         <ng-container matColumnDef="tax"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Tax %</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.taxRate | number:'1.0-2' }}</td></ng-container>
                         <ng-container matColumnDef="reorder"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder</span></th>
@@ -150,6 +168,7 @@ export class ProductListComponent implements OnInit {
     private readonly brds = inject(BrandsService);
     private readonly dialog = inject(MatDialog);
     private readonly tenantInfo = inject(TenantInfoService);
+    private readonly currentOutlet = inject(CurrentOutletService);
 
     showPharmacy = (): boolean => this.tenantInfo.isVertical('Pharmacy');
     showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
@@ -220,12 +239,19 @@ export class ProductListComponent implements OnInit {
     }
 
     private buildRequest(): SearchProductsRequest {
+        // When an outlet is set in the session (from POS, Sales, GR, etc.),
+        // pass it so the API stamps each ProductDto with the outlet-resolved
+        // price. The Print Labels dialog reads OutletSellingPrice +
+        // IsOutletPriceOverride to honor the "Use outlet price" toggle —
+        // without this, every label falls back to the catalog base.
+        const outletId = this.currentOutlet.outletId() || undefined;
         return {
             pageNumber: this.pageIndex + 1,
             pageSize: this.pageSize,
             orderBy: this.orderBy,
             keyword: this.search.trim() || undefined,
             categoryId: this.categoryFilter || undefined,
+            outletId,
         };
     }
 
@@ -247,24 +273,32 @@ export class ProductListComponent implements OnInit {
     }
 
     manageOutletPrices(r: ProductDto): void {
-        this.dialog.open(ProductPricingDialogComponent, {
+        const ref = this.dialog.open(ProductPricingDialogComponent, {
             width: '640px',
             data: { product: r },
         });
+        // The dialog mutates outlet pricing for this product — re-fetch on close
+        // so the Price column shows the updated outlet-resolved price (or
+        // restores to base if the override was removed). Also picks up any
+        // changes to other outlets the user might have edited in the same
+        // session.
+        ref.afterClosed().subscribe(() => this.load());
     }
 
     managePharmacy(r: ProductDto): void {
-        this.dialog.open(ProductPharmacyDialogComponent, {
+        const ref = this.dialog.open(ProductPharmacyDialogComponent, {
             width: '640px',
             data: { product: r },
         });
+        ref.afterClosed().subscribe(() => this.load());
     }
 
     manageElectronics(r: ProductDto): void {
-        this.dialog.open(ProductElectronicsDialogComponent, {
+        const ref = this.dialog.open(ProductElectronicsDialogComponent, {
             width: '640px',
             data: { product: r },
         });
+        ref.afterClosed().subscribe(() => this.load());
     }
 
     openImport(): void {

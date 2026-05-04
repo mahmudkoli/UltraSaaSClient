@@ -182,6 +182,26 @@
                                         </div>
                                     </div>
 
+                                    <!-- Label preferences — tenant-wide defaults for the Print Labels dialog -->
+                                    <div class="w-full lg:col-span-3 mt-2 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
+                                        <div class="flex items-center gap-2 mb-3">
+                                            <mat-icon class="text-teal-600 dark:text-teal-400 icon-size-5">qr_code_2</mat-icon>
+                                            <span class="text-sm font-semibold text-gray-900 dark:text-white">Label printing defaults</span>
+                                        </div>
+                                        <div class="flex flex-col gap-2">
+                                            <mat-checkbox formControlName="showPriceOnLabel" color="primary">
+                                                <span class="text-sm">Show selling price on barcode labels by default</span>
+                                            </mat-checkbox>
+                                            <mat-checkbox formControlName="useOutletPriceOnLabel" color="primary"
+                                                          [disabled]="!tenantForm.get('showPriceOnLabel')?.value">
+                                                <span class="text-sm">Use outlet-specific price (when set) instead of catalog base</span>
+                                            </mat-checkbox>
+                                        </div>
+                                        <div class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+                                            Cashiers / managers can override per print job — this is just the dialog's starting state.
+                                        </div>
+                                    </div>
+
                                     <!-- Change Vertical action (edit mode only) -->
                                     <div *ngIf="isEditMode" class="lg:col-span-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-amber-200 dark:border-amber-700 bg-amber-50/60 dark:bg-amber-900/20">
                                         <div class="flex items-start gap-3">

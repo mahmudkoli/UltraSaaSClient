@@ -19,6 +19,10 @@ export interface TenantInfoDto {
     taxId?: string;
     /** POS sale-screen layout name. Frontend registry maps this to a component; null/unknown → default. */
     posLayout?: string;
+    /** Tenant default for "show price on barcode label". Print Labels dialog seeds its toggle from this. */
+    showPriceOnLabel?: boolean;
+    /** Tenant default for "use outlet-resolved price on barcode label". */
+    useOutletPriceOnLabel?: boolean;
 }
 
 /**

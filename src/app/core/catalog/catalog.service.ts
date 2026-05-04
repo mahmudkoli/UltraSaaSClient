@@ -11,6 +11,9 @@ export interface SearchProductsRequest extends PaginationFilter {
     categoryId?: string;
     brandId?: string;
     isActive?: boolean;
+    /** When supplied, every returned ProductDto gets outletSellingPrice + isOutletPriceOverride
+     * stamped (override > base) so consumers can render outlet-specific pricing in lists / labels. */
+    outletId?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-empty-interface
@@ -56,11 +59,12 @@ export class UnitsService {
 export class ProductsService {
     private readonly http = inject(HttpClient);
     private readonly base = `${api}/api/products`;
-    getAll = (params?: { categoryId?: string; brandId?: string; isActive?: boolean }): Observable<ProductDto[]> => {
+    getAll = (params?: { categoryId?: string; brandId?: string; isActive?: boolean; outletId?: string }): Observable<ProductDto[]> => {
         const qs = new URLSearchParams();
         if (params?.categoryId) qs.append('categoryId', params.categoryId);
         if (params?.brandId) qs.append('brandId', params.brandId);
         if (params?.isActive !== undefined) qs.append('isActive', String(params.isActive));
+        if (params?.outletId) qs.append('outletId', params.outletId);
         return this.http.get<ProductDto[]>(qs.toString() ? `${this.base}?${qs}` : this.base);
     };
     get = (id: string): Observable<ProductDto> => this.http.get<ProductDto>(`${this.base}/${id}`);

@@ -62,6 +62,10 @@ export interface TenantDto {
     dataRetentionDays: number;
     /** Days to keep Trail audit-log rows for this tenant before the daily purge job deletes them. Default 365; 0 = keep forever. */
     auditRetentionDays: number;
+    /** Tenant default for "show price on barcode label". Print Labels dialog seeds its toggle from this. */
+    showPriceOnLabel: boolean;
+    /** Tenant default for "use outlet-resolved price on barcode label" (vs. catalog base). */
+    useOutletPriceOnLabel: boolean;
     requires2FA: boolean;
     ipWhitelist?: string;
 
@@ -161,6 +165,12 @@ export interface CreateTenantRequest {
     /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. Default 365. */
     auditRetentionDays?: number;
 
+    // ============= LABEL PREFERENCES (Phase 2.40) =============
+    /** Tenant default for "show price on barcode label". */
+    showPriceOnLabel?: boolean;
+    /** Tenant default for "use outlet-resolved price on barcode label". */
+    useOutletPriceOnLabel?: boolean;
+
     // ============= FEATURE FLAGS =============
     enableAdvancedReporting?: boolean;
     enableCustomBranding?: boolean;
@@ -227,6 +237,12 @@ export interface UpdateTenantRequest {
     maxInstitutes?: number;
     /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. */
     auditRetentionDays?: number;
+
+    // ============= LABEL PREFERENCES (Phase 2.40) =============
+    /** Tenant default for "show price on barcode label". Print dialog toggle seeds from this. */
+    showPriceOnLabel?: boolean;
+    /** Tenant default for "use outlet-resolved price on barcode label" (only meaningful with showPriceOnLabel + an outlet). */
+    useOutletPriceOnLabel?: boolean;
 
     // ============= FEATURE FLAGS =============
     enableAdvancedReporting?: boolean;
@@ -353,6 +369,12 @@ export interface UpdateResourceLimitsRequest {
     maxUsers?: number;
     /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. */
     auditRetentionDays?: number;
+
+    // ============= LABEL PREFERENCES (Phase 2.40) =============
+    /** Tenant default for "show price on barcode label". Print dialog toggle seeds from this. */
+    showPriceOnLabel?: boolean;
+    /** Tenant default for "use outlet-resolved price on barcode label" (only meaningful with showPriceOnLabel + an outlet). */
+    useOutletPriceOnLabel?: boolean;
 }
 
 export interface ExtendValidityRequest {
