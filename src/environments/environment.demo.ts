@@ -5,4 +5,5 @@ export const environment = {
   version: '1.0.0',
   tenantStrategy: 'subdomain' as 'subdomain' | 'manual',
   baseDomain: 'ultrapos.local',
+  demoLogins: true,
 };

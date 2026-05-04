@@ -6,7 +6,6 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
 import { SalesService } from 'app/core/sales/sales.service';
 import { SaleDto } from 'app/core/sales/sales.types';
@@ -77,8 +76,8 @@ import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/brand
                                     <td mat-cell *matCellDef="let i">
                                         <div class="flex flex-col">
                                             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ i.productName }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="showElectronics() && i.serialNumber">SN: {{ i.serialNumber }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="showPharmacy() && i.batchNumber">Batch: {{ i.batchNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="i.serialNumber">SN: {{ i.serialNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="i.batchNumber">Batch: {{ i.batchNumber }}</span>
                                         </div>
                                     </td></ng-container>
                                 <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</span></th>
@@ -156,11 +155,6 @@ export class SaleDetailComponent implements OnInit {
     private readonly receiptPrint = inject(ReceiptPrintService);
     private readonly outletsApi = inject(OutletsService);
     private readonly brandingApi = inject(BrandingProfilesService);
-    private readonly tenantInfo = inject(TenantInfoService);
-
-    showPharmacy = (): boolean => this.tenantInfo.isVertical('Pharmacy');
-    showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
-
     sale = signal<SaleDto | null>(null);
     profiles = signal<BrandingProfileDto[]>([]);
     paperLabels = PAPER_FORMAT_LABELS;

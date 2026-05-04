@@ -1,7 +1,8 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { Component, OnInit, ViewChild, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -26,7 +27,7 @@ import { PrintLabelsDialogComponent, PrintLabelsDialogData } from 'app/core/barc
 @Component({
     selector: 'app-product-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatCheckboxModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -52,6 +53,14 @@ import { PrintLabelsDialogComponent, PrintLabelsDialogData } from 'app/core/barc
                         @for (c of categories(); track c.id) { <mat-option [value]="c.id">{{ c.name }}</mat-option> }
                     </mat-select>
                 </mat-form-field>
+                @if (selectedCount() > 0) {
+                    <button mat-stroked-button class="!h-12 !px-4 !text-teal-700 !border-teal-300 !bg-teal-50 dark:!bg-teal-900/20"
+                            (click)="printLabelsForSelected()"
+                            matTooltip="Print barcode labels for the selected products">
+                        <mat-icon class="icon-size-5 mr-1">qr_code_2</mat-icon>
+                        <span>Print labels ({{ selectedCount() }})</span>
+                    </button>
+                }
                 <button mat-stroked-button class="!h-12 !px-4" (click)="openImport()" matTooltip="Bulk-import products from .xlsx"><mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon><span>Import</span></button>
                 <button mat-fab color="primary" routerLink="../products/create" matTooltip="Add new product"><mat-icon>add</mat-icon></button>
             </div>
@@ -60,8 +69,22 @@ import { PrintLabelsDialogComponent, PrintLabelsDialogData } from 'app/core/barc
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
-                        <ng-container matColumnDef="sku"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</span></th>
-                            <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-xs">{{ r.sku }}</td></ng-container>
+                        <ng-container matColumnDef="select">
+                            <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6 !w-10">
+                                <mat-checkbox
+                                    [checked]="allOnPageSelected()"
+                                    [indeterminate]="someOnPageSelected()"
+                                    (change)="togglePageSelection($event.checked)"
+                                    matTooltip="Select all on this page"></mat-checkbox>
+                            </th>
+                            <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 !w-10">
+                                <mat-checkbox
+                                    [checked]="isSelected(r.id)"
+                                    (change)="toggleSelection(r.id, $event.checked)"></mat-checkbox>
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="sku"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</span></th>
+                            <td mat-cell *matCellDef="let r" class="font-mono text-xs">{{ r.sku }}</td></ng-container>
                         <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <div class="flex flex-col">
@@ -147,8 +170,44 @@ export class ProductListComponent implements OnInit {
     pageSize = 25;
     private orderBy?: string[];
 
-    cols = ['sku', 'name', 'costPrice', 'sellingPrice', 'tax', 'reorder', 'active', 'actions'];
+    cols = ['select', 'sku', 'name', 'costPrice', 'sellingPrice', 'tax', 'reorder', 'active', 'actions'];
     searchChanged = new Subject<string>();
+
+    /** IDs of products checked across pages — survives pagination so users can
+     * pick across pages and bulk-print in one shot. */
+    selectedIds = signal(new Set<string>());
+    selectedCount = computed(() => this.selectedIds().size);
+
+    isSelected = (id: string): boolean => this.selectedIds().has(id);
+
+    toggleSelection(id: string, checked: boolean): void {
+        const next = new Set(this.selectedIds());
+        if (checked) next.add(id); else next.delete(id);
+        this.selectedIds.set(next);
+    }
+
+    /** True when every row currently rendered is in the selection. */
+    allOnPageSelected = computed(() => {
+        const ids = this.selectedIds();
+        const r = this.rows();
+        return r.length > 0 && r.every(p => ids.has(p.id));
+    });
+
+    /** True when some — but not all — rows on the page are selected. */
+    someOnPageSelected = computed(() => {
+        const ids = this.selectedIds();
+        const r = this.rows();
+        const n = r.filter(p => ids.has(p.id)).length;
+        return n > 0 && n < r.length;
+    });
+
+    togglePageSelection(checkAll: boolean): void {
+        const next = new Set(this.selectedIds());
+        for (const p of this.rows()) {
+            if (checkAll) next.add(p.id); else next.delete(p.id);
+        }
+        this.selectedIds.set(next);
+    }
 
     categoryName(id?: string): string { return id ? this.categories().find(c => c.id === id)?.name ?? '' : ''; }
     brandName(id?: string): string { return id ? this.brands().find(b => b.id === id)?.name ?? '' : '—'; }
@@ -224,5 +283,35 @@ export class ProductListComponent implements OnInit {
     printLabels(r: ProductDto): void {
         const data: PrintLabelsDialogData = { product: r };
         this.dialog.open(PrintLabelsDialogComponent, { width: '520px', data });
+    }
+
+    /**
+     * Bulk-print labels for every checked product across pages. The selection
+     * survives pagination, so we resolve IDs from the current rows() (loaded
+     * page) plus an extra fetch for any IDs not on this page. Keeps it simple:
+     * fetch unfiltered list once, filter to selected IDs.
+     */
+    printLabelsForSelected(): void {
+        const ids = this.selectedIds();
+        if (ids.size === 0) return;
+        // Most picks come from the page that's already loaded — fast path first.
+        const onPage = this.rows().filter(p => ids.has(p.id));
+        if (onPage.length === ids.size) {
+            this.openBulkDialog(onPage);
+            return;
+        }
+        // Mixed pages — hit the unfiltered endpoint and pick the rest.
+        this.api.getAll().subscribe(all => {
+            const picked = all.filter(p => ids.has(p.id));
+            this.openBulkDialog(picked);
+        });
+    }
+
+    private openBulkDialog(products: ProductDto[]): void {
+        const data: PrintLabelsDialogData = { products };
+        const ref = this.dialog.open(PrintLabelsDialogComponent, { width: '560px', data });
+        ref.afterClosed().subscribe(printed => {
+            if (printed) this.selectedIds.set(new Set());
+        });
     }
 }

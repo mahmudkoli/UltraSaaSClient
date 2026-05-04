@@ -7,4 +7,6 @@ export const environment = {
   tenantStrategy: 'manual' as 'subdomain' | 'manual',
   // Base domain for subdomain extraction (e.g., 'ultrasaas.com' extracts 'acme' from 'acme.ultrasaas.com')
   baseDomain: 'localhost',
-}; 
+  // Show the demo-tenant quick-fill dropdown on sign-in. Never enable in prod.
+  demoLogins: true,
+};

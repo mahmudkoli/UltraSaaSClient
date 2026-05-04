@@ -4,7 +4,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { PurchaseReturnsService } from 'app/core/purchasing/purchasing.service';
 import { PurchaseReturnDto } from 'app/core/purchasing/purchasing.types';
 
@@ -56,8 +55,8 @@ import { PurchaseReturnDto } from 'app/core/purchasing/purchasing.types';
                             <td mat-cell *matCellDef="let i">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ i.productName }}</span>
-                                    <span class="text-xs text-gray-500" *ngIf="showElectronics() && i.serialNumber">Serial: {{ i.serialNumber }}</span>
-                                    <span class="text-xs text-gray-500" *ngIf="showPharmacy() && i.batchNumber">Batch: {{ i.batchNumber }}</span>
+                                    <span class="text-xs text-gray-500" *ngIf="i.serialNumber">Serial: {{ i.serialNumber }}</span>
+                                    <span class="text-xs text-gray-500" *ngIf="i.batchNumber">Batch: {{ i.batchNumber }}</span>
                                 </div>
                             </td></ng-container>
                         <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</span></th>
@@ -107,10 +106,6 @@ import { PurchaseReturnDto } from 'app/core/purchasing/purchasing.types';
 export class PurchaseReturnDetailComponent implements OnInit {
     private readonly api = inject(PurchaseReturnsService);
     private readonly route = inject(ActivatedRoute);
-    private readonly tenantInfo = inject(TenantInfoService);
-
-    showPharmacy = (): boolean => this.tenantInfo.isVertical('Pharmacy');
-    showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
     pr = signal<PurchaseReturnDto | null>(null);
 
     ngOnInit(): void {

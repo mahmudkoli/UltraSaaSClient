@@ -55,10 +55,10 @@ Seeded automatically by the backend — one per BusinessType:
 
 | Tenant | Vertical | Email |
 |---|---|---|
-| `electroplus` | Electronics | `electroplus.admin@root.com` |
-| `mediplus` | Pharmacy | `mediplus.admin@root.com` |
-| `freshmart` | Supermarket | `freshmart.admin@root.com` |
-| `compumart` | Generic | `compumart.admin@root.com` |
+| `electroplus` | Electronics | `admin@electroplus.com` |
+| `mediplus` | Pharmacy | `admin@mediplus.com` |
+| `freshmart` | Supermarket | `admin@freshmart.com` |
+| `compumart` | Generic | `admin@compumart.com` |
 | `root` | Platform admin | `admin@root.com` |
 
 Default password (demo only): `123Pa$$word!`

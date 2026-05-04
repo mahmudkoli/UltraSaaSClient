@@ -40,6 +40,13 @@ interface CartLine extends CreateSaleLine {
     productName: string;
     sku: string;
     taxRate: number;
+    /** Per-product POS-input gates copied from the source ProductDto so we can
+     * render Serial/IMEI/Batch inputs only for products that actually need
+     * them — tenant vertical alone (Electronics/Pharmacy/Generic) is too
+     * coarse, especially on Generic where the catalog mixes everything. */
+    requiresSerial?: boolean;
+    isImeiRequired?: boolean;
+    requiresBatch?: boolean;
     /** Phase 2.36e — client-side validation state of `serialNumber`.
      * 'pending' while the by-serial GET is in flight; 'valid' on a clean
      * `InStock + correct outlet + correct product` match; 'invalid'
@@ -217,6 +224,12 @@ interface CartLine extends CreateSaleLine {
                             <span>One or more serial numbers are not valid for this outlet / product. Hover the red icon for details.</span>
                         </div>
                     }
+                    @if (cartHasMissingRequiredSerial()) {
+                        <div class="mb-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
+                            <mat-icon class="icon-size-5">info</mat-icon>
+                            <span>Serial number required on serialized product lines before finalize.</span>
+                        </div>
+                    }
                     @if (cart().length === 0) {
                         <div class="flex flex-col items-center justify-center text-center py-10 text-gray-500 min-h-32">
                             <mat-icon class="icon-size-12 text-gray-300 dark:text-gray-600 mb-2">shopping_cart</mat-icon>
@@ -239,14 +252,14 @@ interface CartLine extends CreateSaleLine {
                                         <td class="px-1 py-2">
                                             <div class="font-medium">{{ line.productName }}</div>
                                             <div class="text-xs text-gray-500">{{ line.sku }}</div>
-                                            @if (showElectronics()) {
+                                            @if (line.requiresSerial) {
                                             <div class="flex items-center gap-1 mt-1">
                                                 <input type="text"
                                                        [(ngModel)]="line.serialNumber"
                                                        (blur)="validateLineSerial(line)"
-                                                       placeholder="Serial / IMEI (optional)"
+                                                       [placeholder]="(line.isImeiRequired ? 'Serial / IMEI' : 'Serial number') + ' (required)'"
                                                        class="text-[11px] font-mono w-40 border rounded px-1 py-0.5"
-                                                       [class.!border-rose-400]="line.serialValidation === 'invalid'"
+                                                       [class.!border-rose-400]="line.serialValidation === 'invalid' || (line.requiresSerial && !(line.serialNumber ?? '').trim())"
                                                        [class.!border-emerald-400]="line.serialValidation === 'valid'" />
                                                 @if (line.serialValidation === 'pending') {
                                                     <mat-icon class="icon-size-4 text-gray-400 animate-pulse">hourglass_empty</mat-icon>
@@ -549,11 +562,18 @@ export class PosComponent implements OnInit, AfterViewInit {
      * is tolerated (still in flight); only confirmed 'invalid' blocks. */
     cartHasSerialIssue = computed(() => this.cart().some(l => l.serialValidation === 'invalid'));
 
+    /** True when any line is for a serial-tracked product but the serial input
+     * is still empty. Mirrors the server-side validator so the cashier sees
+     * the block locally instead of paying a 400 round-trip on Finalize. */
+    cartHasMissingRequiredSerial = computed(() =>
+        this.cart().some(l => l.requiresSerial && !(l.serialNumber ?? '').trim()));
+
     canFinalize = computed(() =>
         this.cart().length > 0
         && !!this.outletId
         && !this.cartHasStockIssue()
         && !this.cartHasSerialIssue()
+        && !this.cartHasMissingRequiredSerial()
     );
 
     /**
@@ -779,6 +799,9 @@ export class PosComponent implements OnInit, AfterViewInit {
             taxRate: p.taxRate,
             serialNumber,
             serialValidation: 'valid',
+            requiresSerial: p.requiresSerial,
+            isImeiRequired: p.isImeiRequired,
+            requiresBatch: p.requiresBatch,
         };
         this.cart.set([...this.cart(), newLine]);
         this.recalc();
@@ -826,6 +849,9 @@ export class PosComponent implements OnInit, AfterViewInit {
             unitPrice: p.sellingPrice,
             discountAmount: 0,
             taxRate: p.taxRate,
+            requiresSerial: p.requiresSerial,
+            isImeiRequired: p.isImeiRequired,
+            requiresBatch: p.requiresBatch,
         };
         this.cart.set([...this.cart(), newLine]);
         this.recalc();

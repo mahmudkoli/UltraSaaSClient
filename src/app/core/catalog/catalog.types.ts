@@ -38,6 +38,13 @@ export interface ProductDto {
     reorderLevel: number;
     imageUrl?: string;
     isActive: boolean;
+    /** True when an Electronics extension row exists with RequiresSerial=true. */
+    requiresSerial?: boolean;
+    /** True when the Electronics extension also demands an IMEI (phones / tablets). */
+    isImeiRequired?: boolean;
+    /** True when a Pharmacy extension row exists with RequiresBatch=true. */
+    requiresBatch?: boolean;
+    requiresPrescription?: boolean;
 }
 
 export interface CreateProductRequest {

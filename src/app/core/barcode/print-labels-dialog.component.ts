@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialogModule, MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
@@ -7,27 +7,31 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { BarcodeLabelService, LabelFormat } from './barcode-label.service';
 import { ProductDto } from 'app/core/catalog/catalog.types';
 
 export interface PrintLabelsDialogData {
-    /** Product to print labels for. */
-    product: ProductDto;
+    /** Single-product flavor — kept for callers that don't need batch select. */
+    product?: ProductDto;
+    /** Bulk flavor — N products with one shared qty per product. Takes priority over `product`. */
+    products?: ProductDto[];
     /** Optional currency prefix to render before the price (e.g. "৳", "$"). */
     currencyPrefix?: string;
 }
 
 /**
- * Quantity + format picker dialog. Single-product flavor — multi-select
- * batch printing can come later as a separate "Print labels for many" route
- * if anyone asks.
+ * Quantity + format picker dialog. Accepts either a single product or an array
+ * (bulk select on the catalog list). One shared quantity is applied to every
+ * selected product — keeps the dialog simple; per-row qty override can come
+ * later if anyone asks.
  */
 @Component({
     selector: 'app-print-labels-dialog',
     standalone: true,
     imports: [
         CommonModule, FormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule,
-        MatIconModule, MatInputModule, MatRadioModule,
+        MatIconModule, MatInputModule, MatRadioModule, MatTooltipModule,
     ],
     template: `
         <div class="flex items-center gap-3 px-6 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700">
@@ -36,16 +40,20 @@ export interface PrintLabelsDialogData {
             </div>
             <div class="flex flex-col">
                 <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Print barcode labels</h2>
-                <p class="text-xs text-gray-500">{{ data.product.name }} · {{ data.product.sku }}</p>
+                @if (products().length === 1) {
+                    <p class="text-xs text-gray-500">{{ products()[0].name }} · {{ products()[0].sku }}</p>
+                } @else {
+                    <p class="text-xs text-gray-500">{{ products().length }} products selected</p>
+                }
             </div>
         </div>
 
         <div class="px-6 py-4 space-y-4 min-w-[460px]">
             <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Quantity</mat-label>
-                <input matInput type="number" min="1" max="500" [(ngModel)]="quantity">
+                <mat-label>Quantity per product</mat-label>
+                <input matInput type="number" min="1" max="500" [(ngModel)]="quantity" (ngModelChange)="clampQuantity($event)">
                 <mat-icon matSuffix>tag</mat-icon>
-                <mat-hint>How many labels to print for this product. Max 500.</mat-hint>
+                <mat-hint>{{ quantity }} label{{ quantity === 1 ? '' : 's' }} × {{ products().length }} product{{ products().length === 1 ? '' : 's' }} = {{ totalLabels() }} total. Max 500 per product.</mat-hint>
             </mat-form-field>
 
             <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
@@ -66,26 +74,43 @@ export interface PrintLabelsDialogData {
                 </mat-radio-group>
             </div>
 
-            <div class="rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3">
-                <p class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-1">Label content</p>
-                <p class="text-sm text-gray-700 dark:text-gray-200">{{ data.product.name }}</p>
-                <p class="text-xs text-gray-500 font-mono">{{ data.product.sku }}</p>
-                @if (codeText() && codeText() !== data.product.sku) {
-                    <p class="text-xs text-gray-500">Barcode: <span class="font-mono">{{ codeText() }}</span></p>
-                } @else {
-                    <p class="text-xs text-gray-500">Barcode: <span class="font-mono">{{ data.product.sku }}</span> <span class="text-amber-600">(SKU used — no manufacturer barcode set)</span></p>
-                }
-                @if (data.product.sellingPrice != null) {
-                    <p class="text-sm font-semibold mt-1">{{ data.currencyPrefix ?? '' }}{{ data.product.sellingPrice | number:'1.2-2' }}</p>
-                }
-            </div>
+            @if (products().length === 1) {
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3">
+                    <p class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-1">Label content</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-200">{{ products()[0].name }}</p>
+                    <p class="text-xs text-gray-500 font-mono">{{ products()[0].sku }}</p>
+                    @if (products()[0].barcode) {
+                        <p class="text-xs text-gray-500">Barcode: <span class="font-mono">{{ products()[0].barcode }}</span></p>
+                    } @else {
+                        <p class="text-xs text-gray-500">Barcode: <span class="font-mono">{{ products()[0].sku }}</span> <span class="text-amber-600">(SKU used — no manufacturer barcode set)</span></p>
+                    }
+                    @if (products()[0].sellingPrice != null) {
+                        <p class="text-sm font-semibold mt-1">{{ data.currencyPrefix ?? '' }}{{ products()[0].sellingPrice | number:'1.2-2' }}</p>
+                    }
+                </div>
+            } @else {
+                <div class="rounded-lg bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 p-3">
+                    <p class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">Selected products</p>
+                    <div class="max-h-40 overflow-y-auto divide-y divide-gray-200 dark:divide-gray-700">
+                        @for (p of products(); track p.id) {
+                            <div class="flex items-center gap-2 py-1.5 text-xs">
+                                <span class="flex-1 truncate text-gray-700 dark:text-gray-200">{{ p.name }}</span>
+                                <span class="font-mono text-gray-500">{{ p.sku }}</span>
+                                @if (!p.barcode) {
+                                    <mat-icon class="icon-size-4 text-amber-600" matTooltip="No manufacturer barcode — SKU will be used">info</mat-icon>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
         </div>
 
         <div class="flex items-center justify-end gap-2 px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
             <button mat-button mat-dialog-close>Cancel</button>
-            <button mat-flat-button color="primary" (click)="print()" [disabled]="!quantity || quantity < 1">
+            <button mat-flat-button color="primary" (click)="print()" [disabled]="!quantity || quantity < 1 || products().length === 0">
                 <mat-icon class="icon-size-5 mr-1">print</mat-icon>
-                <span>Print {{ quantity }} label{{ quantity === 1 ? '' : 's' }}</span>
+                <span>Print {{ totalLabels() }} label{{ totalLabels() === 1 ? '' : 's' }}</span>
             </button>
         </div>
     `,
@@ -98,18 +123,42 @@ export class PrintLabelsDialogComponent {
     quantity = 1;
     format: LabelFormat = 'A4_5x13';
 
-    /** Code-128 payload — barcode field if set, otherwise fall back to SKU. */
-    codeText = (): string => this.data.product.barcode?.trim() || this.data.product.sku;
+    /** Resolved product list — bulk array wins over the single-product field. */
+    products = signal<ProductDto[]>(this.data.products && this.data.products.length > 0
+        ? this.data.products
+        : this.data.product ? [this.data.product] : []);
+
+    /** Plain method (not computed) so it re-evaluates on every change detection
+     * cycle — `quantity` is a plain ngModel-bound field, not a signal, so a
+     * computed() wouldn't track its updates. */
+    totalLabels(): number {
+        return this.products().length * Math.max(1, Math.min(500, Number(this.quantity) || 1));
+    }
+
+    /** HTML <input type="number" max=...> only enforces validity, not the value
+     * — users can still type 501. Clamp on change so the displayed quantity
+     * matches what print() will use. */
+    clampQuantity(v: number | string): void {
+        const n = Math.floor(Number(v));
+        if (!Number.isFinite(n) || n < 1) { this.quantity = 1; return; }
+        if (n > 500) { this.quantity = 500; return; }
+        this.quantity = n;
+    }
 
     print(): void {
-        this.labels.print([{
-            name: this.data.product.name,
-            code: this.codeText(),
-            subtitle: this.data.product.barcode ? this.data.product.sku : undefined,
-            price: this.data.product.sellingPrice != null
-                ? `${this.data.currencyPrefix ?? ''}${this.data.product.sellingPrice.toFixed(2)}`
+        const ps = this.products();
+        if (ps.length === 0) return;
+        const items = ps.map(p => ({
+            name: p.name,
+            code: p.barcode?.trim() || p.sku,
+            subtitle: p.barcode ? p.sku : undefined,
+            price: p.sellingPrice != null
+                ? `${this.data.currencyPrefix ?? ''}${p.sellingPrice.toFixed(2)}`
                 : undefined,
-        }], [this.quantity], this.format);
+        }));
+        // Same qty per product — service flattens (item × qty) internally.
+        const qtys = ps.map(() => this.quantity);
+        this.labels.print(items, qtys, this.format);
         this.ref.close(true);
     }
 }

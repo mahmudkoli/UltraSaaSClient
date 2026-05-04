@@ -4,7 +4,6 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterModule } from '@angular/router';
-import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { SaleReturnsService } from 'app/core/sales/sales.service';
 import { SaleReturnDto } from 'app/core/sales/sales.types';
 
@@ -53,7 +52,8 @@ import { SaleReturnDto } from 'app/core/sales/sales.types';
                                     <td mat-cell *matCellDef="let i">
                                         <div class="flex flex-col">
                                             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ i.productName }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="showElectronics() && i.serialNumber">SN: {{ i.serialNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="i.serialNumber">SN: {{ i.serialNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="i.batchNumber">Batch: {{ i.batchNumber }}</span>
                                         </div>
                                     </td></ng-container>
                                 <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</span></th>
@@ -126,9 +126,6 @@ import { SaleReturnDto } from 'app/core/sales/sales.types';
 export class ReturnDetailComponent implements OnInit {
     private readonly api = inject(SaleReturnsService);
     private readonly route = inject(ActivatedRoute);
-    private readonly tenantInfo = inject(TenantInfoService);
-
-    showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
     ret = signal<SaleReturnDto | null>(null);
 
     ngOnInit(): void {

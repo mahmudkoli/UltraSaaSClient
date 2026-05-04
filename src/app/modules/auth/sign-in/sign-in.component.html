@@ -29,6 +29,15 @@
                 [formGroup]="signInForm"
                 #signInNgForm="ngForm">
 
+                <!-- Demo quick-fill (dev only — gated by environment.demoLogins) -->
+                <mat-form-field class="w-full" *ngIf="demoLoginsEnabled">
+                    <mat-label>Demo login</mat-label>
+                    <mat-select [value]="selectedDemo" (selectionChange)="applyDemoLogin($event.value)">
+                        <mat-option *ngFor="let d of demoLogins" [value]="d.tenant">{{ d.label }}</mat-option>
+                    </mat-select>
+                    <mat-hint>Auto-fills tenant, email, and password</mat-hint>
+                </mat-form-field>
+
                 <!-- Tenant field (visible) -->
                 <mat-form-field class="w-full" *ngIf="showTenantField">
                     <mat-label>Organization ID</mat-label>

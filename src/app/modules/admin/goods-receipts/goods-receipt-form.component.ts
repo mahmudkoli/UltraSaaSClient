@@ -10,12 +10,13 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { GoodsReceiptsService, PurchaseOrdersService } from 'app/core/purchasing/purchasing.service';
 import { CreateGoodsReceiptLine, PurchaseOrderDto } from 'app/core/purchasing/purchasing.types';
+import { ProductsService } from 'app/core/catalog/catalog.service';
 
 interface GRLineDraft {
     purchaseOrderItemId: string;
+    productId: string;
     productName: string;
     sku: string;
     outstanding: number;
@@ -25,6 +26,11 @@ interface GRLineDraft {
     serialsText: string;
     batchNumber: string;
     expiryDate: Date | null;
+    /** Per-product gates resolved from the catalog DTO. Drives which inputs the
+     * cashier sees on this line — replaces the cruder tenant-vertical check
+     * that used to bleed batch/serial fields onto unrelated products. */
+    requiresSerial: boolean;
+    requiresBatch: boolean;
 }
 
 @Component({
@@ -81,10 +87,10 @@ interface GRLineDraft {
                                             <mat-label>Override unit cost</mat-label>
                                             <input matInput type="number" min="0" step="0.01" [(ngModel)]="l.overrideUnitCost">
                                         </mat-form-field>
-                                        @if (showPharmacy()) {
+                                        @if (l.requiresBatch) {
                                             <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic">
-                                                <mat-label>Batch number</mat-label>
-                                                <input matInput [(ngModel)]="l.batchNumber">
+                                                <mat-label>Batch number (required)</mat-label>
+                                                <input matInput [(ngModel)]="l.batchNumber" [class.text-rose-700]="!l.batchNumber.trim()">
                                             </mat-form-field>
                                             <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic">
                                                 <mat-label>Expiry date</mat-label>
@@ -93,7 +99,7 @@ interface GRLineDraft {
                                                 <mat-datepicker #exp></mat-datepicker>
                                             </mat-form-field>
                                         }
-                                        @if (showElectronics()) {
+                                        @if (l.requiresSerial) {
                                             <mat-form-field class="sm:col-span-12 w-full" appearance="outline" subscriptSizing="dynamic">
                                                 <mat-label>Serial numbers (one per line, optional)</mat-label>
                                                 <textarea matInput rows="2" [(ngModel)]="l.serialsText" placeholder="SN001&#10;SN002"></textarea>
@@ -140,7 +146,7 @@ export class GoodsReceiptFormComponent implements OnInit {
     private readonly poApi = inject(PurchaseOrdersService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
-    private readonly tenantInfo = inject(TenantInfoService);
+    private readonly productsApi = inject(ProductsService);
 
     poId!: string;
     po = signal<PurchaseOrderDto | null>(null);
@@ -148,14 +154,13 @@ export class GoodsReceiptFormComponent implements OnInit {
     notes = '';
     saving = false;
 
-    showPharmacy = (): boolean => this.tenantInfo.isVertical('Pharmacy');
-    showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
-    optionalHint = (): string => {
+    optionalHint = computed((): string => {
+        const lines = this.lines();
         const bits: string[] = [];
-        if (this.showPharmacy()) bits.push('batch / expiry');
-        if (this.showElectronics()) bits.push('serials');
-        return bits.length ? ' Optional ' + bits.join(' / ') + '.' : '';
-    };
+        if (lines.some(l => l.requiresBatch)) bits.push('batch / expiry required on batch-tracked lines');
+        if (lines.some(l => l.requiresSerial)) bits.push('serials optional');
+        return bits.length ? ' ' + bits.join('; ') + '.' : '';
+    });
 
     activeLineCount = computed(() => this.lines().filter(l => l.quantityReceived > 0).length);
     totalQty = computed(() => this.lines().reduce((s, l) => s + (Number(l.quantityReceived) || 0), 0));
@@ -163,13 +168,21 @@ export class GoodsReceiptFormComponent implements OnInit {
     canSubmit = computed(() => {
         const active = this.lines().filter(l => l.quantityReceived > 0);
         if (active.length === 0) return false;
-        return active.every(l => l.quantityReceived <= l.outstanding);
+        if (!active.every(l => l.quantityReceived <= l.outstanding)) return false;
+        // Lines whose product requires batch tracking must have a batch number
+        // before submit — server rejects without it, mirror locally to avoid
+        // the 400 round-trip.
+        if (active.some(l => l.requiresBatch && !l.batchNumber.trim())) return false;
+        return true;
     });
 
     disabledReason(): string {
         if (this.activeLineCount() === 0) return 'Set received quantity on at least one line.';
-        if (this.lines().some(l => l.quantityReceived > l.outstanding))
+        const active = this.lines().filter(l => l.quantityReceived > 0);
+        if (active.some(l => l.quantityReceived > l.outstanding))
             return 'Some lines exceed outstanding quantity.';
+        if (active.some(l => l.requiresBatch && !l.batchNumber.trim()))
+            return 'Batch number required on batch-tracked lines.';
         return '';
     }
 
@@ -177,22 +190,38 @@ export class GoodsReceiptFormComponent implements OnInit {
         this.poId = this.route.snapshot.paramMap.get('poId')!;
         this.poApi.get(this.poId).subscribe(p => {
             this.po.set(p);
-            this.lines.set(
-                p.items
-                    .filter(i => i.quantityOutstanding > 0)
-                    .map<GRLineDraft>(i => ({
-                        purchaseOrderItemId: i.id,
-                        productName: i.productName,
-                        sku: i.sku,
-                        outstanding: i.quantityOutstanding,
-                        unitCost: i.unitCost,
-                        quantityReceived: i.quantityOutstanding,
-                        overrideUnitCost: null,
-                        serialsText: '',
-                        batchNumber: '',
-                        expiryDate: null,
-                    }))
-            );
+            const drafts = p.items
+                .filter(i => i.quantityOutstanding > 0)
+                .map<GRLineDraft>(i => ({
+                    purchaseOrderItemId: i.id,
+                    productId: i.productId,
+                    productName: i.productName,
+                    sku: i.sku,
+                    outstanding: i.quantityOutstanding,
+                    unitCost: i.unitCost,
+                    quantityReceived: i.quantityOutstanding,
+                    overrideUnitCost: null,
+                    serialsText: '',
+                    batchNumber: '',
+                    expiryDate: null,
+                    requiresSerial: false,
+                    requiresBatch: false,
+                }));
+            this.lines.set(drafts);
+            // Stamp per-product flags so each line knows whether to render
+            // Batch/Expiry or Serials inputs. One catalog fetch covers every
+            // line on the PO.
+            if (drafts.length > 0) {
+                this.productsApi.getAll().subscribe(products => {
+                    const byId = new Map(products.map(pr => [pr.id, pr] as const));
+                    this.lines.update(ls => ls.map(l => {
+                        const pr = byId.get(l.productId);
+                        return pr
+                            ? { ...l, requiresSerial: !!pr.requiresSerial, requiresBatch: !!pr.requiresBatch }
+                            : l;
+                    }));
+                });
+            }
         });
     }
 
