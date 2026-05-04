@@ -51,19 +51,13 @@ export interface PrintLabelsDialogData {
         <div class="px-6 py-4 space-y-4 min-w-[460px]">
             <mat-form-field class="w-full" appearance="outline">
                 <mat-label>Quantity per product</mat-label>
-                <input matInput type="number" min="1" max="500"
-                       [(ngModel)]="quantity"
-                       (ngModelChange)="clampQuantity($event)"
-                       (blur)="clampQuantity(quantity)">
+                <input #qtyInput matInput type="number" min="1" max="500"
+                       [value]="quantity"
+                       (input)="onQtyInput($event)"
+                       (blur)="onQtyInput($event)">
                 <mat-icon matSuffix>tag</mat-icon>
                 <mat-hint>{{ quantity }} label{{ quantity === 1 ? '' : 's' }} × {{ products().length }} product{{ products().length === 1 ? '' : 's' }} = {{ totalLabels() }} total. Max 500 per product.</mat-hint>
             </mat-form-field>
-            @if (quantity > 500) {
-                <div class="-mt-2 px-2 py-1.5 rounded bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-xs text-rose-700 dark:text-rose-300 flex items-center gap-1.5">
-                    <mat-icon class="icon-size-4">error</mat-icon>
-                    <span>Max 500 labels per product. Lower the quantity to print.</span>
-                </div>
-            }
 
             <div class="rounded-lg border border-gray-200 dark:border-gray-700 p-3">
                 <p class="text-xs font-medium uppercase tracking-wider text-gray-500 mb-2">Paper format</p>
@@ -146,18 +140,28 @@ export class PrintLabelsDialogComponent {
     }
 
     /** HTML <input type="number" max=...> only enforces validity, not the value
-     * — users can still type 501. Clamp on change so the displayed quantity
-     * matches what print() will use. */
-    clampQuantity(v: number | string): void {
-        const n = Math.floor(Number(v));
-        if (!Number.isFinite(n) || n < 1) { this.quantity = 1; return; }
-        if (n > 500) { this.quantity = 500; return; }
-        this.quantity = n;
+     * — users can still type 501. Clamp every keystroke so model + DOM stay
+     * in lockstep at 1-500. We mutate input.value directly because Angular's
+     * change detection won't repaint a focused number input mid-typing
+     * reliably. */
+    onQtyInput(e: Event): void {
+        const input = e.target as HTMLInputElement;
+        const raw = input.value;
+        const n = Math.floor(Number(raw));
+        let clamped: number;
+        if (!Number.isFinite(n) || n < 1) clamped = 1;
+        else if (n > 500) clamped = 500;
+        else clamped = n;
+        if (String(clamped) !== raw) input.value = String(clamped);
+        this.quantity = clamped;
     }
 
     print(): void {
         const ps = this.products();
         if (ps.length === 0) return;
+        // Final clamp at the boundary — even if the input handler glitched,
+        // never hand the print service a value outside the documented range.
+        const safeQty = Math.max(1, Math.min(500, Math.floor(Number(this.quantity)) || 1));
         const items = ps.map(p => ({
             name: p.name,
             code: p.barcode?.trim() || p.sku,
@@ -167,7 +171,7 @@ export class PrintLabelsDialogComponent {
                 : undefined,
         }));
         // Same qty per product — service flattens (item × qty) internally.
-        const qtys = ps.map(() => this.quantity);
+        const qtys = ps.map(() => safeQty);
         this.labels.print(items, qtys, this.format);
         this.ref.close(true);
     }
