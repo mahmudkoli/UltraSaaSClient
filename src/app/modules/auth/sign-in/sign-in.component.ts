@@ -84,6 +84,15 @@ export class AuthSignInComponent implements OnInit
             rememberMe: [''],
         });
 
+        // Pre-fill the demo-login dropdown from the resolved subdomain so
+        // visiting pos-electroplus.mahmudkoli.com lands on the Electroplus
+        // demo with email + password ready. Fall back to root when the
+        // subdomain doesn't map to a seeded demo (or there's no subdomain).
+        if (this.demoLoginsEnabled) {
+            const matched = autoTenant && DEMO_LOGINS.some(d => d.tenant === autoTenant);
+            this.applyDemoLogin(matched ? autoTenant : 'root');
+        }
+
         // Load and apply tenant theme (cached first, then API)
         if (autoTenant) {
             this._tenantThemeService.loadAndApply();
