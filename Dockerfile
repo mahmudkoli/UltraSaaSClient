@@ -3,7 +3,10 @@ ARG NG_CONFIG=production
 WORKDIR /app
 
 COPY package*.json ./
-RUN npm ci
+# --legacy-peer-deps: karma-jasmine-html-reporter@2.0.0 pins jasmine-core@^4
+# while the project uses jasmine-core@5. These are test-only deps and don't
+# affect the prod build output, so ignore the conflict at install time.
+RUN npm ci --legacy-peer-deps
 
 COPY . ./
 
