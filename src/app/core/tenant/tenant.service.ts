@@ -23,15 +23,20 @@ export class TenantService {
      * Returns null if on the base domain or localhost without subdomain.
      */
     fromSubdomain(): string | null {
-        const hostname = window.location.hostname; // e.g., acme.ultrasaas.com
+        const hostname = window.location.hostname; // e.g., pos-electroplus.mahmudkoli.com
         const baseDomain = environment.baseDomain;
 
         if (!hostname.endsWith(baseDomain) || hostname === baseDomain) {
             return null;
         }
 
-        // Strip the base domain to get the subdomain
-        const subdomain = hostname.slice(0, hostname.length - baseDomain.length - 1); // remove '.baseDomain'
+        let subdomain = hostname.slice(0, hostname.length - baseDomain.length - 1);
+
+        const prefix = (environment as { subdomainPrefix?: string }).subdomainPrefix;
+        if (prefix && subdomain.startsWith(prefix)) {
+            subdomain = subdomain.slice(prefix.length);
+        }
+
         return subdomain || null;
     }
 
