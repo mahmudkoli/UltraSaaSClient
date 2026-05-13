@@ -90,6 +90,34 @@ export const HELP_CONTENT: HelpFeature[] = [
                     bn: 'পণ্য গ্রিডের ঠিক উপরে, পণ্য সংখ্যা ও মূল্যের কলামের মাঝখানে। চালু (ডিফল্ট) — বর্তমান আউটলেটে শূন্য স্টকের পণ্য লুকায়। বন্ধ — সব পণ্য দেখায়। গুদামে আসা কিন্তু এখনও গণনা হয়নি এমন আইটেম, বা "কাল রিস্টক হবে" এমন ক্রেডিট বিক্রির জন্য উপযোগী। প্রতিটি সেশনে পছন্দ রিসেট হয়।',
                 },
             },
+            {
+                q: { en: 'I scanned a barcode into the search box and it added to the cart on its own. Is that right?', bn: 'সার্চ বক্সে বারকোড স্ক্যান করতেই পণ্যটি নিজে থেকে কার্টে যোগ হয়ে গেল — এটা ঠিক?' },
+                a: {
+                    en: 'Yes — when the search box has focus and you press Enter (a barcode scanner ends with Enter), if exactly one product matches the scanned code it auto-adds to the cart. Lets you blast through a basket of items without taking your hands off the scanner. If the scan matches zero products the list stays open with a "no match" note; if it matches more than one (e.g. partial SKU), you have to click the right tile.',
+                    bn: 'হ্যাঁ — সার্চ বক্সে কার্সর থাকা অবস্থায় Enter চাপলে (বারকোড স্ক্যানার শেষে Enter পাঠায়), যদি ঠিক একটি পণ্য সেই কোডের সাথে মেলে — সেটি স্বয়ংক্রিয়ভাবে কার্টে যোগ হয়। স্ক্যানার থেকে হাত না সরিয়ে অনেক আইটেম দ্রুত যোগ করা যায়। কোনো মিল না পেলে তালিকা "no match" সহ খোলা থাকে; একাধিক মিললে (যেমন আংশিক SKU) সঠিক টাইল ক্লিক করতে হবে।',
+                },
+            },
+            {
+                q: { en: 'A walk-in just gave me their phone for loyalty. Can I create their profile without leaving POS?', bn: 'একজন Walk-in গ্রাহক লয়্যালটির জন্য তাদের ফোন নম্বর দিল। POS না ছেড়ে কি তাদের প্রোফাইল তৈরি করা যাবে?' },
+                a: {
+                    en: 'Yes — click the + (person_add) icon next to the Customer dropdown. The "Quick add customer" dialog asks for just name + phone, creates the profile, and auto-selects them on the current cart so they start earning points on this sale. For credit limit / address / customer type, use the full Customers form later — Quick Add only captures the minimum so checkout doesn\'t break flow.',
+                    bn: 'হ্যাঁ — Customer ড্রপডাউনের পাশের + (person_add) আইকনে ক্লিক করুন। "Quick add customer" ডায়ালগ শুধু নাম + ফোন চায়, প্রোফাইল তৈরি করে, এবং বর্তমান কার্টে তাদের স্বয়ংক্রিয়ভাবে নির্বাচন করে — তাই এই বিক্রি থেকেই তারা পয়েন্ট অর্জন শুরু করেন। Credit limit / ঠিকানা / customer type পরে Customers-এর পূর্ণ ফর্ম থেকে দিন — Quick Add শুধু ন্যূনতম ক্যাপচার করে যাতে চেকআউট মাঝপথে আটকে না যায়।',
+                },
+            },
+            {
+                q: { en: 'Why does the cart show a Serial Number field on some product lines and not others? My shop is set to Generic.', bn: 'কার্টে কিছু পণ্য লাইনে Serial Number ফিল্ড আসছে, কিছুতে আসছে না — আমার দোকান তো Generic-এ সেট। কেন?' },
+                a: {
+                    en: 'Because the field is per-product, not per-tenant. The product\'s catalog row has a RequiresSerial / IsImeiRequired / RequiresBatch flag — those are what the cart line reads. So a Generic shop selling one serial-tracked phone still sees the Serial input on that line; a Pharmacy shop selling toothpaste won\'t see a batch field on that line. Finalize is blocked until required serials / batches are filled in, mirroring the server-side validation.',
+                    bn: 'কারণ ফিল্ডটি পণ্য-ভিত্তিক, Tenant-ভিত্তিক নয়। পণ্যের ক্যাটালগ রো-তে RequiresSerial / IsImeiRequired / RequiresBatch ফ্ল্যাগ থাকে — কার্ট লাইন সেটাই পড়ে। তাই Generic দোকানে একটি সিরিয়াল-ট্র্যাকড ফোন বিক্রি করলেও Serial ইনপুট আসবে; Pharmacy দোকানে টুথপেস্টে কোনো batch ফিল্ড আসবে না। প্রয়োজনীয় সিরিয়াল / ব্যাচ পূরণ না হওয়া পর্যন্ত Finalize ব্লক থাকে — সার্ভার-সাইড validation-এর সাথে মেলে।',
+                },
+            },
+            {
+                q: { en: 'The price on a product card shows two numbers — one bold, one struck through. What\'s the difference?', bn: 'পণ্য কার্ডে দুটি দাম দেখাচ্ছে — একটি বোল্ড, একটি কাটা। পার্থক্য কী?' },
+                a: {
+                    en: 'It\'s the resolved price chain. The bold number is what the customer pays. The struck-through number(s) underneath show what was bypassed. Emerald bold = this outlet has its own price (set via the catalog Pricing dialog). Amber bold = an active offer is overriding the base (set via the product\'s Offer Price section). Gray bold (no strikethrough) = plain base selling price. POS picks the right one automatically: outlet override > active offer > base. The Cart line uses the same number you see on the card — no surprise at finalize.',
+                    bn: 'এটি resolved price chain। বোল্ড সংখ্যাটি গ্রাহক যা দেবে। নিচের কাটা সংখ্যা(গুলি) দেখায় কোনটি বাইপাস হয়েছে। পান্না সবুজ বোল্ড = এই আউটলেটের নিজস্ব দাম (catalog-এর Pricing ডায়ালগ থেকে সেট)। অ্যাম্বার বোল্ড = একটি active offer base-কে ওভাররাইড করছে (পণ্যের Offer Price সেকশন থেকে সেট)। ধূসর বোল্ড (কাটা ছাড়া) = সাধারণ base selling price। POS সঠিকটি স্বয়ংক্রিয়ভাবে বাছে: outlet override > active offer > base। কার্ট লাইন কার্ডে দেখানো সংখ্যাটিই ব্যবহার করে — Finalize-এ কোনো surprise নেই।',
+                },
+            },
         ],
     },
 
@@ -286,6 +314,13 @@ export const HELP_CONTENT: HelpFeature[] = [
                     bn: 'স্বয়ংক্রিয়ভাবে void হয়। মূল বিক্রিতে যদি একটি ওয়ারেন্টি তৈরি হয়ে থাকে (WarrantyMonths > 0 সহ ইলেকট্রনিক্স), রিটার্নে ওয়ারেন্টি Void-এ যায় — সেই সিরিয়ালে গ্রাহকের ওয়ারেন্টি কভারেজ আর থাকে না। যদি Resellable রিটার্ন হয় এবং আইটেম আবার বিক্রি হয়, নতুন বিক্রিতে নতুন ওয়ারেন্টি তৈরি হবে।',
                 },
             },
+            {
+                q: { en: 'A customer brought a receipt with a barcode on it. Can I scan it to pull up the sale?', bn: 'গ্রাহক বারকোড সহ একটি রিসিট নিয়ে এসেছে — সেটি স্ক্যান করে বিক্রি বের করা যাবে?' },
+                a: {
+                    en: 'Yes — POS toolbar → Find Sale → focus the search box and scan. The receipt barcode encodes the invoice number, so the matching sale jumps to the top of the result list; click it and Process Return. Saves typing on returns where the customer hands you the receipt at the desk. The barcode prints on every receipt finalized from May 2026 onward (Phase 2.34) — older receipts don\'t have it, so you\'ll still type the invoice number for those.',
+                    bn: 'হ্যাঁ — POS টুলবার → Find Sale → সার্চ বক্সে কার্সর রেখে স্ক্যান করুন। রিসিট বারকোড invoice নম্বর এনকোড করে রাখে, তাই মিলে যাওয়া বিক্রি ফলাফলের তালিকার উপরে আসে; ক্লিক করে Process Return করুন। যেসব রিটার্নে গ্রাহক ডেস্কে রিসিট তুলে দেন সেখানে টাইপ করার ঝামেলা বাঁচে। বারকোড মে ২০২৬ থেকে Finalize হওয়া প্রতিটি রিসিটে প্রিন্ট হয় (Phase 2.34) — পুরনো রিসিটে নেই, তাই সেগুলোতে invoice নম্বর টাইপ করতেই হবে।',
+                },
+            },
         ],
     },
 
@@ -340,6 +375,27 @@ export const HELP_CONTENT: HelpFeature[] = [
                 a: {
                     en: 'On the Products list, click the "Import" button next to the + Add button. Download the template first (it shows the exact required columns: SKU, Name, Category, Brand, Unit, CostPrice, SellingPrice, TaxRate, plus optional Barcode / ReorderLevel / Description / IsActive). Fill in your data, save as .xlsx, upload. Pick a Mode: AutoCreate (default — missing categories / brands / units are created automatically; existing SKUs skipped), Update (existing SKUs get overwritten), or Strict (any missing reference fails the row). The result screen shows created / updated / skipped / failed counts plus row-level errors.',
                     bn: 'Products তালিকায়, "+" Add বোতামের পাশে "Import" বোতামে ক্লিক করুন। প্রথমে টেমপ্লেট ডাউনলোড করুন (যা সঠিক প্রয়োজনীয় কলাম দেখায়: SKU, Name, Category, Brand, Unit, CostPrice, SellingPrice, TaxRate, এবং ঐচ্ছিক Barcode / ReorderLevel / Description / IsActive)। আপনার ডেটা পূরণ করুন, .xlsx হিসেবে সেভ করুন, আপলোড করুন। একটি Mode বাছুন: AutoCreate (ডিফল্ট — অনুপস্থিত categories / brands / units স্বয়ংক্রিয়ভাবে তৈরি হয়; বিদ্যমান SKU বাদ পড়ে), Update (বিদ্যমান SKU ওভাররাইট হয়), বা Strict (যেকোনো অনুপস্থিত রেফারেন্স রো ব্যর্থ করে)। ফলাফল স্ক্রিনে created / updated / skipped / failed সংখ্যা ও রো-ভিত্তিক ত্রুটি দেখানো হয়।',
+                },
+            },
+            {
+                q: { en: 'How do I print barcode labels for a product?', bn: 'একটি পণ্যের জন্য বারকোড লেবেল কীভাবে প্রিন্ট করব?' },
+                a: {
+                    en: 'Products → find the row → click the teal qr_code_2 icon on the right. The "Print barcode labels" dialog asks for quantity (1–500), whether to include the selling price, and paper format: A4 sticker sheet (5 × 13 = 65 labels per page, Avery-style adhesive) or Thermal label printer (50 × 30 mm, one label per "page" for Zebra / TSC / Argox). Click Print — a new tab opens with the rendered labels ready to send to your printer. Uses the product\'s barcode if set; falls back to its SKU when no manufacturer barcode exists.',
+                    bn: 'Products → রো খুঁজুন → ডান পাশের teal qr_code_2 আইকনে ক্লিক। "Print barcode labels" ডায়ালগ পরিমাণ (১–৫০০), লেবেলে বিক্রয়মূল্য রাখবেন কিনা, এবং পেপার ফরম্যাট জিজ্ঞেস করে: A4 sticker sheet (৫ × ১৩ = প্রতি পৃষ্ঠায় ৬৫ লেবেল, Avery-style আঠালো) বা Thermal label printer (৫০ × ৩০ mm, প্রতি "পেজে" একটি লেবেল — Zebra / TSC / Argox-এর জন্য)। Print ক্লিক করুন — নতুন ট্যাবে rendered লেবেল প্রিন্টারে পাঠানোর জন্য খুলবে। পণ্যের barcode সেট থাকলে সেটাই; manufacturer barcode না থাকলে SKU ব্যবহার হয়।',
+                },
+            },
+            {
+                q: { en: 'Can I print labels for many products at once?', bn: 'একসাথে অনেক পণ্যের লেবেল প্রিন্ট করা যাবে?' },
+                a: {
+                    en: 'Yes — tick the checkboxes on every product row you want labels for, then click "Print barcode labels" in the bulk-actions toolbar that appears at the top. Same dialog as the single-product flow, but the quantity field applies to every selected product (e.g. qty 3 across 8 products = 24 labels total, all on the same page / roll). Most useful right after a Goods Receipt of mixed items, or before a promo shelf reset.',
+                    bn: 'হ্যাঁ — যেসব পণ্যের লেবেল চান সব রো-তে চেকবক্স টিক করুন, তারপর উপরে আসা bulk-actions টুলবারে "Print barcode labels" ক্লিক করুন। একই ডায়ালগ, কিন্তু quantity প্রতিটি নির্বাচিত পণ্যে প্রযোজ্য (যেমন ৮টি পণ্যে qty ৩ = মোট ২৪ লেবেল, একই পৃষ্ঠা / রোলে)। মিশ্র আইটেমের Goods Receipt-এর ঠিক পরে, বা promo shelf রিসেটের আগে সবচেয়ে উপযোগী।',
+                },
+            },
+            {
+                q: { en: 'How do I run a sale / offer price on a product for a fixed period?', bn: 'একটি পণ্যে নির্দিষ্ট সময়ের জন্য sale / offer মূল্য কীভাবে চালু করব?' },
+                a: {
+                    en: 'Open the product → "Offer Price (optional)" section. Type = Flat (e.g. ৳50 off) or Percentage (e.g. 10% off); leave Type = None to clear the offer. Set Start Date / End Date if the offer should auto-on for a window only — leave both blank for an always-on offer. Resolution at sale time: per-outlet override > active offer > base price. The amber price chip on POS shows the offer with the base struck through underneath, so cashiers see they\'re honouring a promotion at a glance.',
+                    bn: 'পণ্য খুলুন → "Offer Price (optional)" সেকশন। Type = Flat (যেমন ৳৫০ ছাড়) বা Percentage (যেমন ১০% ছাড়); Type = None রাখলে offer ক্লিয়ার হবে। শুধু একটি window-এ স্বয়ংক্রিয় চালু রাখতে চাইলে Start Date / End Date সেট করুন — সবসময় চালু রাখতে দুটোই খালি রাখুন। বিক্রির সময় রেজল্যুশন: per-outlet override > active offer > base price। POS-এ অ্যাম্বার price chip অফার দেখায় এবং নিচে base কাটা থাকে — তাই ক্যাশিয়ার এক নজরেই বুঝতে পারেন তারা একটি promotion চালাচ্ছেন।',
                 },
             },
         ],
@@ -725,6 +781,48 @@ export const HELP_CONTENT: HelpFeature[] = [
                 a: {
                     en: 'Users → row → rose lock_reset icon. The dialog generates a strong temporary password (or you can type one). Tell the user via a secure channel — they\'ll be forced to change it on first sign-in. Requires "Update Users" permission.',
                     bn: 'Users → রো → গোলাপী lock_reset আইকন। ডায়ালগ একটি শক্তিশালী অস্থায়ী পাসওয়ার্ড জেনারেট করে (অথবা আপনি টাইপ করতে পারেন)। ইউজারকে একটি নিরাপদ চ্যানেলে দিন — প্রথম সাইন-ইনে তিনি পাসওয়ার্ড পরিবর্তন করতে বাধ্য হবেন। "Update Users" অনুমতি প্রয়োজন।',
+                },
+            },
+        ],
+    },
+
+    // ───────────── Tenant settings ─────────────
+    {
+        id: 'tenant',
+        routePrefix: '/tenant',
+        icon: 'heroicons_outline:building-office-2',
+        title: { en: 'Tenant settings', bn: 'Tenant সেটিংস' },
+        summary: {
+            en: 'Tenant-wide defaults: business type (vertical), POS layout, label printing, theme. Mostly set once at creation.',
+            bn: 'Tenant-ব্যাপী ডিফল্ট: business type (vertical), POS layout, label printing, theme। বেশিরভাগ তৈরির সময়ই একবার সেট হয়।',
+        },
+        questions: [
+            {
+                q: { en: 'Where do I set the default "Show price on barcode labels" option for my shop?', bn: 'বারকোড লেবেলে ডিফল্টভাবে দাম দেখানোর সেটিং কোথায়?' },
+                a: {
+                    en: 'Tenant settings → Basic Information tab → scroll to "Label printing defaults". Tick "Show selling price on barcode labels by default" so every Print Labels dialog opens with it on. The companion option "Use outlet-specific price (when set) instead of catalog base" makes labels reflect per-outlet overrides — handy if your airport store sells higher than the main branch. Cashiers / managers can still uncheck either box per print job; this is just the starting state.',
+                    bn: 'Tenant settings → Basic Information ট্যাব → "Label printing defaults"-এ scroll করুন। "Show selling price on barcode labels by default" টিক করুন যাতে প্রতিটি Print Labels ডায়ালগ এটি চালু অবস্থায় খোলে। সঙ্গী অপশন "Use outlet-specific price (when set) instead of catalog base" লেবেলে per-outlet override প্রতিফলিত করে — যদি আপনার airport স্টোর মূল শাখার চেয়ে বেশি দামে বিক্রি করে তাহলে কাজে আসে। ক্যাশিয়ার / ম্যানেজার প্রতিটি print job-এ এগুলো বদলাতে পারেন; এটি শুধু starting state।',
+                },
+            },
+            {
+                q: { en: 'I changed the tenant theme but my screen didn\'t change. Do I need to refresh?', bn: 'Tenant থিম পরিবর্তন করেছি কিন্তু স্ক্রিন বদলাচ্ছে না — রিফ্রেশ করতে হবে?' },
+                a: {
+                    en: 'No — from May 2026 onward (Phase 2.38a) the live UI updates immediately on Save (colors, dark/light, accent). If nothing happened, Save probably failed validation on another field — look for a red error message under one of the inputs in any tab, fix it, and Save again. The theme picker itself lives in edit mode on the Review & Create tab → "Configure Theme".',
+                    bn: 'না — মে ২০২৬ থেকে (Phase 2.38a) Save করলেই live UI সাথে সাথে আপডেট হয় (রঙ, dark/light, accent)। কিছু না ঘটলে অন্য কোনো ফিল্ডে validation ফেল করেছে — যেকোনো ট্যাবে ইনপুটের নিচে লাল error message খুঁজুন, ঠিক করুন, আবার Save করুন। Theme পিকার edit মোডে Review & Create ট্যাব → "Configure Theme"-এ আছে।',
+                },
+            },
+            {
+                q: { en: 'I picked a different Business Type but Save didn\'t change anything. Why?', bn: 'একটি ভিন্ন Business Type বেছেছি কিন্তু Save কিছু পরিবর্তন করেনি — কেন?' },
+                a: {
+                    en: 'Switching the vertical is a separate, deliberate action — it changes which pages and APIs your tenant can reach. Pick the new Business Type, then click the amber "Change Vertical" button in the warning panel below the field. Regular Save ignores that field on purpose. Any batches / serials / prescriptions you had under the old vertical stay in the DB; they just stop being reachable from the new vertical\'s UI. Switch back and they reappear — nothing is deleted.',
+                    bn: 'Vertical পরিবর্তন একটি আলাদা, ইচ্ছাকৃত পদক্ষেপ — এটি বদলায় আপনার Tenant কোন পৃষ্ঠা ও API-তে পৌঁছাতে পারবে। নতুন Business Type বেছে নিন, তারপর ফিল্ডের নিচের warning panel-এ অ্যাম্বার "Change Vertical" বোতাম ক্লিক করুন। সাধারণ Save ইচ্ছাকৃতভাবেই সেই ফিল্ড উপেক্ষা করে। পুরনো vertical-এর batches / serials / prescriptions DB-তে থাকে; শুধু নতুন vertical-এর UI থেকে আর পৌঁছানো যায় না। আবার ফিরে গেলে তারা ফিরে আসে — কিছুই মুছে যায় না।',
+                },
+            },
+            {
+                q: { en: 'What does "Outlet Label" do?', bn: '"Outlet Label" কী কাজ করে?' },
+                a: {
+                    en: 'Cosmetic-only: changes the word "Outlet" everywhere in the app to whatever you type (Store, Branch, Pharmacy, Warehouse…). The underlying entity is still an Outlet — APIs, reports, audit trail all keep the canonical name. Useful when "Outlet" reads wrong for your sector — e.g. pharmacies prefer "Pharmacy", manufacturers prefer "Warehouse". Change anytime, no migration involved.',
+                    bn: 'শুধুই cosmetic: অ্যাপ জুড়ে "Outlet" শব্দটি আপনার টাইপ করা শব্দে বদলায় (Store, Branch, Pharmacy, Warehouse…)। আসল entity তবু Outlet-ই থাকে — API, রিপোর্ট, audit trail সব canonical নামই রাখে। যেসব sector-এ "Outlet" ভুল শোনায় তখন উপকারী — যেমন pharmacies "Pharmacy" পছন্দ করে, manufacturers "Warehouse"। যেকোনো সময় পরিবর্তন করুন, কোনো migration লাগে না।',
                 },
             },
         ],
