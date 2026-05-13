@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
+import { TenantService } from 'app/core/tenant/tenant.service';
 import {
     BrandingProfileDto,
     CreateBrandingProfileRequest,
@@ -11,6 +12,7 @@ import {
 @Injectable({ providedIn: 'root' })
 export class BrandingProfilesService {
     private readonly http = inject(HttpClient);
+    private readonly tenantService = inject(TenantService);
     private readonly base = `${environment.apiUrl}/api/brandingprofiles`;
 
     getAll(): Observable<BrandingProfileDto[]> {
@@ -48,9 +50,16 @@ export class BrandingProfilesService {
         return this.http.delete<string>(`${this.base}/${id}/logo`, { responseType: 'text' as 'json' });
     }
 
-    /** Public URL of a profile's logo. Anonymous endpoint — safe to embed in <img src>. */
+    /** Public URL of a profile's logo. Anonymous endpoint — safe to embed in <img src>.
+     *  <img> requests bypass Angular's auth interceptor so the `tenant` HTTP header
+     *  isn't sent; the tenant is passed as a query-string param instead (matches the
+     *  backend's WithQueryStringStrategy). Required for the broken-image fix on multi-
+     *  tenant subdomains where Finbuckle has no other way to resolve which tenant DB
+     *  to read from. */
     logoUrl(id: string, cacheBust?: string): string {
         const v = cacheBust ?? Date.now().toString();
-        return `${this.base}/${id}/logo?v=${v}`;
+        const tenant = this.tenantService.resolve();
+        const tenantParam = tenant ? `&tenant=${encodeURIComponent(tenant)}` : '';
+        return `${this.base}/${id}/logo?v=${v}${tenantParam}`;
     }
 }
