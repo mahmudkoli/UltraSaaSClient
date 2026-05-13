@@ -21,16 +21,21 @@ export class BrandingProfilesService {
         return this.http.get<BrandingProfileDto>(`${this.base}/${id}`);
     }
 
+    // Create returns Task<Guid> → JSON-quoted "<guid>" → parses fine as JSON.
     create(req: CreateBrandingProfileRequest): Observable<string> {
         return this.http.post<string>(this.base, req);
     }
 
+    // Update / Delete return Task<ActionResult<string>> + Ok($"…updated.") and Task<string>
+    // respectively. ASP.NET's StringOutputFormatter wins content negotiation for primitive
+    // string returns, so the body is plain text (no JSON quotes). Without responseType:'text'
+    // HttpClient would try JSON.parse and fire the error callback on HTTP 200.
     update(id: string, req: UpdateBrandingProfileRequest): Observable<string> {
-        return this.http.put<string>(`${this.base}/${id}`, req);
+        return this.http.put(`${this.base}/${id}`, req, { responseType: 'text' });
     }
 
     delete(id: string): Observable<string> {
-        return this.http.delete<string>(`${this.base}/${id}`);
+        return this.http.delete(`${this.base}/${id}`, { responseType: 'text' });
     }
 
     uploadLogo(id: string, file: File): Observable<string> {
