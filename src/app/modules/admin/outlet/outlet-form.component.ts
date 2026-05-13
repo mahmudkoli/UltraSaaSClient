@@ -110,8 +110,17 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
                                 <mat-hint>Drives the receipt look at this outlet. Per-sale override is still possible at POS.</mat-hint>
                             </mat-form-field>
                             <div class="mt-4 flex items-start gap-4">
-                                <div class="w-32 h-32 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
-                                    @if (logoPreview()) {
+                                <div class="w-32 h-32 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden"
+                                     [class.border-emerald-400]="pendingPreview()"
+                                     [class.border-gray-300]="!pendingPreview()"
+                                     [class.dark:border-gray-600]="!pendingPreview()"
+                                     [class.bg-emerald-50]="pendingPreview()"
+                                     [class.dark:bg-emerald-900]="pendingPreview()"
+                                     [class.bg-gray-50]="!pendingPreview()"
+                                     [class.dark:bg-gray-900]="!pendingPreview()">
+                                    @if (pendingPreview()) {
+                                        <img [src]="pendingPreview()" alt="Logo preview" class="max-w-full max-h-full object-contain">
+                                    } @else if (logoPreview()) {
                                         <img [src]="logoPreview()" alt="Logo" class="max-w-full max-h-full object-contain">
                                     } @else {
                                         <mat-icon class="text-gray-300 icon-size-12">image</mat-icon>
@@ -119,14 +128,28 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
                                 </div>
                                 <div class="flex flex-col gap-2 flex-1">
                                     <input #fileInput type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden (change)="onLogoPicked($event)">
-                                    <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="logoUploading()">
-                                        <mat-icon class="icon-size-5 mr-1">upload</mat-icon>
-                                        <span>{{ logoUploading() ? 'Uploading…' : (hasLogo() ? 'Replace Logo' : 'Upload Logo') }}</span>
-                                    </button>
-                                    @if (hasLogo()) {
-                                        <button type="button" mat-stroked-button color="warn" (click)="removeLogo()" [disabled]="logoUploading()">
-                                            <mat-icon class="icon-size-5 mr-1">delete</mat-icon><span>Remove Logo</span>
+                                    @if (pendingFile()) {
+                                        <p class="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Preview — not yet uploaded</p>
+                                        <p class="text-xs text-gray-600 dark:text-gray-400 truncate" [title]="pendingFile()!.name">{{ pendingFile()!.name }} · {{ formatFileSize(pendingFile()!.size) }}</p>
+                                        <div class="flex gap-2 mt-1">
+                                            <button type="button" mat-flat-button color="primary" (click)="confirmUpload()" [disabled]="logoUploading()">
+                                                <mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon>
+                                                <span>{{ logoUploading() ? 'Uploading…' : 'Upload' }}</span>
+                                            </button>
+                                            <button type="button" mat-stroked-button (click)="cancelPendingUpload()" [disabled]="logoUploading()">
+                                                <mat-icon class="icon-size-5 mr-1">close</mat-icon><span>Cancel</span>
+                                            </button>
+                                        </div>
+                                    } @else {
+                                        <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="logoUploading()">
+                                            <mat-icon class="icon-size-5 mr-1">upload</mat-icon>
+                                            <span>{{ hasLogo() ? 'Replace Logo' : 'Upload Logo' }}</span>
                                         </button>
+                                        @if (hasLogo()) {
+                                            <button type="button" mat-stroked-button color="warn" (click)="removeLogo()" [disabled]="logoUploading()">
+                                                <mat-icon class="icon-size-5 mr-1">delete</mat-icon><span>Remove Logo</span>
+                                            </button>
+                                        }
                                     }
                                     <p class="text-xs text-gray-500 mt-1">PNG / JPG / WebP / SVG · max 1 MB · square works best</p>
                                     @if (logoError()) {
@@ -163,6 +186,11 @@ export class OutletFormComponent implements OnInit {
     logoPreview = signal<SafeUrl | null>(null);
     logoUploading = signal(false);
     logoError = signal<string | null>(null);
+    // Two-step upload: picking a file fills `pendingFile` and shows the blob URL in
+    // `pendingPreview`; nothing hits the server until the user clicks Upload.
+    pendingFile = signal<File | null>(null);
+    pendingPreview = signal<SafeUrl | null>(null);
+    private pendingObjectUrl: string | null = null;
     brandingProfiles = signal<BrandingProfileDto[]>([]);
     paperLabels = PAPER_FORMAT_LABELS;
     form: FormGroup = this.fb.group({
@@ -220,11 +248,19 @@ export class OutletFormComponent implements OnInit {
             return;
         }
         this.logoError.set(null);
+        this.setPendingFile(file);
+    }
+
+    confirmUpload(): void {
+        const file = this.pendingFile();
+        if (!file || !this.id) return;
+        this.logoError.set(null);
         this.logoUploading.set(true);
         this.api.uploadLogo(this.id, file).subscribe({
             next: () => {
                 this.logoUploading.set(false);
                 this.hasLogo.set(true);
+                this.clearPendingFile();
                 this.refreshLogoPreview();
                 this.snack.open('Logo uploaded', 'OK', { duration: 3000 });
             },
@@ -234,6 +270,33 @@ export class OutletFormComponent implements OnInit {
                 this.logoError.set(typeof msg === 'string' ? msg : 'Upload failed');
             },
         });
+    }
+
+    cancelPendingUpload(): void {
+        this.clearPendingFile();
+        this.logoError.set(null);
+    }
+
+    formatFileSize(bytes: number): string {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+    }
+
+    private setPendingFile(file: File): void {
+        this.clearPendingFile();
+        this.pendingObjectUrl = URL.createObjectURL(file);
+        this.pendingFile.set(file);
+        this.pendingPreview.set(this.sanitizer.bypassSecurityTrustUrl(this.pendingObjectUrl));
+    }
+
+    private clearPendingFile(): void {
+        if (this.pendingObjectUrl) {
+            URL.revokeObjectURL(this.pendingObjectUrl);
+            this.pendingObjectUrl = null;
+        }
+        this.pendingFile.set(null);
+        this.pendingPreview.set(null);
     }
 
     removeLogo(): void {
