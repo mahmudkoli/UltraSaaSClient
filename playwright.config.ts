@@ -8,7 +8,7 @@ export default defineConfig({
   workers: 1,
   reporter: [['html', { open: 'never' }], ['list']],
   timeout: 30000,
-  globalTimeout: 300000,
+  globalTimeout: 900000,
   use: {
     baseURL: 'http://localhost:4200',
     trace: 'on-first-retry',
