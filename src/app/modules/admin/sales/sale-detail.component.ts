@@ -1,6 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatTableModule } from '@angular/material/table';
@@ -12,11 +13,12 @@ import { SaleDto } from 'app/core/sales/sales.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { BrandingProfilesService } from 'app/core/branding/branding.service';
 import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/branding.types';
+import { ShareInvoiceDialogComponent } from './share-invoice-dialog.component';
 
 @Component({
     selector: 'app-sale-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatMenuModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, RouterModule, MatButtonModule, MatDialogModule, MatIconModule, MatMenuModule, MatTableModule, MatTooltipModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -42,6 +44,7 @@ import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/brand
                     </span>
                     @if (s.status === 'Finalized') {
                         <button mat-stroked-button class="h-12 px-6 rounded-lg" (click)="print(s)"><mat-icon class="icon-size-5 mr-2">print</mat-icon><span>Print Receipt</span></button>
+                        <button mat-flat-button class="h-12 px-6 rounded-lg !bg-emerald-600 !text-white" (click)="share(s)" matTooltip="Send a read-only link via WhatsApp / copy"><mat-icon class="icon-size-5 mr-2">share</mat-icon><span>Share</span></button>
                         @if (profiles().length > 0) {
                             <button mat-icon-button class="h-12 w-12 rounded-lg" [matMenuTriggerFor]="printMenu" matTooltip="Re-print as…"><mat-icon>more_vert</mat-icon></button>
                             <mat-menu #printMenu="matMenu">
@@ -155,6 +158,7 @@ export class SaleDetailComponent implements OnInit {
     private readonly receiptPrint = inject(ReceiptPrintService);
     private readonly outletsApi = inject(OutletsService);
     private readonly brandingApi = inject(BrandingProfilesService);
+    private readonly dialog = inject(MatDialog);
     sale = signal<SaleDto | null>(null);
     profiles = signal<BrandingProfileDto[]>([]);
     paperLabels = PAPER_FORMAT_LABELS;
@@ -188,6 +192,29 @@ export class SaleDetailComponent implements OnInit {
         this.outletsApi.get(sale.outletId).subscribe({
             next: outlet => this.receiptPrint.print(sale, outlet, profileId),
             error: () => this.receiptPrint.print(sale, undefined, profileId),
+        });
+    }
+
+    /** Open the WhatsApp / Copy / Native-share dialog for this sale's public invoice link. */
+    share(sale: SaleDto): void {
+        // Outlet name lifts the WhatsApp message default from "Your receipt: <url>"
+        // to "Your receipt — <Outlet Name>: <url>". Falls back to the bare form when
+        // the outlet lookup fails so the share flow still works.
+        this.outletsApi.get(sale.outletId).subscribe({
+            next: outlet => this.openShareDialog(sale, outlet?.name ?? ''),
+            error: () => this.openShareDialog(sale, ''),
+        });
+    }
+
+    private openShareDialog(sale: SaleDto, outletName: string): void {
+        this.dialog.open(ShareInvoiceDialogComponent, {
+            width: '520px',
+            data: {
+                saleId: sale.id,
+                invoiceNumber: sale.invoiceNumber,
+                outletName,
+                customerPhone: sale.customerPhone,
+            },
         });
     }
 }

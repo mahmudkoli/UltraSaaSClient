@@ -370,6 +370,21 @@ test.describe.serial('marketing screenshots', () => {
         await shot(page, '52-sale-detail');
     });
 
+    test('53 — share invoice dialog (WhatsApp / Copy / Native share)', async ({ page }) => {
+        // Phase 2.47 — Bangladesh-market killer feature. Demo clip: cashier taps
+        // Share, picks বাংলা, hits WhatsApp. Captured open with the bn preset.
+        await login(page, { tenant: ELECTRO_TENANT, email: ELECTRO_EMAIL });
+        await page.goto('/sales');
+        await page.waitForLoadState('networkidle');
+        await page.locator('table tbody tr').first().click();
+        await page.waitForLoadState('networkidle');
+        await page.getByRole('button', { name: /^Share$/ }).click();
+        // Wait for token round-trip + the dialog to settle into its loaded state.
+        await page.waitForSelector('mat-form-field input[readonly]', { state: 'visible' });
+        await page.waitForTimeout(900);
+        await shot(page, '53-share-invoice-dialog');
+    });
+
     test('51 — branded thermal receipt popup (re-print from Find Sale)', async ({ page, context }) => {
         // Visual payoff of the whole branding story: the printed receipt with
         // logo + invoice barcode. Triggered via the Find Sale dialog so we hit

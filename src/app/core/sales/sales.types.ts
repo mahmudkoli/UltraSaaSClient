@@ -98,6 +98,77 @@ export interface SaleDto {
     payments: PaymentDto[];
 }
 
+export interface SaleShareTokenResponse {
+    token: string;
+}
+
+export interface PublicSaleItemDto {
+    productName: string;
+    sku: string;
+    quantity: number;
+    unitPrice: number;
+    discountAmount: number;
+    taxRate: number;
+    taxAmount: number;
+    lineSubTotal: number;
+    lineTotal: number;
+    serialNumber?: string;
+    batchNumber?: string;
+    weightKg?: number;
+}
+
+export interface PublicPaymentDto {
+    amount: number;
+    method: PaymentMethod;
+    reference?: string;
+    paidOn: string;
+}
+
+export interface PublicOutletDto {
+    id: string;
+    name: string;
+    addressLine?: string;
+    city?: string;
+    state?: string;
+    country?: string;
+    postalCode?: string;
+    contactPhone?: string;
+    contactEmail?: string;
+    taxId?: string;
+    primaryColor?: string;
+    hasLogo: boolean;
+    defaultBrandingProfileId?: string;
+}
+
+export interface PublicBrandingDto {
+    id: string;
+    name: string;
+    paperFormat: 'Thermal80mm' | 'Thermal58mm' | 'A4';
+    primaryColor?: string;
+    taxId?: string;
+    headerText?: string;
+    footerText?: string;
+    hasLogo: boolean;
+}
+
+export interface PublicSaleDto {
+    invoiceNumber: string;
+    saleDate: string;
+    customerName?: string;
+    customerPhone?: string;
+    subTotal: number;
+    discountAmount: number;
+    taxAmount: number;
+    total: number;
+    paidAmount: number;
+    balance: number;
+    brandingProfileId?: string;
+    items: PublicSaleItemDto[];
+    payments: PublicPaymentDto[];
+    outlet: PublicOutletDto;
+    branding?: PublicBrandingDto;
+}
+
 export type ReturnedItemCondition = 'Resellable' | 'Damaged';
 export type SaleReturnReason = 'DefectiveProduct' | 'WrongItem' | 'BuyersRemorse' | 'ExpiredOrDamaged' | 'Other';
 

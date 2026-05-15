@@ -4,7 +4,8 @@ import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
 import { PaginationFilter, PaginationResponse } from 'app/core/common/pagination.types';
 import {
-    CreateSaleRequest, CreateSaleReturnRequest, CustomerDto, SaleDto, SaleReturnDto, WarrantyDto,
+    CreateSaleRequest, CreateSaleReturnRequest, CustomerDto, PublicSaleDto, SaleDto,
+    SaleReturnDto, SaleShareTokenResponse, WarrantyDto,
 } from './sales.types';
 
 export interface SearchSalesRequest extends PaginationFilter {
@@ -69,6 +70,15 @@ export class SalesService {
     /** Server-side paginated / sortable / filterable search. */
     search = (req: SearchSalesRequest): Observable<PaginationResponse<SaleDto>> =>
         this.http.post<PaginationResponse<SaleDto>>(`${this.base}/search`, req);
+    /** Idempotent — returns the same token on repeat calls so the cashier can re-share without invalidating prior links. */
+    createShareToken = (saleId: string): Observable<SaleShareTokenResponse> =>
+        this.http.post<SaleShareTokenResponse>(`${this.base}/${saleId}/share-token`, {});
+    /**
+     * Anonymous fetch for the public viewer. Tenant goes in the query string per the
+     * Finbuckle WithQueryStringStrategy wired in Infrastructure/Multitenancy/Startup.cs.
+     */
+    getPublicInvoice = (token: string, tenantId: string): Observable<PublicSaleDto> =>
+        this.http.get<PublicSaleDto>(`${this.base}/public/${encodeURIComponent(token)}?tenant=${encodeURIComponent(tenantId)}`);
 }
 
 @Injectable({ providedIn: 'root' })

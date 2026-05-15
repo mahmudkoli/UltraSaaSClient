@@ -35,6 +35,7 @@ import { SaleLookupDialogComponent } from './sale-lookup-dialog.component';
 import { ParkedCartsDialogComponent } from './parked-carts-dialog.component';
 import { ManagerOverrideDialogComponent, ManagerOverrideResult } from './manager-override-dialog.component';
 import { QuickAddCustomerDialogComponent } from './quick-add-customer-dialog.component';
+import { ShareInvoiceDialogComponent } from '../sales/share-invoice-dialog.component';
 
 interface CartLine extends CreateSaleLine {
     productName: string;
@@ -1034,12 +1035,25 @@ export class PosComponent implements OnInit, AfterViewInit {
         }).subscribe({
             next: (id) => {
                 this.finalizing.set(false);
-                // Fetch the finalized sale for the receipt and let the cashier
-                // either print or jump to the detail page. Reset the cart in
-                // either case so the next customer can start ringing up.
+                // Fetch the finalized sale for the receipt and offer to share the
+                // public link via WhatsApp / clipboard. Reset the cart either way
+                // so the next customer can start ringing up.
                 this.salesApi.get(id).subscribe(sale => this.printReceipt(sale));
-                this.snack.open(`Sale finalized! Invoice → /sales/${id}`, 'View', { duration: 5000 })
-                    .onAction().subscribe(() => this.router.navigate(['/sales', id]));
+                const outletName = this.outlets().find(o => o.id === this.outletId)?.name ?? '';
+                this.snack.open(`Sale finalized — invoice in print queue.`, 'Share', { duration: 6000 })
+                    .onAction().subscribe(() => {
+                        this.salesApi.get(id).subscribe(sale => {
+                            this.dialog.open(ShareInvoiceDialogComponent, {
+                                width: '520px',
+                                data: {
+                                    saleId: id,
+                                    invoiceNumber: sale.invoiceNumber,
+                                    outletName,
+                                    customerPhone: sale.customerPhone,
+                                },
+                            });
+                        });
+                    });
                 // Refresh customer list so the next sale sees updated loyalty balance.
                 if (this.customerId) this.customersApi.getAll().subscribe(c => this.customers.set(c));
                 this.cart.set([]);

@@ -19,6 +19,20 @@ export const appRoutes: Route[] = [
     // location. This is a small convenience to keep all main routes together here on this file.
     {path: 'signed-in-redirect', pathMatch : 'full', redirectTo: 'pos'},
 
+    // Public routes — no guard, no nav chrome. Listed BEFORE the auth groups so the
+    // child match resolves here first and no AuthGuard / NoAuthGuard fires for
+    // unauthenticated customers opening a shared invoice link.
+    {
+        path: '',
+        component: LayoutComponent,
+        data: {
+            layout: 'empty'
+        },
+        children: [
+            {path: 'invoice/:token', loadChildren: () => import('app/modules/public/invoice-viewer/invoice-viewer.routes')},
+        ]
+    },
+
     // Auth routes for guests
     {
         path: '',
