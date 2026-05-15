@@ -8,21 +8,21 @@ Angular 17 SPA backing **UltraPOS**, a multi-vertical Point-of-Sale SaaS for ele
 
 ## Documentation
 
-The full product / ops / customer documentation lives one directory up at `../docs/` (sibling of this repo, not in git). If you cloned this repo standalone you'll need the docs separately.
+The full product / ops / customer documentation lives in the [UltraSaaS backend repo](https://github.com/mahmudkoli/UltraSaaS) under `docs/` (consolidated there on 2026-05-15 so it's versioned with code). Local checkout: [`../UltraSaaS/docs/`](../UltraSaaS/docs/) when both repos are cloned side-by-side.
 
 | Audience | Doc |
 |---|---|
-| Technical buyer / integration partner | [`PROJECT.md`](../docs/PROJECT.md) — one-page architecture overview |
-| What's built | [`FEATURES.md`](../docs/FEATURES.md) — capability matrix |
-| What's been shipped? | [`PROGRESS.md`](../docs/PROGRESS.md) — chronological dev journal |
-| What's left to launch? | [`GOLIVE.md`](../docs/GOLIVE.md) — launch tracker, risks, decisions |
-| Operations / on-call | [`RUNBOOK.md`](../docs/RUNBOOK.md) — 12 incident playbooks |
-| Support staff | [`Support-Response-Templates.md`](../docs/Support-Response-Templates.md) · [`Manual-Onboarding-Playbook.md`](../docs/Manual-Onboarding-Playbook.md) |
-| End users | [`customer-docs/`](../docs/customer-docs/) — getting started · POS cashier · returns |
-| Sales | [`UltraPOS_Sales_Brochure.md`](../docs/UltraPOS_Sales_Brochure.md) |
-| DB schema | [`ERD.md`](../docs/ERD.md) |
-
-The repo root has a [top-level README](../README.md) that indexes all of the above.
+| Technical buyer / integration partner | [`PROJECT.md`](../UltraSaaS/docs/PROJECT.md) — one-page architecture overview |
+| What's built | [`FEATURES.md`](../UltraSaaS/docs/FEATURES.md) — capability matrix |
+| What's been shipped? | [`PROGRESS.md`](../UltraSaaS/docs/PROGRESS.md) — chronological dev journal |
+| What's left to launch? | [`GOLIVE.md`](../UltraSaaS/docs/GOLIVE.md) — launch tracker, risks, decisions |
+| Operations / on-call | [`RUNBOOK.md`](../UltraSaaS/docs/RUNBOOK.md) — 12 incident playbooks |
+| Support staff | [`Support-Response-Templates.md`](../UltraSaaS/docs/Support-Response-Templates.md) · [`Manual-Onboarding-Playbook.md`](../UltraSaaS/docs/Manual-Onboarding-Playbook.md) |
+| End users | [`customer-docs/`](../UltraSaaS/docs/customer-docs/) — getting started · POS cashier · returns |
+| Sales | [`UltraPOS_Sales_Brochure.md`](../UltraSaaS/docs/UltraPOS_Sales_Brochure.md) |
+| DB schema | [`ERD.md`](../UltraSaaS/docs/ERD.md) |
+| Marketing playbook | [`MARKETING.md`](../UltraSaaS/docs/MARKETING.md) · [`BRAND-KIT.md`](../UltraSaaS/docs/BRAND-KIT.md) |
+| In-flight plans | [`plans/`](../UltraSaaS/docs/plans/) |
 
 ---
 
