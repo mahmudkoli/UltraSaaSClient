@@ -111,7 +111,17 @@ const mySubscriptionNav: FuseNavigationItem = {
     meta: { permission: 'Permissions.Subscription.View' },
 };
 
-export const defaultNavigation: FuseNavigationItem[] = [...posNav, mySubscriptionNav, sysNav];
+// Phase 2.49 — tenant-side "Home" dashboard. Pinned at the top so owners
+// landing from the post-login resolver have orientation. Gated by
+// Permissions.Dashboards.View (tenant Admin role only; cashiers continue
+// landing on /pos with no Home entry surfaced).
+const homeNav: FuseNavigationItem = {
+    id: 'tenant-home', title: 'Home', type: 'basic',
+    icon: 'heroicons_outline:home', link: '/dashboard',
+    meta: { permission: 'Permissions.Dashboards.View' },
+};
+
+export const defaultNavigation: FuseNavigationItem[] = [homeNav, ...posNav, mySubscriptionNav, sysNav];
 
 export const compactNavigation: FuseNavigationItem[] = [
     { id: 'pos', title: 'POS', type: 'basic', icon: 'heroicons_outline:shopping-cart', link: '/pos',
@@ -128,7 +138,7 @@ export const compactNavigation: FuseNavigationItem[] = [
       meta: { permission: 'Permissions.Users.View' } },
 ];
 
-export const futuristicNavigation: FuseNavigationItem[] = [...posNav, mySubscriptionNav, sysNav];
+export const futuristicNavigation: FuseNavigationItem[] = [homeNav, ...posNav, mySubscriptionNav, sysNav];
 
 export const horizontalNavigation: FuseNavigationItem[] = [
     {

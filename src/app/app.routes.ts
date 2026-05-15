@@ -110,6 +110,9 @@ export const appRoutes: Route[] = [
             {path: 'plans', loadChildren: () => import('app/modules/admin/plans/plans.routes')},
             {path: 'announcements', loadChildren: () => import('app/modules/admin/announcements/announcements.routes')},
             {path: 'subscription', loadChildren: () => import('app/modules/admin/subscription/subscription.routes')},
+            // Phase 2.49 — tenant-side Home dashboard. Gated by Dashboards.View
+            // permission; post-login resolver (2.48) lands tenant Admins here.
+            {path: 'dashboard', loadChildren: () => import('app/modules/admin/dashboard/dashboard.routes')},
             {path: 'stock-transfers', loadChildren: () => import('app/modules/admin/stock-transfers/stock-transfers.routes')},
             {path: 'stock-adjustments', loadChildren: () => import('app/modules/admin/stock-adjustments/stock-adjustments.routes')},
             {path: 'stock-counts', loadChildren: () => import('app/modules/admin/stock-counts/stock-counts.routes')},
