@@ -385,6 +385,12 @@ test.describe.serial('marketing screenshots', () => {
         await shot(page, '53-share-invoice-dialog');
     });
 
+    // Phase 2.48 surfaces (platform admin dashboard, My Subscription, Record
+    // Payment dialog) are intentionally NOT captured for marketing reels.
+    // They're internal billing chrome — showing them in cold ads would confuse
+    // the shop-owner narrative and leak MK Corex pricing. Keep them out of
+    // every screenshot / video destined for outreach.
+
     test('51 — branded thermal receipt popup (re-print from Find Sale)', async ({ page, context }) => {
         // Visual payoff of the whole branding story: the printed receipt with
         // logo + invoice barcode. Triggered via the Find Sale dialog so we hit

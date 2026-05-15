@@ -64,6 +64,12 @@ export class NotificationsComponent implements OnInit, OnDestroy
                 // Mark for check
                 this._changeDetectorRef.markForCheck();
             });
+
+        // Phase 2.48 — trigger the backend fetch. Pre-2.48 the mock-api seeded
+        // the ReplaySubject automatically; the real API needs an explicit GET.
+        // Silently fails for cashiers / non-Admin users with no AllUsers rows;
+        // the subject just emits an empty array and the bell stays badge-free.
+        this._notificationsService.getAll().subscribe({ error: () => {} });
     }
 
     /**

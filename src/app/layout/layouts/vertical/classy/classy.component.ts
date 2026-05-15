@@ -15,6 +15,8 @@ import { UserComponent } from 'app/layout/common/user/user.component';
 import { OutletSwitcherComponent } from 'app/layout/common/outlet-switcher/outlet-switcher.component';
 import { HelpButtonComponent } from 'app/layout/common/help/help-button.component';
 import { HelpDrawerComponent } from 'app/layout/common/help/help-drawer.component';
+import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
+import { ExpiryBannerComponent } from 'app/modules/admin/subscription/expiry-banner.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -22,7 +24,7 @@ import { Subject, takeUntil } from 'rxjs';
     templateUrl  : './classy.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [FuseLoadingBarComponent, FuseVerticalNavigationComponent, UserComponent, OutletSwitcherComponent, HelpButtonComponent, HelpDrawerComponent, NgIf, MatIconModule, MatButtonModule, FuseFullscreenComponent, RouterOutlet],
+    imports      : [FuseLoadingBarComponent, FuseVerticalNavigationComponent, UserComponent, OutletSwitcherComponent, HelpButtonComponent, HelpDrawerComponent, NotificationsComponent, ExpiryBannerComponent, NgIf, MatIconModule, MatButtonModule, FuseFullscreenComponent, RouterOutlet],
 })
 export class ClassyLayoutComponent implements OnInit, OnDestroy
 {

@@ -2,6 +2,7 @@ import { Route } from '@angular/router';
 import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
+import { PostLoginRedirectComponent } from 'app/core/auth/post-login-redirect.component';
 import { LayoutComponent } from 'app/layout/layout.component';
 
 // @formatter:off
@@ -9,15 +10,13 @@ import { LayoutComponent } from 'app/layout/layout.component';
 /* eslint-disable @typescript-eslint/explicit-function-return-type */
 export const appRoutes: Route[] = [
 
-    // Redirect empty path to '/users'
-    {path: '', pathMatch : 'full', redirectTo: 'pos'},
+    // Redirect empty path — same three-branch landing as signed-in-redirect.
+    {path: '', pathMatch : 'full', redirectTo: 'signed-in-redirect'},
 
-    // Redirect signed-in user to the '/users'
-    //
-    // After the user signs in, the sign-in page will redirect the user to the 'signed-in-redirect'
-    // path. Below is another redirection for that path to redirect the user to the desired
-    // location. This is a small convenience to keep all main routes together here on this file.
-    {path: 'signed-in-redirect', pathMatch : 'full', redirectTo: 'pos'},
+    // Phase 2.48 — three-branch landing resolver (replaces the old static
+    // redirectTo:'pos'). Root admin → /admin-dashboard, tenant Admin with
+    // Dashboards.View → /dashboard (resolves in 2.49), else → /pos.
+    {path: 'signed-in-redirect', component: PostLoginRedirectComponent, canActivate: [AuthGuard]},
 
     // Public routes — no guard, no nav chrome. Listed BEFORE the auth groups so the
     // child match resolves here first and no AuthGuard / NoAuthGuard fires for
@@ -106,6 +105,11 @@ export const appRoutes: Route[] = [
             {path: 'goods-receipts', loadChildren: () => import('app/modules/admin/goods-receipts/goods-receipts.routes')},
             {path: 'purchase-returns', loadChildren: () => import('app/modules/admin/purchase-returns/purchase-returns.routes')},
             {path: 'audit', loadChildren: () => import('app/modules/admin/audit/audit.routes')},
+            // Phase 2.48 — platform billing surfaces.
+            {path: 'admin-dashboard', loadChildren: () => import('app/modules/admin/admin-dashboard/admin-dashboard.routes')},
+            {path: 'plans', loadChildren: () => import('app/modules/admin/plans/plans.routes')},
+            {path: 'announcements', loadChildren: () => import('app/modules/admin/announcements/announcements.routes')},
+            {path: 'subscription', loadChildren: () => import('app/modules/admin/subscription/subscription.routes')},
             {path: 'stock-transfers', loadChildren: () => import('app/modules/admin/stock-transfers/stock-transfers.routes')},
             {path: 'stock-adjustments', loadChildren: () => import('app/modules/admin/stock-adjustments/stock-adjustments.routes')},
             {path: 'stock-counts', loadChildren: () => import('app/modules/admin/stock-counts/stock-counts.routes')},

@@ -90,10 +90,28 @@ const sysNav: FuseNavigationItem = {
           meta: { permission: 'Permissions.BrandingProfiles.View' } },
         { id: 'audit-trail', title: 'Audit Trail', type: 'basic', icon: 'heroicons_outline:clock', link: '/audit',
           meta: { permission: 'Permissions.AuditTrails.View' } },
+        // Phase 2.48 platform-admin entries. Gated on Tenants.View (root-only marker).
+        { id: 'platform-dashboard', title: 'Platform Dashboard', type: 'basic',
+          icon: 'heroicons_outline:chart-pie', link: '/admin-dashboard',
+          meta: { permission: 'Permissions.Tenants.View' } },
+        { id: 'subscription-plans', title: 'Plans', type: 'basic',
+          icon: 'heroicons_outline:rectangle-stack', link: '/plans',
+          meta: { permission: 'Permissions.Tenants.View' } },
+        { id: 'announcements', title: 'Announcements', type: 'basic',
+          icon: 'heroicons_outline:megaphone', link: '/announcements',
+          meta: { permission: 'Permissions.Tenants.View' } },
     ],
 };
 
-export const defaultNavigation: FuseNavigationItem[] = [...posNav, sysNav];
+// Phase 2.48 — tenant-side "My Subscription" entry. Visible only to users with
+// Permissions.Subscription.View (tenant Admin role only).
+const mySubscriptionNav: FuseNavigationItem = {
+    id: 'my-subscription', title: 'My Subscription', type: 'basic',
+    icon: 'heroicons_outline:credit-card', link: '/subscription',
+    meta: { permission: 'Permissions.Subscription.View' },
+};
+
+export const defaultNavigation: FuseNavigationItem[] = [...posNav, mySubscriptionNav, sysNav];
 
 export const compactNavigation: FuseNavigationItem[] = [
     { id: 'pos', title: 'POS', type: 'basic', icon: 'heroicons_outline:shopping-cart', link: '/pos',
@@ -110,7 +128,7 @@ export const compactNavigation: FuseNavigationItem[] = [
       meta: { permission: 'Permissions.Users.View' } },
 ];
 
-export const futuristicNavigation: FuseNavigationItem[] = [...posNav, sysNav];
+export const futuristicNavigation: FuseNavigationItem[] = [...posNav, mySubscriptionNav, sysNav];
 
 export const horizontalNavigation: FuseNavigationItem[] = [
     {
