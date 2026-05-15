@@ -36,9 +36,7 @@ import { MySubscriptionDto, TenantPaymentDto } from 'app/core/billing/billing.ty
         </div>
     </div>
 
-    @if (loadingSub()) {
-        <div class="flex items-center gap-3 text-gray-500"><mat-icon class="icon-size-5 animate-spin">progress_activity</mat-icon><span>Loading…</span></div>
-    } @else if (sub(); as s) {
+    @if (sub(); as s) {
         <!-- Plan card -->
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-5 mb-6">
             <div class="flex flex-wrap items-start justify-between gap-4">
@@ -78,10 +76,13 @@ import { MySubscriptionDto, TenantPaymentDto } from 'app/core/billing/billing.ty
                 </div>
             </div>
             @if (s.severity !== 'none') {
-                <div class="mt-4 p-3 rounded-lg" [class.bg-amber-50]="s.severity === 'warning'" [class.bg-rose-50]="s.severity === 'urgent'"
-                     [class.dark:bg-amber-900/30]="s.severity === 'warning'" [class.dark:bg-rose-900/30]="s.severity === 'urgent'">
-                    <p class="text-sm" [class.text-amber-800]="s.severity === 'warning'" [class.text-rose-800]="s.severity === 'urgent'"
-                       [class.dark:text-amber-200]="s.severity === 'warning'" [class.dark:text-rose-200]="s.severity === 'urgent'">
+                <!-- Tailwind's dark: modifier can't be used inside [class.X] bracket
+                     notation (Angular parser stumbles on the colon); use [ngClass]
+                     with a string instead so the dark-mode variant comes along. -->
+                <div class="mt-4 p-3 rounded-lg"
+                     [ngClass]="s.severity === 'urgent' ? 'bg-rose-50 dark:bg-rose-900/30' : 'bg-amber-50 dark:bg-amber-900/30'">
+                    <p class="text-sm"
+                       [ngClass]="s.severity === 'urgent' ? 'text-rose-800 dark:text-rose-200' : 'text-amber-800 dark:text-amber-200'">
                         @if (s.severity === 'urgent') {
                             Your subscription expires very soon. Contact your platform admin to renew before service is restricted.
                         } @else {
@@ -146,6 +147,8 @@ import { MySubscriptionDto, TenantPaymentDto } from 'app/core/billing/billing.ty
                 </table>
             }
         </div>
+    } @else if (loadingSub()) {
+        <div class="flex items-center gap-3 text-gray-500"><mat-icon class="icon-size-5 animate-spin">progress_activity</mat-icon><span>Loading…</span></div>
     } @else if (errorMsg()) {
         <div class="bg-rose-50 border-l-4 border-rose-500 p-4 text-rose-800">{{ errorMsg() }}</div>
     }

@@ -37,16 +37,7 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
             </div>
         </div>
 
-        @if (loading()) {
-            <div class="flex items-center gap-3 text-gray-500 mt-8">
-                <mat-icon class="icon-size-5 animate-spin">progress_activity</mat-icon>
-                <span>Loading dashboard…</span>
-            </div>
-        } @else if (errorMsg()) {
-            <div class="bg-rose-50 dark:bg-rose-900/30 border-l-4 border-rose-500 p-4 text-rose-800 dark:text-rose-200">
-                {{ errorMsg() }}
-            </div>
-        } @else if (dash(); as d) {
+        @if (dash(); as d) {
             <!-- Row 1: KPI cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border border-gray-200 dark:border-gray-700">
@@ -204,6 +195,15 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
                         </div>
                     </div>
                 </div>
+            </div>
+        } @else if (loading()) {
+            <div class="flex items-center gap-3 text-gray-500 mt-8">
+                <mat-icon class="icon-size-5 animate-spin">progress_activity</mat-icon>
+                <span>Loading dashboard…</span>
+            </div>
+        } @else if (errorMsg()) {
+            <div class="bg-rose-50 dark:bg-rose-900/30 border-l-4 border-rose-500 p-4 text-rose-800 dark:text-rose-200">
+                {{ errorMsg() }}
             </div>
         }
     </div>
