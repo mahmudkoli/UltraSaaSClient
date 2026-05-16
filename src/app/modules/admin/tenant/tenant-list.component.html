@@ -117,7 +117,7 @@
                                 </td>
                             </ng-container>
 
-                            <!-- Status Column -->
+                            <!-- Status Column (Phase 2.55 — LifecycleState chip) -->
                             <ng-container matColumnDef="isActive">
                                 <th mat-header-cell *matHeaderCellDef mat-sort-header>
                                     <div class="flex items-center">
@@ -125,15 +125,10 @@
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let tenant">
-                                    <div class="flex items-center">
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm transition-all duration-200 hover:shadow-md transform hover:scale-105"
-                                              [class]="(tenant.isActive || tenant.isSystemActive) ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
-                                            <mat-icon class="icon-size-4 mr-1.5">
-                                                {{ (tenant.isActive || tenant.isSystemActive) ? 'check_circle' : 'cancel' }}
-                                            </mat-icon>
-                                            {{ (tenant.isActive || tenant.isSystemActive) ? 'Active' : 'Inactive' }}
-                                        </span>
-                                    </div>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm"
+                                          [class]="lifecycleChipClass(tenant.lifecycleState)">
+                                        {{ tenant.lifecycleState || (tenant.isSystemActive ? 'Active' : 'Inactive') }}
+                                    </span>
                                 </td>
                             </ng-container>
 
@@ -280,6 +275,15 @@
                                                 <span class="ml-2">Theme Settings</span>
                                             </button>
                                             <mat-divider></mat-divider>
+                                            <!-- Phase 2.55 — terminal Cancel (distinct from Suspend). -->
+                                            <button mat-menu-item (click)="suspendTenant(tenant)" class="hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-amber-600 dark:text-amber-400">pause</mat-icon>
+                                                <span class="ml-2">Suspend (reversible)</span>
+                                            </button>
+                                            <button mat-menu-item (click)="cancelTenant(tenant)" class="hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-rose-600 dark:text-rose-400">no_accounts</mat-icon>
+                                                <span class="ml-2">Cancel tenant (terminal)</span>
+                                            </button>
                                         </mat-menu>
                                     </div>
                                 </td>

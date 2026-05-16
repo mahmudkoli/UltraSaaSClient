@@ -68,6 +68,12 @@ export class TenantsService extends BaseApiService {
         return this.postText(`/api/tenants/${id}/archive`, request);
     }
 
+    /** Phase 2.55 — terminal cancellation. Distinct from suspend (admin-initiated,
+     * reversible). Record Payment will NOT auto-reactivate a cancelled tenant. */
+    cancel(id: string, reason: string): Observable<string> {
+        return this.postText(`/api/tenants/${id}/cancel`, { tenantId: id, reason });
+    }
+
     /** Suspend helper used by the list / dashboard action buttons. */
     suspendTenant(id: string, reason: string): Observable<string> {
         return this.suspend(id, { tenantId: id, reason });

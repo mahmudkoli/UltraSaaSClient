@@ -305,6 +305,47 @@ export class TenantListComponent implements OnInit {
         });
     }
 
+    /** Phase 2.55 — terminal cancel. Prompts for a reason, sends, refreshes the list. */
+    cancelTenant(tenant: TenantDto): void {
+        const reason = (window.prompt(`Cancel tenant "${tenant.systemName}"? Type a brief reason (shown on their lockout page).`, 'Cancelled by tenant') ?? '').trim();
+        if (!reason) return;
+
+        const ref = this._fuseConfirmationService.open({
+            title: 'Cancel this tenant?',
+            message: `<b>${tenant.systemName}</b> will be flipped to read-only and marked Cancelled. Record Payment will NOT auto-reactivate them — re-onboarding is required to resume service. Continue?`,
+            icon: { show: true, name: 'heroicons_outline:no-symbol', color: 'warn' },
+            actions: { confirm: { show: true, label: 'Yes, cancel', color: 'warn' }, cancel: { show: true, label: 'Keep active' } },
+        });
+
+        ref.afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this._tenantsService.cancel(tenant.id, reason).subscribe({
+                next: () => this.loadTenants(),
+                error: (err) => {
+                    console.error('Error cancelling tenant:', err);
+                    this._fuseConfirmationService.open({
+                        title: 'Error',
+                        message: err?.error?.exception ?? err?.message ?? 'Failed to cancel tenant. Please try again.',
+                        actions: { confirm: { label: 'OK' } },
+                    });
+                },
+            });
+        });
+    }
+
+    /** Friendly chip colour for a tenant's LifecycleState. */
+    lifecycleChipClass(state: string): string {
+        switch (state) {
+            case 'Active': return 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-200';
+            case 'Trial': return 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200';
+            case 'GracePeriod': return 'bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-200';
+            case 'Suspended': return 'bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-200';
+            case 'Cancelled': return 'bg-gray-300 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+            case 'Archived': return 'bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400 line-through';
+            default: return 'bg-gray-100 text-gray-700';
+        }
+    }
+
     archiveTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
             title: 'Archive Tenant',

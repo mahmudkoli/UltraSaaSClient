@@ -1,5 +1,16 @@
 export type BusinessType = 'Generic' | 'Electronics' | 'Pharmacy' | 'Supermarket';
 
+/** Phase 2.55 — derived tenant lifecycle state. Backend never persists this;
+ * it's a function of (IsSystemActive, PaymentStatus, ValidUpto, CancelledOn,
+ * ArchivedOn). */
+export type TenantLifecycleState =
+    | 'Trial'
+    | 'Active'
+    | 'GracePeriod'
+    | 'Suspended'
+    | 'Cancelled'
+    | 'Archived';
+
 /**
  * Tenant DTO mirrored from the backend. Pre-launch cleanup (Phase 2.51)
  * dropped every field that had no enforcement: GDPR / 2FA / IP whitelist,
@@ -56,6 +67,12 @@ export interface TenantDto {
     lastModifiedOn?: string;
     lastModifiedBy?: string;
     lastLoginDate?: string;
+
+    // Lifecycle (Phase 2.55)
+    cancelledOn?: string;
+    cancelReason?: string;
+    archivedOn?: string;
+    lifecycleState: TenantLifecycleState;
 
     // Computed
     isInTrial: boolean;
