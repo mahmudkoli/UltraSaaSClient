@@ -116,8 +116,8 @@ import { ContentCardComponent } from '../../../shared/components/content-card.co
                                         {{ tenant.technicalAdminEmail || tenant.adminEmail }}
                                     </div>
                                     <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
-                                        <mat-icon class="w-4 h-4 mr-2">payment</mat-icon>
-                                        {{ tenant.billingPlan || 'Basic' }} Plan
+                                        <mat-icon class="w-4 h-4 mr-2">event</mat-icon>
+                                        Valid until {{ tenant.validUpto ? (tenant.validUpto | date:'mediumDate') : '—' }}
                                     </div>
                                 </div>
 

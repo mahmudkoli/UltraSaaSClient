@@ -1,21 +1,27 @@
 import { Component, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatChipsModule } from '@angular/material/chips';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
-import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSelectModule } from '@angular/material/select';
-import { MatDatepickerModule } from '@angular/material/datepicker';
-import { MatNativeDateModule } from '@angular/material/core';
-import { FuseConfirmationService } from '@fuse/services/confirmation';
+import { MatTableModule } from '@angular/material/table';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslocoModule } from '@ngneat/transloco';
-import { TenantDto, UpdateBillingPlanRequest, ExtendValidityRequest } from '../../../core/tenants/tenants.types';
+import { TenantDto } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
+import { PlansService, TenantPaymentsService } from '../../../core/billing/billing.service';
+import { PlanDto, TenantPaymentDto } from '../../../core/billing/billing.types';
+import { RecordPaymentDialogComponent } from './record-payment-dialog.component';
 
+/**
+ * Phase 2.50 — read-only billing tab. The legacy "edit plan inline" + "extend
+ * validity" forms are gone; plan changes happen on the tenant form (with the
+ * quota pre-flight + force flow), and validity extension happens through the
+ * RecordPaymentDialog. This component shows current state + payment history.
+ */
 @Component({
     selector: 'tenant-billing',
     templateUrl: './tenant-billing.component.html',
@@ -23,193 +29,99 @@ import { TenantsService } from '../../../core/tenants/tenants.service';
     standalone: true,
     imports: [
         CommonModule,
-        ReactiveFormsModule,
         MatButtonModule,
         MatCardModule,
-        MatFormFieldModule,
+        MatChipsModule,
+        MatDialogModule,
         MatIconModule,
-        MatInputModule,
         MatProgressSpinnerModule,
-        MatSelectModule,
-        MatDatepickerModule,
-        MatNativeDateModule,
+        MatTableModule,
+        MatTooltipModule,
         TranslocoModule,
     ],
 })
 export class TenantBillingComponent implements OnInit {
     tenant?: TenantDto;
     tenantId: string;
-    billingForm: FormGroup;
-    extendValidityForm: FormGroup;
+    plan?: PlanDto;
+    payments: TenantPaymentDto[] = [];
     loading: boolean = false;
-    saving: boolean = false;
 
-    billingPlans = [
-        { value: 'Basic', label: 'Basic Plan', price: 29 },
-        { value: 'Professional', label: 'Professional Plan', price: 79 },
-        { value: 'Enterprise', label: 'Enterprise Plan', price: 199 },
-        { value: 'Custom', label: 'Custom Plan', price: 0 }
-    ];
-
-    currencies = [
-        { value: 'USD', label: 'US Dollar' },
-        { value: 'EUR', label: 'Euro' },
-        { value: 'GBP', label: 'British Pound' },
-        { value: 'CAD', label: 'Canadian Dollar' }
-    ];
-
-    paymentStatuses = [
-        { value: 'Paid', label: 'Paid' },
-        { value: 'Pending', label: 'Pending' },
-        { value: 'Overdue', label: 'Overdue' },
-        { value: 'Failed', label: 'Failed' },
-        { value: 'Cancelled', label: 'Cancelled' }
-    ];
+    paymentColumns = ['paidOn', 'amount', 'method', 'reference', 'periodStart', 'periodEnd'];
 
     constructor(
-        private _formBuilder: FormBuilder,
         private _tenantsService: TenantsService,
+        private _plansService: PlansService,
+        private _paymentsService: TenantPaymentsService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _dialog: MatDialog,
     ) {
         this.tenantId = this._route.snapshot.paramMap.get('id')!;
-
-        this.billingForm = this._formBuilder.group({
-            billingPlan: ['', [Validators.required]],
-            monthlyFee: [0, [Validators.required, Validators.min(0)]],
-            billingCurrency: ['USD', [Validators.required]],
-            billingEmail: ['', [Validators.email]],
-            paymentStatus: ['Pending', [Validators.required]],
-            nextBillingDate: [''],
-            lastBillingDate: ['']
-        });
-
-        this.extendValidityForm = this._formBuilder.group({
-            months: [1, [Validators.required, Validators.min(1), Validators.max(36)]]
-        });
     }
 
     ngOnInit(): void {
-        this.loadTenant();
+        this.reload();
     }
 
-    loadTenant(): void {
+    reload(): void {
         this.loading = true;
         this._tenantsService.getById(this.tenantId).subscribe({
             next: (tenant) => {
                 this.tenant = tenant;
-                this.billingForm.patchValue({
-                    billingPlan: tenant.billingPlan || 'Basic',
-                    monthlyFee: tenant.monthlyFee || 0,
-                    billingCurrency: tenant.billingCurrency || 'USD',
-                    billingEmail: tenant.billingEmail || tenant.adminEmail,
-                    paymentStatus: tenant.paymentStatus || 'Pending',
-                    nextBillingDate: tenant.nextBillingDate ? new Date(tenant.nextBillingDate) : null,
-                    lastBillingDate: tenant.lastBillingDate ? new Date(tenant.lastBillingDate) : null
-                });
+                if (tenant.planId) {
+                    this._plansService.get(tenant.planId).subscribe({
+                        next: (plan) => { this.plan = plan; },
+                        error: () => { /* plan missing — show "Not set" */ },
+                    });
+                } else {
+                    this.plan = undefined;
+                }
+            },
+            error: (err) => console.error('Error loading tenant:', err),
+        });
+
+        this._paymentsService.getByTenant(this.tenantId).subscribe({
+            next: (rows) => {
+                this.payments = rows;
                 this.loading = false;
             },
-            error: (error) => {
-                console.error('Error loading tenant:', error);
+            error: (err) => {
+                console.error('Error loading payments:', err);
                 this.loading = false;
-            }
-        });
-    }
-
-    updateBilling(): void {
-        if (this.billingForm.invalid) {
-            return;
-        }
-
-        this.saving = true;
-        const formData = this.billingForm.getRawValue();
-
-        const request: UpdateBillingPlanRequest = {
-            tenantId: this.tenantId,
-            billingPlan: formData.billingPlan,
-            monthlyFee: formData.monthlyFee,
-            billingCurrency: formData.billingCurrency,
-            billingEmail: formData.billingEmail,
-            paymentStatus: formData.paymentStatus
-        };
-
-        this._tenantsService.updateBillingPlan(this.tenantId, request).subscribe({
-            next: () => {
-                this.saving = false;
-                this._fuseConfirmationService.open({
-                    title: 'Success',
-                    message: 'Billing information updated successfully!',
-                    actions: {
-                        confirm: { label: 'OK' }
-                    }
-                });
-                this.loadTenant();
             },
-            error: (error) => {
-                console.error('Error updating billing:', error);
-                this.saving = false;
-                this._fuseConfirmationService.open({
-                    title: 'Error',
-                    message: 'Failed to update billing information. Please try again.',
-                    actions: {
-                        confirm: { label: 'OK' }
-                    }
-                });
-            }
         });
     }
 
-    extendValidity(): void {
-        if (this.extendValidityForm.invalid) {
-            return;
-        }
-
-        this.saving = true;
-        const formData = this.extendValidityForm.getRawValue();
-
-        const request: ExtendValidityRequest = {
-            tenantId: this.tenantId,
-            months: formData.months
-        };
-
-        this._tenantsService.extendValidity(this.tenantId, request).subscribe({
-            next: () => {
-                this.saving = false;
-                this._fuseConfirmationService.open({
-                    title: 'Success',
-                    message: `Tenant validity extended by ${formData.months} month(s)!`,
-                    actions: {
-                        confirm: { label: 'OK' }
-                    }
-                });
-                this.loadTenant();
-                this.extendValidityForm.reset({ months: 1 });
+    openRecordPayment(): void {
+        if (!this.tenant) return;
+        const ref = this._dialog.open(RecordPaymentDialogComponent, {
+            data: {
+                tenantId: this.tenant.id,
+                tenantName: this.tenant.systemName ?? this.tenant.name ?? this.tenant.id,
+                currentValidUpto: this.tenant.validUpto,
             },
-            error: (error) => {
-                console.error('Error extending validity:', error);
-                this.saving = false;
-                this._fuseConfirmationService.open({
-                    title: 'Error',
-                    message: 'Failed to extend validity. Please try again.',
-                    actions: {
-                        confirm: { label: 'OK' }
-                    }
-                });
-            }
+        });
+        ref.afterClosed().subscribe((recorded) => {
+            if (recorded) this.reload();
         });
     }
 
-    onPlanChange(): void {
-        const selectedPlan = this.billingPlans.find(plan => plan.value === this.billingForm.get('billingPlan')?.value);
-        if (selectedPlan) {
-            this.billingForm.patchValue({
-                monthlyFee: selectedPlan.price
-            });
-        }
+    /** Severity tag for ValidUpto — matches the in-app expiry banner. */
+    validitySeverity(): 'expired' | 'urgent' | 'warning' | 'ok' | 'none' {
+        if (!this.tenant?.validUpto) return 'none';
+        const days = Math.floor((new Date(this.tenant.validUpto).getTime() - Date.now()) / 86400000);
+        if (days < 0) return 'expired';
+        if (days <= 1) return 'urgent';
+        if (days <= 7) return 'warning';
+        return 'ok';
     }
 
     goBack(): void {
         this._router.navigate(['/tenant']);
+    }
+
+    editTenantPlan(): void {
+        this._router.navigate([`/tenant/${this.tenantId}/edit`]);
     }
 }

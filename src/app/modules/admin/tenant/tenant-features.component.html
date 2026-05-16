@@ -16,7 +16,7 @@
                     Tenant Features Management
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Configure and manage feature access for {{ tenant?.systemName || tenant?.name || 'tenant' }}
+                    Features granted by this tenant's plan (read-only — change the plan on the tenant form to grant a different feature set).
                 </p>
             </div>
         </div>
@@ -98,31 +98,20 @@
                     </div>
                 </div>
 
-                <!-- Quick Actions -->
+                <!-- Plan-derived notice -->
                 <div class="p-6 bg-gradient-to-r from-purple-50 to-violet-50 dark:from-purple-900/20 dark:to-violet-900/20 rounded-xl border border-purple-200 dark:border-purple-700">
                     <div class="flex items-center space-x-3 mb-4">
                         <div class="flex items-center justify-center w-10 h-10 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded-full">
-                            <mat-icon>flash_on</mat-icon>
+                            <mat-icon>workspace_premium</mat-icon>
                         </div>
                         <div>
-                            <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-100">Quick Actions</h3>
-                            <p class="text-sm text-purple-700 dark:text-purple-300">Bulk operations</p>
+                            <h3 class="text-lg font-semibold text-purple-900 dark:text-purple-100">Plan-derived</h3>
+                            <p class="text-sm text-purple-700 dark:text-purple-300">No per-tenant edits</p>
                         </div>
                     </div>
-                    <div class="space-y-3">
-                        <button mat-stroked-button class="w-full text-left justify-start" (click)="selectAll()" [disabled]="saving">
-                            <mat-icon class="mr-2 text-green-600">check_box</mat-icon>
-                            Enable All Features
-                        </button>
-                        <button mat-stroked-button class="w-full text-left justify-start" (click)="deselectAll()" [disabled]="saving">
-                            <mat-icon class="mr-2 text-red-600">check_box_outline_blank</mat-icon>
-                            Disable All Features
-                        </button>
-                        <button mat-stroked-button class="w-full text-left justify-start" (click)="selectDefaultFeatures()" [disabled]="saving">
-                            <mat-icon class="mr-2 text-blue-600">auto_awesome</mat-icon>
-                            Apply Default Set
-                        </button>
-                    </div>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">
+                        Phase 2.50 — the active feature set is replaced from the plan's <code>FeatureFlagsJson</code> on every plan change. To grant a tenant a different feature, change the plan (or create a new one with the desired flags).
+                    </p>
                 </div>
             </div>
 
@@ -162,18 +151,6 @@
                                             {{ getFilteredFeaturesByCategory(category).length }} features
                                         </p>
                                     </div>
-                                    <div class="flex items-center space-x-2">
-                                        <button mat-icon-button (click)="selectCategoryFeatures(category)" [disabled]="saving"
-                                                class="text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20"
-                                                matTooltip="Enable all features in this category">
-                                            <mat-icon>check_circle</mat-icon>
-                                        </button>
-                                        <button mat-icon-button (click)="deselectCategoryFeatures(category)" [disabled]="saving"
-                                                class="text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                                                matTooltip="Disable all features in this category">
-                                            <mat-icon>cancel</mat-icon>
-                                        </button>
-                                    </div>
                                 </div>
                             </div>
 
@@ -184,13 +161,11 @@
                                      [class.opacity-60]="!feature.isActive">
 
                                     <div class="flex items-center space-x-4">
-                                        <!-- Checkbox -->
-                                        <mat-checkbox
-                                            [checked]="isFeatureSelected(feature.id)"
-                                            (change)="toggleFeature(feature.id)"
-                                            [disabled]="saving || !feature.isActive"
-                                            [color]="'primary'">
-                                        </mat-checkbox>
+                                        <!-- Read-only indicator (Phase 2.50 — feature set is plan-derived) -->
+                                        <mat-icon class="icon-size-5"
+                                                  [ngClass]="isFeatureSelected(feature.id) ? 'text-emerald-600' : 'text-gray-300 dark:text-gray-600'">
+                                            {{ isFeatureSelected(feature.id) ? 'check_circle' : 'radio_button_unchecked' }}
+                                        </mat-icon>
 
                                         <!-- Feature Details -->
                                         <div class="flex-1 min-w-0">
@@ -238,26 +213,14 @@
                         </div>
                     </div>
 
-                    <!-- Save Actions -->
+                    <!-- Back to Tenants (no save — plan drives this) -->
                     <div class="flex justify-end pt-4 border-t border-orange-200 dark:border-orange-700 mt-6">
-                        <div class="flex space-x-3">
-                            <button mat-stroked-button
-                                    (click)="cancel()"
-                                    class="px-6 py-2 rounded-lg transition-all duration-200"
-                                    [disabled]="saving">
-                                <mat-icon class="mr-2">cancel</mat-icon>
-                                Cancel
-                            </button>
-                            <button mat-flat-button
-                                    color="primary"
-                                    (click)="saveFeatures()"
-                                    class="px-8 py-2 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
-                                    [disabled]="saving">
-                                <mat-icon *ngIf="!saving" class="mr-2">save</mat-icon>
-                                <mat-spinner *ngIf="saving" diameter="20" class="mr-2"></mat-spinner>
-                                <span>{{ saving ? 'Saving...' : 'Save Features' }}</span>
-                            </button>
-                        </div>
+                        <button mat-stroked-button
+                                (click)="cancel()"
+                                class="px-6 py-2 rounded-lg transition-all duration-200">
+                            <mat-icon class="mr-2">arrow_back</mat-icon>
+                            Back to Tenants
+                        </button>
                     </div>
                 </div>
             </div>

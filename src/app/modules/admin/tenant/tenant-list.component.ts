@@ -18,12 +18,16 @@ import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatDialog } from '@angular/material/dialog';
 import { FuseNavigationService } from '@fuse/components/navigation';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { TranslocoModule } from '@ngneat/transloco';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { TenantDto } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
+import { PlansService } from '../../../core/billing/billing.service';
+import { PlanDto } from '../../../core/billing/billing.types';
+import { RecordPaymentDialogComponent } from './record-payment-dialog.component';
 
 @Component({
     selector: 'tenant-list',
@@ -57,11 +61,14 @@ import { TenantsService } from '../../../core/tenants/tenants.service';
 export class TenantListComponent implements OnInit {
     tenants: TenantDto[] = [];
     loading: boolean = false;
-    displayedColumns: string[] = ['name', 'adminEmail', 'url', 'isActive', 'theme', 'validUpto', 'actions'];
+    displayedColumns: string[] = ['name', 'adminEmail', 'plan', 'url', 'isActive', 'validUpto', 'actions'];
 
     dataSource: MatTableDataSource<TenantDto> = new MatTableDataSource<TenantDto>([]);
     searchControl = new FormControl<string>('');
     statusControl = new FormControl<'all' | 'active' | 'inactive'>('all');
+
+    /** All active plans cached for the inline Plan chip column. */
+    private plansById = new Map<string, PlanDto>();
 
     @ViewChild(MatPaginator) paginator!: MatPaginator;
     @ViewChild(MatSort) sort!: MatSort;
@@ -85,13 +92,48 @@ export class TenantListComponent implements OnInit {
 
     constructor(
         private _tenantsService: TenantsService,
+        private _plansService: PlansService,
         private _router: Router,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _dialog: MatDialog,
     ) {}
 
     ngOnInit(): void {
         this.initFilters();
         this.loadTenants();
+        this._plansService.getAll().subscribe({
+            next: (plans) => { this.plansById = new Map(plans.map(p => [p.id, p])); },
+            error: () => { /* leave plan column blank */ },
+        });
+    }
+
+    /** Resolve a tenant's plan name via the cached PlansService dictionary. */
+    planNameFor(tenant: TenantDto): string {
+        if (!tenant.planId) return 'Not set';
+        return this.plansById.get(tenant.planId)?.name ?? '—';
+    }
+
+    /** Severity tag for ValidUpto traffic light (matches tenant-billing). */
+    validitySeverity(tenant: TenantDto): 'expired' | 'urgent' | 'warning' | 'ok' | 'none' {
+        if (!tenant.validUpto) return 'none';
+        const days = Math.floor((new Date(tenant.validUpto).getTime() - Date.now()) / 86400000);
+        if (days < 0) return 'expired';
+        if (days <= 1) return 'urgent';
+        if (days <= 7) return 'warning';
+        return 'ok';
+    }
+
+    openRecordPayment(tenant: TenantDto): void {
+        const ref = this._dialog.open(RecordPaymentDialogComponent, {
+            data: {
+                tenantId: tenant.id,
+                tenantName: tenant.systemName ?? tenant.name ?? tenant.id,
+                currentValidUpto: tenant.validUpto,
+            },
+        });
+        ref.afterClosed().subscribe((recorded) => {
+            if (recorded) this.loadTenants();
+        });
     }
 
     private initFilters(): void {
@@ -394,9 +436,4 @@ export class TenantListComponent implements OnInit {
         return 'text-green-600';
     }
 
-    formatBillingPlan(billingPlan: string): string {
-        return billingPlan?.replace(/([A-Z])/g, ' $1').trim() || 'Not Set';
-    }
-
-
-} 
+}

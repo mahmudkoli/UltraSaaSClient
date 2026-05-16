@@ -26,8 +26,8 @@ export interface TenantDto {
     customDomain?: string;
 
     // ============= BILLING & SUBSCRIPTION =============
-    billingPlan: string;
-    monthlyFee: number;
+    /** FK to SubscriptionPlan.id. Plan name / fee / limits resolve via PlansService. */
+    planId?: string;
     billingCurrency: string;
     validUpto: string;
     paymentStatus: string;
@@ -121,7 +121,8 @@ export interface CreateTenantRequest {
     systemName: string; // Changed from name
     technicalAdminEmail: string; // Changed from adminEmail
     subdomain: string; // Changed from url
-    billingPlan?: string;
+    /** Optional FK to SubscriptionPlan.id. Null → backend uses Starter. */
+    planId?: string;
 
     // ============= VERTICAL =============
     businessType?: BusinessType;
@@ -138,7 +139,6 @@ export interface CreateTenantRequest {
     customDomain?: string;
 
     // ============= BILLING FIELDS =============
-    monthlyFee?: number;
     billingCurrency?: string;
     billingEmail?: string;
     paymentStatus?: string;
@@ -209,8 +209,14 @@ export interface UpdateTenantRequest {
     posLayout?: string;
 
     // ============= BILLING FIELDS =============
-    billingPlan?: string;
-    monthlyFee?: number;
+    /** FK to SubscriptionPlan.id. On change the backend cascades MaxOutlets/MaxUsers
+     * and replaces the tenant's TenantFeature set from the plan's FeatureFlagsJson.
+     * If current outlets/users exceed the new plan's limits, the API returns 409
+     * with `{ field, currentlyUsed, newLimit, planName }`; retry with `force: true`
+     * (also propagated as the `?force=true` query string) to accept and proceed. */
+    planId?: string;
+    /** Bypass the plan-change quota pre-flight. Propagated as `?force=true`. */
+    force?: boolean;
     billingCurrency?: string;
     billingEmail?: string;
     paymentStatus?: string;
@@ -293,17 +299,6 @@ export interface PermissionDto {
     riskLevel: 'low' | 'medium' | 'high';
 }
 
-/**
- * Billing-specific requests
- */
-export interface UpdateBillingRequest {
-    tenantId: string;
-    billingPlan: string;
-    billingEmail?: string;
-    billingCurrency?: string;
-    monthlyFee?: number;
-}
-
 export interface SuspendTenantRequest {
     tenantId: string;
     reason: string;
@@ -351,15 +346,6 @@ export interface PaginationResponse<T> {
 
 // ============= REQUEST INTERFACES =============
 
-export interface UpdateBillingPlanRequest {
-    tenantId: string;
-    billingPlan: string;
-    monthlyFee?: number;
-    billingCurrency?: string;
-    billingEmail?: string;
-    paymentStatus?: string;
-}
-
 export interface UpdateResourceLimitsRequest {
     tenantId: string;
     maxDatabaseGB?: number;
@@ -377,11 +363,6 @@ export interface UpdateResourceLimitsRequest {
     useOutletPriceOnLabel?: boolean;
 }
 
-export interface ExtendValidityRequest {
-    tenantId: string;
-    months: number;
-}
-
 export interface UpdateResourceUsageRequest {
     tenantId: string;
     databaseMB: number;
@@ -395,9 +376,4 @@ export interface BulkSuspendTenantsRequest {
 
 export interface BulkActivateTenantsRequest {
     tenantIds: string[];
-}
-
-export interface BulkUpdateBillingPlanRequest {
-    tenantIds: string[];
-    billingPlan: string;
 }

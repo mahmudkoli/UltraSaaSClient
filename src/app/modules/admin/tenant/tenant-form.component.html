@@ -238,23 +238,17 @@
                             <div class="p-6 space-y-6">
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                                    <!-- Billing Plan -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Billing Plan</mat-label>
-                                        <mat-select formControlName="billingPlan">
-                                            <mat-option value="Basic">Basic</mat-option>
-                                            <mat-option value="Standard">Standard</mat-option>
-                                            <mat-option value="Premium">Premium</mat-option>
-                                            <mat-option value="Enterprise">Enterprise</mat-option>
+                                    <!-- Subscription Plan -->
+                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
+                                        <mat-label>Subscription Plan</mat-label>
+                                        <mat-select formControlName="planId">
+                                            <mat-option *ngFor="let plan of plans" [value]="plan.id">
+                                                {{ plan.name }} — BDT {{ plan.monthlyFeeBDT }}/mo · {{ plan.maxOutlets }} outlets · {{ plan.maxUsers }} users
+                                            </mat-option>
                                         </mat-select>
                                         <mat-icon matSuffix>payment</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Monthly Fee -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Monthly Fee</mat-label>
-                                        <input matInput formControlName="monthlyFee" type="number" placeholder="0">
-                                        <mat-icon matSuffix>attach_money</mat-icon>
+                                        <mat-hint *ngIf="isEditMode">Changing the plan cascades MaxOutlets / MaxUsers + replaces this tenant's feature set. If the new plan's limits are below current usage, you'll be asked to confirm before saving.</mat-hint>
+                                        <mat-hint *ngIf="!isEditMode">New tenants default to Starter.</mat-hint>
                                     </mat-form-field>
 
                                     <!-- Billing Currency -->
@@ -612,8 +606,7 @@
                                             Billing & Subscription
                                         </h3>
                                         <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Plan:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('billingPlan')?.value || 'Basic' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Monthly Fee:</span> <span class="text-gray-900 dark:text-white">${{ tenantForm.get('monthlyFee')?.value || '0' }}</span></div>
+                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Plan:</span> <span class="text-gray-900 dark:text-white">{{ planNameFor(tenantForm.get('planId')?.value) }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Currency:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('billingCurrency')?.value || 'USD' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Billing Email:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('billingEmail')?.value || 'Not set' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Payment Status:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('paymentStatus')?.value || 'Pending' }}</span></div>

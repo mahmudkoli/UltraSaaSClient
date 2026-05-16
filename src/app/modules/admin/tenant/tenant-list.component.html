@@ -86,10 +86,19 @@
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let tenant">
-                                    <div class="flex flex-col">
-                                        <span class="text-sm text-gray-900 dark:text-white">{{ tenant.technicalAdminEmail || tenant.adminEmail || 'N/A' }}</span>
-                                        <span class="text-xs text-gray-500">{{ tenant.billingPlan || 'Basic' }} Plan</span>
-                                    </div>
+                                    <span class="text-sm text-gray-900 dark:text-white">{{ tenant.technicalAdminEmail || tenant.adminEmail || 'N/A' }}</span>
+                                </td>
+                            </ng-container>
+
+                            <!-- Plan Column -->
+                            <ng-container matColumnDef="plan">
+                                <th mat-header-cell *matHeaderCellDef>
+                                    <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Plan</span>
+                                </th>
+                                <td mat-cell *matCellDef="let tenant">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200">
+                                        {{ planNameFor(tenant) }}
+                                    </span>
                                 </td>
                             </ng-container>
 
@@ -142,7 +151,7 @@
                                 </td>
                             </ng-container>
 
-                            <!-- Valid Until Column -->
+                            <!-- Valid Until Column (with traffic-light severity) -->
                             <ng-container matColumnDef="validUpto">
                                 <th mat-header-cell *matHeaderCellDef mat-sort-header>
                                     <div class="flex items-center">
@@ -151,11 +160,16 @@
                                 </th>
                                 <td mat-cell *matCellDef="let tenant">
                                     <div class="flex flex-col">
-                                        <span class="text-sm text-gray-900 dark:text-white">{{ tenant.validUpto ? (tenant.validUpto | date:'mediumDate') : 'Unlimited' }}</span>
-                                        <span class="text-xs text-gray-500"
-                                              [class]="tenant.paymentStatus === 'Active' ? 'text-green-600' : tenant.paymentStatus === 'Overdue' ? 'text-red-600' : 'text-yellow-600'">
-                                            {{ tenant.paymentStatus || 'Pending' }}
+                                        <span class="text-sm font-medium"
+                                              [ngClass]="{
+                                                'text-red-600 dark:text-red-400': validitySeverity(tenant) === 'expired' || validitySeverity(tenant) === 'urgent',
+                                                'text-amber-600 dark:text-amber-400': validitySeverity(tenant) === 'warning',
+                                                'text-emerald-600 dark:text-emerald-400': validitySeverity(tenant) === 'ok',
+                                                'text-gray-500': validitySeverity(tenant) === 'none'
+                                              }">
+                                            {{ tenant.validUpto ? (tenant.validUpto | date:'mediumDate') : 'Unlimited' }}
                                         </span>
+                                        <span class="text-xs text-gray-500">{{ tenant.paymentStatus || 'Pending' }}</span>
                                     </div>
                                 </td>
                             </ng-container>
@@ -196,12 +210,21 @@
                                             <mat-icon class="icon-size-5">security</mat-icon>
                                         </button>
 
+                                        <!-- Record Payment Button -->
+                                        <button
+                                            mat-icon-button
+                                            (click)="openRecordPayment(tenant)"
+                                            class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200 rounded-full"
+                                            matTooltip="Record Payment">
+                                            <mat-icon class="icon-size-5">payments</mat-icon>
+                                        </button>
+
                                         <!-- Billing Button -->
                                         <button
                                             mat-icon-button
                                             (click)="manageBilling(tenant)"
                                             class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-200 rounded-full"
-                                            matTooltip="Manage Billing">
+                                            matTooltip="Billing Details">
                                             <mat-icon class="icon-size-5">payment</mat-icon>
                                         </button>
 

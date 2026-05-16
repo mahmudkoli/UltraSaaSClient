@@ -17,6 +17,8 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { TranslocoModule } from '@ngneat/transloco';
 import { TenantDto, CreateTenantRequest, UpdateTenantRequest } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
+import { PlansService } from '../../../core/billing/billing.service';
+import { PlanDto } from '../../../core/billing/billing.types';
 import { POS_LAYOUTS } from '../pos/pos-layout-registry';
 
 @Component({
@@ -53,6 +55,9 @@ export class TenantFormComponent implements OnInit {
     // dropdown. Adding a layout = registry entry, no change here.
     posLayouts = POS_LAYOUTS;
 
+    /** Active SubscriptionPlans loaded once in ngOnInit; drives the plan dropdown. */
+    plans: PlanDto[] = [];
+
     /**
      * Open `/pos?previewLayout=<name>` in a new tab so the admin can see what
      * the layout looks like *before* saving the choice. Uses the value
@@ -74,6 +79,7 @@ export class TenantFormComponent implements OnInit {
     constructor(
         private _formBuilder: FormBuilder,
         private _tenantsService: TenantsService,
+        private _plansService: PlansService,
         private _router: Router,
         private _route: ActivatedRoute,
         private _fuseConfirmationService: FuseConfirmationService
@@ -97,8 +103,7 @@ export class TenantFormComponent implements OnInit {
             posLayout: ['default'],
 
             // Billing & Subscription
-            billingPlan: ['Basic', [Validators.required]],
-            monthlyFee: [0, [Validators.min(0)]],
+            planId: [null, [Validators.required]],
             billingCurrency: ['USD', [Validators.required]],
             billingEmail: ['', [Validators.required, Validators.email]],
             paymentStatus: ['Pending', [Validators.required]],
@@ -138,7 +143,19 @@ export class TenantFormComponent implements OnInit {
 
     ngOnInit(): void {
         this.tenantId = this._route.snapshot.paramMap.get('id');
-        
+
+        // Plan dropdown source — only active plans. Defaults to "starter" on create.
+        this._plansService.getAll(true).subscribe({
+            next: (plans) => {
+                this.plans = plans;
+                if (!this.isEditMode && !this.tenantForm.get('planId')?.value) {
+                    const starter = plans.find(p => p.code === 'starter') ?? plans[0];
+                    if (starter) this.tenantForm.patchValue({ planId: starter.id });
+                }
+            },
+            error: (err) => console.error('Failed to load plans:', err),
+        });
+
         if (this.tenantId) {
             this.isEditMode = true;
             this.loadTenant();
@@ -147,6 +164,12 @@ export class TenantFormComponent implements OnInit {
             // accept them). The dedicated "Change Vertical" button is the only
             // commit path — see changeVertical().
         }
+    }
+
+    /** Look up a plan's display name by id — used by the Review tab. */
+    planNameFor(planId: string | null | undefined): string {
+        if (!planId) return 'Not set';
+        return this.plans.find(p => p.id === planId)?.name ?? planId;
     }
 
     loadTenant(): void {
@@ -174,8 +197,7 @@ export class TenantFormComponent implements OnInit {
                     posLayout: tenant.posLayout || 'default',
 
                     // Billing & Subscription
-                    billingPlan: tenant.billingPlan || 'Basic',
-                    monthlyFee: tenant.monthlyFee || 0,
+                    planId: tenant.planId ?? null,
                     billingCurrency: tenant.billingCurrency || 'USD',
                     billingEmail: tenant.billingEmail || tenant.technicalAdminEmail || tenant.adminEmail,
                     paymentStatus: tenant.paymentStatus || 'Pending',
@@ -294,8 +316,7 @@ export class TenantFormComponent implements OnInit {
                 posLayout: formData.posLayout || undefined,
 
                 // Billing & Subscription
-                billingPlan: formData.billingPlan,
-                monthlyFee: formData.monthlyFee,
+                planId: formData.planId,
                 billingCurrency: formData.billingCurrency,
                 billingEmail: formData.billingEmail,
                 paymentStatus: formData.paymentStatus,
@@ -378,8 +399,7 @@ export class TenantFormComponent implements OnInit {
             posLayout: formData.posLayout || undefined,
 
             // Billing & Subscription
-            billingPlan: formData.billingPlan,
-            monthlyFee: formData.monthlyFee,
+            planId: formData.planId,
             billingCurrency: formData.billingCurrency,
             billingEmail: formData.billingEmail,
             paymentStatus: formData.paymentStatus,
@@ -416,6 +436,12 @@ export class TenantFormComponent implements OnInit {
             enableMultipleDatabases: formData.enableMultipleDatabases,
         };
 
+        this.sendUpdate(updateRequest, businessType, outletLabel, verticalChanged);
+    }
+
+    /** Submits the UpdateTenantRequest. On a plan-quota 409, prompts the user
+     * to accept the over-quota state and retries with `force: true`. */
+    private sendUpdate(updateRequest: UpdateTenantRequest, businessType: string, outletLabel: string, verticalChanged: boolean): void {
         this._tenantsService.update(this.tenantId!, updateRequest).subscribe({
             next: () => {
                 this.saving = false;
@@ -435,6 +461,28 @@ export class TenantFormComponent implements OnInit {
             },
             error: (error) => {
                 console.error('Error updating tenant:', error);
+
+                // Phase 2.50 — plan-quota pre-flight 409. The backend serializes a
+                // JSON detail as the exception message; if we can parse it, render
+                // a confirm dialog and retry with force=true on accept.
+                const quota = error?.status === 409 ? this.tryParseQuotaConflict(error?.error?.exception) : null;
+                if (quota) {
+                    this._fuseConfirmationService.open({
+                        title: 'Plan downgrade exceeds current usage',
+                        message: `Switching to <b>${quota.planName}</b> would set <b>${quota.field}</b> to <b>${quota.newLimit}</b>, but the tenant currently has <b>${quota.currentlyUsed}</b>. Existing records stay; further <b>${quota.field}</b> creates are blocked until you reduce the count or pick a larger plan. Continue?`,
+                        icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+                        actions: { confirm: { show: true, label: 'Continue anyway', color: 'warn' }, cancel: { show: true, label: 'Cancel' } },
+                    }).afterClosed().subscribe(result => {
+                        if (result !== 'confirmed') {
+                            this.saving = false;
+                            return;
+                        }
+                        // Retry with force=true — tenants.service appends ?force=true to the URL.
+                        this.sendUpdate({ ...updateRequest, force: true }, businessType, outletLabel, verticalChanged);
+                    });
+                    return;
+                }
+
                 this.saving = false;
                 this._fuseConfirmationService.open({
                     title: 'Error',
@@ -443,6 +491,21 @@ export class TenantFormComponent implements OnInit {
                 });
             },
         });
+    }
+
+    /** Parse the JSON payload the backend embeds in a 409 ConflictException.
+     * Returns null if the message isn't a recognisable quota conflict. */
+    private tryParseQuotaConflict(message: string | undefined): { field: string; currentlyUsed: number; newLimit: number; planName: string } | null {
+        if (!message || typeof message !== 'string') return null;
+        const trimmed = message.trim();
+        if (!trimmed.startsWith('{')) return null;
+        try {
+            const parsed = JSON.parse(trimmed);
+            if (parsed && typeof parsed === 'object' && 'field' in parsed && 'newLimit' in parsed) {
+                return parsed as { field: string; currentlyUsed: number; newLimit: number; planName: string };
+            }
+        } catch { /* fall through */ }
+        return null;
     }
 
     /** Pull per-field validation messages out of an ASP.NET ProblemDetails 400

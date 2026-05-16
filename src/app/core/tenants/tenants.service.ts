@@ -12,14 +12,11 @@ import {
     PaginationResponse,
     SuspendTenantRequest,
     ArchiveTenantRequest,
-    UpdateBillingPlanRequest,
     UpdateResourceLimitsRequest,
     TenantUsageDto,
-    ExtendValidityRequest,
     UpdateResourceUsageRequest,
     BulkSuspendTenantsRequest,
-    BulkActivateTenantsRequest,
-    BulkUpdateBillingPlanRequest
+    BulkActivateTenantsRequest
 } from './tenants.types';
 
 @Injectable({
@@ -68,10 +65,13 @@ export class TenantsService extends BaseApiService {
     }
 
     /**
-     * Update an existing tenant
+     * Update an existing tenant. When `request.force` is true, appends
+     * `?force=true` to the URL so the backend bypasses the plan-change quota
+     * pre-flight (caller has already accepted the over-quota state).
      */
     update(id: string, request: UpdateTenantRequest): Observable<string> {
-        return this.putText(`/api/tenants/${id}`, request);
+        const url = request.force ? `/api/tenants/${id}?force=true` : `/api/tenants/${id}`;
+        return this.putText(url, request);
     }
 
     // ============= STATUS MANAGEMENT =============
@@ -111,20 +111,6 @@ export class TenantsService extends BaseApiService {
      */
     upgradeSubscription(id: string, request: UpgradeSubscriptionRequest): Observable<string> {
         return this.postText(`/api/tenants/${id}/upgrade-subscription`, request);
-    }
-
-    /**
-     * Update tenant billing plan
-     */
-    updateBillingPlan(id: string, request: UpdateBillingPlanRequest): Observable<string> {
-        return this.putText(`/api/tenants/${id}/billing-plan`, request);
-    }
-
-    /**
-     * Extend tenant validity period
-     */
-    extendValidity(id: string, request: ExtendValidityRequest): Observable<string> {
-        return this.postText(`/api/tenants/${id}/extend-validity`, request);
     }
 
     // ============= VERTICAL =============
@@ -212,13 +198,6 @@ export class TenantsService extends BaseApiService {
      */
     bulkActivate(request: BulkActivateTenantsRequest): Observable<string> {
         return this.postText('/api/tenants/bulk/activate', request);
-    }
-
-    /**
-     * Update billing plan for multiple tenants
-     */
-    bulkUpdateBillingPlan(request: BulkUpdateBillingPlanRequest): Observable<string> {
-        return this.postText('/api/tenants/bulk/update-plan', request);
     }
 
     // ============= PERMISSIONS =============
