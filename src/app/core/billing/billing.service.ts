@@ -6,7 +6,7 @@ import {
     AdminDashboardDto,
     CreateAnnouncementRequest, CreateAnnouncementResponse,
     CreatePlanRequest, MySubscriptionDto, PlanDto,
-    RecordPaymentRequest, TenantNotificationDto, TenantPaymentDto,
+    RecordPaymentRequest, TenantInvoiceDto, TenantNotificationDto, TenantPaymentDto,
     UpdatePlanRequest,
 } from './billing.types';
 
@@ -44,6 +44,20 @@ export class TenantPaymentsService {
 
     record = (tenantId: string, req: Omit<RecordPaymentRequest, 'tenantId'>): Observable<string> =>
         this.http.post<string>(this.base(tenantId), req);
+}
+
+// ── Platform-admin: tenant invoices (Phase 2.54) ──────────────────────────────
+
+@Injectable({ providedIn: 'root' })
+export class TenantInvoicesService {
+    private readonly http = inject(HttpClient);
+
+    listByTenant = (tenantId: string): Observable<TenantInvoiceDto[]> =>
+        this.http.get<TenantInvoiceDto[]>(`${api}/api/tenants/${encodeURIComponent(tenantId)}/invoices`);
+
+    /** Direct-download URL for the PDF — drop it into an &lt;a [href]&gt; or window.open(). */
+    pdfUrl = (invoiceId: string): string =>
+        `${api}/api/tenants/invoices/${encodeURIComponent(invoiceId)}/pdf`;
 }
 
 // ── Platform-admin: announcements broadcast ────────────────────────────────────
@@ -88,6 +102,13 @@ export class MyBillingService {
         const u = qs.toString() ? `${api}/api/mysubscription/payments?${qs}` : `${api}/api/mysubscription/payments`;
         return this.http.get<TenantPaymentDto[]>(u);
     };
+
+    getMyInvoices = (): Observable<TenantInvoiceDto[]> =>
+        this.http.get<TenantInvoiceDto[]>(`${api}/api/mysubscription/invoices`);
+
+    /** Direct-download URL for the tenant's own invoice PDF. */
+    myInvoicePdfUrl = (invoiceId: string): string =>
+        `${api}/api/mysubscription/invoices/${encodeURIComponent(invoiceId)}/pdf`;
 
     getMyNotifications = (unreadOnly = false): Observable<TenantNotificationDto[]> =>
         this.http.get<TenantNotificationDto[]>(

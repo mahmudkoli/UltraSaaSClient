@@ -63,6 +63,30 @@ export interface RecordPaymentRequest {
 
 // ── Notifications ──────────────────────────────────────────────────────────────
 
+// ── Invoices ────────────────────────────────────────────────────────────────
+
+export interface TenantInvoiceDto {
+    id: string;
+    serialNumber: string;
+    tenantId: string;
+    tenantName: string;
+    paymentId?: string;
+    issuedOn: string;
+    periodStart: string;
+    periodEnd: string;
+    lineDescription: string;
+    subtotal: number;
+    vatPercent: number;
+    vatAmount: number;
+    total: number;
+    issuerName: string;
+    issuerBin?: string;
+    issuerTin?: string;
+    issuerAddress?: string;
+}
+
+// ── Notifications ──────────────────────────────────────────────────────────────
+
 export type NotificationSeverity = 'Info' | 'Warning' | 'Urgent';
 export type NotificationCategory = 'Subscription' | 'Announcement' | 'Other';
 export type NotificationSource = 'System' | 'Admin';

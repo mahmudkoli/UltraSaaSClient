@@ -79,6 +79,60 @@
                 </div>
             </div>
 
+            <!-- Tax invoices -->
+            <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                    <div>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tax Invoices</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">VAT-compliant PDFs issued automatically on every recorded payment.</p>
+                    </div>
+                </div>
+                <div *ngIf="invoices.length === 0" class="px-6 py-10 text-center">
+                    <mat-icon class="text-gray-400 icon-size-12 mb-2">receipt</mat-icon>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">No invoices yet. Record a payment to issue the first invoice.</p>
+                </div>
+                <div *ngIf="invoices.length > 0" class="overflow-x-auto">
+                    <table mat-table [dataSource]="invoices" class="w-full">
+                        <ng-container matColumnDef="serialNumber">
+                            <th mat-header-cell *matHeaderCellDef class="pl-6">Invoice #</th>
+                            <td mat-cell *matCellDef="let i" class="pl-6 font-mono text-xs">{{ i.serialNumber }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="issuedOn">
+                            <th mat-header-cell *matHeaderCellDef>Issued</th>
+                            <td mat-cell *matCellDef="let i">{{ i.issuedOn | date:'mediumDate' }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="period">
+                            <th mat-header-cell *matHeaderCellDef>Service period</th>
+                            <td mat-cell *matCellDef="let i" class="text-xs text-gray-600 dark:text-gray-400">
+                                {{ i.periodStart | date:'mediumDate' }} – {{ i.periodEnd | date:'mediumDate' }}
+                            </td>
+                        </ng-container>
+                        <ng-container matColumnDef="subtotal">
+                            <th mat-header-cell *matHeaderCellDef>Subtotal</th>
+                            <td mat-cell *matCellDef="let i">BDT {{ i.subtotal | number:'1.2-2' }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="vat">
+                            <th mat-header-cell *matHeaderCellDef>VAT ({{ invoices[0]?.vatPercent || 15 }}%)</th>
+                            <td mat-cell *matCellDef="let i">BDT {{ i.vatAmount | number:'1.2-2' }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="total">
+                            <th mat-header-cell *matHeaderCellDef>Total</th>
+                            <td mat-cell *matCellDef="let i" class="font-semibold">BDT {{ i.total | number:'1.2-2' }}</td>
+                        </ng-container>
+                        <ng-container matColumnDef="pdf">
+                            <th mat-header-cell *matHeaderCellDef class="pr-6 text-right">PDF</th>
+                            <td mat-cell *matCellDef="let i" class="pr-6 text-right">
+                                <a mat-icon-button [href]="invoicePdfUrl(i.id)" target="_blank" matTooltip="Download PDF" class="text-blue-600">
+                                    <mat-icon class="icon-size-5">download</mat-icon>
+                                </a>
+                            </td>
+                        </ng-container>
+                        <tr mat-header-row *matHeaderRowDef="invoiceColumns" class="bg-gray-50 dark:bg-gray-700"></tr>
+                        <tr mat-row *matRowDef="let row; columns: invoiceColumns;" class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"></tr>
+                    </table>
+                </div>
+            </div>
+
             <!-- Payment history -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">

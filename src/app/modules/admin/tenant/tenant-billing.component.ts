@@ -12,8 +12,8 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslocoModule } from '@ngneat/transloco';
 import { TenantDto } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
-import { PlansService, TenantPaymentsService } from '../../../core/billing/billing.service';
-import { PlanDto, TenantPaymentDto } from '../../../core/billing/billing.types';
+import { PlansService, TenantInvoicesService, TenantPaymentsService } from '../../../core/billing/billing.service';
+import { PlanDto, TenantInvoiceDto, TenantPaymentDto } from '../../../core/billing/billing.types';
 import { RecordPaymentDialogComponent } from './record-payment-dialog.component';
 
 /**
@@ -45,19 +45,27 @@ export class TenantBillingComponent implements OnInit {
     tenantId: string;
     plan?: PlanDto;
     payments: TenantPaymentDto[] = [];
+    invoices: TenantInvoiceDto[] = [];
     loading: boolean = false;
 
     paymentColumns = ['paidOn', 'amount', 'method', 'reference', 'periodStart', 'periodEnd'];
+    invoiceColumns = ['serialNumber', 'issuedOn', 'period', 'subtotal', 'vat', 'total', 'pdf'];
 
     constructor(
         private _tenantsService: TenantsService,
         private _plansService: PlansService,
         private _paymentsService: TenantPaymentsService,
+        private _invoicesService: TenantInvoicesService,
         private _router: Router,
         private _route: ActivatedRoute,
         private _dialog: MatDialog,
     ) {
         this.tenantId = this._route.snapshot.paramMap.get('id')!;
+    }
+
+    /** Build the cross-tenant invoice-PDF URL (root admin path). */
+    invoicePdfUrl(invoiceId: string): string {
+        return this._invoicesService.pdfUrl(invoiceId);
     }
 
     ngOnInit(): void {
@@ -90,6 +98,11 @@ export class TenantBillingComponent implements OnInit {
                 console.error('Error loading payments:', err);
                 this.loading = false;
             },
+        });
+
+        this._invoicesService.listByTenant(this.tenantId).subscribe({
+            next: (rows) => { this.invoices = rows; },
+            error: (err) => console.error('Error loading invoices:', err),
         });
     }
 
