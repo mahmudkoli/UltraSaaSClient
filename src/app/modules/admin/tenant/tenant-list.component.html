@@ -187,14 +187,9 @@
                                             <mat-icon class="icon-size-5">edit</mat-icon>
                                         </button>
 
-                                        <!-- View Features (Phase 2.56 — read-only, plan-derived) -->
-                                        <button
-                                            mat-icon-button
-                                            (click)="manageFeatures(tenant)"
-                                            class="text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 rounded-full"
-                                            matTooltip="View features (plan-derived)">
-                                            <mat-icon class="icon-size-5">tune</mat-icon>
-                                        </button>
+                                        <!-- "View features" inline button hidden post-2.56 — only one
+                                             gated feature today (CUSTOM_BRAND). Route /tenant/{id}/features
+                                             still works by direct URL when more features get gated. -->
 
                                         <!-- Permissions Button -->
                                         <button
@@ -254,10 +249,8 @@
                                                 <mat-icon class="icon-size-5 text-blue-600 dark:text-blue-400">edit</mat-icon>
                                                 <span class="ml-2">Edit Tenant</span>
                                             </button>
-                                            <button mat-menu-item (click)="manageFeatures(tenant)" class="hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-purple-600 dark:text-purple-400">tune</mat-icon>
-                                                <span class="ml-2">View features</span>
-                                            </button>
+<!-- View Features menu item hidden post-2.56 — re-enable when more
+     features get gated. Direct URL /tenant/{id}/features still works. -->
                                             <button mat-menu-item (click)="managePermissions(tenant)" class="hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-indigo-600 dark:text-indigo-400">security</mat-icon>
                                                 <span class="ml-2">Manage Permissions</span>
