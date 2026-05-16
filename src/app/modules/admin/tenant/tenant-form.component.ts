@@ -5,6 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -21,6 +22,20 @@ import { PlansService } from '../../../core/billing/billing.service';
 import { PlanDto } from '../../../core/billing/billing.types';
 import { POS_LAYOUTS } from '../pos/pos-layout-registry';
 
+/**
+ * Phase 2.51 — lean tenant-form. The pre-cleanup form carried tabs for GDPR /
+ * 2FA / IP whitelist / Support tier / Data residency / Resource limits etc.
+ * all of which were dead. The new form is three tabs:
+ *
+ *  1. **Basic** — identity, vertical, POS layout, label preferences.
+ *  2. **Subscription** — plan dropdown (cascades MaxOutlets / MaxUsers +
+ *     replaces TenantFeature rows), billing email, audit retention, plus
+ *     read-only ValidUpto / PaymentStatus / plan-derived limits chips.
+ *  3. **Connection** — connection string + IsShared.
+ *
+ *  All other surfaces moved to dedicated screens (Record Payment, theme,
+ *  vertical change, branding).
+ */
 @Component({
     selector: 'tenant-form',
     templateUrl: './tenant-form.component.html',
@@ -32,6 +47,7 @@ import { POS_LAYOUTS } from '../pos/pos-layout-registry';
         MatButtonModule,
         MatCardModule,
         MatCheckboxModule,
+        MatChipsModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
@@ -45,36 +61,28 @@ import { POS_LAYOUTS } from '../pos/pos-layout-registry';
 })
 export class TenantFormComponent implements OnInit {
     tenantForm: FormGroup;
-    isEditMode: boolean = false;
+    isEditMode = false;
     tenantId: string | null = null;
-    loading: boolean = false;
-    saving: boolean = false;
-    themeLabel: string = 'Not configured';
+    loading = false;
+    saving = false;
 
-    // Static POS layout options sourced from the registry — drives the
-    // dropdown. Adding a layout = registry entry, no change here.
-    posLayouts = POS_LAYOUTS;
-
-    /** Active SubscriptionPlans loaded once in ngOnInit; drives the plan dropdown. */
+    /** Active plans for the subscription dropdown. */
     plans: PlanDto[] = [];
 
-    /**
-     * Open `/pos?previewLayout=<name>` in a new tab so the admin can see what
-     * the layout looks like *before* saving the choice. Uses the value
-     * currently selected in the dropdown, not the persisted value, so a user
-     * can flip through options without committing each one.
-     */
-    previewPosLayout(): void {
-        const name = (this.tenantForm.get('posLayout')?.value as string | null) || 'default';
-        window.open(`/pos?previewLayout=${encodeURIComponent(name)}`, '_blank');
-    }
+    /** POS layout choices — registry-driven; null/unknown falls back to default. */
+    posLayouts = POS_LAYOUTS;
 
-    // Original vertical loaded from server — used to detect dirty changes
-    // and to revert if root cancels the confirmation dialog.
-    originalBusinessType: string = 'Generic';
-    originalOutletLabel: string = 'Outlet';
-    changingVertical: boolean = false;
+    /** Read-only fields on edit (plan-derived / Record-Payment-derived). */
+    currentValidUpto: string | null = null;
+    currentPaymentStatus: string | null = null;
+    currentMaxOutlets = 0;
+    currentMaxUsers = 0;
+    themeLabel = 'Not configured';
 
+    /** Vertical change is high-stakes — confirm before persist. */
+    originalBusinessType = 'Generic';
+    originalOutletLabel = 'Outlet';
+    changingVertical = false;
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -82,69 +90,38 @@ export class TenantFormComponent implements OnInit {
         private _plansService: PlansService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
     ) {
         this.tenantForm = this._formBuilder.group({
-            // Basic Information
+            // Identity
             id: ['', [Validators.required, Validators.pattern('^[a-zA-Z0-9_-]+$')]],
             systemName: ['', [Validators.required, Validators.maxLength(100)]],
             technicalAdminEmail: ['', [Validators.required, Validators.email]],
             subdomain: ['', [Validators.required, Validators.maxLength(255)]],
-            customDomain: [''],
             connectionString: [''],
             isShared: [false],
-            issuer: [''],
 
-            // Vertical (set at creation; root-only edit deferred)
+            // Vertical
             businessType: ['Generic', [Validators.required]],
             outletLabel: ['Outlet', [Validators.required, Validators.maxLength(40)]],
 
-            // POS layout (defaults to 'default')
+            // POS layout
             posLayout: ['default'],
 
-            // Billing & Subscription
+            // Subscription
             planId: [null, [Validators.required]],
-            billingCurrency: ['USD', [Validators.required]],
-            billingEmail: ['', [Validators.required, Validators.email]],
-            paymentStatus: ['Pending', [Validators.required]],
-            supportTier: ['Basic', [Validators.required]],
-            accountManagerEmail: [''],
-            emergencyContact: [''],
+            billingEmail: ['', [Validators.email]],
+            auditRetentionDays: [365, [Validators.required, Validators.min(0), Validators.max(3650)]],
 
-            // System Limits
-            maxDatabaseGB: [5, [Validators.required, Validators.min(1)]],
-            maxApiCallsPerMonth: [10000, [Validators.required, Validators.min(1000)]],
-            maxConcurrentUsers: [50, [Validators.required, Validators.min(1)]],
-            maxOutlets: [3, [Validators.required, Validators.min(1)]],
-            maxUsers: [10, [Validators.required, Validators.min(1)]],
-            auditRetentionDays: [365, [Validators.min(0), Validators.max(3650)]],
+            // Label printing defaults
             showPriceOnLabel: [true],
             useOutletPriceOnLabel: [true],
-            dataResidency: ['US', [Validators.required]],
-            dataRetentionDays: [365, [Validators.required, Validators.min(30)]],
-
-            // Status & Validity
-            validUpto: ['', [Validators.required]],
-            isSystemActive: [true],
-            suspensionReason: [''],
-            suspendedUntil: [''],
-
-            // Features & Settings
-            requiresGDPR: [false],
-            requires2FA: [false],
-            ipWhitelist: [''],
-            enableAdvancedReporting: [false],
-            enableCustomBranding: [false],
-            enableApiAccess: [true],
-            enableBackupRestore: [false],
-            enableMultipleDatabases: [false]
         });
     }
 
     ngOnInit(): void {
         this.tenantId = this._route.snapshot.paramMap.get('id');
 
-        // Plan dropdown source — only active plans. Defaults to "starter" on create.
         this._plansService.getAll(true).subscribe({
             next: (plans) => {
                 this.plans = plans;
@@ -159,17 +136,23 @@ export class TenantFormComponent implements OnInit {
         if (this.tenantId) {
             this.isEditMode = true;
             this.loadTenant();
-            // Note: BusinessType/OutletLabel can be edited in the dropdown but
-            // they don't ride the regular Save path (UpdateTenantRequest doesn't
-            // accept them). The dedicated "Change Vertical" button is the only
-            // commit path — see changeVertical().
         }
     }
 
-    /** Look up a plan's display name by id — used by the Review tab. */
+    /** Look up a plan's display name by id — used by the read-only chip + Review tab. */
     planNameFor(planId: string | null | undefined): string {
         if (!planId) return 'Not set';
         return this.plans.find(p => p.id === planId)?.name ?? planId;
+    }
+
+    /** ValidUpto traffic-light severity — same thresholds as tenant-billing. */
+    validitySeverity(): 'expired' | 'urgent' | 'warning' | 'ok' | 'none' {
+        if (!this.currentValidUpto) return 'none';
+        const days = Math.floor((new Date(this.currentValidUpto).getTime() - Date.now()) / 86400000);
+        if (days < 0) return 'expired';
+        if (days <= 1) return 'urgent';
+        if (days <= 7) return 'warning';
+        return 'ok';
     }
 
     loadTenant(): void {
@@ -179,65 +162,33 @@ export class TenantFormComponent implements OnInit {
         this._tenantsService.getById(this.tenantId).subscribe({
             next: (tenant) => {
                 this.tenantForm.patchValue({
-                    // Basic Information
                     id: tenant.id,
-                    systemName: tenant.systemName || tenant.name,
-                    technicalAdminEmail: tenant.technicalAdminEmail || tenant.adminEmail,
-                    subdomain: tenant.subdomain || tenant.url,
-                    customDomain: tenant.customDomain || '',
+                    systemName: tenant.systemName,
+                    technicalAdminEmail: tenant.technicalAdminEmail,
+                    subdomain: tenant.subdomain,
                     connectionString: tenant.connectionString || '',
                     isShared: tenant.isShared,
-                    issuer: tenant.issuer || '',
 
-                    // Vertical (read-only on edit; changed via changeVertical())
                     businessType: tenant.businessType || 'Generic',
                     outletLabel: tenant.outletLabel || 'Outlet',
-
-                    // POS layout
                     posLayout: tenant.posLayout || 'default',
 
-                    // Billing & Subscription
                     planId: tenant.planId ?? null,
-                    billingCurrency: tenant.billingCurrency || 'USD',
-                    billingEmail: tenant.billingEmail || tenant.technicalAdminEmail || tenant.adminEmail,
-                    paymentStatus: tenant.paymentStatus || 'Pending',
-                    supportTier: tenant.supportTier || 'Basic',
-                    accountManagerEmail: tenant.accountManagerEmail || '',
-                    emergencyContact: tenant.emergencyContact || '',
-
-                    // System Limits
-                    maxDatabaseGB: tenant.maxDatabaseGB || 5,
-                    maxApiCallsPerMonth: tenant.maxApiCallsPerMonth || 10000,
-                    maxConcurrentUsers: tenant.maxConcurrentUsers || 50,
-                    maxOutlets: tenant.maxOutlets || 3,
-                    maxUsers: tenant.maxUsers || 10,
+                    billingEmail: tenant.billingEmail || tenant.technicalAdminEmail,
                     auditRetentionDays: tenant.auditRetentionDays ?? 365,
+
                     showPriceOnLabel: tenant.showPriceOnLabel ?? true,
                     useOutletPriceOnLabel: tenant.useOutletPriceOnLabel ?? true,
-                    dataResidency: tenant.dataResidency || 'US',
-                    dataRetentionDays: tenant.dataRetentionDays || 365,
-
-                    // Status & Validity
-                    validUpto: tenant.validUpto ? new Date(tenant.validUpto).toISOString().split('T')[0] : '',
-                    isSystemActive: tenant.isSystemActive ?? tenant.isActive,
-                    suspensionReason: tenant.suspensionReason || '',
-                    suspendedUntil: tenant.suspendedUntil ? new Date(tenant.suspendedUntil).toISOString().split('T')[0] : '',
-
-                    // Features & Settings
-                    requiresGDPR: tenant.requiresGDPR || false,
-                    requires2FA: tenant.requires2FA || false,
-                    ipWhitelist: tenant.ipWhitelist || '',
-                    enableAdvancedReporting: tenant.enableAdvancedReporting || false,
-                    enableCustomBranding: tenant.enableCustomBranding || false,
-                    enableApiAccess: tenant.enableApiAccess !== false,
-                    enableBackupRestore: tenant.enableBackupRestore || false,
-                    enableMultipleDatabases: tenant.enableMultipleDatabases || false
                 });
-                // Snapshot original vertical so changeVertical() can compare
-                // against it and revert the form if root cancels.
+
+                this.currentValidUpto = tenant.validUpto;
+                this.currentPaymentStatus = tenant.paymentStatus;
+                this.currentMaxOutlets = tenant.maxOutlets;
+                this.currentMaxUsers = tenant.maxUsers;
+
                 this.originalBusinessType = tenant.businessType || 'Generic';
                 this.originalOutletLabel = tenant.outletLabel || 'Outlet';
-                // Parse theme config for display
+
                 if (tenant.themeConfig) {
                     try {
                         const tc = JSON.parse(tenant.themeConfig);
@@ -246,43 +197,36 @@ export class TenantFormComponent implements OnInit {
                     } catch { /* ignore */ }
                 }
 
-                // Disable ID field in edit mode
                 this.tenantForm.get('id')?.disable();
                 this.loading = false;
             },
-            error: (error) => {
-                console.error('Error loading tenant:', error);
+            error: (err) => {
+                console.error('Error loading tenant:', err);
                 this.loading = false;
-            }
+            },
         });
     }
 
     save(): void {
-        if (this.tenantForm.invalid) {
-            return;
-        }
+        if (this.tenantForm.invalid) return;
 
         this.saving = true;
         const formData = this.tenantForm.getRawValue();
 
         if (this.isEditMode && this.tenantId) {
-            // If the BusinessType / OutletLabel dropdown changed, that's a
-            // vertical pivot — show the orphan-data warning before letting it ride.
             const newType = (formData.businessType ?? 'Generic') as string;
             const newLabel = ((formData.outletLabel as string) ?? '').trim() || 'Outlet';
             const verticalChanged = newType !== this.originalBusinessType
                 || newLabel !== this.originalOutletLabel;
 
             if (verticalChanged) {
-                const dlg = this._fuseConfirmationService.open({
+                this._fuseConfirmationService.open({
                     title: 'Change Business Type?',
                     message: `This will change <b>${this.tenantId}</b> from <b>${this.originalBusinessType}</b> (label "${this.originalOutletLabel}") to <b>${newType}</b> (label "${newLabel}"). Existing batches, serials, prescriptions and other vertical-specific data are <b>not</b> migrated — they stay in the database but won't be reachable from the new vertical's UI. Continue?`,
                     icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
                     actions: { confirm: { label: 'Continue', color: 'warn' }, cancel: { label: 'Cancel' } },
-                });
-                dlg.afterClosed().subscribe(result => {
+                }).afterClosed().subscribe(result => {
                     if (result !== 'confirmed') {
-                        // Revert the vertical fields on the form so the next save doesn't re-trigger.
                         this.tenantForm.patchValue({
                             businessType: this.originalBusinessType,
                             outletLabel: this.originalOutletLabel,
@@ -297,152 +241,73 @@ export class TenantFormComponent implements OnInit {
 
             this.persistEditUpdate(formData, newType, newLabel, /*verticalChanged*/ false);
         } else {
-            // Create new tenant
-            const createRequest: CreateTenantRequest = {
+            const req: CreateTenantRequest = {
                 id: formData.id,
                 systemName: formData.systemName,
                 technicalAdminEmail: formData.technicalAdminEmail,
                 subdomain: formData.subdomain,
-                customDomain: formData.customDomain || undefined,
                 connectionString: formData.connectionString || undefined,
                 isShared: formData.isShared,
-                issuer: formData.issuer || undefined,
 
-                // Vertical (root-immutable after creation)
                 businessType: formData.businessType,
                 outletLabel: formData.outletLabel,
-
-                // POS layout
                 posLayout: formData.posLayout || undefined,
 
-                // Billing & Subscription
-                planId: formData.planId,
-                billingCurrency: formData.billingCurrency,
-                billingEmail: formData.billingEmail,
-                paymentStatus: formData.paymentStatus,
-                supportTier: formData.supportTier,
-                accountManagerEmail: formData.accountManagerEmail || undefined,
-                emergencyContact: formData.emergencyContact || undefined,
-
-                // System Limits
-                maxDatabaseGB: formData.maxDatabaseGB,
-                maxApiCallsPerMonth: formData.maxApiCallsPerMonth,
-                maxConcurrentUsers: formData.maxConcurrentUsers,
-                maxOutlets: formData.maxOutlets,
-                maxUsers: formData.maxUsers,
-                auditRetentionDays: formData.auditRetentionDays,
-                showPriceOnLabel: formData.showPriceOnLabel,
-                useOutletPriceOnLabel: formData.useOutletPriceOnLabel,
-                dataResidency: formData.dataResidency,
-                dataRetentionDays: formData.dataRetentionDays,
-
-                // Status & Validity
-                validUpto: formData.validUpto ? new Date(formData.validUpto).toISOString() : undefined,
-                isActive: formData.isSystemActive,
-
-                // Features & Settings
-                enableAdvancedReporting: formData.enableAdvancedReporting,
-                enableCustomBranding: formData.enableCustomBranding,
-                enableApiAccess: formData.enableApiAccess,
-                enableBackupRestore: formData.enableBackupRestore,
-                enableMultipleDatabases: formData.enableMultipleDatabases
+                planId: formData.planId ?? undefined,
+                billingEmail: formData.billingEmail || undefined,
             };
 
-            this._tenantsService.create(createRequest).subscribe({
+            this._tenantsService.create(req).subscribe({
                 next: () => {
                     this.saving = false;
                     this._fuseConfirmationService.open({
                         title: 'Success',
                         message: 'Tenant created successfully!',
-                        actions: {
-                            confirm: {
-                                label: 'OK'
-                            }
-                        }
-                    }).afterClosed().subscribe(() => {
-                        this._router.navigate(['/tenant']);
-                    });
+                        actions: { confirm: { label: 'OK' } },
+                    }).afterClosed().subscribe(() => this._router.navigate(['/tenant']));
                 },
-                error: (error) => {
-                    console.error('Error creating tenant:', error);
+                error: (err) => {
+                    console.error('Error creating tenant:', err);
                     this.saving = false;
                     this._fuseConfirmationService.open({
                         title: 'Error',
-                        message: 'Failed to create tenant. Please try again.',
-                        actions: {
-                            confirm: {
-                                label: 'OK'
-                            }
-                        }
+                        message: this.formatBackendError(err) || 'Failed to create tenant. Please try again.',
+                        actions: { confirm: { label: 'OK' } },
                     });
-                }
+                },
             });
         }
     }
 
-    /**
-     * Edit-mode PUT. Pulled out of save() so the vertical-change confirmation can
-     * gate it without duplicating the request body.
-     */
+    /** Edit-mode PUT. Pulled out of save() so the vertical-change confirm can gate it. */
     private persistEditUpdate(formData: any, businessType: string, outletLabel: string, verticalChanged: boolean): void {
-        const updateRequest: UpdateTenantRequest = {
+        const req: UpdateTenantRequest = {
             id: this.tenantId!,
-            name: formData.systemName,
-            adminEmail: formData.technicalAdminEmail,
-            url: formData.subdomain,
+            systemName: formData.systemName,
+            technicalAdminEmail: formData.technicalAdminEmail,
+            subdomain: formData.subdomain,
             connectionString: formData.connectionString || undefined,
             isShared: formData.isShared,
-            issuer: formData.issuer || undefined,
-            customDomain: formData.customDomain || undefined,
 
-            // POS layout
-            posLayout: formData.posLayout || undefined,
-
-            // Billing & Subscription
             planId: formData.planId,
-            billingCurrency: formData.billingCurrency,
-            billingEmail: formData.billingEmail,
-            paymentStatus: formData.paymentStatus,
-            supportTier: formData.supportTier,
-            accountManagerEmail: formData.accountManagerEmail || undefined,
-            emergencyContact: formData.emergencyContact || undefined,
-
-            // System Limits
-            maxDatabaseGB: formData.maxDatabaseGB,
-            maxApiCallsPerMonth: formData.maxApiCallsPerMonth,
-            maxConcurrentUsers: formData.maxConcurrentUsers,
-            maxOutlets: formData.maxOutlets,
-            maxUsers: formData.maxUsers,
+            billingEmail: formData.billingEmail || undefined,
             auditRetentionDays: formData.auditRetentionDays,
-            dataResidency: formData.dataResidency,
-            dataRetentionDays: formData.dataRetentionDays,
 
-            // Status & Validity
-            validUpto: formData.validUpto ? new Date(formData.validUpto).toISOString() : undefined,
-            isActive: formData.isSystemActive,
-
-            // Vertical (Phase 2.38c — backend now persists these)
             businessType: businessType as any,
             outletLabel,
+            posLayout: formData.posLayout || undefined,
 
-            // Features & Settings
-            requiresGDPR: formData.requiresGDPR,
-            requires2FA: formData.requires2FA,
-            ipWhitelist: formData.ipWhitelist || undefined,
-            enableAdvancedReporting: formData.enableAdvancedReporting,
-            enableCustomBranding: formData.enableCustomBranding,
-            enableApiAccess: formData.enableApiAccess,
-            enableBackupRestore: formData.enableBackupRestore,
-            enableMultipleDatabases: formData.enableMultipleDatabases,
+            showPriceOnLabel: formData.showPriceOnLabel,
+            useOutletPriceOnLabel: formData.useOutletPriceOnLabel,
         };
 
-        this.sendUpdate(updateRequest, businessType, outletLabel, verticalChanged);
+        this.sendUpdate(req, businessType, outletLabel, verticalChanged);
     }
 
-    /** Submits the UpdateTenantRequest. On a plan-quota 409, prompts the user
-     * to accept the over-quota state and retries with `force: true`. */
-    private sendUpdate(updateRequest: UpdateTenantRequest, businessType: string, outletLabel: string, verticalChanged: boolean): void {
-        this._tenantsService.update(this.tenantId!, updateRequest).subscribe({
+    /** Submit the PUT. On a plan-quota 409, prompts the user to accept the over-quota
+     * state and retries with `force: true`. */
+    private sendUpdate(req: UpdateTenantRequest, businessType: string, outletLabel: string, verticalChanged: boolean): void {
+        this._tenantsService.update(this.tenantId!, req).subscribe({
             next: () => {
                 this.saving = false;
                 if (verticalChanged) {
@@ -455,17 +320,12 @@ export class TenantFormComponent implements OnInit {
                         ? `Tenant updated. Vertical changed to <b>${businessType}</b> — users on this tenant should refresh to see the updated nav.`
                         : 'Tenant updated successfully!',
                     actions: { confirm: { label: 'OK' } },
-                }).afterClosed().subscribe(() => {
-                    this._router.navigate(['/tenant']);
-                });
+                }).afterClosed().subscribe(() => this._router.navigate(['/tenant']));
             },
-            error: (error) => {
-                console.error('Error updating tenant:', error);
+            error: (err) => {
+                console.error('Error updating tenant:', err);
 
-                // Phase 2.50 — plan-quota pre-flight 409. The backend serializes a
-                // JSON detail as the exception message; if we can parse it, render
-                // a confirm dialog and retry with force=true on accept.
-                const quota = error?.status === 409 ? this.tryParseQuotaConflict(error?.error?.exception) : null;
+                const quota = err?.status === 409 ? this.tryParseQuotaConflict(err?.error?.exception) : null;
                 if (quota) {
                     this._fuseConfirmationService.open({
                         title: 'Plan downgrade exceeds current usage',
@@ -477,8 +337,7 @@ export class TenantFormComponent implements OnInit {
                             this.saving = false;
                             return;
                         }
-                        // Retry with force=true — tenants.service appends ?force=true to the URL.
-                        this.sendUpdate({ ...updateRequest, force: true }, businessType, outletLabel, verticalChanged);
+                        this.sendUpdate({ ...req, force: true }, businessType, outletLabel, verticalChanged);
                     });
                     return;
                 }
@@ -486,15 +345,14 @@ export class TenantFormComponent implements OnInit {
                 this.saving = false;
                 this._fuseConfirmationService.open({
                     title: 'Error',
-                    message: this.formatBackendError(error) || 'Failed to update tenant. Please try again.',
+                    message: this.formatBackendError(err) || 'Failed to update tenant. Please try again.',
                     actions: { confirm: { label: 'OK' } },
                 });
             },
         });
     }
 
-    /** Parse the JSON payload the backend embeds in a 409 ConflictException.
-     * Returns null if the message isn't a recognisable quota conflict. */
+    /** Parse the JSON payload the backend embeds in a 409 ConflictException. */
     private tryParseQuotaConflict(message: string | undefined): { field: string; currentlyUsed: number; newLimit: number; planName: string } | null {
         if (!message || typeof message !== 'string') return null;
         const trimmed = message.trim();
@@ -508,9 +366,7 @@ export class TenantFormComponent implements OnInit {
         return null;
     }
 
-    /** Pull per-field validation messages out of an ASP.NET ProblemDetails 400
-     * response so the user actually sees what the server rejected. Falls back
-     * to the message field, then null (caller picks a generic copy). */
+    /** Pull per-field validation messages out of an ASP.NET ProblemDetails 400. */
     private formatBackendError(error: any): string | null {
         const errors = error?.error?.errors;
         if (errors && typeof errors === 'object') {
@@ -529,26 +385,22 @@ export class TenantFormComponent implements OnInit {
     }
 
     openThemeSettings(): void {
-        if (this.tenantId) {
-            this._router.navigate([`/tenant/${this.tenantId}/theme-settings`]);
-        }
+        if (this.tenantId) this._router.navigate([`/tenant/${this.tenantId}/theme-settings`]);
     }
 
-    /**
-     * Change a tenant's BusinessType + OutletLabel via the dedicated
-     * PUT /api/tenants/{id}/vertical endpoint, behind a confirmation dialog.
-     * High-stakes — pivoting a tenant orphans existing batches/serials/etc.
-     * from their vertical UI.
-     */
+    previewPosLayout(): void {
+        const name = (this.tenantForm.get('posLayout')?.value as string | null) || 'default';
+        window.open(`/pos?previewLayout=${encodeURIComponent(name)}`, '_blank');
+    }
+
+    /** Change BusinessType + OutletLabel via PUT /api/tenants/{id}/vertical. */
     changeVertical(): void {
         if (!this.tenantId) return;
 
         const newType = this.tenantForm.get('businessType')?.value as string;
         const newLabel = ((this.tenantForm.get('outletLabel')?.value as string) ?? '').trim() || 'Outlet';
 
-        const unchanged = newType === this.originalBusinessType
-            && newLabel === this.originalOutletLabel;
-
+        const unchanged = newType === this.originalBusinessType && newLabel === this.originalOutletLabel;
         if (unchanged) {
             this._fuseConfirmationService.open({
                 title: 'No changes',
@@ -562,16 +414,11 @@ export class TenantFormComponent implements OnInit {
             title: 'Pivot this tenant?',
             message: `This will change <b>${this.tenantId}</b> from <b>${this.originalBusinessType}</b> to <b>${newType}</b>. Existing batches, serials, prescriptions and other vertical-specific data are <b>not</b> migrated — they'll stay in the database but won't be reachable from the new vertical's UI. Are you sure?`,
             icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
-            actions: {
-                confirm: { show: true, label: 'Yes, pivot tenant', color: 'warn' },
-                cancel: { show: true, label: 'Cancel' },
-            },
-            dismissible: true,
+            actions: { confirm: { show: true, label: 'Yes, pivot tenant', color: 'warn' }, cancel: { show: true, label: 'Cancel' } },
         });
 
         ref.afterClosed().subscribe(result => {
             if (result !== 'confirmed') {
-                // Revert the form so the user sees the actual current state.
                 this.tenantForm.patchValue({
                     businessType: this.originalBusinessType,
                     outletLabel: this.originalOutletLabel,
@@ -594,8 +441,6 @@ export class TenantFormComponent implements OnInit {
                 },
                 error: (err) => {
                     this.changingVertical = false;
-                    console.error('Error changing vertical:', err);
-                    // Revert the form
                     this.tenantForm.patchValue({
                         businessType: this.originalBusinessType,
                         outletLabel: this.originalOutletLabel,
@@ -623,4 +468,4 @@ export class TenantFormComponent implements OnInit {
             this.tenantForm.patchValue({ id: tenantId });
         }
     }
-} 
+}

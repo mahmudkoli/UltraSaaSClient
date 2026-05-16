@@ -124,8 +124,8 @@ import { ContentCardComponent } from '../../../shared/components/content-card.co
                                 <div class="flex items-center justify-between">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
                                           [ngClass]="{
-                                            'bg-green-100 text-green-800': tenant.isActive || tenant.isSystemActive,
-                                            'bg-red-100 text-red-800': !(tenant.isActive || tenant.isSystemActive)
+                                            'bg-green-100 text-green-800': tenant.isSystemActive,
+                                            'bg-red-100 text-red-800': !tenant.isSystemActive
                                           }">
                                         {{ (tenant.isActive || tenant.isSystemActive) ? 'Active' : 'Inactive' }}
                                     </span>
@@ -315,7 +315,7 @@ export class TenantDashboardComponent implements OnInit {
     private calculateSummaryData(): void {
         this.summary = {
             totalTenants: this.recentTenants.length * 2, // Mock multiplier
-            activeTenants: this.recentTenants.filter(t => t.isActive || t.isSystemActive).length * 2,
+            activeTenants: this.recentTenants.filter(t => t.isSystemActive).length * 2,
             trialTenants: Math.floor(this.recentTenants.length * 0.3)
         };
     }

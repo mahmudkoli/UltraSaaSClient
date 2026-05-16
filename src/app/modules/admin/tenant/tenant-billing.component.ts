@@ -98,7 +98,7 @@ export class TenantBillingComponent implements OnInit {
         const ref = this._dialog.open(RecordPaymentDialogComponent, {
             data: {
                 tenantId: this.tenant.id,
-                tenantName: this.tenant.systemName ?? this.tenant.name ?? this.tenant.id,
+                tenantName: this.tenant.systemName ?? this.tenant.systemName ?? this.tenant.id,
                 currentValidUpto: this.tenant.validUpto,
             },
         });

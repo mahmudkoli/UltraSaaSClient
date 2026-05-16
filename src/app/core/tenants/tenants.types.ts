@@ -1,284 +1,126 @@
 export type BusinessType = 'Generic' | 'Electronics' | 'Pharmacy' | 'Supermarket';
 
 /**
- * Tenant DTO for SYSTEM level data (authentication, billing, technical config)
- * NO institute-specific business data here - that goes in InstituteDto
- * Represents technical/system aspects of tenant
+ * Tenant DTO mirrored from the backend. Pre-launch cleanup (Phase 2.51)
+ * dropped every field that had no enforcement: GDPR / 2FA / IP whitelist,
+ * support tier, account manager, custom domain, Azure AD issuer, the legacy
+ * resource-usage counters, and the billing currency (locked BDT). Quotas +
+ * monthly fee are plan-derived and resolved via PlansService.
  */
 export interface TenantDto {
-    // ============= TENANT IDENTITY =============
+    // Identity
     id: string;
-    systemName: string; // Changed from name
+    systemName: string;
     connectionString?: string;
+    isShared: boolean;
+    subdomain: string;
 
-    // ============= VERTICAL =============
+    // Vertical
     businessType: BusinessType;
     outletLabel: string;
-
-    // ============= POS =============
-    /** POS sale-screen layout name. Frontend registry maps this to a component; null/unknown → default. */
     posLayout?: string;
 
-    // ============= TECHNICAL CONFIGURATION =============
-    isShared: boolean;
-    issuer?: string;
-    subdomain: string; // Changed from url
-    customDomain?: string;
-
-    // ============= BILLING & SUBSCRIPTION =============
-    /** FK to SubscriptionPlan.id. Plan name / fee / limits resolve via PlansService. */
+    // Billing / subscription
     planId?: string;
-    billingCurrency: string;
     validUpto: string;
     paymentStatus: string;
     lastPaymentDate?: string;
-    lastBillingDate?: string;
     nextBillingDate?: string;
 
-    // ============= SYSTEM STATUS =============
-    isSystemActive: boolean; // Changed from isActive
+    // System status
+    isSystemActive: boolean;
     suspensionReason?: string;
     suspendedUntil?: string;
 
-    // ============= TECHNICAL CONTACTS =============
-    technicalAdminEmail: string; // Changed from adminEmail
+    // Contacts
+    technicalAdminEmail: string;
     billingEmail: string;
-    emergencyContact?: string;
 
-    // ============= SYSTEM LIMITS =============
-    maxDatabaseGB: number;
-    maxApiCallsPerMonth: number;
-    maxConcurrentUsers: number;
+    // Limits (plan-derived; read-only)
     maxOutlets: number;
     maxUsers: number;
-    maxInstitutes: number;
-    currentMonthApiCalls: number;
-    currentDatabaseMB: number;
-    currentUsers: number;
 
-    // ============= COMPLIANCE & SECURITY =============
-    dataResidency: string;
-    requiresGDPR: boolean;
-    dataRetentionDays: number;
-    /** Days to keep Trail audit-log rows for this tenant before the daily purge job deletes them. Default 365; 0 = keep forever. */
+    // Audit retention (Hangfire purge job reads this)
     auditRetentionDays: number;
-    /** Tenant default for "show price on barcode label". Print Labels dialog seeds its toggle from this. */
+
+    // Label printing defaults
     showPriceOnLabel: boolean;
-    /** Tenant default for "use outlet-resolved price on barcode label" (vs. catalog base). */
     useOutletPriceOnLabel: boolean;
-    requires2FA: boolean;
-    ipWhitelist?: string;
 
-    // ============= SUPPORT =============
-    supportTier: string;
-    accountManagerEmail?: string;
+    // Theme
+    themeConfig?: string;
 
-    // ============= FEATURE FLAGS =============
-    enableAdvancedReporting: boolean;
-    enableCustomBranding: boolean;
-    enableApiAccess: boolean;
-    enableBackupRestore: boolean;
-    enableMultipleDatabases: boolean;
-
-    // ============= AUDIT =============
+    // Audit
     createdOn: string;
     createdBy: string;
     lastModifiedOn?: string;
     lastModifiedBy?: string;
     lastLoginDate?: string;
 
-    // ============= COMPUTED PROPERTIES =============
+    // Computed
     isInTrial: boolean;
     isPaymentOverdue: boolean;
-    hasCustomDomain: boolean;
-    isApproachingLimit: boolean;
-    hasExceededApiLimit: boolean;
     daysUntilExpiry: number;
     isExpiringSoon: boolean;
     hasExpired: boolean;
-
-    // ============= THEME =============
-    themeConfig?: string;
-
-    // ============= BACKWARD COMPATIBILITY =============
-    /** @deprecated Use systemName instead */
-    name?: string;
-    /** @deprecated Use technicalAdminEmail instead */
-    adminEmail?: string;
-    /** @deprecated Use isSystemActive instead */
-    isActive?: boolean;
-    /** @deprecated Use subdomain instead */
-    url?: string;
 }
 
-/**
- * Request to create a new tenant with system-level configuration
- * Contains only technical/system fields - institute data goes in separate request
- */
 export interface CreateTenantRequest {
-    // ============= REQUIRED FIELDS =============
     id: string;
-    systemName: string; // Changed from name
-    technicalAdminEmail: string; // Changed from adminEmail
-    subdomain: string; // Changed from url
+    systemName: string;
+    technicalAdminEmail: string;
+    subdomain: string;
+
     /** Optional FK to SubscriptionPlan.id. Null → backend uses Starter. */
     planId?: string;
 
-    // ============= VERTICAL =============
+    // Vertical
     businessType?: BusinessType;
     outletLabel?: string;
 
-    // ============= POS =============
-    /** Layout name; null/unknown → default. */
+    // POS layout
     posLayout?: string;
 
-    // ============= OPTIONAL TECHNICAL FIELDS =============
+    // Optional technical fields
     connectionString?: string;
     isShared?: boolean;
-    issuer?: string;
-    customDomain?: string;
 
-    // ============= BILLING FIELDS =============
-    billingCurrency?: string;
+    // Optional billing
     billingEmail?: string;
-    paymentStatus?: string;
-
-    // ============= COMPLIANCE FIELDS =============
-    dataResidency?: string;
-    requiresGDPR?: boolean;
-    dataRetentionDays?: number;
-    requires2FA?: boolean;
-    ipWhitelist?: string;
-
-    // ============= SUPPORT FIELDS =============
-    supportTier?: string;
-    accountManagerEmail?: string;
-    emergencyContact?: string;
-
-    // ============= SYSTEM SETTINGS =============
-    maxDatabaseGB?: number;
-    maxApiCallsPerMonth?: number;
-    maxConcurrentUsers?: number;
-    maxOutlets?: number;
-    maxUsers?: number;
-    maxInstitutes?: number;
-    /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. Default 365. */
-    auditRetentionDays?: number;
-
-    // ============= LABEL PREFERENCES (Phase 2.40) =============
-    /** Tenant default for "show price on barcode label". */
-    showPriceOnLabel?: boolean;
-    /** Tenant default for "use outlet-resolved price on barcode label". */
-    useOutletPriceOnLabel?: boolean;
-
-    // ============= FEATURE FLAGS =============
-    enableAdvancedReporting?: boolean;
-    enableCustomBranding?: boolean;
-    enableApiAccess?: boolean;
-    enableBackupRestore?: boolean;
-    enableMultipleDatabases?: boolean;
-
-    // ============= BACKWARD COMPATIBILITY =============
-    /** @deprecated Use systemName instead */
-    name?: string;
-    /** @deprecated Use technicalAdminEmail instead */
-    adminEmail?: string;
-    /** @deprecated Use subdomain instead */
-    url?: string;
-    validUpto?: string;
-    isActive?: boolean;
 }
 
-/**
- * Request to update tenant system-level configuration
- * Contains only technical/system fields that can be updated
- */
 export interface UpdateTenantRequest {
     id: string;
 
-    // ============= UPDATEABLE SYSTEM FIELDS =============
-    systemName?: string; // Changed from name
-    technicalAdminEmail?: string; // Changed from adminEmail
-    subdomain?: string; // Changed from url
+    // Identity
+    systemName?: string;
+    technicalAdminEmail?: string;
+    subdomain?: string;
     connectionString?: string;
-    customDomain?: string;
-    issuer?: string;
 
-    // ============= POS =============
-    /** Layout name; null/unknown → default. */
-    posLayout?: string;
-
-    // ============= BILLING FIELDS =============
-    /** FK to SubscriptionPlan.id. On change the backend cascades MaxOutlets/MaxUsers
-     * and replaces the tenant's TenantFeature set from the plan's FeatureFlagsJson.
-     * If current outlets/users exceed the new plan's limits, the API returns 409
-     * with `{ field, currentlyUsed, newLimit, planName }`; retry with `force: true`
-     * (also propagated as the `?force=true` query string) to accept and proceed. */
+    // Plan-change cascade (Phase 2.50)
     planId?: string;
     /** Bypass the plan-change quota pre-flight. Propagated as `?force=true`. */
     force?: boolean;
-    billingCurrency?: string;
+
     billingEmail?: string;
-    paymentStatus?: string;
 
-    // ============= COMPLIANCE FIELDS =============
-    dataResidency?: string;
-    requiresGDPR?: boolean;
-    dataRetentionDays?: number;
-    requires2FA?: boolean;
-    ipWhitelist?: string;
-
-    // ============= SUPPORT FIELDS =============
-    supportTier?: string;
-    accountManagerEmail?: string;
-    emergencyContact?: string;
-
-    // ============= SYSTEM SETTINGS (Admin Only) =============
-    isShared?: boolean;
-    maxDatabaseGB?: number;
-    maxApiCallsPerMonth?: number;
-    maxConcurrentUsers?: number;
-    maxOutlets?: number;
-    maxUsers?: number;
-    maxInstitutes?: number;
-    /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. */
+    // Audit retention
     auditRetentionDays?: number;
 
-    // ============= LABEL PREFERENCES (Phase 2.40) =============
-    /** Tenant default for "show price on barcode label". Print dialog toggle seeds from this. */
-    showPriceOnLabel?: boolean;
-    /** Tenant default for "use outlet-resolved price on barcode label" (only meaningful with showPriceOnLabel + an outlet). */
-    useOutletPriceOnLabel?: boolean;
-
-    // ============= FEATURE FLAGS =============
-    enableAdvancedReporting?: boolean;
-    enableCustomBranding?: boolean;
-    enableApiAccess?: boolean;
-    enableBackupRestore?: boolean;
-    enableMultipleDatabases?: boolean;
-
-    // ============= VERTICAL (Phase 2.38c) =============
-    /** Pivots the vertical. Backend persists alongside other fields; the frontend
-     * form gates this behind the orphan-data confirmation dialog. */
+    // Vertical
     businessType?: BusinessType;
-    /** Outlet display label (default "Outlet"; Pharmacy / Branch / Store / etc.). */
     outletLabel?: string;
 
-    // ============= BACKWARD COMPATIBILITY =============
-    /** @deprecated Use systemName instead */
-    name?: string;
-    /** @deprecated Use technicalAdminEmail instead */
-    adminEmail?: string;
-    /** @deprecated Use subdomain instead */
-    url?: string;
-    validUpto?: string;
-    isActive?: boolean;
-}
+    // System settings
+    isShared?: boolean;
 
-export interface UpgradeSubscriptionRequest {
-    tenantId: string;
-    billingPlan: string;
-    extendedExpiryDate?: string;
+    // POS layout
+    posLayout?: string;
+
+    // Label preferences
+    showPriceOnLabel?: boolean;
+    useOutletPriceOnLabel?: boolean;
 }
 
 export interface TenantWithPermissionsDto extends TenantDto {
@@ -311,24 +153,15 @@ export interface ArchiveTenantRequest {
     archiveDate?: string;
 }
 
-/**
- * Resource usage and monitoring
- */
+/** Per-tenant usage — only the two enforced quotas. */
 export interface TenantUsageDto {
     tenantId: string;
-    currentDatabaseMB: number;
-    maxDatabaseGB: number;
-    currentMonthApiCalls: number;
-    maxApiCallsPerMonth: number;
-    currentConcurrentUsers: number;
-    maxConcurrentUsers: number;
+    systemName: string;
     currentOutlets: number;
     maxOutlets: number;
     currentUsers: number;
     maxUsers: number;
     usagePercentages: {
-        database: number;
-        apiCalls: number;
         users: number;
         outlets: number;
     };
@@ -342,31 +175,6 @@ export interface PaginationResponse<T> {
     pageSize: number;
     hasPreviousPage: boolean;
     hasNextPage: boolean;
-}
-
-// ============= REQUEST INTERFACES =============
-
-export interface UpdateResourceLimitsRequest {
-    tenantId: string;
-    maxDatabaseGB?: number;
-    maxApiCallsPerMonth?: number;
-    maxConcurrentUsers?: number;
-    maxOutlets?: number;
-    maxUsers?: number;
-    /** Days to keep Trail audit-log rows. 1–3650; 0 = keep forever. */
-    auditRetentionDays?: number;
-
-    // ============= LABEL PREFERENCES (Phase 2.40) =============
-    /** Tenant default for "show price on barcode label". Print dialog toggle seeds from this. */
-    showPriceOnLabel?: boolean;
-    /** Tenant default for "use outlet-resolved price on barcode label" (only meaningful with showPriceOnLabel + an outlet). */
-    useOutletPriceOnLabel?: boolean;
-}
-
-export interface UpdateResourceUsageRequest {
-    tenantId: string;
-    databaseMB: number;
-    apiCalls: number;
 }
 
 export interface BulkSuspendTenantsRequest {

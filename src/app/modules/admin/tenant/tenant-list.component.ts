@@ -127,7 +127,7 @@ export class TenantListComponent implements OnInit {
         const ref = this._dialog.open(RecordPaymentDialogComponent, {
             data: {
                 tenantId: tenant.id,
-                tenantName: tenant.systemName ?? tenant.name ?? tenant.id,
+                tenantName: tenant.systemName ?? tenant.id,
                 currentValidUpto: tenant.validUpto,
             },
         });
@@ -141,12 +141,12 @@ export class TenantListComponent implements OnInit {
             const parsed = JSON.parse(filter) as { term: string; status: 'all' | 'active' | 'inactive' };
             const term = (parsed.term || '').toLowerCase().trim();
             const matchesTerm = !term || (
-                data.name?.toLowerCase().includes(term) ||
+                data.systemName?.toLowerCase().includes(term) ||
                 data.id?.toLowerCase().includes(term) ||
-                data.adminEmail?.toLowerCase().includes(term) ||
-                data.url?.toLowerCase().includes(term)
+                data.technicalAdminEmail?.toLowerCase().includes(term) ||
+                data.subdomain?.toLowerCase().includes(term)
             );
-            const matchesStatus = parsed.status === 'all' || (parsed.status === 'active' ? data.isActive : !data.isActive);
+            const matchesStatus = parsed.status === 'all' || (parsed.status === 'active' ? data.isSystemActive : !data.isSystemActive);
             return matchesTerm && matchesStatus;
         };
 
@@ -214,7 +214,7 @@ export class TenantListComponent implements OnInit {
     activateTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
             title: 'Activate Tenant',
-            message: `Are you sure you want to activate tenant "${tenant.name}"?`,
+            message: `Are you sure you want to activate tenant "${tenant.systemName}"?`,
             actions: {
                 confirm: {
                     label: 'Activate'
@@ -245,38 +245,9 @@ export class TenantListComponent implements OnInit {
         });
     }
 
+    /** Phase 2.51 — the legacy "Deactivate" path is gone; use Suspend with a reason. */
     deactivateTenant(tenant: TenantDto): void {
-        const confirmation = this._fuseConfirmationService.open({
-            title: 'Deactivate Tenant',
-            message: `Are you sure you want to deactivate tenant "${tenant.name}"?`,
-            actions: {
-                confirm: {
-                    label: 'Deactivate'
-                }
-            }
-        });
-
-        confirmation.afterClosed().subscribe((result) => {
-            if (result === 'confirmed') {
-                this._tenantsService.deactivate(tenant.id).subscribe({
-                    next: () => {
-                        this.loadTenants();
-                    },
-                    error: (error) => {
-                        console.error('Error deactivating tenant:', error);
-                        this._fuseConfirmationService.open({
-                            title: 'Error',
-                            message: 'Failed to deactivate tenant. Please try again.',
-                            actions: {
-                                confirm: {
-                                    label: 'OK'
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        });
+        this.suspendTenant(tenant);
     }
 
     getStatusColor(isActive: boolean): string {
@@ -294,7 +265,7 @@ export class TenantListComponent implements OnInit {
     suspendTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
             title: 'Suspend Tenant',
-            message: `Are you sure you want to suspend tenant "${tenant.name}"? Users will not be able to access the system.`,
+            message: `Are you sure you want to suspend tenant "${tenant.systemName}"? Users will not be able to access the system.`,
             icon: {
                 show: true,
                 name: 'heroicons_outline:pause',
@@ -337,7 +308,7 @@ export class TenantListComponent implements OnInit {
     archiveTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
             title: 'Archive Tenant',
-            message: `Are you sure you want to archive tenant "${tenant.name}"? The data will be preserved but become read-only. This action should only be taken for closed accounts.`,
+            message: `Are you sure you want to archive tenant "${tenant.systemName}"? The data will be preserved but become read-only. This action should only be taken for closed accounts.`,
             icon: {
                 show: true,
                 name: 'heroicons_outline:archive',
@@ -401,17 +372,6 @@ export class TenantListComponent implements OnInit {
         this._router.navigate([`/tenant/${tenant.id}/billing`]);
     }
 
-    healthCheck(tenant: TenantDto): void {
-        this._tenantsService.validateHealth(tenant.id).subscribe({
-            next: (isHealthy) => {
-                console.log(`Tenant ${tenant.name} health status:`, isHealthy ? 'Healthy' : 'Unhealthy');
-            },
-            error: (error) => {
-                console.error('Error checking tenant health:', error);
-            }
-        });
-    }
-
     getThemeLabel(tenant: TenantDto): string {
         if (!tenant.themeConfig) return 'Default';
         try {
@@ -425,15 +385,5 @@ export class TenantListComponent implements OnInit {
         }
     }
 
-    getResourceUsagePercentage(tenant: TenantDto): number {
-        if (!tenant.maxApiCallsPerMonth) return 0;
-        return (tenant.currentMonthApiCalls / tenant.maxApiCallsPerMonth) * 100;
-    }
-
-    getUsageStatusColor(percentage: number): string {
-        if (percentage >= 90) return 'text-red-600';
-        if (percentage >= 70) return 'text-amber-600';
-        return 'text-green-600';
-    }
 
 }
