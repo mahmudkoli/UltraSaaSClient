@@ -2,6 +2,7 @@ import { Route } from '@angular/router';
 import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
+import { SubscriptionGuard } from 'app/core/auth/guards/subscription.guard';
 import { PostLoginRedirectComponent } from 'app/core/auth/post-login-redirect.component';
 import { LayoutComponent } from 'app/layout/layout.component';
 
@@ -61,7 +62,15 @@ export const appRoutes: Route[] = [
         },
         children: [
             {path: 'sign-out', loadChildren: () => import('app/modules/auth/sign-out/sign-out.routes')},
-            {path: 'unlock-session', loadChildren: () => import('app/modules/auth/unlock-session/unlock-session.routes')}
+            {path: 'unlock-session', loadChildren: () => import('app/modules/auth/unlock-session/unlock-session.routes')},
+            // Phase 2.52 — the subscription lockout page tenant-side users land
+            // on when MySubscription.isSystemActive=false. Empty layout (no nav
+            // chrome) + no SubscriptionGuard on this branch so the user can
+            // actually reach it.
+            {
+                path: 'subscription-expired',
+                loadComponent: () => import('app/modules/subscription-expired/subscription-expired.component').then(m => m.SubscriptionExpiredComponent),
+            },
         ]
     },
 
@@ -80,8 +89,8 @@ export const appRoutes: Route[] = [
     // Admin routes
     {
         path: '',
-        canActivate: [AuthGuard],
-        canActivateChild: [AuthGuard],
+        canActivate: [AuthGuard, SubscriptionGuard],
+        canActivateChild: [AuthGuard, SubscriptionGuard],
         component: LayoutComponent,
         resolve: {
             initialData: initialDataResolver

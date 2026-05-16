@@ -112,6 +112,11 @@ export interface MySubscriptionDto {
     isSystemActive: boolean;
     /** "none" | "warning" | "urgent" — banner severity hint. */
     severity: string;
+
+    // Phase 2.52 — surfaced on the lockout page when isSystemActive=false.
+    technicalAdminEmail?: string;
+    suspensionReason?: string;
+    suspendedUntil?: string;
 }
 
 // ── Admin dashboard ────────────────────────────────────────────────────────────
