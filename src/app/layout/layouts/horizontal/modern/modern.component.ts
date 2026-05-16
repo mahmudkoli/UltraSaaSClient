@@ -10,6 +10,7 @@ import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { UserComponent } from 'app/layout/common/user/user.component';
+import { TenantLogoComponent } from 'app/layout/common/tenant-logo/tenant-logo.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -17,7 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
     templateUrl  : './modern.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [FuseLoadingBarComponent, NgIf, FuseVerticalNavigationComponent, FuseHorizontalNavigationComponent, MatButtonModule, MatIconModule, FuseFullscreenComponent, UserComponent, RouterOutlet],
+    imports      : [FuseLoadingBarComponent, NgIf, FuseVerticalNavigationComponent, FuseHorizontalNavigationComponent, MatButtonModule, MatIconModule, FuseFullscreenComponent, UserComponent, TenantLogoComponent, RouterOutlet],
 })
 export class ModernLayoutComponent implements OnInit, OnDestroy
 {

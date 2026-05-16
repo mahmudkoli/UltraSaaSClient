@@ -109,6 +109,11 @@ export class NotificationsComponent implements OnInit, OnDestroy
             this._createOverlay();
         }
 
+        // Phase 2.56c — refresh the unread list every time the bell opens so
+        // notifications read elsewhere (e.g. /notifications archive page in
+        // another tab) drop out, and any new ones since first load show up.
+        this._notificationsService.getAll().subscribe({ error: () => {} });
+
         // Attach the portal to the overlay
         this._overlayRef.attach(new TemplatePortal(this._notificationsPanel, this._viewContainerRef));
     }

@@ -12,6 +12,7 @@ import { Navigation } from 'app/core/navigation/navigation.types';
 import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
 import { UserComponent } from 'app/layout/common/user/user.component';
+import { TenantLogoComponent } from 'app/layout/common/tenant-logo/tenant-logo.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -19,7 +20,7 @@ import { Subject, takeUntil } from 'rxjs';
     templateUrl  : './futuristic.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [FuseLoadingBarComponent, FuseVerticalNavigationComponent, UserComponent, MatButtonModule, MatIconModule, FuseFullscreenComponent, NgIf, RouterOutlet],
+    imports      : [FuseLoadingBarComponent, FuseVerticalNavigationComponent, UserComponent, TenantLogoComponent, MatButtonModule, MatIconModule, FuseFullscreenComponent, NgIf, RouterOutlet],
 })
 export class FuturisticLayoutComponent implements OnInit, OnDestroy
 {

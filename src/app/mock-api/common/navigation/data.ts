@@ -111,6 +111,15 @@ const mySubscriptionNav: FuseNavigationItem = {
     meta: { permission: 'Permissions.Subscription.View' },
 };
 
+// Phase 2.56c — tenant-side notification inbox. Sits next to My Subscription
+// since it surfaces the same kind of admin/billing content. Open to every
+// authenticated user (no permission gate) so cashiers can also see broadcast
+// notices marked AllUsers (maintenance windows, feature releases).
+const notificationsNav: FuseNavigationItem = {
+    id: 'my-notifications', title: 'Notifications', type: 'basic',
+    icon: 'heroicons_outline:bell', link: '/notifications',
+};
+
 // Phase 2.49 — tenant-side "Home" dashboard. Pinned at the top so owners
 // landing from the post-login resolver have orientation. Gated by
 // Permissions.Dashboards.View (tenant Admin role only; cashiers continue
@@ -121,7 +130,7 @@ const homeNav: FuseNavigationItem = {
     meta: { permission: 'Permissions.Dashboards.View' },
 };
 
-export const defaultNavigation: FuseNavigationItem[] = [homeNav, ...posNav, mySubscriptionNav, sysNav];
+export const defaultNavigation: FuseNavigationItem[] = [homeNav, ...posNav, mySubscriptionNav, notificationsNav, sysNav];
 
 export const compactNavigation: FuseNavigationItem[] = [
     { id: 'pos', title: 'POS', type: 'basic', icon: 'heroicons_outline:shopping-cart', link: '/pos',
@@ -138,7 +147,7 @@ export const compactNavigation: FuseNavigationItem[] = [
       meta: { permission: 'Permissions.Users.View' } },
 ];
 
-export const futuristicNavigation: FuseNavigationItem[] = [homeNav, ...posNav, mySubscriptionNav, sysNav];
+export const futuristicNavigation: FuseNavigationItem[] = [homeNav, ...posNav, mySubscriptionNav, notificationsNav, sysNav];
 
 export const horizontalNavigation: FuseNavigationItem[] = [
     {

@@ -11,6 +11,8 @@ import { FuseConfigService } from '@fuse/services/config';
 import { take } from 'rxjs';
 import { TenantThemeService, ThemeConfig } from 'app/core/tenant/tenant-theme.service';
 import { NotificationService } from 'app/core/services/notification.service';
+import { TenantInfoService } from 'app/core/auth/tenant-info.service';
+import { PlansService } from 'app/core/billing/billing.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from 'environments/environment';
 
@@ -58,8 +60,26 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
     brandTaxId = '';
     brandingSaving = false;
 
+    // Two-step upload (matches branding-profile-form). Picking a file fills
+    // pendingFile + pendingPreview (blob URL); nothing hits the server until
+    // the user clicks Upload. Lets them sanity-check the image before committing.
+    pendingFile: File | null = null;
+    pendingPreview: SafeUrl | null = null;
+    private pendingObjectUrl: string | null = null;
+
+    // CUSTOM_BRAND feature gate. The Color Theme / Color Scheme / Layout
+    // sections are only meaningful when the target tenant's plan includes
+    // CUSTOM_BRAND — the backend `PUT /tenants/{id}/theme` is gated by the
+    // same feature, so without it Save would 403 anyway. Brand Identity
+    // (logo / color / tax id) stays unconditional — it's baseline for VAT
+    // receipts on every plan.
+    hasCustomBrand = false;
+    planName: string = '';
+    planFeaturesLoaded = false;
+
     private readonly http = inject(HttpClient);
     private readonly sanitizer = inject(DomSanitizer);
+    private readonly tenantInfo = inject(TenantInfoService);
 
     layouts = [
         { id: 'classic', name: 'Classic', icon: 'heroicons_outline:view-columns' },
@@ -78,6 +98,7 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
         private notificationService: NotificationService,
         private router: Router,
         private route: ActivatedRoute,
+        private plansService: PlansService,
     ) {}
 
     ngOnInit(): void {
@@ -121,28 +142,64 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
             }
         });
 
-        // Load branding (logo + color + tax id)
+        // Load branding (logo + color + tax id) AND resolve the tenant's
+        // plan to know whether CUSTOM_BRAND is in scope. Cascades plan lookup
+        // off the tenant response.
         this.http.get<any>(`${environment.apiUrl}/api/tenants/${this.tenantId}`).subscribe({
             next: t => {
                 this.brandPrimaryColor = t.brandPrimaryColor || '';
                 this.brandTaxId = t.brandTaxId || '';
+                this.resolvePlanFeatures(t.planId);
+            },
+            error: () => {
+                this.planFeaturesLoaded = true;
             },
         });
         this.refreshLogoState();
     }
 
-    private refreshLogoState(): void {
-        const url = `${environment.apiUrl}/api/tenants/${this.tenantId}/logo`;
-        this.http.head(url, { observe: 'response' }).subscribe({
-            next: () => {
-                this.hasLogo = true;
-                this.logoPreview = this.sanitizer.bypassSecurityTrustUrl(`${url}?v=${Date.now()}`);
+    private resolvePlanFeatures(planId: string | null | undefined): void {
+        if (!planId) {
+            this.planFeaturesLoaded = true;
+            return;
+        }
+        this.plansService.get(planId).subscribe({
+            next: plan => {
+                this.planName = plan.name;
+                try {
+                    const flags = JSON.parse(plan.featureFlagsJson || '[]') as string[];
+                    this.hasCustomBrand = Array.isArray(flags) && flags.includes('CUSTOM_BRAND');
+                } catch {
+                    this.hasCustomBrand = false;
+                }
+                this.planFeaturesLoaded = true;
             },
             error: () => {
-                this.hasLogo = false;
-                this.logoPreview = null;
+                this.planFeaturesLoaded = true;
             },
         });
+    }
+
+    /**
+     * Optimistically point the preview at the logo endpoint. The endpoint is
+     * <c>[AllowAnonymous]</c> so the &lt;img&gt; loads it directly without a bearer
+     * token. If the tenant has no logo (or any other 404 happens), the
+     * <c>(error)</c> handler on the &lt;img&gt; clears the preview back to the
+     * placeholder icon. Avoids a separate HEAD probe round-trip — Phase 2.56c
+     * fix for the "logo doesn't load on refresh" bug, where HEAD could fail
+     * silently while a direct GET worked.
+     */
+    private refreshLogoState(): void {
+        if (!this.tenantId) return;
+        const url = `${environment.apiUrl}/api/tenants/${this.tenantId}/logo?v=${Date.now()}`;
+        this.hasLogo = true; // Optimistic — flipped to false by onLogoLoadError if 404.
+        this.logoPreview = this.sanitizer.bypassSecurityTrustUrl(url);
+    }
+
+    /** Called by the saved-logo &lt;img&gt;'s (error) — means the tenant has no logo. */
+    onLogoLoadError(): void {
+        this.hasLogo = false;
+        this.logoPreview = null;
     }
 
     onLogoPicked(event: Event): void {
@@ -155,20 +212,69 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
             return;
         }
         this.logoError = null;
+        this.setPendingFile(file);
+    }
+
+    confirmUpload(): void {
+        const file = this.pendingFile;
+        if (!file || !this.tenantId) return;
+        this.logoError = null;
         this.logoUploading = true;
         const fd = new FormData();
         fd.append('file', file, file.name);
         this.http.put(`${environment.apiUrl}/api/tenants/${this.tenantId}/logo`, fd, { responseType: 'text' }).subscribe({
             next: () => {
                 this.logoUploading = false;
-                this.refreshLogoState();
+                this.clearPendingFile();
+                // Set the saved-logo preview optimistically with a fresh
+                // cache-buster — we KNOW the PUT succeeded, no need for a
+                // separate HEAD round-trip that can race with the storage
+                // commit or the browser's image cache.
+                this.hasLogo = true;
+                this.logoPreview = this.sanitizer.bypassSecurityTrustUrl(
+                    `${environment.apiUrl}/api/tenants/${this.tenantId}/logo?v=${Date.now()}`,
+                );
+                // If the editor is editing their OWN tenant, push the new logo
+                // into TenantInfoService so the live sidebar/topbar reload it
+                // in-place instead of waiting for a page refresh.
+                if (this.tenantInfo.info()?.id === this.tenantId) {
+                    this.tenantInfo.notifyLogoChanged(true);
+                }
                 this.notificationService.success('Logo uploaded');
             },
             error: err => {
                 this.logoUploading = false;
                 this.logoError = err?.error?.exception ?? err?.error ?? err?.message ?? 'Upload failed';
+                // Keep pending state so the user can retry or cancel without re-picking the file.
             },
         });
+    }
+
+    cancelPendingUpload(): void {
+        this.clearPendingFile();
+        this.logoError = null;
+    }
+
+    formatFileSize(bytes: number): string {
+        if (bytes < 1024) return `${bytes} B`;
+        if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+        return `${(bytes / 1024 / 1024).toFixed(2)} MB`;
+    }
+
+    private setPendingFile(file: File): void {
+        this.clearPendingFile();
+        this.pendingObjectUrl = URL.createObjectURL(file);
+        this.pendingFile = file;
+        this.pendingPreview = this.sanitizer.bypassSecurityTrustUrl(this.pendingObjectUrl);
+    }
+
+    private clearPendingFile(): void {
+        if (this.pendingObjectUrl) {
+            URL.revokeObjectURL(this.pendingObjectUrl);
+            this.pendingObjectUrl = null;
+        }
+        this.pendingFile = null;
+        this.pendingPreview = null;
     }
 
     removeLogo(): void {
@@ -176,6 +282,9 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
             next: () => {
                 this.hasLogo = false;
                 this.logoPreview = null;
+                if (this.tenantInfo.info()?.id === this.tenantId) {
+                    this.tenantInfo.notifyLogoChanged(false);
+                }
                 this.notificationService.success('Logo removed');
             },
             error: err => {
@@ -202,6 +311,10 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
     }
 
     ngOnDestroy(): void {
+        // Release any blob URL we created for a pending upload preview so the
+        // browser can GC the bytes.
+        this.clearPendingFile();
+
         // If service holds state, a layout switch is in progress — don't restore
         if (this.tenantThemeService.previewState) {
             return;

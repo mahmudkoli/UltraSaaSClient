@@ -15,9 +15,9 @@
             <ng-container fuseVerticalNavigationContentHeader>
                 <!-- Logo -->
                 <div class="flex items-center h-20 pt-6 px-8">
-                    <img
-                        class="w-30"
-                        src="assets/images/logo/logo-text-on-dark.svg">
+                    <tenant-logo
+                        cssClass="w-30"
+                        fallbackSrc="assets/images/logo/logo-text-on-dark.svg"></tenant-logo>
                 </div>
             </ng-container>
         </fuse-vertical-navigation>
@@ -33,21 +33,21 @@
                 <div class="flex items-center mx-2 lg:mr-8">
                     <div class="hidden lg:flex">
                         <!-- Light version -->
-                        <img
-                            class="dark:hidden w-24"
-                            src="assets/images/logo/logo-text.svg"
-                            alt="Logo image">
+                        <tenant-logo
+                            cssClass="dark:hidden w-24"
+                            fallbackSrc="assets/images/logo/logo-text.svg"
+                            alt="Logo image"></tenant-logo>
                         <!-- Dark version -->
-                        <img
-                            class="hidden dark:flex w-24"
-                            src="assets/images/logo/logo-text-on-dark.svg"
-                            alt="Logo image">
+                        <tenant-logo
+                            cssClass="hidden dark:flex w-24"
+                            fallbackSrc="assets/images/logo/logo-text-on-dark.svg"
+                            alt="Logo image"></tenant-logo>
                     </div>
                     <!-- Small version -->
-                    <img
-                        class="flex lg:hidden w-8"
-                        src="assets/images/logo/logo.svg"
-                        alt="Logo image">
+                    <tenant-logo
+                        cssClass="flex lg:hidden w-8"
+                        fallbackSrc="assets/images/logo/logo.svg"
+                        alt="Logo image"></tenant-logo>
                 </div>
                 <!-- Horizontal navigation -->
                 <fuse-horizontal-navigation

@@ -22,9 +22,16 @@ export class NotificationsService {
         return this._notifications.asObservable();
     }
 
+    /**
+     * Phase 2.56c — bell drawer is now an *inbox* (unread-only). Read history
+     * lives on the full <code>/notifications</code> page. This collapses the
+     * mental model to Gmail / Slack / GitHub: badge = unread count = drawer
+     * size; "Mark all as read" empties the drawer to inbox-zero; the archive
+     * is one click away.
+     */
     getAll(): Observable<Notification[]> {
         return this.http
-            .get<TenantNotificationDto[]>(`${environment.apiUrl}/api/notifications`)
+            .get<TenantNotificationDto[]>(`${environment.apiUrl}/api/notifications?unreadOnly=true`)
             .pipe(
                 tap(list => this._notifications.next((list ?? []).map(this.toFuseNotification))),
                 switchMap(() => this.notifications$.pipe(take(1))),

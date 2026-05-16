@@ -13,9 +13,9 @@
         <div class="flex items-center w-full p-4 pl-6">
             <!-- Logo -->
             <div class="flex items-center justify-center">
-                <img
-                    class="w-8"
-                    src="assets/images/logo/logo.svg">
+                <tenant-logo
+                    cssClass="w-8"
+                    fallbackSrc="assets/images/logo/logo.svg"></tenant-logo>
             </div>
             <!-- Components -->
             <div class="flex items-center ml-auto">
@@ -24,16 +24,16 @@
         </div>
         <!-- User -->
         <div class="flex flex-col items-center w-full p-4" *ngIf="user">
-            <div class="relative w-24 h-24">
+            <div class="relative">
                 <img
-                    class="w-full h-full rounded-full"
+                    class="w-24 h-24 rounded-full"
                     *ngIf="user?.avatar"
                     [src]="user.avatar"
                     alt="User avatar">
-                <mat-icon
-                    class="icon-size-24"
+                <user-avatar
                     *ngIf="!user?.avatar"
-                    [svgIcon]="'heroicons_solid:user-circle'"></mat-icon>
+                    [name]="user?.name"
+                    size="lg"></user-avatar>
             </div>
             <div class="flex flex-col items-center justify-center w-full mt-6">
                 <div class="w-full whitespace-nowrap text-ellipsis overflow-hidden text-center leading-normal font-medium">
@@ -64,9 +64,9 @@
     <!-- Navigation footer hook -->
     <ng-container fuseVerticalNavigationContentFooter>
         <div class="flex flex-0 items-center justify-center h-16 pr-6 pl-2 mt-2 mb-4 opacity-12">
-            <img
-                class="max-w-36"
-                src="assets/images/logo/logo-text-on-dark.svg">
+            <tenant-logo
+                cssClass="max-w-36"
+                fallbackSrc="assets/images/logo/logo-text-on-dark.svg"></tenant-logo>
         </div>
     </ng-container>
 </fuse-vertical-navigation>

@@ -118,6 +118,21 @@ export interface CreateAnnouncementRequest {
     linkUrl?: string;
 }
 
+/** Phase 2.56c — read model returned by GET /api/announcements (admin audit trail). */
+export interface AnnouncementDto {
+    id: string;
+    title: string;
+    body: string;
+    severity: NotificationSeverity;
+    audienceKind: AnnouncementAudienceKind;
+    audienceTarget?: string;
+    audience: NotificationAudience;
+    linkUrl?: string;
+    deliveredTo: number;
+    createdOn: string;
+    createdBy: string;
+}
+
 export interface CreateAnnouncementResponse {
     deliveredTo: number;
 }

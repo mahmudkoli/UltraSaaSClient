@@ -13,10 +13,10 @@
         <ng-container fuseVerticalNavigationContentHeader>
             <!-- Logo -->
             <div class="flex items-center h-20 pt-6 px-8">
-                <img
-                    class="w-24"
-                    src="assets/images/logo/logo-text-on-dark.svg"
-                    alt="Logo image">
+                <tenant-logo
+                    cssClass="w-24"
+                    fallbackSrc="assets/images/logo/logo-text-on-dark.svg"
+                    alt="Logo image"></tenant-logo>
             </div>
         </ng-container>
     </fuse-vertical-navigation>
@@ -34,15 +34,15 @@
                 <ng-container *ngIf="!isScreenSmall">
                     <div class="flex items-center mx-2">
                         <!-- Light version -->
-                        <img
-                            class="w-24 dark:hidden"
-                            src="assets/images/logo/logo-text.svg"
-                            alt="Logo image">
+                        <tenant-logo
+                            cssClass="w-24 dark:hidden"
+                            fallbackSrc="assets/images/logo/logo-text.svg"
+                            alt="Logo image"></tenant-logo>
                         <!-- Dark version -->
-                        <img
-                            class="hidden dark:flex w-24"
-                            src="assets/images/logo/logo-text-on-dark.svg"
-                            alt="Logo image">
+                        <tenant-logo
+                            cssClass="hidden dark:flex w-24"
+                            fallbackSrc="assets/images/logo/logo-text-on-dark.svg"
+                            alt="Logo image"></tenant-logo>
                     </div>
                 </ng-container>
                 <!-- Navigation toggle button -->

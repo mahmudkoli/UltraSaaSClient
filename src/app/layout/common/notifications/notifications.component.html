@@ -80,26 +80,18 @@
 
                     <!-- Actions -->
                     <div class="relative flex flex-col my-5 mr-6 ml-2">
-                        <!-- Indicator -->
+                        <!-- Read indicator (one-way: marks as read; backend has no
+                             unread/delete in v1, so the prior X button was a no-op
+                             and was removed Phase 2.56c). -->
                         <button
                             class="w-6 h-6 min-h-6"
                             mat-icon-button
                             (click)="toggleRead(notification)"
-                            [matTooltip]="notification.read ? 'Mark as unread' : 'Mark as read'">
+                            [matTooltip]="notification.read ? 'Already read' : 'Mark as read'">
                             <span
                                 class="w-2 h-2 rounded-full"
                                 [ngClass]="{'bg-gray-400 dark:bg-gray-500 sm:opacity-0 sm:group-hover:opacity-100': notification.read,
                                             'bg-primary': !notification.read}"></span>
-                        </button>
-                        <!-- Remove -->
-                        <button
-                            class="w-6 h-6 min-h-6 sm:opacity-0 sm:group-hover:opacity-100"
-                            mat-icon-button
-                            (click)="delete(notification)"
-                            [matTooltip]="'Remove'">
-                            <mat-icon
-                                class="icon-size-4"
-                                [svgIcon]="'heroicons_solid:x-mark'"></mat-icon>
                         </button>
                     </div>
 
@@ -150,11 +142,22 @@
                             class="text-primary-700 dark:text-primary-50"
                             [svgIcon]="'heroicons_outline:bell'"></mat-icon>
                     </div>
-                    <div class="mt-5 text-2xl font-semibold tracking-tight">No notifications</div>
-                    <div class="w-full max-w-60 mt-1 text-md text-center text-secondary">When you have notifications, they will appear here.</div>
+                    <div class="mt-5 text-2xl font-semibold tracking-tight">You're all caught up</div>
+                    <div class="w-full max-w-60 mt-1 text-md text-center text-secondary">No unread notifications. New ones appear here — past ones live in <a routerLink="/notifications" (click)="closePanel()" class="text-primary hover:underline">View all</a>.</div>
                 </div>
             </ng-container>
 
+        </div>
+
+        <!-- Footer: link to the full notification history page (Phase 2.56c). -->
+        <div class="flex items-center justify-center px-4 py-2 border-t bg-gray-50 dark:bg-gray-900/40">
+            <a
+                mat-button
+                color="primary"
+                routerLink="/notifications"
+                (click)="closePanel()">
+                View all notifications
+            </a>
         </div>
 
     </div>

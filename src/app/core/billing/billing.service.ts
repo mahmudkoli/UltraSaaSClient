@@ -3,7 +3,7 @@ import { Injectable, inject, signal } from '@angular/core';
 import { Observable, tap } from 'rxjs';
 import { environment } from 'environments/environment';
 import {
-    AdminDashboardDto,
+    AdminDashboardDto, AnnouncementDto,
     CreateAnnouncementRequest, CreateAnnouncementResponse,
     CreatePlanRequest, MySubscriptionDto, PlanDto,
     RecordPaymentRequest, TenantInvoiceDto, TenantNotificationDto, TenantPaymentDto,
@@ -69,6 +69,9 @@ export class AnnouncementsService {
 
     create = (req: CreateAnnouncementRequest): Observable<CreateAnnouncementResponse> =>
         this.http.post<CreateAnnouncementResponse>(this.base, req);
+
+    list = (take: number = 200): Observable<AnnouncementDto[]> =>
+        this.http.get<AnnouncementDto[]>(`${this.base}?take=${take}`);
 }
 
 // ── Platform-admin: dashboard aggregation ──────────────────────────────────────

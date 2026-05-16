@@ -7,8 +7,12 @@
             class="w-7 h-7 rounded-full"
             *ngIf="showAvatar && user?.avatar"
             [src]="user.avatar">
+        <user-avatar
+            *ngIf="showAvatar && !user?.avatar"
+            [name]="user?.name"
+            size="sm"></user-avatar>
         <mat-icon
-            *ngIf="!showAvatar || !user?.avatar"
+            *ngIf="!showAvatar"
             [svgIcon]="'heroicons_outline:user-circle'"></mat-icon>
     </span>
 </button>

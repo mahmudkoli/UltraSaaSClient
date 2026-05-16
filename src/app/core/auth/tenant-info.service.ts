@@ -37,9 +37,27 @@ export class TenantInfoService {
     private readonly http = inject(HttpClient);
 
     private readonly _info = signal<TenantInfoDto | null>(null);
+    // Cache-buster bumped on every successful logo upload / delete so the
+    // chrome <img> reloads in-place. Default 0 means "no version yet" — the
+    // browser caches normally until the user actually changes their logo.
+    private readonly _logoVersion = signal<number>(0);
     readonly info = this._info.asReadonly();
     readonly businessType = computed<BusinessType | null>(() => this._info()?.businessType ?? null);
     readonly posLayout = computed<string | null>(() => this._info()?.posLayout ?? null);
+
+    /**
+     * Live URL of the current tenant's uploaded logo, or `null` when the
+     * tenant has none (and the chrome should fall back to the MK Corex asset).
+     * The version query bumps on `notifyLogoChanged()` so the browser refetches
+     * after an upload without a full page reload.
+     */
+    readonly logoUrl = computed<string | null>(() => {
+        const info = this._info();
+        if (!info?.hasLogo) return null;
+        const v = this._logoVersion();
+        const suffix = v > 0 ? `?v=${v}` : '';
+        return `${environment.apiUrl}/api/tenants/${info.id}/logo${suffix}`;
+    });
 
     load(): Observable<TenantInfoDto | null> {
         return this.http
@@ -51,6 +69,20 @@ export class TenantInfoService {
                     return of<TenantInfoDto | null>(null);
                 }),
             );
+    }
+
+    /**
+     * Called from the theme-settings page after the current tenant uploads,
+     * replaces, or removes their own logo. Updates `hasLogo` optimistically
+     * so the chrome flips immediately, and bumps the version so the new
+     * bytes are fetched (rather than the cached old image).
+     */
+    notifyLogoChanged(hasLogo: boolean): void {
+        const cur = this._info();
+        if (cur) {
+            this._info.set({ ...cur, hasLogo });
+        }
+        this._logoVersion.set(Date.now());
     }
 
     /**

@@ -10,6 +10,7 @@ import { FuseMediaWatcherService } from '@fuse/services/media-watcher';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { UserComponent } from 'app/layout/common/user/user.component';
+import { TenantLogoComponent } from 'app/layout/common/tenant-logo/tenant-logo.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -17,7 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
     templateUrl  : './compact.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [FuseLoadingBarComponent, MatButtonModule, MatIconModule, FuseFullscreenComponent, UserComponent, NgIf, RouterOutlet, FuseVerticalNavigationComponent],
+    imports      : [FuseLoadingBarComponent, MatButtonModule, MatIconModule, FuseFullscreenComponent, UserComponent, TenantLogoComponent, NgIf, RouterOutlet, FuseVerticalNavigationComponent],
 })
 export class CompactLayoutComponent implements OnInit, OnDestroy
 {

@@ -15,26 +15,28 @@
                 <mat-icon [svgIcon]="'heroicons_outline:arrow-left'"></mat-icon>
                 <span class="ml-2">Back</span>
             </button>
-            <button mat-stroked-button color="warn" (click)="resetToDefault()">
+            <button *ngIf="hasCustomBrand" mat-stroked-button color="warn" (click)="resetToDefault()">
                 <mat-icon [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
                 <span class="ml-2">Reset to Default</span>
             </button>
 
-            <!-- Preview / Back to Current toggle -->
-            <button *ngIf="!isPreviewing" mat-stroked-button color="accent" (click)="preview()">
-                <mat-icon>visibility</mat-icon>
-                <span class="ml-2">Preview</span>
-            </button>
-            <button *ngIf="isPreviewing" mat-stroked-button (click)="backToCurrent()">
-                <mat-icon>undo</mat-icon>
-                <span class="ml-2">Back to Current</span>
-            </button>
+            <!-- Preview / Back to Current toggle (theme/scheme/layout — CUSTOM_BRAND gated) -->
+            <ng-container *ngIf="hasCustomBrand">
+                <button *ngIf="!isPreviewing" mat-stroked-button color="accent" (click)="preview()">
+                    <mat-icon>visibility</mat-icon>
+                    <span class="ml-2">Preview</span>
+                </button>
+                <button *ngIf="isPreviewing" mat-stroked-button (click)="backToCurrent()">
+                    <mat-icon>undo</mat-icon>
+                    <span class="ml-2">Back to Current</span>
+                </button>
 
-            <button mat-flat-button color="primary" (click)="save()" [disabled]="isSaving">
-                <mat-icon *ngIf="!isSaving" [svgIcon]="'heroicons_outline:check'"></mat-icon>
-                <mat-progress-spinner *ngIf="isSaving" [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
-                <span class="ml-2">Save</span>
-            </button>
+                <button mat-flat-button color="primary" (click)="save()" [disabled]="isSaving">
+                    <mat-icon *ngIf="!isSaving" [svgIcon]="'heroicons_outline:check'"></mat-icon>
+                    <mat-progress-spinner *ngIf="isSaving" [diameter]="20" [mode]="'indeterminate'"></mat-progress-spinner>
+                    <span class="ml-2">Save</span>
+                </button>
+            </ng-container>
         </div>
     </div>
 
@@ -61,8 +63,27 @@
             Theme settings saved successfully. All users will see the updated theme.
         </fuse-alert>
 
-        <!-- Theme Color -->
-        <div class="bg-card rounded-2xl shadow p-6 mb-6">
+        <!-- Plan gate notice — shown only when the target tenant's plan
+             doesn't include CUSTOM_BRAND. Brand Identity stays visible
+             below; only the in-app theme controls are hidden. -->
+        <div *ngIf="planFeaturesLoaded && !hasCustomBrand" class="bg-amber-50 dark:bg-amber-900/30 border-l-4 border-amber-400 dark:border-amber-500 p-4 mb-6 rounded">
+            <div class="flex items-start gap-3">
+                <mat-icon class="text-amber-600 dark:text-amber-300" [svgIcon]="'heroicons_outline:lock-closed'"></mat-icon>
+                <div>
+                    <p class="text-sm font-semibold text-amber-800 dark:text-amber-200">In-app theme customisation is part of CUSTOM_BRAND</p>
+                    <p class="text-xs text-amber-700 dark:text-amber-300 mt-1">
+                        This tenant is on <strong>{{ planName || 'a plan' }}</strong>, which doesn't include the
+                        <code class="text-xs">CUSTOM_BRAND</code> feature. The Color Theme, Color Scheme, and Layout
+                        sections are hidden because saving them would be rejected by the backend.
+                        <br>Brand Identity (logo, color, tax ID) below works on every plan — those are baseline
+                        for VAT-compliant receipts.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme Color (CUSTOM_BRAND gated) -->
+        <div *ngIf="hasCustomBrand" class="bg-card rounded-2xl shadow p-6 mb-6">
             <div class="text-lg font-semibold mb-4">Color Theme</div>
             <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 <ng-container *ngFor="let theme of themes">
@@ -81,8 +102,8 @@
             </div>
         </div>
 
-        <!-- Scheme -->
-        <div class="bg-card rounded-2xl shadow p-6 mb-6">
+        <!-- Scheme (CUSTOM_BRAND gated) -->
+        <div *ngIf="hasCustomBrand" class="bg-card rounded-2xl shadow p-6 mb-6">
             <div class="text-lg font-semibold mb-4">Color Scheme</div>
             <div class="grid grid-cols-3 gap-3">
                 <div
@@ -120,28 +141,60 @@
                 These settings cover every outlet of this tenant. Outlets that upload their own logo or set their own color/tax-id will use those instead.
             </p>
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <!-- Logo upload -->
+                <!-- Logo upload — two-step pattern (matches branding-profile-form):
+                     pick file → see live preview with green border → click Upload to commit.
+                     Nothing hits the server until Upload is confirmed. -->
                 <div>
                     <div class="text-sm font-medium mb-2">Logo</div>
                     <div class="flex items-start gap-4">
-                        <div class="w-32 h-32 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900 flex items-center justify-center overflow-hidden">
-                            <ng-container *ngIf="logoPreview; else noLogo">
-                                <img [src]="logoPreview" alt="Logo" class="max-w-full max-h-full object-contain">
+                        <div class="w-32 h-32 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden"
+                             [class.border-emerald-400]="pendingPreview"
+                             [class.border-gray-300]="!pendingPreview"
+                             [class.dark:border-gray-600]="!pendingPreview"
+                             [class.bg-emerald-50]="pendingPreview"
+                             [class.dark:bg-emerald-900]="pendingPreview"
+                             [class.bg-gray-50]="!pendingPreview"
+                             [class.dark:bg-gray-900]="!pendingPreview">
+                            <ng-container *ngIf="pendingPreview; else savedOrEmpty">
+                                <img [src]="pendingPreview" alt="Logo preview" class="max-w-full max-h-full object-contain">
                             </ng-container>
-                            <ng-template #noLogo>
-                                <mat-icon class="text-gray-300 icon-size-12" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                            <ng-template #savedOrEmpty>
+                                <ng-container *ngIf="logoPreview; else noLogo">
+                                    <img [src]="logoPreview" alt="Logo" class="max-w-full max-h-full object-contain" (error)="onLogoLoadError()">
+                                </ng-container>
+                                <ng-template #noLogo>
+                                    <mat-icon class="text-gray-300 icon-size-12" [svgIcon]="'heroicons_outline:photo'"></mat-icon>
+                                </ng-template>
                             </ng-template>
                         </div>
                         <div class="flex flex-col gap-2 flex-1">
                             <input #fileInput type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden (change)="onLogoPicked($event)">
-                            <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="logoUploading">
-                                <mat-icon [svgIcon]="'heroicons_outline:arrow-up-tray'"></mat-icon>
-                                <span class="ml-1">{{ logoUploading ? 'Uploading…' : (hasLogo ? 'Replace Logo' : 'Upload Logo') }}</span>
-                            </button>
-                            <button *ngIf="hasLogo" type="button" mat-stroked-button color="warn" (click)="removeLogo()" [disabled]="logoUploading">
-                                <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
-                                <span class="ml-1">Remove Logo</span>
-                            </button>
+                            <ng-container *ngIf="pendingFile; else pickMode">
+                                <!-- Preview-before-upload mode -->
+                                <p class="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Preview — not yet uploaded</p>
+                                <p class="text-xs text-secondary truncate" [title]="pendingFile.name">{{ pendingFile.name }} · {{ formatFileSize(pendingFile.size) }}</p>
+                                <div class="flex gap-2 mt-1">
+                                    <button type="button" mat-flat-button color="primary" (click)="confirmUpload()" [disabled]="logoUploading">
+                                        <mat-icon *ngIf="!logoUploading" [svgIcon]="'heroicons_outline:cloud-arrow-up'"></mat-icon>
+                                        <mat-progress-spinner *ngIf="logoUploading" [diameter]="18" [mode]="'indeterminate'"></mat-progress-spinner>
+                                        <span class="ml-1">{{ logoUploading ? 'Uploading…' : 'Upload' }}</span>
+                                    </button>
+                                    <button type="button" mat-stroked-button (click)="cancelPendingUpload()" [disabled]="logoUploading">
+                                        <mat-icon [svgIcon]="'heroicons_outline:x-mark'"></mat-icon>
+                                        <span class="ml-1">Cancel</span>
+                                    </button>
+                                </div>
+                            </ng-container>
+                            <ng-template #pickMode>
+                                <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="logoUploading">
+                                    <mat-icon [svgIcon]="'heroicons_outline:arrow-up-tray'"></mat-icon>
+                                    <span class="ml-1">{{ hasLogo ? 'Replace Logo' : 'Upload Logo' }}</span>
+                                </button>
+                                <button *ngIf="hasLogo" type="button" mat-stroked-button color="warn" (click)="removeLogo()" [disabled]="logoUploading">
+                                    <mat-icon [svgIcon]="'heroicons_outline:trash'"></mat-icon>
+                                    <span class="ml-1">Remove Logo</span>
+                                </button>
+                            </ng-template>
                             <p class="text-xs text-secondary mt-1">PNG / JPG / WebP / SVG · max 1 MB · square works best</p>
                             <p *ngIf="logoError" class="text-xs text-rose-600">{{ logoError }}</p>
                         </div>
@@ -172,8 +225,8 @@
             </div>
         </div>
 
-        <!-- Layout -->
-        <div class="bg-card rounded-2xl shadow p-6">
+        <!-- Layout (CUSTOM_BRAND gated) -->
+        <div *ngIf="hasCustomBrand" class="bg-card rounded-2xl shadow p-6">
             <div class="text-lg font-semibold mb-4">Layout</div>
             <div class="grid grid-cols-3 sm:grid-cols-4 gap-4">
                 <div *ngFor="let layout of layouts"
