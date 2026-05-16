@@ -12,20 +12,6 @@ export interface FeatureDto {
     lastModifiedBy?: string;
 }
 
-export interface CreateFeatureRequest {
-    name: string;
-    code: string;
-    description: string;
-    displayOrder?: number;
-    category?: string;
-}
-
-export interface AssignFeatureToTenantRequest {
-    tenantId: string;
-    featureId: string;
-    isEnabled: boolean;
-}
-
 export interface TenantFeatureDto {
     tenantId: string;
     featureId: string;
@@ -61,8 +47,3 @@ export interface TenantFeatureManagementDto {
     tenantName: string;
     features: FeatureWithStatusDto[];
 }
-
-export interface UpdateTenantFeaturesRequest {
-    tenantId: string;
-    enabledFeatureIds: string[];
-} 

@@ -25,7 +25,6 @@ import { TenantsService } from '../../../core/tenants/tenants.service';
 import {
     TenantFeatureManagementDto,
     FeatureWithStatusDto,
-    UpdateTenantFeaturesRequest
 } from '../../../core/features/features.types';
 import { FeaturesService } from '../../../core/features/features.service';
 
@@ -122,73 +121,8 @@ export class TenantFeaturesComponent implements OnInit {
         return this.selectedFeatures.has(featureId);
     }
 
-    saveFeatures(): void {
-        if (!this.tenant) return;
-
-        this.saving = true;
-        const request: UpdateTenantFeaturesRequest = {
-            tenantId: this.tenant.id,
-            enabledFeatureIds: Array.from(this.selectedFeatures)
-        };
-
-        this._featuresService.updateTenantFeatures(this.tenant.id, request).subscribe({
-            next: () => {
-                this._fuseConfirmationService.open({
-                    title: 'Success',
-                    message: 'Tenant features updated successfully!',
-                    actions: {
-                        confirm: {
-                            label: 'OK'
-                        }
-                    }
-                }).afterClosed().subscribe(() => {
-                    this._router.navigate(['/tenant']);
-                });
-            },
-            error: (error) => {
-                console.error('Error updating tenant features:', error);
-                this._fuseConfirmationService.open({
-                    title: 'Error',
-                    message: 'Failed to update tenant features. Please try again.',
-                    actions: {
-                        confirm: {
-                            label: 'OK'
-                        }
-                    }
-                });
-                this.saving = false;
-            }
-        });
-    }
-
     cancel(): void {
         this._router.navigate(['/tenant']);
-    }
-
-    selectAll(): void {
-        if (this.tenantFeatureManagement) {
-            this.tenantFeatureManagement.features
-                .filter(f => f.isActive)
-                .forEach(feature => {
-                    this.selectedFeatures.add(feature.id);
-                });
-        }
-    }
-
-    deselectAll(): void {
-        this.selectedFeatures.clear();
-    }
-
-    selectDefaultFeatures(): void {
-        if (this.tenantFeatureManagement) {
-            // Select features that are commonly needed
-            const defaultCategories = ['Academic', 'Administrative'];
-            this.tenantFeatureManagement.features
-                .filter(f => f.isActive && defaultCategories.includes(f.category || ''))
-                .forEach(feature => {
-                    this.selectedFeatures.add(feature.id);
-                });
-        }
     }
 
     getFilteredFeatures(): FeatureWithStatusDto[] {
