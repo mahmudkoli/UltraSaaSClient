@@ -14,6 +14,7 @@ import { RouterModule } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { PromotionsService, SearchPromotionsRequest } from 'app/core/marketing/marketing.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { PromotionDto } from 'app/core/marketing/marketing.types';
 
 @Component({
@@ -129,6 +130,7 @@ import { PromotionDto } from 'app/core/marketing/marketing.types';
 })
 export class PromotionListComponent implements OnInit {
     private readonly api = inject(PromotionsService);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -183,7 +185,14 @@ export class PromotionListComponent implements OnInit {
     onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
     remove(r: PromotionDto): void {
-        if (!confirm(`Delete promotion "${r.code}"?`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete promotion',
+            message: `Delete promotion "${r.code}"?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 }

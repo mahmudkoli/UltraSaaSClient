@@ -6,7 +6,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTabsModule } from '@angular/material/tabs';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 
 import { TenantsService } from '../../../core/tenants/tenants.service';
 import { TenantDto } from '../../../core/tenants/tenants.types';
@@ -39,7 +39,7 @@ import { ContentCardComponent } from '../../../shared/components/content-card.co
             loadingMessage="Loading dashboard data..."
             maxWidth="full">
 
-            <div class="px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto">
+            <div class="px-4 sm:px-6 lg:px-8">
             <!-- Summary Cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                 <app-content-card padding="standard" elevation="hover">
@@ -257,6 +257,7 @@ import { ContentCardComponent } from '../../../shared/components/content-card.co
 })
 export class TenantDashboardComponent implements OnInit {
     private readonly _tenantsService = inject(TenantsService);
+    private readonly _router = inject(Router);
 
     loading = true;
     summary: any = null;
@@ -354,7 +355,6 @@ export class TenantDashboardComponent implements OnInit {
     }
 
     viewUsage(tenantId: string): void {
-        console.log('View usage for tenant:', tenantId);
-        // Navigate to usage view or open modal
+        this._router.navigate([`/tenant/${tenantId}/usage`]);
     }
 }

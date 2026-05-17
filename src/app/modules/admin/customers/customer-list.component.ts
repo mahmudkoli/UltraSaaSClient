@@ -15,6 +15,7 @@ import { RouterModule } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { CustomersService, SearchCustomersRequest } from 'app/core/sales/sales.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { CustomerDto } from 'app/core/sales/sales.types';
 import { LoyaltyAdjustDialogComponent } from './loyalty-adjust-dialog.component';
 
@@ -140,6 +141,7 @@ import { LoyaltyAdjustDialogComponent } from './loyalty-adjust-dialog.component'
 export class CustomerListComponent implements OnInit {
     private readonly api = inject(CustomersService);
     private readonly dialog = inject(MatDialog);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -186,8 +188,15 @@ export class CustomerListComponent implements OnInit {
     onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
     remove(r: CustomerDto): void {
-        if (!confirm(`Delete customer "${r.name}"?`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete customer',
+            message: `Delete customer "${r.name}"?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 
     adjustLoyalty(r: CustomerDto): void {

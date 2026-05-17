@@ -9,6 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { BrandingProfilesService } from 'app/core/branding/branding.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/branding.types';
 
 @Component({
@@ -137,6 +138,7 @@ import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/brand
 })
 export class BrandingProfileListComponent implements OnInit {
     private readonly api = inject(BrandingProfilesService);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     rows = signal<BrandingProfileDto[]>([]);
     loading = signal(true);
@@ -175,13 +177,25 @@ export class BrandingProfileListComponent implements OnInit {
     }
 
     remove(r: BrandingProfileDto): void {
-        if (!confirm(`Delete profile "${r.name}"? Sales already using it block delete.`)) return;
-        this.api.delete(r.id).subscribe({
-            next: () => this.load(),
-            error: err => {
-                const msg = err?.error?.exception ?? err?.error ?? err?.message ?? 'Delete failed';
-                alert(typeof msg === 'string' ? msg : 'Delete failed');
-            },
+        this._confirm.open({
+            title: 'Delete branding profile',
+            message: `Delete profile "${r.name}"? Sales already using it block delete.`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe({
+                next: () => this.load(),
+                error: err => {
+                    const msg = err?.error?.exception ?? err?.error ?? err?.message ?? 'Delete failed';
+                    this._confirm.open({
+                        title: 'Delete failed',
+                        message: typeof msg === 'string' ? msg : 'Delete failed',
+                        icon: { show: true, name: 'heroicons_outline:x-circle', color: 'warn' },
+                        actions: { confirm: { label: 'OK' }, cancel: { show: false, label: '' } },
+                    });
+                },
+            });
         });
     }
 }

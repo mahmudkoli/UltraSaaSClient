@@ -7,6 +7,7 @@ import { ActivatedRoute, RouterModule } from '@angular/router';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
 import { StockTransfersService } from 'app/core/inventory/inventory.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { StockTransferDto, StockTransferStatus } from 'app/core/inventory/inventory.types';
 
 @Component({
@@ -89,6 +90,7 @@ export class StockTransferDetailComponent implements OnInit {
     private readonly api = inject(StockTransfersService);
     private readonly outletsApi = inject(OutletsService);
     private readonly route = inject(ActivatedRoute);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     transfer = signal<StockTransferDto | null>(null);
     outlets = signal<OutletDto[]>([]);
@@ -133,8 +135,15 @@ export class StockTransferDetailComponent implements OnInit {
     }
     cancel(): void {
         const t = this.transfer(); if (!t) return;
-        if (!confirm(`Cancel transfer ${t.transferNumber}? Drafts only.`)) return;
-        this.busy.set(true);
-        this.api.cancel(t.id).subscribe({ next: () => { this.busy.set(false); this.reload(); }, error: () => this.busy.set(false) });
+        this._confirm.open({
+            title: 'Cancel transfer',
+            message: `Cancel transfer ${t.transferNumber}? Drafts only.`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Cancel transfer', color: 'warn' }, cancel: { label: 'Keep' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.busy.set(true);
+            this.api.cancel(t.id).subscribe({ next: () => { this.busy.set(false); this.reload(); }, error: () => this.busy.set(false) });
+        });
     }
 }

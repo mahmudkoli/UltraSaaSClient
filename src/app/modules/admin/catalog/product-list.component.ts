@@ -16,6 +16,7 @@ import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { BrandsService, CategoriesService, ProductsService, SearchProductsRequest } from 'app/core/catalog/catalog.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { BrandDto, CategoryDto, ProductDto } from 'app/core/catalog/catalog.types';
 import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
@@ -165,6 +166,7 @@ import { PrintLabelsDialogComponent, PrintLabelsDialogData } from 'app/core/barc
 export class ProductListComponent implements OnInit {
     private readonly api = inject(ProductsService);
     private readonly cats = inject(CategoriesService);
+    private readonly _confirm = inject(FuseConfirmationService);
     private readonly brds = inject(BrandsService);
     private readonly dialog = inject(MatDialog);
     private readonly tenantInfo = inject(TenantInfoService);
@@ -268,8 +270,15 @@ export class ProductListComponent implements OnInit {
     onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
     remove(r: ProductDto): void {
-        if (!confirm(`Delete product "${r.name}"?`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete product',
+            message: `Delete product "${r.name}"?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 
     manageOutletPrices(r: ProductDto): void {

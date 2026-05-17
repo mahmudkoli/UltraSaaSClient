@@ -6,6 +6,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, RouterModule } from '@angular/router';
 import { PurchaseOrdersService, SuppliersService } from 'app/core/purchasing/purchasing.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { PurchaseOrderDto, PurchaseOrderStatus, SupplierDto } from 'app/core/purchasing/purchasing.types';
 
 @Component({
@@ -117,6 +118,7 @@ export class PurchaseOrderDetailComponent implements OnInit {
     private readonly api = inject(PurchaseOrdersService);
     private readonly suppliersApi = inject(SuppliersService);
     private readonly route = inject(ActivatedRoute);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     po = signal<PurchaseOrderDto | null>(null);
     suppliers = signal<SupplierDto[]>([]);
@@ -168,11 +170,18 @@ export class PurchaseOrderDetailComponent implements OnInit {
     cancel(): void {
         const p = this.po();
         if (!p) return;
-        if (!confirm(`Cancel PO ${p.poNumber}? This cannot be undone.`)) return;
-        this.busy.set(true);
-        this.api.cancel(p.id).subscribe({
-            next: () => { this.busy.set(false); this.reload(p.id); },
-            error: () => this.busy.set(false),
+        this._confirm.open({
+            title: 'Cancel purchase order',
+            message: `Cancel PO ${p.poNumber}? This cannot be undone.`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Cancel PO', color: 'warn' }, cancel: { label: 'Keep' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.busy.set(true);
+            this.api.cancel(p.id).subscribe({
+                next: () => { this.busy.set(false); this.reload(p.id); },
+                error: () => this.busy.set(false),
+            });
         });
     }
 }

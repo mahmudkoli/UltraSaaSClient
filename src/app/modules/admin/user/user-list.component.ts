@@ -108,8 +108,6 @@ export class UserListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this._changeDetectorRef.markForCheck();
 
-        console.log('Loading users...');
-
         const filter: UserListFilter = {
             pageNumber: this.currentPage,
             pageSize: this.pageSize,
@@ -124,14 +122,10 @@ export class UserListComponent implements OnInit, OnDestroy {
             filter.isActive = this.selectedStatus === 'active';
         }
 
-        console.log('Sending filter:', filter);
-
         this._userService.searchUsers(filter)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
-                    console.log('API Response:', response);
-                    
                     // Handle paginated response
                     if (response && response.data) {
                         // Paginated response
@@ -146,9 +140,6 @@ export class UserListComponent implements OnInit, OnDestroy {
                         this.pagination = null;
                         this.totalCount = 0;
                     }
-                    
-                    console.log('Processed users:', this.users);
-                    console.log('Processed filteredUsers:', this.filteredUsers);
                     
                     this.isLoading = false;
                     this.isSearching = false;

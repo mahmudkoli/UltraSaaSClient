@@ -14,6 +14,7 @@ import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { BrandsService, SearchBrandsRequest } from 'app/core/catalog/catalog.service';
 import { BrandDto } from 'app/core/catalog/catalog.types';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 
 @Component({
     selector: 'app-brand-list',
@@ -85,6 +86,7 @@ import { BrandDto } from 'app/core/catalog/catalog.types';
 })
 export class BrandListComponent implements OnInit {
     private readonly api = inject(BrandsService);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -129,7 +131,14 @@ export class BrandListComponent implements OnInit {
     onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
     remove(r: BrandDto): void {
-        if (!confirm(`Delete brand "${r.name}"?`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete brand',
+            message: `Delete brand "${r.name}"?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 }

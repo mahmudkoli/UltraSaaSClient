@@ -10,6 +10,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { OutletsService } from 'app/core/outlets/outlets.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.types';
 
 @Component({
@@ -138,6 +139,7 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
 })
 export class OutletListComponent implements OnInit {
     private readonly api = inject(OutletsService);
+    private readonly _confirm = inject(FuseConfirmationService);
     rows = signal<OutletDto[]>([]);
     loading = signal(true);
     search = signal('');
@@ -178,7 +180,14 @@ export class OutletListComponent implements OnInit {
         this.api.reactivate(r.id).subscribe(() => this.load());
     }
     remove(r: OutletDto): void {
-        if (!confirm(`Delete outlet "${r.name}"?`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete outlet',
+            message: `Delete outlet "${r.name}"?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 }

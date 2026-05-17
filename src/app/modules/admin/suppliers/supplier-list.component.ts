@@ -14,6 +14,7 @@ import { RouterModule } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { SearchSuppliersRequest, SuppliersService } from 'app/core/purchasing/purchasing.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { SupplierDto } from 'app/core/purchasing/purchasing.types';
 
 @Component({
@@ -128,6 +129,7 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
 })
 export class SupplierListComponent implements OnInit {
     private readonly api = inject(SuppliersService);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -174,7 +176,14 @@ export class SupplierListComponent implements OnInit {
     onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
     remove(r: SupplierDto): void {
-        if (!confirm(`Delete supplier "${r.name}"?`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete supplier',
+            message: `Delete supplier "${r.name}"?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 }

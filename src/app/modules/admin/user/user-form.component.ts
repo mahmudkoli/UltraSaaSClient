@@ -188,8 +188,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
 
     createUser(): void {
         const formValue = this.userForm.value;
-        console.log('Form values:', formValue);
-        
+
         // Convert date to ISO string if provided
         let dateOfBirth = null;
         if (formValue.dateOfBirth) {
@@ -209,14 +208,10 @@ export class UserFormComponent implements OnInit, OnDestroy {
             dateOfBirth: dateOfBirth
         };
 
-        console.log('Create user request:', request);
-        console.log('Request JSON:', JSON.stringify(request, null, 2));
-
         this._userService.createUser(request)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
-                    console.log('User created successfully with response:', response);
                     const chosenRole: string | null = formValue.role || null;
                     if (chosenRole && chosenRole !== 'Basic') {
                         this.applyRoleAfterCreate(formValue.email, chosenRole);
@@ -293,13 +288,10 @@ export class UserFormComponent implements OnInit, OnDestroy {
             dateOfBirth: dateOfBirth
         };
 
-        console.log('Update user request:', request);
-
         this._userService.updateUser(request)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
-                    console.log('User updated successfully with response:', response);
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
                     this._notificationService.success('User updated successfully');

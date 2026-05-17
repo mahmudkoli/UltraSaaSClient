@@ -199,7 +199,6 @@ export class TenantListComponent implements OnInit {
     }
 
     editTenant(tenant: TenantDto): void {
-        console.log('Editing tenant:', tenant.id);
         this._router.navigate([`/tenant/${tenant.id}/edit`]);
     }
 

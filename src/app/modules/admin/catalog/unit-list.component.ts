@@ -9,6 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { UnitsService } from 'app/core/catalog/catalog.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { UnitDto } from 'app/core/catalog/catalog.types';
 
 @Component({
@@ -76,6 +77,7 @@ import { UnitDto } from 'app/core/catalog/catalog.types';
 })
 export class UnitListComponent implements OnInit {
     private readonly api = inject(UnitsService);
+    private readonly _confirm = inject(FuseConfirmationService);
     rows = signal<UnitDto[]>([]);
     loading = signal(true);
     search = signal('');
@@ -91,7 +93,14 @@ export class UnitListComponent implements OnInit {
         this.api.getAll().subscribe({ next: d => { this.rows.set(d); this.loading.set(false); }, error: () => this.loading.set(false) });
     }
     remove(r: UnitDto): void {
-        if (!confirm(`Delete unit "${r.name}"?`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete unit',
+            message: `Delete unit "${r.name}"?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 }

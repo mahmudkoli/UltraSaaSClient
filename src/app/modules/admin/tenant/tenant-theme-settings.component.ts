@@ -133,7 +133,6 @@ export class TenantThemeSettingsComponent implements OnInit, OnDestroy {
 
         // Load saved theme for the target tenant
         this.tenantThemeService.fetchTheme(this.tenantId).subscribe(result => {
-            console.log('[ThemeSettings] fetchTheme result:', result);
             if (result) {
                 const config = typeof result === 'string' ? JSON.parse(result as string) : result;
                 this.selectedScheme = config.scheme || 'light';

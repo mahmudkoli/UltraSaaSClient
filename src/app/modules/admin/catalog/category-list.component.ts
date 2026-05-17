@@ -9,6 +9,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
 import { CategoriesService } from 'app/core/catalog/catalog.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { CategoryDto } from 'app/core/catalog/catalog.types';
 
 @Component({
@@ -74,6 +75,7 @@ import { CategoryDto } from 'app/core/catalog/catalog.types';
 })
 export class CategoryListComponent implements OnInit {
     private readonly api = inject(CategoriesService);
+    private readonly _confirm = inject(FuseConfirmationService);
     rows = signal<CategoryDto[]>([]);
     loading = signal(true);
     search = signal('');
@@ -95,7 +97,14 @@ export class CategoryListComponent implements OnInit {
         this.api.getAll().subscribe({ next: d => { this.rows.set(d); this.loading.set(false); }, error: () => this.loading.set(false) });
     }
     remove(r: CategoryDto): void {
-        if (!confirm(`Delete category "${r.name}"?`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete category',
+            message: `Delete category "${r.name}"?`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 }

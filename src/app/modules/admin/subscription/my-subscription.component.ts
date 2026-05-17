@@ -25,7 +25,7 @@ import { MySubscriptionDto, TenantPaymentDto } from 'app/core/billing/billing.ty
         MatIconModule, MatInputModule, MatNativeDateModule, MatTableModule, MatTooltipModule,
     ],
     template: `
-<div class="flex flex-col flex-auto min-w-0 p-4 sm:p-6 max-w-5xl">
+<div class="flex flex-col flex-auto min-w-0 p-4 sm:p-6">
     <div class="flex items-center gap-3 mb-6">
         <div class="w-10 h-10 rounded-xl bg-gradient-to-r from-indigo-500 to-purple-600 flex items-center justify-center">
             <mat-icon class="text-white">card_membership</mat-icon>

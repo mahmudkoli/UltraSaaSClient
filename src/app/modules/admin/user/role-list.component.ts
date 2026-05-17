@@ -6,6 +6,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
 import { RolesService } from 'app/core/roles/roles.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { RoleDto } from 'app/core/roles/roles.types';
 
 const BUILT_IN_ROLES = ['Admin', 'Manager', 'InventoryClerk', 'Cashier', 'Basic'];
@@ -72,6 +73,7 @@ const BUILT_IN_ROLES = ['Admin', 'Manager', 'InventoryClerk', 'Cashier', 'Basic'
 export class RoleListComponent implements OnInit {
     private readonly api = inject(RolesService);
     private readonly router = inject(Router);
+    private readonly _confirm = inject(FuseConfirmationService);
     rows = signal<RoleDto[]>([]);
     loading = signal(true);
     cols = ['name', 'description', 'actions'];
@@ -88,7 +90,14 @@ export class RoleListComponent implements OnInit {
     }
     remove(r: RoleDto): void {
         if (this.isBuiltIn(r.name)) return;
-        if (!confirm(`Delete role "${r.name}"? Users assigned this role lose its permissions.`)) return;
-        this.api.delete(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Delete role',
+            message: `Delete role "${r.name}"? Users assigned this role lose its permissions.`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.delete(r.id).subscribe(() => this.load());
+        });
     }
 }
