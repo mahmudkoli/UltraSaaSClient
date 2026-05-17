@@ -14,6 +14,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router } from '@angular/router';
 import { TenantInfoService } from 'app/core/auth/tenant-info.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ProductsService, UnitsService } from 'app/core/catalog/catalog.service';
 import { ProductDto, UnitDto } from 'app/core/catalog/catalog.types';
 import { StocksService, StockSerialsService } from 'app/core/inventory/inventory.service';
@@ -438,6 +439,7 @@ export class PosComponent implements OnInit, AfterViewInit {
     showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
     private readonly parkedApi = inject(ParkedCartsService);
     private readonly brandingApi = inject(BrandingProfilesService);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     // Number of parked carts at the current outlet (badge on the Recall button).
     parkedCount = signal(0);
@@ -704,18 +706,34 @@ export class PosComponent implements OnInit, AfterViewInit {
         // the new outlet's stock chips / shift / parked-cart state align.
         if (this.cart().length > 0 && this.prevOutletId && this.outletId !== this.prevOutletId) {
             const n = this.cart().length;
-            const ok = confirm(`Switching outlets will discard your cart of ${n} item${n === 1 ? '' : 's'}. Continue?`);
-            if (!ok) {
-                this.outletId = this.prevOutletId;
-                return;
-            }
-            this.cart.set([]);
-            this.promo.set(null);
-            this.promoCode = '';
-            this.payAmount = null;
-            this.customerId = null;
-            this.redeemPoints = 0;
+            const target = this.outletId;
+            const previous = this.prevOutletId;
+            // Revert the picker until the user confirms — async dialog means
+            // we can't block, so optimistic switch would briefly show the new
+            // outlet's data even if they cancel.
+            this.outletId = previous;
+            this._confirm.open({
+                title: 'Discard cart?',
+                message: `Switching outlets will discard your cart of ${n} item${n === 1 ? '' : 's'}.`,
+                icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+                actions: { confirm: { label: 'Discard & switch', color: 'warn' }, cancel: { label: 'Stay here' } },
+            }).afterClosed().subscribe(result => {
+                if (result !== 'confirmed') return;
+                this.outletId = target;
+                this.cart.set([]);
+                this.promo.set(null);
+                this.promoCode = '';
+                this.payAmount = null;
+                this.customerId = null;
+                this.redeemPoints = 0;
+                this.applyOutletSwitch();
+            });
+            return;
         }
+        this.applyOutletSwitch();
+    }
+
+    private applyOutletSwitch(): void {
         this.prevOutletId = this.outletId;
         this.currentOutlet.set(this.outletId);
         this.brandingProfileId = this.outletDefaultBranding();

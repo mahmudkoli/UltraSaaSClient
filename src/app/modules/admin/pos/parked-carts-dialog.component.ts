@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ParkedCartsService, ParkedCartDto, RecalledCartDto } from 'app/core/sales/parked-cart.service';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 
 export interface ParkedCartsDialogData { outletId: string; outletName?: string; }
 
@@ -81,6 +82,7 @@ export interface ParkedCartsDialogData { outletId: string; outletName?: string; 
 export class ParkedCartsDialogComponent implements OnInit {
     private readonly api = inject(ParkedCartsService);
     private readonly dialogRef = inject(MatDialogRef<ParkedCartsDialogComponent, RecalledCartDto>);
+    private readonly _confirm = inject(FuseConfirmationService);
     readonly data = inject<ParkedCartsDialogData>(MAT_DIALOG_DATA);
 
     rows = signal<ParkedCartDto[]>([]);
@@ -104,8 +106,15 @@ export class ParkedCartsDialogComponent implements OnInit {
     }
 
     discard(r: ParkedCartDto): void {
-        if (!confirm(`Discard parked cart for ${r.customerName || r.label || 'walk-in'}? This can't be undone.`)) return;
-        this.api.discard(r.id).subscribe(() => this.load());
+        this._confirm.open({
+            title: 'Discard parked cart',
+            message: `Discard parked cart for ${r.customerName || r.label || 'walk-in'}? This can't be undone.`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Discard', color: 'warn' }, cancel: { label: 'Keep' } },
+        }).afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.discard(r.id).subscribe(() => this.load());
+        });
     }
 
     relative(iso: string): string {
