@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, ViewChild, inject, signal } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -42,8 +42,12 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Search invoices</mat-label>
-                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Invoice / customer">
-                    <mat-icon matSuffix class="text-gray-400">search</mat-icon>
+                    <input #searchInput matInput
+                           [(ngModel)]="search"
+                           (ngModelChange)="searchChanged.next($event)"
+                           (keyup.enter)="onSearchEnter()"
+                           placeholder="Invoice / customer · scan barcode">
+                    <mat-icon matSuffix class="text-gray-400" matTooltip="Tip: scan a receipt's barcode here — exact invoice match jumps straight to the sale detail.">qr_code_scanner</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
                     <mat-label>Outlet</mat-label>
@@ -128,7 +132,7 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 </div>
     `,
 })
-export class SalesListComponent implements OnInit {
+export class SalesListComponent implements OnInit, AfterViewInit {
     private readonly api = inject(SalesService);
     private readonly outletsApi = inject(OutletsService);
     private readonly currentOutlet = inject(CurrentOutletService);
@@ -136,6 +140,10 @@ export class SalesListComponent implements OnInit {
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
+    @ViewChild('searchInput') searchInput?: ElementRef<HTMLInputElement>;
+    /** Set right before a load() so we can auto-navigate to a single-match
+     *  scan result. Reset after navigation or once the user types again. */
+    private pendingScanQuery: string | null = null;
 
     outlets = signal<OutletDto[]>([]);
     rows = signal<SaleDto[]>([]);
@@ -160,13 +168,39 @@ export class SalesListComponent implements OnInit {
     }
 
     ngOnInit(): void {
-        this.searchChanged.pipe(debounceTime(300)).subscribe(() => this.resetAndLoad());
+        this.searchChanged.pipe(debounceTime(300)).subscribe(() => {
+            // Typing resets the scan-jump intent — only Enter / paste a barcode triggers single-match navigation.
+            this.pendingScanQuery = null;
+            this.resetAndLoad();
+        });
         this.outletsApi.getAll().subscribe(o => {
             this.outlets.set(o);
             const remembered = this.currentOutlet.outletId();
             if (remembered && o.some(x => x.id === remembered)) this.outletFilter = remembered;
             this.load();
         });
+    }
+
+    /**
+     * Auto-focus the search field on page load so a handheld barcode scanner
+     * can fire straight into it without the cashier having to click first.
+     * Mirrors the existing POS toolbar pattern.
+     */
+    ngAfterViewInit(): void {
+        setTimeout(() => this.searchInput?.nativeElement.focus(), 0);
+    }
+
+    /**
+     * Barcode scanners emit a fast keystroke burst terminated by Enter.
+     * On Enter we (1) skip the 300ms debounce and search immediately, and
+     * (2) flag the load so a single-row exact-invoice match auto-navigates
+     * to that sale's detail — closing the receipt-barcode → sale-detail loop.
+     */
+    onSearchEnter(): void {
+        const q = this.search.trim();
+        if (!q) return;
+        this.pendingScanQuery = q;
+        this.resetAndLoad();
     }
 
     private buildRequest(): SearchSalesRequest {
@@ -182,8 +216,23 @@ export class SalesListComponent implements OnInit {
 
     load(): void {
         this.loading.set(true);
+        const scanQuery = this.pendingScanQuery;
+        this.pendingScanQuery = null; // one-shot — clear before request resolves
         this.api.search(this.buildRequest()).subscribe({
-            next: r => { this.rows.set(r.data); this.totalCount.set(r.totalCount); this.loading.set(false); },
+            next: r => {
+                this.rows.set(r.data);
+                this.totalCount.set(r.totalCount);
+                this.loading.set(false);
+                // Scan close-the-loop: if Enter was pressed and exactly one
+                // result with an exact invoice match, jump straight to it.
+                // Case-insensitive — invoice numbers are uppercase anyway.
+                if (scanQuery && r.data.length === 1) {
+                    const only = r.data[0];
+                    if (only.invoiceNumber?.toUpperCase() === scanQuery.toUpperCase()) {
+                        this.router.navigate(['/sales', only.id]);
+                    }
+                }
+            },
             error: () => this.loading.set(false),
         });
     }
