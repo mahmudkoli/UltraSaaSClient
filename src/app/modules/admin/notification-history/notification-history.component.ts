@@ -144,9 +144,22 @@ type ReadFilter = 'all' | 'unread';
                                     </span>
                                 }
                                 @if (n.linkUrl) {
-                                    <a [routerLink]="n.linkUrl" class="text-primary hover:underline ml-auto">
-                                        Open <mat-icon class="icon-size-3 align-middle" [svgIcon]="'heroicons_outline:arrow-top-right-on-square'"></mat-icon>
-                                    </a>
+                                    @if (isExternalUrl(n.linkUrl)) {
+                                        <!-- Full URLs (https://…) — use a plain anchor or
+                                             routerLink would mangle them into
+                                             /current-host/https://… (the "host shown twice" bug). -->
+                                        <a [href]="n.linkUrl" target="_blank" rel="noopener"
+                                           (click)="markRead(n)"
+                                           class="text-primary hover:underline ml-auto">
+                                            Open <mat-icon class="icon-size-3 align-middle" [svgIcon]="'heroicons_outline:arrow-top-right-on-square'"></mat-icon>
+                                        </a>
+                                    } @else {
+                                        <a [routerLink]="n.linkUrl"
+                                           (click)="markRead(n)"
+                                           class="text-primary hover:underline ml-auto">
+                                            Open <mat-icon class="icon-size-3 align-middle" [svgIcon]="'heroicons_outline:arrow-top-right-on-square'"></mat-icon>
+                                        </a>
+                                    }
                                 }
                             </div>
                         </div>
@@ -179,14 +192,23 @@ export class NotificationHistoryComponent implements OnInit {
     readFilter: ReadFilter = 'all';
 
     readonly unreadCount = computed(() => this._all().filter(n => !n.readOn).length);
-    readonly filtered = computed<TenantNotificationDto[]>(() => {
+
+    /**
+     * Plain method (not `computed()`) because `readFilter` and `severityFilter`
+     * are ngModel-bound plain properties — mutating them doesn't invalidate any
+     * signal, so a `computed()` would memoize the initial result and the chips
+     * would have no visible effect. A plain method re-runs every change-
+     * detection tick (which the chip click triggers), so the filter applies
+     * correctly.
+     */
+    filtered(): TenantNotificationDto[] {
         const list = this._all();
         return list.filter(n => {
             if (this.readFilter === 'unread' && n.readOn) return false;
             if (this.severityFilter !== 'All' && n.severity !== this.severityFilter) return false;
             return true;
         });
-    });
+    }
 
     ngOnInit(): void {
         this.reload();
@@ -227,6 +249,17 @@ export class NotificationHistoryComponent implements OnInit {
                 this.snack.open('Could not mark as read', 'OK', { duration: 3000 });
             },
         });
+    }
+
+    /**
+     * True for full URLs (`http://`, `https://`, `//cdn…`). Internal-path links
+     * (`/sales/abc`) return false. Used to decide between `[routerLink]` and
+     * a plain `[href]` anchor — RouterLink mangles absolute URLs into
+     * "/current-host/https://example.com/foo" (the "host shown twice" bug).
+     */
+    isExternalUrl(url: string | null | undefined): boolean {
+        if (!url) return false;
+        return /^(https?:)?\/\//i.test(url) || /^mailto:/i.test(url);
     }
 
     /**

@@ -136,14 +136,31 @@ export class NotificationsComponent implements OnInit, OnDestroy
     }
 
     /**
-     * Toggle read status of the given notification
+     * Toggle read status of the given notification.
+     *
+     * IMPORTANT: do NOT pre-mutate `notification.read` here. The service's
+     * `update()` keeps the same object reference in its internal list — if we
+     * flip the flag locally first, `update()` sees `list[idx].read === true`
+     * and short-circuits, skipping both the API call and the
+     * `_notifications.next(...)` emit that the component subscription needs
+     * in order to recalculate `unreadCount`. Symptom: badge doesn't decrease.
+     * Let `update()` own the flip atomically.
      */
     toggleRead(notification: Notification): void
     {
-        // Toggle the read status
-        notification.read = !notification.read;
+        this._notificationsService.update(notification.id, notification).subscribe();
+    }
 
-        // Update the notification
+    /**
+     * One-way mark-as-read used when the operator clicks the notification body.
+     * Prevents the "click twice to read" UX where the first click navigates
+     * and a second click on the small dot had to mark it read separately.
+     * No-op if already read so we don't burn an API call on every re-open.
+     * Same no-pre-mutate rule as toggleRead — let update() flip the flag.
+     */
+    markAsReadIfUnread(notification: Notification): void
+    {
+        if (notification.read) return;
         this._notificationsService.update(notification.id, notification).subscribe();
     }
 
