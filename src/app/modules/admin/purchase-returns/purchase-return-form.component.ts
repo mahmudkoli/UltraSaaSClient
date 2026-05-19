@@ -3,6 +3,7 @@ import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -16,14 +17,26 @@ import {
     CreatePurchaseReturnRequest, GoodsReceiptDto, GoodsReceiptItemDto,
     PurchaseReturnDto, PurchaseReturnReason, SupplierCreditMethod,
 } from 'app/core/purchasing/purchasing.types';
+import { SerialPickerDialogComponent } from './serial-picker-dialog.component';
 
 interface FormLine {
     grItem: GoodsReceiptItemDto;
     selected: boolean;
     quantity: number;
     serialNumber: string;
-    maxQty: number;          // received - already-returned
-    serialOptions: string[]; // available serials (received - already-returned)
+    maxQty: number;          // received - already-returned (or 1 on inline serial sub-rows)
+    // Serial-tracked rendering modes (threshold = SERIAL_INLINE_THRESHOLD):
+    //   small group (N <= threshold) → expand to N inline sub-rows, qty=1 each
+    //   large group (N > threshold)  → single collapsed row + "Pick serials" dialog
+    // Non-serial items render as a single row with the qty stepper.
+    isSerialRow: boolean;
+    isFirstOfGroup: boolean;
+    groupRemaining: number;  // group's total remaining returnable — shown on first-of-group only
+
+    // Collapsed-mode only (isCollapsed = true)
+    isCollapsed: boolean;
+    availableSerials: string[];   // full pool for the picker dialog
+    selectedSerials: string[];    // operator's picks; drives `selected` + `quantity`
 }
 
 interface FormCredit {
@@ -37,7 +50,7 @@ interface FormCredit {
     standalone: true,
     imports: [
         CommonModule, FormsModule, RouterModule,
-        MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule,
+        MatButtonModule, MatCheckboxModule, MatDialogModule, MatFormFieldModule, MatIconModule,
         MatInputModule, MatSelectModule, MatSnackBarModule, MatTableModule, MatTooltipModule,
     ],
     template: `
@@ -85,53 +98,81 @@ interface FormCredit {
                     <table mat-table [dataSource]="lines()" class="w-full">
                         <ng-container matColumnDef="select"><th mat-header-cell *matHeaderCellDef class="pl-6 w-10"></th>
                             <td mat-cell *matCellDef="let l" class="pl-6">
-                                <mat-checkbox [(ngModel)]="l.selected"
-                                              (ngModelChange)="onLineToggled(l, $event)"
-                                              [disabled]="l.maxQty <= 0"></mat-checkbox>
+                                @if (l.isCollapsed) {
+                                    @if (l.selectedSerials.length > 0) {
+                                        <span class="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 tabular-nums">
+                                            {{ l.selectedSerials.length }}
+                                        </span>
+                                    }
+                                } @else {
+                                    <mat-checkbox [(ngModel)]="l.selected"
+                                                  (ngModelChange)="onLineToggled(l, $event)"
+                                                  [disabled]="l.maxQty <= 0"></mat-checkbox>
+                                }
                             </td></ng-container>
                         <ng-container matColumnDef="product"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
                             <td mat-cell *matCellDef="let l">
-                                <div class="flex flex-col">
-                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ l.grItem.productName }}</span>
-                                    <span class="text-xs font-mono text-gray-500">{{ l.grItem.sku }}</span>
-                                </div>
+                                @if (l.isFirstOfGroup) {
+                                    <div class="flex flex-col">
+                                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ l.grItem.productName }}</span>
+                                        <span class="text-xs font-mono text-gray-500">{{ l.grItem.sku }}</span>
+                                        @if (l.isSerialRow && !l.isCollapsed && l.groupRemaining > 1) {
+                                            <button type="button" (click)="toggleGroupAll(l)"
+                                                    class="text-xs text-blue-600 hover:underline mt-1 self-start">
+                                                {{ isGroupAllSelected(l) ? 'Untick all' : ('Tick all ' + l.groupRemaining) }}
+                                            </button>
+                                        }
+                                    </div>
+                                } @else {
+                                    <span class="text-xs text-gray-400 italic pl-4">↳ same product</span>
+                                }
                             </td></ng-container>
                         <ng-container matColumnDef="received"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Received</span></th>
-                            <td mat-cell *matCellDef="let l" class="!text-right">{{ l.grItem.quantityReceived | number:'1.0-3' }}</td></ng-container>
+                            <td mat-cell *matCellDef="let l" class="!text-right">
+                                @if (l.isFirstOfGroup) { {{ l.grItem.quantityReceived | number:'1.0-3' }} }
+                            </td></ng-container>
                         <ng-container matColumnDef="returnable"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Returnable</span></th>
-                            <td mat-cell *matCellDef="let l" class="!text-right" [class.text-rose-700]="l.maxQty <= 0">{{ l.maxQty | number:'1.0-3' }}</td></ng-container>
+                            <td mat-cell *matCellDef="let l" class="!text-right">
+                                @if (l.isFirstOfGroup) {
+                                    <span [class.text-rose-700]="l.groupRemaining <= 0">{{ l.groupRemaining | number:'1.0-3' }}</span>
+                                }
+                            </td></ng-container>
                         <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</span></th>
                             <td mat-cell *matCellDef="let l" class="!text-right py-1">
-                                <div class="flex items-center justify-end gap-1">
-                                    <button type="button" (click)="nudgeQty(l, -1)" [disabled]="!l.selected || l.quantity <= 0"
-                                            class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                            aria-label="Decrease quantity">
-                                        <mat-icon class="icon-size-4">remove</mat-icon>
-                                    </button>
-                                    <input type="number" [min]="0" [max]="l.maxQty" step="0.01"
-                                           [(ngModel)]="l.quantity" [disabled]="!l.selected"
-                                           class="w-16 border rounded px-1 py-0.5 text-right tabular-nums"
-                                           [class.!border-rose-400]="l.selected && l.quantity > l.maxQty"
-                                           [class.!text-rose-600]="l.selected && l.quantity > l.maxQty"
-                                           [matTooltip]="l.selected && l.quantity > l.maxQty ? ('Max returnable: ' + l.maxQty) : ''" />
-                                    <button type="button" (click)="nudgeQty(l, 1)" [disabled]="!l.selected || l.quantity >= l.maxQty"
-                                            class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                            aria-label="Increase quantity">
-                                        <mat-icon class="icon-size-4">add</mat-icon>
-                                    </button>
-                                </div>
+                                @if (l.isCollapsed) {
+                                    <span class="text-sm tabular-nums font-medium" [class.text-gray-400]="l.selectedSerials.length === 0">{{ l.selectedSerials.length }}</span>
+                                } @else if (l.isSerialRow) {
+                                    <span class="text-sm tabular-nums" [class.text-gray-400]="!l.selected">{{ l.selected ? 1 : 0 }}</span>
+                                } @else {
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button type="button" (click)="nudgeQty(l, -1)" [disabled]="!l.selected || l.quantity <= 0"
+                                                class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                aria-label="Decrease quantity">
+                                            <mat-icon class="icon-size-4">remove</mat-icon>
+                                        </button>
+                                        <input type="number" [min]="0" [max]="l.maxQty" step="0.01"
+                                               [(ngModel)]="l.quantity" [disabled]="!l.selected"
+                                               class="w-16 border rounded px-1 py-0.5 text-right tabular-nums"
+                                               [class.!border-rose-400]="l.selected && l.quantity > l.maxQty"
+                                               [class.!text-rose-600]="l.selected && l.quantity > l.maxQty"
+                                               [matTooltip]="l.selected && l.quantity > l.maxQty ? ('Max returnable: ' + l.maxQty) : ''" />
+                                        <button type="button" (click)="nudgeQty(l, 1)" [disabled]="!l.selected || l.quantity >= l.maxQty"
+                                                class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                aria-label="Increase quantity">
+                                            <mat-icon class="icon-size-4">add</mat-icon>
+                                        </button>
+                                    </div>
+                                }
                             </td></ng-container>
                         <ng-container matColumnDef="serial"><th mat-header-cell *matHeaderCellDef class="pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Serial</span></th>
                             <td mat-cell *matCellDef="let l" class="pr-6">
-                                @if (l.serialOptions.length > 0) {
-                                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
-                                        <mat-select [(ngModel)]="l.serialNumber" [disabled]="!l.selected">
-                                            <mat-option [value]="''">— pick a serial —</mat-option>
-                                            @for (s of l.serialOptions; track s) {
-                                                <mat-option [value]="s">{{ s }}</mat-option>
-                                            }
-                                        </mat-select>
-                                    </mat-form-field>
+                                @if (l.isCollapsed) {
+                                    <button type="button" mat-stroked-button (click)="openSerialPicker(l)" class="!h-8 text-xs">
+                                        <mat-icon class="icon-size-4 mr-1">checklist</mat-icon>
+                                        Pick serials ({{ l.selectedSerials.length }} of {{ l.availableSerials.length }})
+                                    </button>
+                                } @else if (l.isSerialRow) {
+                                    <span class="text-sm font-mono text-gray-700 dark:text-gray-200">{{ l.serialNumber }}</span>
                                 } @else {
                                     <span class="text-xs text-gray-400">—</span>
                                 }
@@ -209,6 +250,10 @@ export class PurchaseReturnFormComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly snack = inject(MatSnackBar);
+    private readonly dialog = inject(MatDialog);
+
+    /** Inline sub-row vs collapsed-picker threshold — mirrors GR's 1/2-5/6+ ladder. */
+    private readonly SERIAL_INLINE_THRESHOLD = 5;
 
     Math = Math;
 
@@ -252,8 +297,7 @@ export class PurchaseReturnFormComponent implements OnInit {
         if (selected.length === 0) return false;
         for (const l of selected) {
             if (l.quantity > l.maxQty + 0.001) return false;
-            // If the GR captured serials for this product, the operator must pick which one is being returned.
-            if (l.serialOptions.length > 0 && !l.serialNumber) return false;
+            // Serial rows have their serial baked in at buildLines time; no missing-serial check needed.
         }
         if (this.hasCashishCredit() && Math.abs(this.creditTotal() - this.expectedTotal()) > 0.01) return false;
         return true;
@@ -262,12 +306,10 @@ export class PurchaseReturnFormComponent implements OnInit {
     /** Why the Send-back button is disabled — surfaces the missing piece to the operator. */
     disabledReason(): string {
         const selected = this.lines().filter(l => l.selected && l.quantity > 0);
-        if (selected.length === 0) return 'Tick at least one line and set a quantity greater than zero.';
+        if (selected.length === 0) return 'Tick at least one row and set a quantity greater than zero.';
         for (const l of selected) {
             if (l.quantity > l.maxQty + 0.001)
                 return `'${l.grItem.productName}' qty exceeds returnable ${l.maxQty}.`;
-            if (l.serialOptions.length > 0 && !l.serialNumber)
-                return `Pick the serial being returned for '${l.grItem.productName}'.`;
         }
         if (this.hasCashishCredit() && Math.abs(this.creditTotal() - this.expectedTotal()) > 0.01)
             return `Credit total (${this.creditTotal().toFixed(2)}) must match expected (${this.expectedTotal().toFixed(2)}). Use Replacement rows for non-cash resolutions.`;
@@ -299,20 +341,66 @@ export class PurchaseReturnFormComponent implements OnInit {
             }
         }
 
-        const lines: FormLine[] = g.items.map(grItem => {
+        const lines: FormLine[] = [];
+        for (const grItem of g.items) {
             const already = returnedQty.get(grItem.id) ?? 0;
             const max = Math.max(0, grItem.quantityReceived - already);
-            const serialOptions = (grItem.serialNumbers ?? [])
+            const availableSerials = (grItem.serialNumbers ?? [])
                 .filter(s => !returnedSerials.has(s.toUpperCase()));
-            return {
-                grItem,
-                selected: false,
-                quantity: max > 0 ? Math.min(1, max) : 0,
-                serialNumber: '',
-                maxQty: max,
-                serialOptions,
-            };
-        });
+
+            if (availableSerials.length === 0) {
+                // Non-serial: single row with the qty stepper.
+                lines.push({
+                    grItem,
+                    selected: false,
+                    quantity: max > 0 ? Math.min(1, max) : 0,
+                    serialNumber: '',
+                    maxQty: max,
+                    isSerialRow: false,
+                    isFirstOfGroup: true,
+                    groupRemaining: max,
+                    isCollapsed: false,
+                    availableSerials: [],
+                    selectedSerials: [],
+                });
+            } else if (availableSerials.length <= this.SERIAL_INLINE_THRESHOLD) {
+                // Inline mode: one sub-row per available serial, qty implicitly 1.
+                // Operator ticks the serials they want to send back; backend gets one
+                // line per ticked serial with quantity=1 (the only shape it accepts).
+                for (let i = 0; i < availableSerials.length; i++) {
+                    lines.push({
+                        grItem,
+                        selected: false,
+                        quantity: 0,
+                        serialNumber: availableSerials[i],
+                        maxQty: 1,
+                        isSerialRow: true,
+                        isFirstOfGroup: i === 0,
+                        groupRemaining: availableSerials.length,
+                        isCollapsed: false,
+                        availableSerials: [],
+                        selectedSerials: [],
+                    });
+                }
+            } else {
+                // Collapsed mode: single row + "Pick serials" button → modal picker.
+                // Selected serials drive `selected` (any picked → true) and `quantity`
+                // (= picked.length); on submit we fan out one backend line per pick.
+                lines.push({
+                    grItem,
+                    selected: false,
+                    quantity: 0,
+                    serialNumber: '',
+                    maxQty: availableSerials.length,
+                    isSerialRow: true,
+                    isFirstOfGroup: true,
+                    groupRemaining: availableSerials.length,
+                    isCollapsed: true,
+                    availableSerials: [...availableSerials],
+                    selectedSerials: [],
+                });
+            }
+        }
         this.lines.set(lines);
     }
 
@@ -323,14 +411,57 @@ export class PurchaseReturnFormComponent implements OnInit {
         this.lines.set([...this.lines()]);
     }
 
+    /** Opens the bulk picker for collapsed serial groups (>5 available). */
+    openSerialPicker(line: FormLine): void {
+        if (!line.isCollapsed) return;
+        const ref = this.dialog.open(SerialPickerDialogComponent, {
+            data: {
+                productName: line.grItem.productName,
+                sku: line.grItem.sku,
+                availableSerials: line.availableSerials,
+                initialSelected: line.selectedSerials,
+            },
+            width: '720px',
+            maxWidth: '95vw',
+            autoFocus: 'first-tabbable',
+        });
+        ref.afterClosed().subscribe((picked: string[] | null | undefined) => {
+            if (picked === null || picked === undefined) return;
+            line.selectedSerials = picked;
+            line.selected = picked.length > 0;
+            line.quantity = picked.length;
+            this.lines.set([...this.lines()]);
+        });
+    }
+
+    /** Inline-mode mass action: tick/untick every serial sub-row in this group. */
+    toggleGroupAll(firstLine: FormLine): void {
+        const id = firstLine.grItem.id;
+        const group = this.lines().filter(l => l.grItem.id === id && l.isSerialRow && !l.isCollapsed);
+        const allSelected = group.length > 0 && group.every(l => l.selected);
+        for (const l of group) {
+            l.selected = !allSelected;
+            l.quantity = !allSelected ? 1 : 0;
+        }
+        this.lines.set([...this.lines()]);
+    }
+
+    isGroupAllSelected(firstLine: FormLine): boolean {
+        const id = firstLine.grItem.id;
+        const group = this.lines().filter(l => l.grItem.id === id && l.isSerialRow && !l.isCollapsed);
+        return group.length > 0 && group.every(l => l.selected);
+    }
+
     /**
-     * When the operator ticks the checkbox, default the qty to 1 (or maxQty if
-     * less than 1) so the row contributes to the totals immediately — instead
-     * of staying at 0 and silently confusing them. Unticking resets qty to 0
-     * so it stops counting toward expected/credit totals.
+     * Tick = the row contributes to the return; untick = it doesn't.
+     * Serial rows: qty toggles 0 ↔ 1 (the only valid shape).
+     * Non-serial rows: tick defaults qty to 1 (or maxQty if less) so totals
+     * update immediately; untick resets qty to 0.
      */
     onLineToggled(line: FormLine, checked: boolean): void {
-        if (checked) {
+        if (line.isSerialRow) {
+            line.quantity = checked ? 1 : 0;
+        } else if (checked) {
             if (!line.quantity || line.quantity <= 0) {
                 line.quantity = Math.min(1, line.maxQty);
             }
@@ -356,16 +487,28 @@ export class PurchaseReturnFormComponent implements OnInit {
         const g = this.gr();
         if (!g || !this.canSubmit()) return;
 
-        const req: CreatePurchaseReturnRequest = {
-            goodsReceiptId: g.id,
-            reason: this.reason,
-            lines: this.lines()
-                .filter(l => l.selected && l.quantity > 0)
-                .map(l => ({
+        // Collapsed rows expand 1 form row → N backend lines (one per picked serial).
+        // Inline serial rows and non-serial rows map 1:1.
+        const backendLines: { goodsReceiptItemId: string; quantity: number; serialNumber?: string }[] = [];
+        for (const l of this.lines()) {
+            if (!l.selected || l.quantity <= 0) continue;
+            if (l.isCollapsed) {
+                for (const sn of l.selectedSerials) {
+                    backendLines.push({ goodsReceiptItemId: l.grItem.id, quantity: 1, serialNumber: sn });
+                }
+            } else {
+                backendLines.push({
                     goodsReceiptItemId: l.grItem.id,
                     quantity: l.quantity,
                     serialNumber: l.serialNumber || undefined,
-                })),
+                });
+            }
+        }
+
+        const req: CreatePurchaseReturnRequest = {
+            goodsReceiptId: g.id,
+            reason: this.reason,
+            lines: backendLines,
             credits: this.credits().map(c => ({
                 amount: c.amount || 0,
                 method: c.method,
