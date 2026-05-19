@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -68,10 +68,14 @@ export interface ImportDialogConfig {
                         <p class="text-xs text-gray-600 dark:text-gray-400 mt-0.5">
                             Download the template, fill in your data, save as .xlsx, then upload below.
                         </p>
-                        <a [href]="data.templateUrl" target="_blank" rel="noopener" mat-stroked-button color="primary" class="mt-2 !h-9 !text-sm">
+                        <button type="button" mat-stroked-button color="primary" class="mt-2 !h-9 !text-sm"
+                                [disabled]="downloadingTemplate()" (click)="downloadTemplate()">
                             <mat-icon class="icon-size-4 mr-1">file_download</mat-icon>
-                            <span>Download template</span>
-                        </a>
+                            <span>{{ downloadingTemplate() ? 'Downloading…' : 'Download template' }}</span>
+                        </button>
+                        @if (templateError()) {
+                            <p class="text-xs text-rose-600 mt-1">{{ templateError() }}</p>
+                        }
                     </div>
                 </div>
 
@@ -227,6 +231,7 @@ export interface ImportDialogConfig {
 })
 export class ImportDialogComponent {
     private readonly ref = inject(MatDialogRef<ImportDialogComponent>);
+    private readonly http = inject(HttpClient);
     readonly data: ImportDialogConfig = inject(MAT_DIALOG_DATA);
 
     readonly file = signal<File | null>(null);
@@ -235,6 +240,45 @@ export class ImportDialogComponent {
     readonly uploading = signal(false);
     readonly uploadError = signal<string | null>(null);
     readonly summary = signal<ProductImportSummary | InitialStockImportSummary | null>(null);
+    readonly downloadingTemplate = signal(false);
+    readonly templateError = signal<string | null>(null);
+
+    /**
+     * Pulls the template as a blob via HttpClient (so the auth interceptor adds
+     * the JWT + tenant header). A plain `<a href>` would fire a fresh browser
+     * request without those headers and trigger the backend's 401.
+     */
+    downloadTemplate(): void {
+        this.downloadingTemplate.set(true);
+        this.templateError.set(null);
+        this.http.get(this.data.templateUrl, { responseType: 'blob', observe: 'response' }).subscribe({
+            next: (resp) => {
+                this.downloadingTemplate.set(false);
+                const blob = resp.body;
+                if (!blob) {
+                    this.templateError.set('Empty template response.');
+                    return;
+                }
+                // Filename from Content-Disposition; fall back to a default.
+                const cd = resp.headers.get('Content-Disposition') ?? '';
+                const match = /filename\*?=(?:UTF-8'')?"?([^";]+)"?/i.exec(cd);
+                const filename = match?.[1] ?? 'import-template.xlsx';
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+            },
+            error: (err: HttpErrorResponse) => {
+                this.downloadingTemplate.set(false);
+                const msg = err?.error?.exception ?? err?.error?.messages?.[0] ?? err?.message ?? 'Could not download template.';
+                this.templateError.set(typeof msg === 'string' ? msg : 'Could not download template.');
+            },
+        });
+    }
 
     /** Type-narrowing helper — returns the summary as ProductImportSummary if it has the `updated` field. */
     asProductSummary = computed<ProductImportSummary | null>(() => {
