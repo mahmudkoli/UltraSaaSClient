@@ -43,6 +43,8 @@ export interface CreateSaleRequest {
     discountAuthorizedByUserId?: string;
     /** Optional override for the receipt branding profile. When omitted, the server falls back to the outlet's default. */
     brandingProfileId?: string;
+    /** Optional pharmacy prescription this sale is dispensing. Flips Rx Active → Dispensed on success. */
+    prescriptionId?: string;
     notes?: string;
 }
 

@@ -41,6 +41,12 @@ const posNav: FuseNavigationItem[] = [
               meta: { permission: 'Permissions.Stocks.View' } },
             { id: 'inventory-serials', title: 'Stock Serials', type: 'basic', icon: 'heroicons_outline:qr-code', link: '/inventory/serials',
               meta: { permission: 'Permissions.StockSerials.View', businessType: 'Electronics' } },
+            // Batches are stock-tracking data tied to pharmacy/generic products — same
+            // shape as Stock Serials for Electronics. Vertical gate hides them on
+            // tenants that don't have batch-tracked products. Moved here from the
+            // standalone Pharmacy group so all stock surfaces live together.
+            { id: 'inventory-batches', title: 'Batches', type: 'basic', icon: 'heroicons_outline:swatch', link: '/batches',
+              meta: { permission: 'Permissions.Batches.View', businessType: 'Pharmacy' } },
         ],
     },
     {
@@ -60,16 +66,11 @@ const posNav: FuseNavigationItem[] = [
               meta: { permission: 'Permissions.PurchaseReturns.View' } },
         ],
     },
-    {
-        id: 'pharmacy', title: 'Pharmacy', type: 'collapsable', icon: 'heroicons_outline:beaker',
-        meta: { businessType: 'Pharmacy' },
-        children: [
-            { id: 'pharmacy-batches', title: 'Batches', type: 'basic', icon: 'heroicons_outline:swatch', link: '/batches',
-              meta: { permission: 'Permissions.Batches.View' } },
-            { id: 'pharmacy-prescriptions', title: 'Prescriptions', type: 'basic', icon: 'heroicons_outline:document-check', link: '/prescriptions',
-              meta: { permission: 'Permissions.Prescriptions.View' } },
-        ],
-    },
+    // Prescriptions is a top-level entry (not inventory) — it's a clinical
+    // record, not stock data. Batches moved up to Inventory; this entry no
+    // longer needs a parent group.
+    { id: 'prescriptions', title: 'Prescriptions', type: 'basic', icon: 'heroicons_outline:document-check', link: '/prescriptions',
+      meta: { permission: 'Permissions.Prescriptions.View', businessType: 'Pharmacy' } },
     { id: 'reports', title: 'Reports', type: 'basic', icon: 'heroicons_outline:chart-bar', link: '/reports',
       meta: { permission: 'Permissions.Reports.View' } },
 ];

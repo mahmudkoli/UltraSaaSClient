@@ -14,6 +14,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { PrescriptionsService, SearchPrescriptionsRequest } from 'app/core/pharmacy/pharmacy.service';
 import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
 
@@ -93,13 +94,23 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
                         <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-red-600" (click)="cancel(r); $event.stopPropagation()" matTooltip="Cancel prescription" [disabled]="r.status !== 'Active'">
+                                    <button mat-icon-button class="text-blue-600"
+                                            (click)="view(r); $event.stopPropagation()"
+                                            matTooltip="View details">
+                                        <mat-icon class="icon-size-5">visibility</mat-icon>
+                                    </button>
+                                    <button mat-icon-button class="text-red-600"
+                                            (click)="cancel(r); $event.stopPropagation()"
+                                            matTooltip="Cancel prescription"
+                                            [disabled]="r.status !== 'Active'">
                                         <mat-icon class="icon-size-5">cancel</mat-icon>
                                     </button>
                                 </div>
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
-                        <tr mat-row *matRowDef="let row; columns: cols" class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors"></tr>
+                        <tr mat-row *matRowDef="let row; columns: cols"
+                            class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-colors cursor-pointer"
+                            (click)="view(row)"></tr>
                     </table>
 
                     <mat-paginator
@@ -124,6 +135,8 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
 export class PrescriptionsListComponent implements OnInit {
     private readonly api = inject(PrescriptionsService);
     private readonly snack = inject(MatSnackBar);
+    private readonly router = inject(Router);
+    private readonly _confirm = inject(FuseConfirmationService);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -192,15 +205,27 @@ export class PrescriptionsListComponent implements OnInit {
     onPage(e: PageEvent): void { this.pageIndex = e.pageIndex; this.pageSize = e.pageSize; this.load(); }
     onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
+    view(r: PrescriptionDto): void {
+        this.router.navigate(['/prescriptions', r.id]);
+    }
+
     cancel(r: PrescriptionDto): void {
-        const reason = prompt(`Cancel prescription "${r.prescriptionNumber}"?\n\nOptional reason:`);
-        if (reason === null) return;
-        this.api.cancel(r.id, reason || undefined).subscribe({
-            next: () => { this.snack.open('Prescription cancelled', 'OK', { duration: 3000 }); this.load(); },
-            error: err => {
-                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Cancel failed';
-                this.snack.open(msg, 'OK', { duration: 6000 });
-            },
+        if (r.status !== 'Active') return;
+        const ref = this._confirm.open({
+            title: 'Cancel prescription',
+            message: `Cancel prescription <b>${r.prescriptionNumber}</b> for ${r.patientName}? This can't be undone — the patient will need a new prescription.`,
+            icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
+            actions: { confirm: { label: 'Cancel prescription', color: 'warn' }, cancel: { label: 'Keep active' } },
+        });
+        ref.afterClosed().subscribe(result => {
+            if (result !== 'confirmed') return;
+            this.api.cancel(r.id).subscribe({
+                next: () => { this.snack.open('Prescription cancelled', 'OK', { duration: 3000 }); this.load(); },
+                error: err => {
+                    const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Cancel failed';
+                    this.snack.open(msg, 'OK', { duration: 6000 });
+                },
+            });
         });
     }
 }

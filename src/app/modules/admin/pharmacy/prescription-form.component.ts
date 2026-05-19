@@ -43,12 +43,12 @@ interface MedicationRow {
         </div>
 
         <div class="flex-auto p-4 sm:p-6">
-            <div class="grid grid-cols-1 gap-6 max-w-5xl">
+            <div class="grid grid-cols-1 gap-6">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                     <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-3">Prescription</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <mat-form-field appearance="outline" class="w-full sm:col-span-1">
-                            <mat-label>Prescription #</mat-label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
+                            <mat-label>Prescription # <span class="text-rose-600">*</span></mat-label>
                             <input matInput [(ngModel)]="form.prescriptionNumber" required maxlength="64">
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="w-full">
@@ -58,7 +58,7 @@ interface MedicationRow {
                             <mat-datepicker #d1></mat-datepicker>
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Valid until (optional)</mat-label>
+                            <mat-label>Valid until <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                             <input matInput [matDatepicker]="d2" [(ngModel)]="validUntil">
                             <mat-datepicker-toggle matIconSuffix [for]="d2"></mat-datepicker-toggle>
                             <mat-datepicker #d2></mat-datepicker>
@@ -68,21 +68,21 @@ interface MedicationRow {
 
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                     <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-3">Doctor</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Doctor name</mat-label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
+                            <mat-label>Doctor name <span class="text-rose-600">*</span></mat-label>
                             <input matInput [(ngModel)]="form.doctorName" required maxlength="150">
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>License #</mat-label>
+                            <mat-label>License # <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                             <input matInput [(ngModel)]="form.doctorLicense">
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Phone</mat-label>
+                            <mat-label>Phone <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                             <input matInput [(ngModel)]="form.doctorPhone">
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Hospital / Clinic</mat-label>
+                            <mat-label>Hospital / Clinic <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                             <input matInput [(ngModel)]="form.hospital">
                         </mat-form-field>
                     </div>
@@ -90,21 +90,21 @@ interface MedicationRow {
 
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                     <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-3">Patient</h3>
-                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Patient name</mat-label>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
+                            <mat-label>Patient name <span class="text-rose-600">*</span></mat-label>
                             <input matInput [(ngModel)]="form.patientName" required maxlength="150">
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Phone</mat-label>
+                            <mat-label>Phone <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                             <input matInput [(ngModel)]="form.patientPhone">
                         </mat-form-field>
                         <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Age</mat-label>
+                            <mat-label>Age <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                             <input matInput type="number" min="0" max="150" [(ngModel)]="form.patientAge">
                         </mat-form-field>
-                        <mat-form-field appearance="outline" class="w-full sm:col-span-3">
-                            <mat-label>Diagnosis</mat-label>
+                        <mat-form-field appearance="outline" class="w-full sm:col-span-2 lg:col-span-3">
+                            <mat-label>Diagnosis <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                             <textarea matInput rows="2" [(ngModel)]="form.diagnosis"></textarea>
                         </mat-form-field>
                     </div>
@@ -112,47 +112,62 @@ interface MedicationRow {
 
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
                     <div class="flex items-center justify-between mb-3">
-                        <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500">Medications</h3>
-                        <button mat-stroked-button (click)="addMedication()"><mat-icon class="icon-size-5 mr-2">add</mat-icon>Add line</button>
+                        <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500">Medications <span class="text-gray-400 text-xs normal-case">(optional)</span></h3>
+                        <button mat-stroked-button (click)="addMedication()"><mat-icon class="icon-size-5 mr-2">add</mat-icon>Add medication</button>
                     </div>
-                    <div class="space-y-2">
+                    <div class="space-y-3">
                         @for (m of medications(); track i; let i = $index) {
-                            <div class="grid grid-cols-12 gap-2 items-center">
-                                <mat-form-field appearance="outline" class="col-span-4" subscriptSizing="dynamic">
+                            <div class="grid grid-cols-12 gap-3 items-start">
+                                <mat-form-field appearance="outline" class="col-span-12 sm:col-span-5 lg:col-span-4" subscriptSizing="dynamic">
                                     <mat-label>Medication</mat-label>
-                                    <input matInput [(ngModel)]="m.name">
+                                    <input matInput [(ngModel)]="m.name" placeholder="e.g. Paracetamol">
                                 </mat-form-field>
-                                <mat-form-field appearance="outline" class="col-span-3" subscriptSizing="dynamic">
+                                <mat-form-field appearance="outline" class="col-span-6 sm:col-span-3 lg:col-span-3" subscriptSizing="dynamic">
                                     <mat-label>Dosage</mat-label>
                                     <input matInput [(ngModel)]="m.dosage" placeholder="e.g. 500 mg">
                                 </mat-form-field>
-                                <mat-form-field appearance="outline" class="col-span-2" subscriptSizing="dynamic">
+                                <mat-form-field appearance="outline" class="col-span-6 sm:col-span-2 lg:col-span-2" subscriptSizing="dynamic">
                                     <mat-label>Frequency</mat-label>
-                                    <input matInput [(ngModel)]="m.frequency" placeholder="e.g. 1+0+1">
+                                    <input matInput [(ngModel)]="m.frequency"
+                                           placeholder="1+0+1"
+                                           matTooltip="Morning + Noon + Night dosing (e.g. 1+0+1 = 1 tab morning, 0 noon, 1 tab night)">
                                 </mat-form-field>
-                                <mat-form-field appearance="outline" class="col-span-2" subscriptSizing="dynamic">
+                                <mat-form-field appearance="outline" class="col-span-10 sm:col-span-1 lg:col-span-2" subscriptSizing="dynamic">
                                     <mat-label>Duration</mat-label>
-                                    <input matInput [(ngModel)]="m.duration" placeholder="e.g. 7 days">
+                                    <input matInput [(ngModel)]="m.duration" placeholder="7 days">
                                 </mat-form-field>
-                                <button mat-icon-button class="col-span-1 text-red-600" (click)="removeMedication(i)" [disabled]="medications().length === 1">
+                                <button mat-icon-button class="col-span-2 sm:col-span-1 text-red-600 justify-self-end mt-1"
+                                        (click)="removeMedication(i)"
+                                        [disabled]="medications().length === 1"
+                                        matTooltip="Remove this medication">
                                     <mat-icon class="icon-size-5">delete</mat-icon>
                                 </button>
                             </div>
                         }
                     </div>
-                    <mat-form-field appearance="outline" class="w-full mt-4" subscriptSizing="dynamic">
-                        <mat-label>Notes</mat-label>
-                        <textarea matInput rows="2" [(ngModel)]="form.notes"></textarea>
+                </div>
+
+                <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6">
+                    <h3 class="text-sm font-semibold uppercase tracking-wider text-gray-500 mb-3">Notes <span class="text-gray-400 text-xs normal-case">(optional)</span></h3>
+                    <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
+                        <mat-label>Additional notes</mat-label>
+                        <textarea matInput rows="2" [(ngModel)]="form.notes" placeholder="Pharmacist instructions, allergies, etc."></textarea>
                     </mat-form-field>
                 </div>
 
-                <div class="flex items-center justify-end gap-2">
-                    <button mat-button routerLink="/prescriptions">Cancel</button>
-                    <button mat-flat-button color="primary" class="h-12 px-6 rounded-lg shadow-lg"
-                            [disabled]="!canSubmit() || saving"
-                            (click)="save()">
-                        <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? 'Saving…' : 'Save Prescription' }}</span>
-                    </button>
+                <div class="flex flex-col items-end gap-2">
+                    <p class="text-xs text-gray-500 w-full text-left"><span class="text-rose-600">*</span> Required</p>
+                    <div class="flex items-center gap-2">
+                        <button mat-button routerLink="/prescriptions">Cancel</button>
+                        <button mat-flat-button color="primary" class="h-12 px-6 rounded-lg shadow-lg"
+                                [disabled]="!canSubmit() || saving"
+                                (click)="save()">
+                            <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? 'Saving…' : 'Save Prescription' }}</span>
+                        </button>
+                    </div>
+                    @if (!canSubmit() && disabledReason()) {
+                        <p class="text-xs text-rose-700 dark:text-rose-300">{{ disabledReason() }}</p>
+                    }
                 </div>
             </div>
         </div>
@@ -194,6 +209,13 @@ export class PrescriptionFormComponent {
         return !!this.form.prescriptionNumber?.trim()
             && !!this.form.doctorName?.trim()
             && !!this.form.patientName?.trim();
+    }
+
+    disabledReason(): string {
+        if (!this.form.prescriptionNumber?.trim()) return 'Enter the prescription number.';
+        if (!this.form.doctorName?.trim()) return 'Enter the doctor’s name.';
+        if (!this.form.patientName?.trim()) return 'Enter the patient’s name.';
+        return '';
     }
 
     save(): void {

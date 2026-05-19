@@ -12,7 +12,7 @@ import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTableModule } from '@angular/material/table';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ProductsService, UnitsService } from 'app/core/catalog/catalog.service';
@@ -34,6 +34,8 @@ import { PromotionsService } from 'app/core/marketing/marketing.service';
 import { PromotionDiscountPreview } from 'app/core/marketing/marketing.types';
 import { SaleLookupDialogComponent } from './sale-lookup-dialog.component';
 import { ParkedCartsDialogComponent } from './parked-carts-dialog.component';
+import { LinkPrescriptionDialogComponent, LinkPrescriptionResult } from './link-prescription-dialog.component';
+import { PrescriptionsService } from 'app/core/pharmacy/pharmacy.service';
 import { ManagerOverrideDialogComponent, ManagerOverrideResult } from './manager-override-dialog.component';
 import { QuickAddCustomerDialogComponent } from './quick-add-customer-dialog.component';
 import { ShareInvoiceDialogComponent } from '../sales/share-invoice-dialog.component';
@@ -110,7 +112,30 @@ interface CartLine extends CreateSaleLine {
                                 <span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ parkedCount() }}</span>
                             }
                         </button>
+                        @if (isPharmacyVertical()) {
+                            <button mat-stroked-button class="!min-w-0 !px-3 !h-14"
+                                    (click)="openLinkPrescription()"
+                                    matTooltip="Link a doctor prescription — the sale will mark it Dispensed on finalize">
+                                <!-- 'medication' is in the standard Material Icons font and renders at all sizes.
+                                     'prescriptions' is a newer Material Symbols ligature that doesn't ship
+                                     with the older Material Icons font this app loads — at icon-size-5 it
+                                     fell back to blank, which is what you saw. -->
+                                <mat-icon class="icon-size-5">medication</mat-icon>
+                                <span class="hidden lg:inline ml-1">Rx</span>
+                            </button>
+                        }
                     </div>
+                    @if (linkedPrescription(); as rx) {
+                        <div class="mt-2 flex items-center gap-2 p-2 rounded-lg bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 text-xs">
+                            <mat-icon class="icon-size-4 text-teal-700 dark:text-teal-300">medication</mat-icon>
+                            <span class="text-teal-800 dark:text-teal-200">
+                                Dispensing <span class="font-mono font-semibold">{{ rx.prescriptionNumber }}</span> · {{ rx.patientName }}
+                            </span>
+                            <button mat-icon-button class="!w-6 !h-6 ml-auto" (click)="clearPrescription()" matTooltip="Unlink prescription">
+                                <mat-icon class="icon-size-4">close</mat-icon>
+                            </button>
+                        </div>
+                    }
                     @if (currentShift(); as cs) {
                         <div class="mt-2 flex items-center gap-2 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-xs">
                             <mat-icon class="icon-size-4 text-emerald-700 dark:text-emerald-300">play_circle</mat-icon>
@@ -435,6 +460,8 @@ export class PosComponent implements OnInit, AfterViewInit {
     private readonly dialog = inject(MatDialog);
     private readonly receiptPrint = inject(ReceiptPrintService);
     private readonly tenantInfo = inject(TenantInfoService);
+    private readonly route = inject(ActivatedRoute);
+    private readonly prescriptionsApi = inject(PrescriptionsService);
 
     showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
     private readonly parkedApi = inject(ParkedCartsService);
@@ -475,6 +502,13 @@ export class PosComponent implements OnInit, AfterViewInit {
     customerId: string | null = null;
     /** Per-sale branding profile override. Pre-fills from outlet default on outlet change; null = use outlet default. */
     brandingProfileId: string | null = null;
+
+    /**
+     * Pharmacy-only: the prescription this sale is dispensing. When set, the
+     * sale's `prescriptionId` is sent on finalize and the backend flips the
+     * Rx Active → Dispensed. Pure UX state — nothing persists until finalize.
+     */
+    readonly linkedPrescription = signal<LinkPrescriptionResult | null>(null);
     search = signal('');
     promoCode = '';
     payMethod: PaymentMethod = 'Cash';
@@ -688,6 +722,28 @@ export class PosComponent implements OnInit, AfterViewInit {
             error: () => this.unitsById.set(new Map()),
         });
         this.customersApi.getAll().subscribe(c => this.customers.set(c));
+
+        // Phase 2.56e — pre-link prescription if we arrived from /prescriptions/:id
+        // via the "Dispense via POS" deep-link (carries ?prescriptionId= query).
+        // Fetches the full Rx so the chip can show the patient name. Silently
+        // drops if the prescription isn't Active so we don't carry a stale link
+        // (the backend would 409 the sale on finalize anyway).
+        const pendingRxId = this.route.snapshot.queryParamMap.get('prescriptionId');
+        if (pendingRxId) {
+            this.prescriptionsApi.get(pendingRxId).subscribe({
+                next: rx => {
+                    if (rx && rx.status === 'Active') {
+                        this.linkedPrescription.set({
+                            prescriptionId: rx.id,
+                            prescriptionNumber: rx.prescriptionNumber,
+                            patientName: rx.patientName,
+                        });
+                    }
+                },
+                error: () => { /* ignore — cashier can still link manually via the Rx button */ },
+            });
+        }
+
         // Quietly ignore failures — cashier without View permission still gets a working POS,
         // they just don't see the override picker (server falls back to outlet default).
         this.brandingApi.getAll().subscribe({
@@ -1050,6 +1106,7 @@ export class PosComponent implements OnInit, AfterViewInit {
             loyaltyPointsRedeemed: this.effectiveRedeem() > 0 ? this.effectiveRedeem() : undefined,
             discountAuthorizedByUserId,
             brandingProfileId: this.brandingProfileId ?? undefined,
+            prescriptionId: this.linkedPrescription()?.prescriptionId ?? undefined,
         }).subscribe({
             next: (id) => {
                 this.finalizing.set(false);
@@ -1128,6 +1185,22 @@ export class PosComponent implements OnInit, AfterViewInit {
             width: '720px',
             data: { outletId: this.outletId || undefined, outletName: outlet?.name, outlet: outlet ?? undefined },
         });
+    }
+
+    /** Available only on Pharmacy / Generic verticals — that's where the prescription endpoints exist. */
+    isPharmacyVertical(): boolean {
+        return this.tenantInfo.isVertical('Pharmacy') || this.tenantInfo.isVertical('Generic');
+    }
+
+    openLinkPrescription(): void {
+        const ref = this.dialog.open(LinkPrescriptionDialogComponent, { width: '640px' });
+        ref.afterClosed().subscribe((result: LinkPrescriptionResult | undefined) => {
+            if (result) this.linkedPrescription.set(result);
+        });
+    }
+
+    clearPrescription(): void {
+        this.linkedPrescription.set(null);
     }
 
     park(): void {
