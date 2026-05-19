@@ -44,9 +44,9 @@ import { StockAdjustmentReason } from 'app/core/inventory/inventory.types';
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 max-w-4xl">
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6 lg:col-span-2">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                        <mat-form-field appearance="outline" class="w-full sm:col-span-2">
-                            <mat-label>Product</mat-label>
-                            <input matInput [(ngModel)]="productSearch" [matAutocomplete]="productAuto" placeholder="Search by name or SKU">
+                        <mat-form-field appearance="outline" class="w-full sm:col-span-2" hideRequiredMarker>
+                            <mat-label>Product <span class="text-rose-600">*</span></mat-label>
+                            <input matInput [(ngModel)]="productSearch" [matAutocomplete]="productAuto" placeholder="Search by name or SKU" required>
                             <mat-autocomplete #productAuto="matAutocomplete" (optionSelected)="onProductPicked($event.option.value)" [displayWith]="displayProduct">
                                 @for (p of productOptions(); track p.id) {
                                     <mat-option [value]="p">
@@ -56,16 +56,16 @@ import { StockAdjustmentReason } from 'app/core/inventory/inventory.types';
                             </mat-autocomplete>
                         </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Outlet</mat-label>
-                            <mat-select [(ngModel)]="outletId">
+                        <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
+                            <mat-label>Outlet <span class="text-rose-600">*</span></mat-label>
+                            <mat-select [(ngModel)]="outletId" required>
                                 @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
                             </mat-select>
                         </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Reason</mat-label>
-                            <mat-select [(ngModel)]="reason">
+                        <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
+                            <mat-label>Reason <span class="text-rose-600">*</span></mat-label>
+                            <mat-select [(ngModel)]="reason" required>
                                 <mat-option value="PhysicalCount">Physical count</mat-option>
                                 <mat-option value="Damage">Damage</mat-option>
                                 <mat-option value="Loss">Loss / shrinkage</mat-option>
@@ -76,16 +76,17 @@ import { StockAdjustmentReason } from 'app/core/inventory/inventory.types';
                             </mat-select>
                         </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>New quantity</mat-label>
-                            <input matInput type="number" min="0" step="0.001" [(ngModel)]="newQuantity">
+                        <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
+                            <mat-label>New quantity <span class="text-rose-600">*</span></mat-label>
+                            <input matInput type="number" min="0" step="0.001" [(ngModel)]="newQuantity" required>
                         </mat-form-field>
 
                         <mat-form-field appearance="outline" class="w-full sm:col-span-2">
-                            <mat-label>Notes (optional)</mat-label>
+                            <mat-label>Notes <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                             <textarea matInput rows="2" [(ngModel)]="notes"></textarea>
                         </mat-form-field>
                     </div>
+                    <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> Required</p>
 
                     <div class="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
                         <button mat-button type="button" routerLink="/stock-adjustments">Cancel</button>

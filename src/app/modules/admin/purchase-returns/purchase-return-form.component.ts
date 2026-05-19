@@ -85,7 +85,9 @@ interface FormCredit {
                     <table mat-table [dataSource]="lines()" class="w-full">
                         <ng-container matColumnDef="select"><th mat-header-cell *matHeaderCellDef class="pl-6 w-10"></th>
                             <td mat-cell *matCellDef="let l" class="pl-6">
-                                <mat-checkbox [(ngModel)]="l.selected" [disabled]="l.maxQty <= 0"></mat-checkbox>
+                                <mat-checkbox [(ngModel)]="l.selected"
+                                              (ngModelChange)="onLineToggled(l, $event)"
+                                              [disabled]="l.maxQty <= 0"></mat-checkbox>
                             </td></ng-container>
                         <ng-container matColumnDef="product"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
                             <td mat-cell *matCellDef="let l">
@@ -100,9 +102,24 @@ interface FormCredit {
                             <td mat-cell *matCellDef="let l" class="!text-right" [class.text-rose-700]="l.maxQty <= 0">{{ l.maxQty | number:'1.0-3' }}</td></ng-container>
                         <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</span></th>
                             <td mat-cell *matCellDef="let l" class="!text-right py-1">
-                                <input type="number" [min]="0" [max]="l.maxQty" step="0.01"
-                                       [(ngModel)]="l.quantity" [disabled]="!l.selected"
-                                       class="w-20 border rounded px-2 py-1 text-right" />
+                                <div class="flex items-center justify-end gap-1">
+                                    <button type="button" (click)="nudgeQty(l, -1)" [disabled]="!l.selected || l.quantity <= 0"
+                                            class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                            aria-label="Decrease quantity">
+                                        <mat-icon class="icon-size-4">remove</mat-icon>
+                                    </button>
+                                    <input type="number" [min]="0" [max]="l.maxQty" step="0.01"
+                                           [(ngModel)]="l.quantity" [disabled]="!l.selected"
+                                           class="w-16 border rounded px-1 py-0.5 text-right tabular-nums"
+                                           [class.!border-rose-400]="l.selected && l.quantity > l.maxQty"
+                                           [class.!text-rose-600]="l.selected && l.quantity > l.maxQty"
+                                           [matTooltip]="l.selected && l.quantity > l.maxQty ? ('Max returnable: ' + l.maxQty) : ''" />
+                                    <button type="button" (click)="nudgeQty(l, 1)" [disabled]="!l.selected || l.quantity >= l.maxQty"
+                                            class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                            aria-label="Increase quantity">
+                                        <mat-icon class="icon-size-4">add</mat-icon>
+                                    </button>
+                                </div>
                             </td></ng-container>
                         <ng-container matColumnDef="serial"><th mat-header-cell *matHeaderCellDef class="pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Serial</span></th>
                             <td mat-cell *matCellDef="let l" class="pr-6">
@@ -167,13 +184,18 @@ interface FormCredit {
                 </div>
 
                 <!-- Submit -->
-                <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end">
-                    <button type="button" mat-stroked-button class="w-full sm:w-auto h-12 px-6 rounded-lg" [routerLink]="['/goods-receipts', g.id]">Cancel</button>
-                    <button type="button" mat-flat-button color="warn" class="w-full sm:w-auto h-12 px-6 rounded-lg"
-                            [disabled]="!canSubmit() || submitting()" (click)="submit()">
-                        <mat-icon *ngIf="!submitting()" class="icon-size-5 mr-2">send</mat-icon>
-                        <span>{{ submitting() ? 'Submitting…' : 'Send back to supplier' }}</span>
-                    </button>
+                <div class="flex flex-col gap-2 sm:items-end">
+                    <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4">
+                        <button type="button" mat-stroked-button class="w-full sm:w-auto h-12 px-6 rounded-lg" [routerLink]="['/goods-receipts', g.id]">Cancel</button>
+                        <button type="button" mat-flat-button color="warn" class="w-full sm:w-auto h-12 px-6 rounded-lg"
+                                [disabled]="!canSubmit() || submitting()" (click)="submit()">
+                            <mat-icon *ngIf="!submitting()" class="icon-size-5 mr-2">send</mat-icon>
+                            <span>{{ submitting() ? 'Submitting…' : 'Send back to supplier' }}</span>
+                        </button>
+                    </div>
+                    @if (!canSubmit() && disabledReason()) {
+                        <p class="text-xs text-rose-700 dark:text-rose-300 max-w-md text-right">{{ disabledReason() }}</p>
+                    }
                 </div>
             </div>
         }
@@ -199,30 +221,58 @@ export class PurchaseReturnFormComponent implements OnInit {
 
     lineCols = ['select', 'product', 'received', 'returnable', 'qty', 'serial'];
 
-    // Sum of selected line subtotals (qty × unit cost).
-    expectedTotal = computed(() =>
-        this.lines()
+    // NOTE: these read per-line / per-credit fields mutated directly via two-way
+    // ngModel (`l.selected`, `l.quantity`, `l.serialNumber`, `c.amount`).
+    // `computed()` would memoize on the `lines` / `credits` signal identity and
+    // never re-evaluate when those nested fields change — that's why the
+    // checkbox click and amount-typing previously did nothing to the totals or
+    // the submit button. Plain methods re-run every change-detection tick.
+
+    /** Sum of selected line subtotals (qty × unit cost). */
+    expectedTotal(): number {
+        return this.lines()
             .filter(l => l.selected && l.quantity > 0)
-            .reduce((s, l) => s + l.quantity * l.grItem.unitCost, 0));
+            .reduce((s, l) => s + l.quantity * l.grItem.unitCost, 0);
+    }
 
-    creditTotal = computed(() =>
-        this.credits().reduce((s, c) => s + (c.amount || 0), 0));
+    creditTotal(): number {
+        return this.credits().reduce((s, c) => s + (c.amount || 0), 0);
+    }
 
-    hasCashishCredit = (): boolean =>
-        this.credits().some(c => c.method !== 'Replacement' && (c.amount ?? 0) > 0);
+    hasCashishCredit(): boolean {
+        return this.credits().some(c => c.method !== 'Replacement' && (c.amount ?? 0) > 0);
+    }
 
-    canSubmit = computed(() => {
+    selectedLineCount(): number {
+        return this.lines().filter(l => l.selected && l.quantity > 0).length;
+    }
+
+    canSubmit(): boolean {
         const selected = this.lines().filter(l => l.selected && l.quantity > 0);
         if (selected.length === 0) return false;
-        // Each selected line must respect maxQty + supply a serial when serialOptions is non-empty
         for (const l of selected) {
             if (l.quantity > l.maxQty + 0.001) return false;
+            // If the GR captured serials for this product, the operator must pick which one is being returned.
             if (l.serialOptions.length > 0 && !l.serialNumber) return false;
         }
-        // Credit total ok: either all-Replacement (zero) or matches expected within penny
         if (this.hasCashishCredit() && Math.abs(this.creditTotal() - this.expectedTotal()) > 0.01) return false;
         return true;
-    });
+    }
+
+    /** Why the Send-back button is disabled — surfaces the missing piece to the operator. */
+    disabledReason(): string {
+        const selected = this.lines().filter(l => l.selected && l.quantity > 0);
+        if (selected.length === 0) return 'Tick at least one line and set a quantity greater than zero.';
+        for (const l of selected) {
+            if (l.quantity > l.maxQty + 0.001)
+                return `'${l.grItem.productName}' qty exceeds returnable ${l.maxQty}.`;
+            if (l.serialOptions.length > 0 && !l.serialNumber)
+                return `Pick the serial being returned for '${l.grItem.productName}'.`;
+        }
+        if (this.hasCashishCredit() && Math.abs(this.creditTotal() - this.expectedTotal()) > 0.01)
+            return `Credit total (${this.creditTotal().toFixed(2)}) must match expected (${this.expectedTotal().toFixed(2)}). Use Replacement rows for non-cash resolutions.`;
+        return '';
+    }
 
     ngOnInit(): void {
         const grId = this.route.snapshot.paramMap.get('goodsReceiptId')!;
@@ -264,6 +314,31 @@ export class PurchaseReturnFormComponent implements OnInit {
             };
         });
         this.lines.set(lines);
+    }
+
+    nudgeQty(line: FormLine, delta: number): void {
+        if (!line.selected) return;
+        const next = Math.max(0, Math.min(line.maxQty, Number(line.quantity || 0) + delta));
+        line.quantity = next;
+        this.lines.set([...this.lines()]);
+    }
+
+    /**
+     * When the operator ticks the checkbox, default the qty to 1 (or maxQty if
+     * less than 1) so the row contributes to the totals immediately — instead
+     * of staying at 0 and silently confusing them. Unticking resets qty to 0
+     * so it stops counting toward expected/credit totals.
+     */
+    onLineToggled(line: FormLine, checked: boolean): void {
+        if (checked) {
+            if (!line.quantity || line.quantity <= 0) {
+                line.quantity = Math.min(1, line.maxQty);
+            }
+        } else {
+            line.quantity = 0;
+            line.serialNumber = '';
+        }
+        this.lines.set([...this.lines()]);
     }
 
     addCredit(): void {

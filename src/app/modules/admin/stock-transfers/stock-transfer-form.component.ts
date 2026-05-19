@@ -53,39 +53,62 @@ interface LineDraft {
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
                         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Outlets</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <mat-form-field appearance="outline" class="w-full">
-                                <mat-label>From outlet</mat-label>
-                                <mat-select [(ngModel)]="fromOutletId">
+                            <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
+                                <mat-label>From outlet <span class="text-rose-600">*</span></mat-label>
+                                <mat-select [(ngModel)]="fromOutletId" required>
                                     @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
                                 </mat-select>
                             </mat-form-field>
-                            <mat-form-field appearance="outline" class="w-full">
-                                <mat-label>To outlet</mat-label>
-                                <mat-select [(ngModel)]="toOutletId">
+                            <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
+                                <mat-label>To outlet <span class="text-rose-600">*</span></mat-label>
+                                <mat-select [(ngModel)]="toOutletId" required>
                                     @for (o of outlets(); track o.id) {
                                         <mat-option [value]="o.id" [disabled]="o.id === fromOutletId">{{ o.name }}</mat-option>
                                     }
                                 </mat-select>
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-full sm:col-span-2">
-                                <mat-label>Notes (optional)</mat-label>
+                                <mat-label>Notes <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                                 <input matInput [(ngModel)]="notes">
                             </mat-form-field>
                         </div>
+                        <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> Required</p>
                     </div>
 
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Items</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
+                                Items <span class="text-rose-600">*</span>
+                                @if (lines().length > 0) {
+                                    <span class="ml-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 rounded-full px-2 py-0.5">
+                                        <mat-icon class="icon-size-3.5">check_circle</mat-icon>
+                                        {{ lines().length }} added
+                                    </span>
+                                }
+                            </h3>
+                            <span class="text-xs text-gray-500">At least one product required</span>
                         </div>
                         <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-gray-50 dark:bg-gray-900/40">
                             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="sm:col-span-7 w-full">
                                 <mat-label>Add product</mat-label>
-                                <input matInput [(ngModel)]="productSearch" [matAutocomplete]="productAuto" placeholder="Search by name or SKU">
-                                <mat-autocomplete #productAuto="matAutocomplete" (optionSelected)="addLine($event.option.value)" [displayWith]="displayProduct">
+                                <input matInput #productInput
+                                       [(ngModel)]="productSearch"
+                                       [matAutocomplete]="productAuto"
+                                       placeholder="Search by name or SKU">
+                                <mat-autocomplete #productAuto="matAutocomplete"
+                                                  (optionSelected)="onProductPicked($event.option.value, productInput)"
+                                                  [displayWith]="displayProduct">
                                     @for (p of productOptions(); track p.id) {
                                         <mat-option [value]="p">
-                                            <div class="flex justify-between"><span>{{ p.name }}</span><span class="text-xs text-gray-500 font-mono">{{ p.sku }}</span></div>
+                                            <div class="flex items-center justify-between gap-2 w-full">
+                                                <span class="truncate">{{ p.name }}</span>
+                                                <span class="text-xs text-gray-500 font-mono flex-shrink-0">{{ p.sku }}</span>
+                                            </div>
+                                        </mat-option>
+                                    }
+                                    @if (productOptions().length === 0 && lines().length > 0) {
+                                        <mat-option [disabled]="true" class="!opacity-100">
+                                            <span class="text-xs text-gray-500 italic">All matching products are already in this transfer.</span>
                                         </mat-option>
                                     }
                                 </mat-autocomplete>
@@ -101,9 +124,20 @@ interface LineDraft {
                                 </td></ng-container>
                             <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</span></th>
                                 <td mat-cell *matCellDef="let l" class="!text-right">
-                                    <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-24">
-                                        <input matInput type="number" min="0" step="0.001" [(ngModel)]="l.quantity">
-                                    </mat-form-field>
+                                    <div class="flex items-center justify-end gap-1">
+                                        <button type="button" (click)="nudgeQty(l, -1)" [disabled]="l.quantity <= 0"
+                                                class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                aria-label="Decrease quantity">
+                                            <mat-icon class="icon-size-4">remove</mat-icon>
+                                        </button>
+                                        <input type="number" min="0" step="0.001" [(ngModel)]="l.quantity"
+                                               class="w-16 border rounded px-1 py-0.5 text-right tabular-nums" />
+                                        <button type="button" (click)="nudgeQty(l, 1)"
+                                                class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
+                                                aria-label="Increase quantity">
+                                            <mat-icon class="icon-size-4">add</mat-icon>
+                                        </button>
+                                    </div>
                                 </td></ng-container>
                             <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-6"></th>
                                 <td mat-cell *matCellDef="let l; let i = index" class="pr-6 !text-right">
@@ -155,9 +189,12 @@ export class StockTransferFormComponent implements OnInit {
 
     productOptions(): ProductDto[] {
         const q = (typeof this.productSearch === 'string' ? this.productSearch : '').trim().toLowerCase();
-        const list = this.products().filter(p => p.isActive);
-        if (!q) return list.slice(0, 30);
-        return list.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)).slice(0, 30);
+        const addedIds = new Set(this.lines().map(l => l.productId));
+        // Hide already-added products — surfaced via the count badge on the
+        // Items header instead. See PO form for rationale.
+        const base = this.products().filter(p => p.isActive && !addedIds.has(p.id));
+        if (!q) return base.slice(0, 30);
+        return base.filter(p => p.name.toLowerCase().includes(q) || p.sku.toLowerCase().includes(q)).slice(0, 30);
     }
 
     totalQty = computed(() => this.lines().reduce((s, l) => s + (Number(l.quantity) || 0), 0));
@@ -204,10 +241,25 @@ export class StockTransferFormComponent implements OnInit {
         this.productSearch = '';
     }
 
+    /** See PO form — defers the clear past mat-autocomplete's internal write. */
+    onProductPicked(p: ProductDto, input: HTMLInputElement): void {
+        this.addLine(p);
+        Promise.resolve().then(() => {
+            this.productSearch = '';
+            input.value = '';
+            input.focus();
+        });
+    }
+
     removeLine(i: number): void {
         const arr = [...this.lines()];
         arr.splice(i, 1);
         this.lines.set(arr);
+    }
+
+    nudgeQty(line: { quantity: number }, delta: number): void {
+        line.quantity = Math.max(0, Number(line.quantity || 0) + delta);
+        this.lines.set([...this.lines()]);
     }
 
     save(): void {
