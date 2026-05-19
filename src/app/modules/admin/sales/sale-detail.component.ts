@@ -8,8 +8,8 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { ReceiptPrintService } from 'app/core/sales/receipt-print.service';
-import { SalesService } from 'app/core/sales/sales.service';
-import { SaleDto } from 'app/core/sales/sales.types';
+import { SaleReturnsService, SalesService } from 'app/core/sales/sales.service';
+import { SaleDto, SaleReturnDto } from 'app/core/sales/sales.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { BrandingProfilesService } from 'app/core/branding/branding.service';
 import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/branding.types';
@@ -140,12 +140,55 @@ import { ShareInvoiceDialogComponent } from './share-invoice-dialog.component';
                         </div>
 
                         @if (s.status === 'Finalized') {
-                            <button mat-stroked-button color="warn" class="h-12 rounded-lg" [routerLink]="['/returns/new', s.id]">
-                                <mat-icon class="icon-size-5 mr-2">undo</mat-icon><span>Process Return</span>
+                            <button mat-stroked-button color="warn" class="h-12 rounded-lg" [routerLink]="['/returns/new', s.id]"
+                                    [disabled]="fullyReturned()"
+                                    [matTooltip]="fullyReturned() ? 'All items have been refunded' : 'Start a new return against this sale'">
+                                <mat-icon class="icon-size-5 mr-2">undo</mat-icon>
+                                <span>{{ fullyReturned() ? 'Fully returned' : 'Process Return' }}</span>
                             </button>
                         }
                     </div>
                 </div>
+
+                <!-- Returns history: every non-voided return that references this sale, with link
+                     to the return detail. Without this section, partial refunds were invisible
+                     from the sale side — operator had no idea this customer already got money back. -->
+                @if (returns().length > 0) {
+                    <div class="mt-6 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
+                            <div class="w-8 h-8 bg-rose-100 dark:bg-rose-900 rounded-lg flex items-center justify-center"><mat-icon class="text-rose-600 dark:text-rose-400 text-lg">undo</mat-icon></div>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Returns</h3>
+                            <span class="ml-2 inline-flex items-center gap-1 text-xs font-medium text-rose-700 dark:text-rose-300 bg-rose-50 dark:bg-rose-900/30 rounded-full px-2 py-0.5">
+                                {{ returns().length }} record(s) · {{ totalRefunded() | number:'1.2-2' }} refunded
+                            </span>
+                        </div>
+                        <table mat-table [dataSource]="returns()" class="w-full">
+                            <ng-container matColumnDef="returnNumber"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Return #</span></th>
+                                <td mat-cell *matCellDef="let r" class="pl-6">
+                                    <a class="font-mono text-sm text-blue-600 hover:underline" [routerLink]="['/returns', r.id]">{{ r.returnNumber }}</a>
+                                </td></ng-container>
+                            <ng-container matColumnDef="date"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</span></th>
+                                <td mat-cell *matCellDef="let r">{{ r.returnDate | date:'short' }}</td></ng-container>
+                            <ng-container matColumnDef="reason"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</span></th>
+                                <td mat-cell *matCellDef="let r">{{ r.reason }}</td></ng-container>
+                            <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Items</span></th>
+                                <td mat-cell *matCellDef="let r" class="!text-right tabular-nums">{{ returnedItemCount(r) }}</td></ng-container>
+                            <ng-container matColumnDef="refund"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</span></th>
+                                <td mat-cell *matCellDef="let r" class="!text-right font-semibold tabular-nums text-rose-700">−{{ r.refundAmount | number:'1.2-2' }}</td></ng-container>
+                            <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef class="pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                                <td mat-cell *matCellDef="let r" class="pr-6">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
+                                          [ngClass]="{
+                                            'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': r.status === 'Completed',
+                                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200': r.status === 'Draft',
+                                            'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': r.status === 'Voided'
+                                          }">{{ r.status }}</span>
+                                </td></ng-container>
+                            <tr mat-header-row *matHeaderRowDef="['returnNumber','date','reason','items','refund','status']" class="bg-gray-50 dark:bg-gray-700"></tr>
+                            <tr mat-row *matRowDef="let row; columns: ['returnNumber','date','reason','items','refund','status']"></tr>
+                        </table>
+                    </div>
+                }
             </div>
         }
     </div>
@@ -154,12 +197,15 @@ import { ShareInvoiceDialogComponent } from './share-invoice-dialog.component';
 })
 export class SaleDetailComponent implements OnInit {
     private readonly api = inject(SalesService);
+    private readonly returnsApi = inject(SaleReturnsService);
     private readonly route = inject(ActivatedRoute);
     private readonly receiptPrint = inject(ReceiptPrintService);
     private readonly outletsApi = inject(OutletsService);
     private readonly brandingApi = inject(BrandingProfilesService);
     private readonly dialog = inject(MatDialog);
     sale = signal<SaleDto | null>(null);
+    /** Non-voided returns against this sale, surfaced as a card under the totals. */
+    returns = signal<SaleReturnDto[]>([]);
     profiles = signal<BrandingProfileDto[]>([]);
     paperLabels = PAPER_FORMAT_LABELS;
 
@@ -170,9 +216,42 @@ export class SaleDetailComponent implements OnInit {
         return this.profiles().find(p => p.id === s.brandingProfileId) ?? null;
     });
 
+    /** Sum of `refundAmount` across all non-voided returns — shown next to the section header. */
+    totalRefunded(): number {
+        return this.returns().reduce((sum, r) => sum + (r.refundAmount ?? 0), 0);
+    }
+
+    /** Sum of qty across a single return's items — for the per-row Items column. */
+    returnedItemCount(r: SaleReturnDto): number {
+        return (r.items ?? []).reduce((s, i) => s + (i.quantity ?? 0), 0);
+    }
+
+    /** True when every sold item has been refunded (no more returnable qty). Drives
+     *  the Process Return button's disabled state so the cashier doesn't open a
+     *  return form on a fully-refunded sale (server would 409 anyway). */
+    fullyReturned(): boolean {
+        const s = this.sale();
+        if (!s) return false;
+        const byItem = new Map<string, number>();
+        for (const r of this.returns()) {
+            if (r.status === 'Voided') continue;
+            for (const it of (r.items ?? [])) {
+                byItem.set(it.saleItemId, (byItem.get(it.saleItemId) ?? 0) + (it.quantity ?? 0));
+            }
+        }
+        return (s.items ?? []).every(i => (byItem.get(i.id) ?? 0) >= i.quantity);
+    }
+
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id')!;
         this.api.get(id).subscribe(s => this.sale.set(s));
+        // Fetch returns linked back to this sale — drives the Returns history
+        // section, the totalRefunded badge, and the Process-Return disabled state.
+        // Errors are swallowed so a returns-list outage doesn't block the sale view.
+        this.returnsApi.getBySale(id).subscribe({
+            next: rs => this.returns.set((rs ?? []).filter(r => r.status !== 'Voided')),
+            error: () => this.returns.set([]),
+        });
         // Profiles list drives the override menu + the resolved-profile-name lookup.
         this.brandingApi.getAll().subscribe({
             next: rows => this.profiles.set((rows ?? []).filter(p => p.isActive)),

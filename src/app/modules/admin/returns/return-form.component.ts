@@ -12,7 +12,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { SaleReturnsService, SalesService } from 'app/core/sales/sales.service';
 import {
     CreateSaleReturnLine, CreateSaleReturnRefund, PaymentMethod,
-    ReturnedItemCondition, SaleDto, SaleItemDto, SaleReturnReason,
+    ReturnedItemCondition, SaleDto, SaleItemDto, SaleReturnDto, SaleReturnReason,
 } from 'app/core/sales/sales.types';
 
 interface RefundLine {
@@ -27,7 +27,13 @@ interface ReturnLineDraft {
     sku: string;
     serialNumber?: string;
     batchNumber?: string;
+    /** Originally sold quantity on the source sale line — informational only. */
     originalQuantity: number;
+    /** Sum of qty already returned against this sale item across all non-voided
+     *  prior returns. Subtracted from `originalQuantity` to get `maxReturnable`. */
+    alreadyReturned: number;
+    /** Effective cap: `originalQuantity - alreadyReturned`. 0 means fully refunded already. */
+    maxReturnable: number;
     unitPrice: number;
     quantity: number;
     condition: ReturnedItemCondition;
@@ -69,7 +75,19 @@ interface ReturnLineDraft {
                             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center"><mat-icon class="text-violet-600 dark:text-violet-400 text-lg">inventory_2</mat-icon></div>
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Items</h3>
-                                <span class="ml-auto text-xs text-gray-500">Set qty &gt; 0 on items being returned</span>
+                                <div class="ml-auto flex items-center gap-2">
+                                    <button type="button" (click)="returnAll()" [disabled]="!anyReturnable()"
+                                            class="text-xs px-3 py-1.5 rounded-lg border text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 disabled:opacity-40"
+                                            matTooltip="Set every line's qty to its remaining returnable amount — for full-refund cases">
+                                        Return all
+                                    </button>
+                                    <button type="button" (click)="clearAllQty()" [disabled]="selectedItemCount() === 0"
+                                            class="text-xs px-3 py-1.5 rounded-lg border text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
+                                            matTooltip="Reset every line's return qty to zero">
+                                        Clear
+                                    </button>
+                                    <span class="text-xs text-gray-500 ml-1">{{ priorReturnsHint() }}</span>
+                                </div>
                             </div>
                             <table mat-table [dataSource]="lines()" class="w-full">
                                 <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
@@ -82,28 +100,72 @@ interface ReturnLineDraft {
                                         </div>
                                     </td></ng-container>
                                 <ng-container matColumnDef="orig"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Sold</span></th>
-                                    <td mat-cell *matCellDef="let l" class="!text-right">{{ l.originalQuantity | number:'1.0-3' }}</td></ng-container>
+                                    <td mat-cell *matCellDef="let l" class="!text-right tabular-nums">{{ l.originalQuantity | number:'1.0-3' }}</td></ng-container>
+                                <ng-container matColumnDef="returnable"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Returnable</span></th>
+                                    <td mat-cell *matCellDef="let l" class="!text-right tabular-nums"
+                                        [class.text-rose-700]="l.maxReturnable <= 0"
+                                        [class.text-emerald-700]="l.alreadyReturned > 0 && l.maxReturnable > 0"
+                                        [matTooltip]="l.alreadyReturned > 0 ? ('Already returned ' + l.alreadyReturned) : ''">
+                                        {{ l.maxReturnable | number:'1.0-3' }}
+                                    </td></ng-container>
                                 <ng-container matColumnDef="unit"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</span></th>
                                     <td mat-cell *matCellDef="let l" class="!text-right">{{ l.unitPrice | number:'1.2-2' }}</td></ng-container>
                                 <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Return Qty</span></th>
                                     <td mat-cell *matCellDef="let l" class="!text-right">
-                                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-24">
-                                            <input matInput type="number" min="0" [max]="l.originalQuantity" [(ngModel)]="l.quantity" (ngModelChange)="onLineChange()">
-                                        </mat-form-field>
+                                        <div class="flex items-center justify-end gap-1">
+                                            <button type="button" (click)="nudgeQty(l, -1)" [disabled]="l.quantity <= 0 || l.maxReturnable <= 0"
+                                                    class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    aria-label="Decrease quantity">
+                                                <mat-icon class="icon-size-4">remove</mat-icon>
+                                            </button>
+                                            <input type="number" min="0" [max]="l.maxReturnable" step="0.01"
+                                                   [(ngModel)]="l.quantity"
+                                                   [disabled]="l.maxReturnable <= 0"
+                                                   class="w-16 border rounded px-1 py-0.5 text-right tabular-nums"
+                                                   [class.!border-rose-400]="l.quantity > l.maxReturnable"
+                                                   [class.!text-rose-600]="l.quantity > l.maxReturnable"
+                                                   [matTooltip]="l.maxReturnable <= 0 ? 'Already fully refunded' : (l.quantity > l.maxReturnable ? ('Max returnable: ' + l.maxReturnable) : '')" />
+                                            <button type="button" (click)="nudgeQty(l, 1)" [disabled]="l.quantity >= l.maxReturnable || l.maxReturnable <= 0"
+                                                    class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
+                                                    aria-label="Increase quantity">
+                                                <mat-icon class="icon-size-4">add</mat-icon>
+                                            </button>
+                                        </div>
                                     </td></ng-container>
                                 <ng-container matColumnDef="condition"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</span></th>
                                     <td mat-cell *matCellDef="let l">
-                                        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-36">
-                                            <mat-select [(ngModel)]="l.condition" [disabled]="!l.quantity">
-                                                <mat-option value="Resellable">Resellable</mat-option>
-                                                <mat-option value="Damaged">Damaged</mat-option>
-                                            </mat-select>
-                                        </mat-form-field>
+                                        <!-- Side-by-side toggle. Resellable goes back on the shelf;
+                                             Damaged writes off the unit. Color-coded so the
+                                             impact is obvious without reading the label. Disabled
+                                             when qty=0 (line not selected for return). -->
+                                        <div class="inline-flex h-7 rounded border border-gray-300 dark:border-gray-600 overflow-hidden"
+                                             [class.opacity-40]="!l.quantity">
+                                            <button type="button" [disabled]="!l.quantity"
+                                                    (click)="setCondition(l, 'Resellable')"
+                                                    class="px-2.5 text-xs font-medium flex items-center gap-1 transition-colors"
+                                                    [ngClass]="l.condition === 'Resellable'
+                                                        ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
+                                                        : 'bg-white dark:bg-gray-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                                    matTooltip="Resellable — goes back on the shelf">
+                                                <mat-icon class="icon-size-3.5">check_circle</mat-icon>
+                                                <span>Resellable</span>
+                                            </button>
+                                            <button type="button" [disabled]="!l.quantity"
+                                                    (click)="setCondition(l, 'Damaged')"
+                                                    class="px-2.5 text-xs font-medium flex items-center gap-1 border-l border-gray-300 dark:border-gray-600 transition-colors"
+                                                    [ngClass]="l.condition === 'Damaged'
+                                                        ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200'
+                                                        : 'bg-white dark:bg-gray-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'"
+                                                    matTooltip="Damaged — written off, does NOT go back on the shelf">
+                                                <mat-icon class="icon-size-3.5">block</mat-icon>
+                                                <span>Damaged</span>
+                                            </button>
+                                        </div>
                                     </td></ng-container>
                                 <ng-container matColumnDef="lineTotal"><th mat-header-cell *matHeaderCellDef class="pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</span></th>
-                                    <td mat-cell *matCellDef="let l" class="pr-6 !text-right font-semibold">{{ (l.quantity * l.unitPrice) | number:'1.2-2' }}</td></ng-container>
-                                <tr mat-header-row *matHeaderRowDef="['name','orig','unit','qty','condition','lineTotal']" class="bg-gray-50 dark:bg-gray-700"></tr>
-                                <tr mat-row *matRowDef="let row; columns: ['name','orig','unit','qty','condition','lineTotal']"></tr>
+                                    <td mat-cell *matCellDef="let l" class="pr-6 !text-right font-semibold tabular-nums">{{ (l.quantity * l.unitPrice) | number:'1.2-2' }}</td></ng-container>
+                                <tr mat-header-row *matHeaderRowDef="['name','orig','returnable','unit','qty','condition','lineTotal']" class="bg-gray-50 dark:bg-gray-700"></tr>
+                                <tr mat-row *matRowDef="let row; columns: ['name','orig','returnable','unit','qty','condition','lineTotal']"></tr>
                             </table>
                         </div>
 
@@ -115,31 +177,42 @@ interface ReturnLineDraft {
                                 <button class="ml-auto" mat-stroked-button (click)="addRefund()"><mat-icon class="icon-size-5 mr-1">add</mat-icon>Add method</button>
                             </div>
                             <div class="p-6 space-y-3">
-                                <div *ngFor="let r of refunds(); let i = index" class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
-                                    <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic">
-                                        <mat-label>Method</mat-label>
-                                        <mat-select [(ngModel)]="r.method">
-                                            <mat-option value="Cash">Cash</mat-option>
-                                            <mat-option value="Card">Card</mat-option>
-                                            <mat-option value="MobileBanking">Mobile Banking</mat-option>
-                                            <mat-option value="BankTransfer">Bank Transfer</mat-option>
-                                            <mat-option value="Voucher">Voucher</mat-option>
-                                            <mat-option value="Credit">Store Credit</mat-option>
-                                        </mat-select>
-                                    </mat-form-field>
-                                    <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic">
-                                        <mat-label>Amount</mat-label>
-                                        <input matInput type="number" min="0" step="0.01" [(ngModel)]="r.amount">
-                                    </mat-form-field>
-                                    <mat-form-field class="sm:col-span-5 w-full" appearance="outline" subscriptSizing="dynamic">
-                                        <mat-label>Reference (optional)</mat-label>
-                                        <input matInput [(ngModel)]="r.reference">
-                                    </mat-form-field>
-                                    <button mat-icon-button class="sm:col-span-1 text-red-600" (click)="removeRefund(i)" matTooltip="Remove">
-                                        <mat-icon class="icon-size-5">delete</mat-icon>
+                                @for (r of refunds(); track $index) {
+                                    <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
+                                        <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic" hideRequiredMarker>
+                                            <mat-label>Method <span class="text-rose-600">*</span></mat-label>
+                                            <mat-select [(ngModel)]="r.method" required>
+                                                <mat-option value="Cash">Cash</mat-option>
+                                                <mat-option value="Card">Card</mat-option>
+                                                <mat-option value="MobileBanking">Mobile Banking</mat-option>
+                                                <mat-option value="BankTransfer">Bank Transfer</mat-option>
+                                                <mat-option value="Voucher">Voucher</mat-option>
+                                                <mat-option value="Credit">Store Credit</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic" hideRequiredMarker>
+                                            <mat-label>Amount <span class="text-rose-600">*</span></mat-label>
+                                            <input matInput type="number" min="0" step="0.01" [(ngModel)]="r.amount" required>
+                                        </mat-form-field>
+                                        <mat-form-field class="sm:col-span-5 w-full" appearance="outline" subscriptSizing="dynamic">
+                                            <mat-label>Reference <span class="text-gray-400 text-xs">(optional)</span></mat-label>
+                                            <input matInput [(ngModel)]="r.reference">
+                                        </mat-form-field>
+                                        <button mat-icon-button class="sm:col-span-1 text-red-600" (click)="removeRefund($index)" matTooltip="Remove refund method">
+                                            <mat-icon class="icon-size-5">delete</mat-icon>
+                                        </button>
+                                    </div>
+                                }
+                                @if (refunds().length === 0) {
+                                    <p class="text-sm text-rose-700 dark:text-rose-300">No refund methods. Add at least one before submitting.</p>
+                                }
+                                @if (refunds().length > 0 && refundDue() > 0 && refundEntered() !== refundDue()) {
+                                    <button type="button" mat-stroked-button (click)="autoFillRemainder()"
+                                            matTooltip="Set the first row's amount to cover the remaining refund difference">
+                                        <mat-icon class="icon-size-4 mr-1">auto_fix_high</mat-icon>
+                                        Auto-balance to refund due
                                     </button>
-                                </div>
-                                <p *ngIf="refunds().length === 0" class="text-sm text-gray-500">No refund methods. Add at least one before submitting.</p>
+                                }
                             </div>
                         </div>
                     </div>
@@ -151,9 +224,9 @@ interface ReturnLineDraft {
                                 <div class="w-8 h-8 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center"><mat-icon class="text-amber-600 dark:text-amber-400 text-lg">help_center</mat-icon></div>
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Reason</h3>
                             </div>
-                            <mat-form-field class="w-full" appearance="outline">
-                                <mat-label>Return reason</mat-label>
-                                <mat-select [(ngModel)]="reason">
+                            <mat-form-field class="w-full" appearance="outline" hideRequiredMarker>
+                                <mat-label>Return reason <span class="text-rose-600">*</span></mat-label>
+                                <mat-select [(ngModel)]="reason" required>
                                     <mat-option value="DefectiveProduct">Defective product</mat-option>
                                     <mat-option value="WrongItem">Wrong item</mat-option>
                                     <mat-option value="BuyersRemorse">Buyer's remorse</mat-option>
@@ -162,7 +235,7 @@ interface ReturnLineDraft {
                                 </mat-select>
                             </mat-form-field>
                             <mat-form-field class="w-full" appearance="outline">
-                                <mat-label>Notes</mat-label>
+                                <mat-label>Notes <span class="text-gray-400 text-xs">(optional)</span></mat-label>
                                 <textarea matInput rows="3" [(ngModel)]="notes"></textarea>
                             </mat-form-field>
                         </div>
@@ -173,21 +246,24 @@ interface ReturnLineDraft {
                                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Summary</h3>
                             </div>
                             <div class="space-y-2 text-sm">
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Original total</span><span class="font-medium">{{ s.total | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Items selected</span><span class="font-medium">{{ selectedItemCount() }}</span></div>
-                                <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>Refund due</span><span class="text-rose-600">{{ refundDue() | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Refund entered</span><span class="font-medium">{{ refundEntered() | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between" [ngClass]="{ 'text-red-600': refundEntered() !== refundDue() }">
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Original total</span><span class="font-medium tabular-nums">{{ s.total | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Items selected</span><span class="font-medium tabular-nums">{{ selectedItemCount() }}</span></div>
+                                <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>Refund due</span><span class="text-rose-600 tabular-nums">{{ refundDue() | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Refund entered</span><span class="font-medium tabular-nums">{{ refundEntered() | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between" [ngClass]="{ 'text-red-600': !amountsBalanced(), 'text-emerald-700 dark:text-emerald-400': amountsBalanced() && refundDue() > 0 }">
                                     <span>Difference</span>
-                                    <span class="font-medium">{{ (refundEntered() - refundDue()) | number:'1.2-2' }}</span>
+                                    <span class="font-medium tabular-nums">{{ (refundEntered() - refundDue()) | number:'1.2-2' }}</span>
                                 </div>
                             </div>
+                            <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> Required</p>
                             <button mat-flat-button color="warn" class="w-full h-12 rounded-lg shadow-lg mt-4"
                                     [disabled]="!canSubmit() || submitting"
                                     (click)="submit()">
                                 <mat-icon class="icon-size-5 mr-2">undo</mat-icon><span>{{ submitting ? 'Processing…' : 'Process Return' }}</span>
                             </button>
-                            <p class="text-xs text-gray-500 mt-2" *ngIf="!canSubmit()">{{ disabledReason() }}</p>
+                            @if (!canSubmit()) {
+                                <p class="text-xs text-rose-700 dark:text-rose-300 mt-2">{{ disabledReason() }}</p>
+                            }
                         </div>
                     </div>
                 </div>
@@ -210,44 +286,135 @@ export class ReturnFormComponent implements OnInit {
     notes = '';
     submitting = false;
 
-    refundDue = computed(() =>
-        this.lines().reduce((sum, l) => sum + l.quantity * l.unitPrice, 0)
-    );
-    refundEntered = computed(() =>
-        this.refunds().reduce((sum, r) => sum + (Number(r.amount) || 0), 0)
-    );
-    selectedItemCount = computed(() => this.lines().filter(l => l.quantity > 0).length);
+    // Plain methods (not computed signals) — these read per-line/per-refund
+    // fields mutated directly via ngModel (`l.quantity`, `r.amount`). The
+    // signal identity doesn't change on a deep mutation, so a computed()
+    // would memoize the initial result and "Refund entered" / Submit gate
+    // would stay stale. Plain methods re-run every change-detection tick.
 
-    canSubmit = computed(() =>
-        this.selectedItemCount() > 0
-        && this.refunds().length > 0
-        && Math.abs(this.refundEntered() - this.refundDue()) < 0.005
-    );
+    refundDue(): number {
+        return this.lines().reduce((sum, l) => sum + l.quantity * l.unitPrice, 0);
+    }
+    refundEntered(): number {
+        return this.refunds().reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+    }
+    selectedItemCount(): number {
+        return this.lines().filter(l => l.quantity > 0).length;
+    }
+    amountsBalanced(): boolean {
+        return Math.abs(this.refundEntered() - this.refundDue()) < 0.005;
+    }
+
+    canSubmit(): boolean {
+        return this.selectedItemCount() > 0
+            && this.refunds().length > 0
+            && this.amountsBalanced();
+    }
 
     disabledReason(): string {
         if (this.selectedItemCount() === 0) return 'Set return quantity on at least one item.';
         if (this.refunds().length === 0) return 'Add at least one refund method.';
-        if (Math.abs(this.refundEntered() - this.refundDue()) >= 0.005)
-            return 'Refund total must equal the refund due.';
+        if (!this.amountsBalanced())
+            return `Refund total (${this.refundEntered().toFixed(2)}) must equal refund due (${this.refundDue().toFixed(2)}). Click "Auto-balance" to fix.`;
         return '';
     }
 
+    nudgeQty(line: ReturnLineDraft, delta: number): void {
+        const max = line.maxReturnable;
+        if (max <= 0) return;
+        line.quantity = Math.max(0, Math.min(max, Number(line.quantity || 0) + delta));
+        this.lines.set([...this.lines()]);
+    }
+
+    setCondition(line: ReturnLineDraft, condition: ReturnedItemCondition): void {
+        line.condition = condition;
+        this.lines.set([...this.lines()]);
+    }
+
+    /** Drop the remaining refund difference onto the first refund row so the cashier
+     *  doesn't have to do mental arithmetic when split-tender doesn't quite balance. */
+    autoFillRemainder(): void {
+        const refunds = [...this.refunds()];
+        if (refunds.length === 0) return;
+        const due = this.refundDue();
+        const enteredExceptFirst = refunds.slice(1).reduce((s, r) => s + (Number(r.amount) || 0), 0);
+        refunds[0].amount = Math.max(0, +(due - enteredExceptFirst).toFixed(2));
+        this.refunds.set(refunds);
+    }
+
+    /** Set when load is in flight so the form can hide totals until math is honest. */
+    private loadingPrior = signal(false);
+
     ngOnInit(): void {
         this.saleId = this.route.snapshot.paramMap.get('saleId')!;
+        this.loadingPrior.set(true);
+
+        // Fetch the sale AND any prior non-voided returns against it in parallel.
+        // We must subtract already-returned qty per sale-item before the cashier
+        // sees the table — otherwise they can over-claim a partial-return.
         this.salesApi.get(this.saleId).subscribe(s => {
             this.sale.set(s);
-            this.lines.set(s.items.map<ReturnLineDraft>(i => ({
+            this.returnsApi.getBySale(this.saleId).subscribe({
+                next: priorReturns => this.buildLines(s, priorReturns ?? []),
+                error: () => this.buildLines(s, []), // be lenient — show the form but flag it
+            });
+        });
+    }
+
+    private buildLines(s: SaleDto, priorReturns: SaleReturnDto[]): void {
+        // Sum already-returned qty per saleItemId across non-voided returns.
+        const alreadyByItem = new Map<string, number>();
+        for (const pr of priorReturns) {
+            if (pr.status === 'Voided') continue;
+            for (const it of (pr.items ?? [])) {
+                alreadyByItem.set(it.saleItemId, (alreadyByItem.get(it.saleItemId) ?? 0) + (it.quantity ?? 0));
+            }
+        }
+
+        this.lines.set(s.items.map<ReturnLineDraft>(i => {
+            const already = alreadyByItem.get(i.id) ?? 0;
+            const max = Math.max(0, i.quantity - already);
+            return {
                 saleItemId: i.id,
                 productName: i.productName,
                 sku: i.sku,
                 serialNumber: i.serialNumber,
                 batchNumber: i.batchNumber,
                 originalQuantity: i.quantity,
+                alreadyReturned: already,
+                maxReturnable: max,
                 unitPrice: i.unitPrice,
                 quantity: 0,
                 condition: 'Resellable',
-            })));
-        });
+            };
+        }));
+        this.loadingPrior.set(false);
+    }
+
+    /** Tiny inline hint shown on the Items header — surfaces the fact that prior returns exist
+     *  so the cashier knows why some lines may already be fully refunded. */
+    priorReturnsHint(): string {
+        const lines = this.lines();
+        const alreadyHit = lines.filter(l => l.alreadyReturned > 0).length;
+        if (alreadyHit === 0) return '';
+        const fullyConsumed = lines.filter(l => l.maxReturnable === 0 && l.alreadyReturned > 0).length;
+        if (fullyConsumed > 0) return `${alreadyHit} line(s) already partially returned · ${fullyConsumed} fully refunded`;
+        return `${alreadyHit} line(s) already partially returned`;
+    }
+
+    anyReturnable(): boolean {
+        return this.lines().some(l => l.maxReturnable > 0 && l.quantity < l.maxReturnable);
+    }
+
+    /** Full-refund shortcut — set every line's qty to its remaining returnable amount. */
+    returnAll(): void {
+        this.lines.update(ls => ls.map(l => ({
+            ...l,
+            quantity: l.maxReturnable,
+        })));
+    }
+    clearAllQty(): void {
+        this.lines.update(ls => ls.map(l => ({ ...l, quantity: 0 })));
     }
 
     onLineChange(): void {
