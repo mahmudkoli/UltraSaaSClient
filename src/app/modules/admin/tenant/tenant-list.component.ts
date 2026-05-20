@@ -365,17 +365,6 @@ export class TenantListComponent implements OnInit {
         this._router.navigate([`/tenant/${tenant.id}/billing`]);
     }
 
-    healthCheck(tenant: TenantDto): void {
-        this._tenantsService.validateHealth(tenant.id).subscribe({
-            next: (isHealthy) => {
-                console.log(`Tenant ${tenant.name} health status:`, isHealthy ? 'Healthy' : 'Unhealthy');
-            },
-            error: (error) => {
-                console.error('Error checking tenant health:', error);
-            }
-        });
-    }
-
     getThemeLabel(tenant: TenantDto): string {
         if (!tenant.themeConfig) return 'Default';
         try {

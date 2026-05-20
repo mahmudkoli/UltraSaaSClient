@@ -268,31 +268,6 @@
                     </mat-card>
                 </div>
             </mat-tab>
-
-            <!-- Analytics Tab -->
-            <mat-tab label="Analytics">
-                <div class="pt-6">
-                    <div *ngIf="loadingAnalytics" class="flex justify-center items-center h-64">
-                        <mat-spinner></mat-spinner>
-                        <span class="ml-4">Loading analytics...</span>
-                    </div>
-
-                    <div *ngIf="!loadingAnalytics">
-                        <mat-card class="mat-elevation-2">
-                            <mat-card-header>
-                                <mat-card-title>Tenant Analytics</mat-card-title>
-                                <mat-card-subtitle>Performance insights and trends</mat-card-subtitle>
-                            </mat-card-header>
-                            <mat-card-content>
-                                <div class="text-center p-8 text-gray-500">
-                                    <mat-icon class="text-6xl mb-4">analytics</mat-icon>
-                                    <p>Analytics dashboard will display detailed insights about tenant usage patterns, performance metrics, and trends over time.</p>
-                                </div>
-                            </mat-card-content>
-                        </mat-card>
-                    </div>
-                </div>
-            </mat-tab>
         </mat-tab-group>
 
                 <!-- Action Buttons -->

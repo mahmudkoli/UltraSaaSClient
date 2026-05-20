@@ -19,9 +19,6 @@ import {
     TenantUsageDto,
     ExtendValidityRequest,
     UpdateResourceUsageRequest,
-    BulkSuspendTenantsRequest,
-    BulkActivateTenantsRequest,
-    BulkUpdateBillingPlanRequest
 } from './tenants.types';
 
 @Injectable({
@@ -168,59 +165,6 @@ export class TenantsService extends BaseApiService {
         return this.postText(`/api/tenants/${id}/update-usage`, request);
     }
 
-    // ============= ANALYTICS & REPORTING =============
-
-    /**
-     * Get tenants expiring soon
-     */
-    getExpiringTenants(daysAhead: number = 30): Observable<any[]> {
-        return this.get<any[]>(`/api/tenants/expiring?daysAhead=${daysAhead}`);
-    }
-
-    /**
-     * Get overdue tenants
-     */
-    getOverdueTenants(): Observable<any[]> {
-        return this.get<any[]>('/api/tenants/overdue');
-    }
-
-    /**
-     * Get high usage tenants
-     */
-    getHighUsageTenants(threshold: number = 90): Observable<any[]> {
-        return this.get<any[]>(`/api/tenants/high-usage?threshold=${threshold}`);
-    }
-
-    /**
-     * Get tenant analytics
-     */
-    getTenantAnalytics(id: string): Observable<any> {
-        return this.get<any>(`/api/tenants/${id}/analytics`);
-    }
-
-    // ============= BULK OPERATIONS =============
-
-    /**
-     * Suspend multiple tenants
-     */
-    bulkSuspend(request: BulkSuspendTenantsRequest): Observable<string> {
-        return this.postText('/api/tenants/bulk/suspend', request);
-    }
-
-    /**
-     * Activate multiple tenants
-     */
-    bulkActivate(request: BulkActivateTenantsRequest): Observable<string> {
-        return this.postText('/api/tenants/bulk/activate', request);
-    }
-
-    /**
-     * Update billing plan for multiple tenants
-     */
-    bulkUpdateBillingPlan(request: BulkUpdateBillingPlanRequest): Observable<string> {
-        return this.postText('/api/tenants/bulk/update-plan', request);
-    }
-
     // ============= PERMISSIONS =============
 
     /**
@@ -242,22 +186,6 @@ export class TenantsService extends BaseApiService {
      */
     updatePermissions(id: string, request: UpdateTenantPermissionsRequest): Observable<string> {
         return this.putText(`/api/tenants/${id}/permissions`, request);
-    }
-
-    // ============= HEALTH & VALIDATION =============
-
-    /**
-     * Get tenant health summary
-     */
-    getHealthSummary(id: string): Observable<any> {
-        return this.get<any>(`/api/tenants/${id}/health`);
-    }
-
-    /**
-     * Validate tenant health
-     */
-    validateHealth(id: string): Observable<boolean> {
-        return this.post<boolean>(`/api/tenants/${id}/validate`, {});
     }
 
     // ============= BACKWARD COMPATIBILITY =============

@@ -35,10 +35,8 @@ import { TenantsService } from '../../../core/tenants/tenants.service';
 export class TenantUsageComponent implements OnInit {
     tenant?: TenantDto;
     tenantUsage?: TenantUsageDto;
-    tenantAnalytics: any;
     tenantId: string;
     loading: boolean = false;
-    loadingAnalytics: boolean = false;
 
     // Chart configurations
     apiCallsChartOptions: Partial<ApexOptions> = {};
@@ -56,7 +54,6 @@ export class TenantUsageComponent implements OnInit {
     ngOnInit(): void {
         this.loadTenantData();
         this.loadTenantUsage();
-        this.loadTenantAnalytics();
     }
 
     loadTenantData(): void {
@@ -82,21 +79,6 @@ export class TenantUsageComponent implements OnInit {
             },
             error: (error) => {
                 console.error('Error loading tenant usage:', error);
-            }
-        });
-    }
-
-    loadTenantAnalytics(): void {
-        this.loadingAnalytics = true;
-        this._tenantsService.getTenantAnalytics(this.tenantId).subscribe({
-            next: (analytics) => {
-                this.tenantAnalytics = analytics;
-                this.setupAnalyticsCharts();
-                this.loadingAnalytics = false;
-            },
-            error: (error) => {
-                console.error('Error loading tenant analytics:', error);
-                this.loadingAnalytics = false;
             }
         });
     }
@@ -212,11 +194,6 @@ export class TenantUsageComponent implements OnInit {
         };
     }
 
-    setupAnalyticsCharts(): void {
-        // This would be set up with real analytics data
-        // For now, we'll create placeholder charts
-    }
-
     getUsagePercentage(type: 'api' | 'storage' | 'users'): number {
         if (!this.tenant) return 0;
 
@@ -245,7 +222,6 @@ export class TenantUsageComponent implements OnInit {
     refreshData(): void {
         this.loadTenantData();
         this.loadTenantUsage();
-        this.loadTenantAnalytics();
     }
 
     goBack(): void {

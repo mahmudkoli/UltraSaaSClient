@@ -391,16 +391,3 @@ export interface UpdateResourceUsageRequest {
     apiCalls: number;
 }
 
-export interface BulkSuspendTenantsRequest {
-    tenantIds: string[];
-    reason: string;
-}
-
-export interface BulkActivateTenantsRequest {
-    tenantIds: string[];
-}
-
-export interface BulkUpdateBillingPlanRequest {
-    tenantIds: string[];
-    billingPlan: string;
-}
