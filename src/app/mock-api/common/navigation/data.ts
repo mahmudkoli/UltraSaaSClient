@@ -170,6 +170,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:chart-bar-square',
                 link : '/fee-reports'
+            },
+            {
+                id   : 'reports',
+                title: 'PDF Reports',
+                type : 'basic',
+                icon : 'heroicons_outline:document-text',
+                link : '/reports'
             }
         ]
     },
@@ -544,6 +551,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:chart-bar-square',
                 link : '/fee-reports'
+            },
+            {
+                id   : 'reports',
+                title: 'PDF Reports',
+                type : 'basic',
+                icon : 'heroicons_outline:document-text',
+                link : '/reports'
             }
         ]
     },
@@ -772,6 +786,13 @@ export const horizontalNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:chart-bar-square',
                 link : '/fee-reports'
+            },
+            {
+                id   : 'reports',
+                title: 'PDF Reports',
+                type : 'basic',
+                icon : 'heroicons_outline:document-text',
+                link : '/reports'
             }
         ]
     },

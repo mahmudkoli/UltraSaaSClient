@@ -1,0 +1,77 @@
+<div class="flex flex-col flex-auto min-w-0 p-6 max-w-5xl">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Reports</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">One-click printable PDFs for school operations.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+
+        <!-- Transcript -->
+        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+            <div class="flex items-center gap-2 mb-3">
+                <mat-icon class="text-indigo-500">school</mat-icon>
+                <h3 class="text-lg font-semibold">Student Transcript</h3>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Personal info, class history, recent exam results.</p>
+            <mat-form-field class="w-full">
+                <mat-label>Student</mat-label>
+                <mat-select [(value)]="transcriptStudentId">
+                    <mat-option *ngFor="let s of students" [value]="s.id">{{ s.firstName }} {{ s.lastName }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <button mat-flat-button color="primary" class="w-full" (click)="transcript()" [disabled]="!transcriptStudentId || busy">
+                <mat-icon class="mr-1">picture_as_pdf</mat-icon>
+                Download PDF
+            </button>
+        </div>
+
+        <!-- Fee Collection -->
+        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+            <div class="flex items-center gap-2 mb-3">
+                <mat-icon class="text-emerald-500">payments</mat-icon>
+                <h3 class="text-lg font-semibold">Fee Collection</h3>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Receipts summary for a period.</p>
+            <mat-form-field class="w-full">
+                <mat-label>From</mat-label>
+                <input matInput type="date" [(ngModel)]="feeFrom">
+            </mat-form-field>
+            <mat-form-field class="w-full">
+                <mat-label>To</mat-label>
+                <input matInput type="date" [(ngModel)]="feeTo">
+            </mat-form-field>
+            <button mat-flat-button color="primary" class="w-full" (click)="feeReport()" [disabled]="busy">
+                <mat-icon class="mr-1">picture_as_pdf</mat-icon>
+                Download PDF
+            </button>
+        </div>
+
+        <!-- Attendance -->
+        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+            <div class="flex items-center gap-2 mb-3">
+                <mat-icon class="text-amber-500">event_available</mat-icon>
+                <h3 class="text-lg font-semibold">Attendance Summary</h3>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Per-student totals + % for a period and class.</p>
+            <mat-form-field class="w-full">
+                <mat-label>Class (optional)</mat-label>
+                <mat-select [(value)]="attClassId">
+                    <mat-option [value]="''">All classes</mat-option>
+                    <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }} {{ c.section }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+            <mat-form-field class="w-full">
+                <mat-label>From</mat-label>
+                <input matInput type="date" [(ngModel)]="attFrom">
+            </mat-form-field>
+            <mat-form-field class="w-full">
+                <mat-label>To</mat-label>
+                <input matInput type="date" [(ngModel)]="attTo">
+            </mat-form-field>
+            <button mat-flat-button color="primary" class="w-full" (click)="attendanceReport()" [disabled]="busy">
+                <mat-icon class="mr-1">picture_as_pdf</mat-icon>
+                Download PDF
+            </button>
+        </div>
+    </div>
+</div>
