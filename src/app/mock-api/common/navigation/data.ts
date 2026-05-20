@@ -641,6 +641,13 @@ export const horizontalNavigation: FuseNavigationItem[] = [
                 link : '/leaves'
             },
             {
+                id   : 'payroll',
+                title: 'Payroll',
+                type : 'basic',
+                icon : 'heroicons_outline:banknotes',
+                link : '/payroll'
+            },
+            {
                 id   : 'academic-year-management',
                 title: 'Academic Years',
                 type : 'basic',

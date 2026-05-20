@@ -1,0 +1,61 @@
+<div class="flex flex-col flex-auto min-w-0 p-6">
+
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Payroll Slips</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Monthly salary slips per teacher. Click Download to print.</p>
+        </div>
+        <a mat-flat-button color="primary" routerLink="generate" class="mt-3 sm:mt-0">
+            <mat-icon class="mr-2">add</mat-icon>
+            Generate Slip
+        </a>
+    </div>
+
+    <div *ngIf="loading" class="my-8 flex flex-col items-center">
+        <mat-progress-bar mode="indeterminate" class="w-full max-w-md"></mat-progress-bar>
+    </div>
+
+    <div *ngIf="!loading" class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <table mat-table [dataSource]="slips" class="w-full">
+            <ng-container matColumnDef="serialNumber">
+                <th mat-header-cell *matHeaderCellDef>Slip #</th>
+                <td mat-cell *matCellDef="let s" class="font-mono text-xs">{{ s.serialNumber }}</td>
+            </ng-container>
+            <ng-container matColumnDef="teacherName">
+                <th mat-header-cell *matHeaderCellDef>Employee</th>
+                <td mat-cell *matCellDef="let s">
+                    <div class="font-medium">{{ s.teacherName }}</div>
+                    <div class="text-xs text-gray-500">{{ s.designation || '—' }}</div>
+                </td>
+            </ng-container>
+            <ng-container matColumnDef="period">
+                <th mat-header-cell *matHeaderCellDef>Period</th>
+                <td mat-cell *matCellDef="let s">{{ period(s) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="gross">
+                <th mat-header-cell *matHeaderCellDef class="!text-right">Gross</th>
+                <td mat-cell *matCellDef="let s" class="!text-right">৳{{ s.grossSalary | number:'1.0-0' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="deductions">
+                <th mat-header-cell *matHeaderCellDef class="!text-right">Deductions</th>
+                <td mat-cell *matCellDef="let s" class="!text-right text-red-700">−৳{{ s.totalDeductions | number:'1.0-0' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="net">
+                <th mat-header-cell *matHeaderCellDef class="!text-right">Net</th>
+                <td mat-cell *matCellDef="let s" class="!text-right font-bold text-indigo-700">৳{{ s.netSalary | number:'1.0-0' }}</td>
+            </ng-container>
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="!text-right">Actions</th>
+                <td mat-cell *matCellDef="let s" class="!text-right">
+                    <button mat-stroked-button (click)="download(s)">
+                        <mat-icon class="!w-4 !h-4 !text-base mr-1">download</mat-icon>
+                        PDF
+                    </button>
+                </td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="cols"></tr>
+            <tr mat-row *matRowDef="let row; columns: cols"></tr>
+        </table>
+        <div *ngIf="slips.length === 0" class="py-8 text-center text-gray-500">No payroll slips generated yet.</div>
+    </div>
+</div>
