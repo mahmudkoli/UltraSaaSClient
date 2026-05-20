@@ -59,6 +59,18 @@ export class StudentsService {
     }
 
     /**
+     * Phase E8 — bulk-import students from an .xlsx file.
+     */
+    importExcel(file: File): Observable<{ created: number; skipped: number; errors: string[] }> {
+        const fd = new FormData();
+        fd.append('file', file, file.name);
+        return this.http.post<{ created: number; skipped: number; errors: string[] }>(
+            `${this.baseUrl}/import`,
+            fd,
+        );
+    }
+
+    /**
      * Export students data to file
      * Returns a blob that can be downloaded
      */

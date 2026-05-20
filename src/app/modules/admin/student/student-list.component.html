@@ -35,6 +35,13 @@
                 </mat-select>
             </mat-form-field>
             <button
+                mat-stroked-button
+                (click)="importStudents()"
+                matTooltip="Bulk import students from Excel">
+                <mat-icon class="mr-1">upload_file</mat-icon>
+                Import
+            </button>
+            <button
                 mat-fab
                 color="primary"
                 (click)="addStudent()"

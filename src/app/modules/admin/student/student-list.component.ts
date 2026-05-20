@@ -23,6 +23,7 @@ import { StudentDto, SearchStudentsRequest, PaginationResponse } from '../../../
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
 import { StudentExportDialogComponent, ExportDialogData } from './student-export-dialog.component';
+import { StudentImportDialogComponent } from './student-import-dialog.component';
 
 @Component({
     selector: 'student-list',
@@ -248,6 +249,14 @@ export class StudentListComponent implements OnInit, OnDestroy {
      */
     getFullName(student: StudentDto): string {
         return `${student.firstName || ''} ${student.lastName || ''}`.trim() || 'N/A';
+    }
+
+    /** Phase E8 — open the bulk-import wizard. Refreshes the list on success. */
+    importStudents(): void {
+        const ref = this._matDialog.open(StudentImportDialogComponent, { width: '640px' });
+        ref.afterClosed().subscribe((created) => {
+            if (created) this.loadStudents();
+        });
     }
 
     exportStudents(): void {
