@@ -185,6 +185,20 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:academic-cap',
                 link : '/institute'
+            },
+            {
+                id   : 'subscription-plans',
+                title: 'Subscription Plans',
+                type : 'basic',
+                icon : 'heroicons_outline:rectangle-stack',
+                link : '/plans'
+            },
+            {
+                id   : 'my-subscription',
+                title: 'My Subscription',
+                type : 'basic',
+                icon : 'heroicons_outline:credit-card',
+                link : '/subscription'
             }
         ]
     }
@@ -531,6 +545,20 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:academic-cap',
                 link : '/institute'
+            },
+            {
+                id   : 'subscription-plans',
+                title: 'Subscription Plans',
+                type : 'basic',
+                icon : 'heroicons_outline:rectangle-stack',
+                link : '/plans'
+            },
+            {
+                id   : 'my-subscription',
+                title: 'My Subscription',
+                type : 'basic',
+                icon : 'heroicons_outline:credit-card',
+                link : '/subscription'
             }
         ]
     }

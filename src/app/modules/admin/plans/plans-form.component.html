@@ -1,0 +1,71 @@
+<div class="flex flex-col flex-auto min-w-0 p-6 max-w-3xl">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">
+                {{ isEdit ? 'Edit Plan' : 'New Plan' }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                {{ isEdit ? 'Update plan details. Code is immutable.' : 'Add a new subscription tier.' }}
+            </p>
+        </div>
+        <button mat-stroked-button (click)="cancel()">
+            <mat-icon class="mr-2">arrow_back</mat-icon>
+            Back
+        </button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field>
+                <mat-label>Code</mat-label>
+                <input matInput formControlName="code" placeholder="starter / pro / free">
+                <mat-hint>Lowercase, alphanumeric + - or _. Immutable.</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Display Name</mat-label>
+                <input matInput formControlName="name" placeholder="Starter">
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Monthly Fee (BDT)</mat-label>
+                <input matInput type="number" formControlName="monthlyFeeBDT" min="0">
+                <span matSuffix class="pr-2 text-gray-500">BDT</span>
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Trial Days</mat-label>
+                <input matInput type="number" formControlName="trialDays" min="0">
+                <mat-hint>0 for paid-from-day-one plans.</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Max Institutes</mat-label>
+                <input matInput type="number" formControlName="maxInstitutes" min="1">
+            </mat-form-field>
+
+            <mat-form-field>
+                <mat-label>Max Users</mat-label>
+                <input matInput type="number" formControlName="maxUsers" min="1">
+            </mat-form-field>
+        </div>
+
+        <mat-form-field class="w-full">
+            <mat-label>Feature Flags (JSON array)</mat-label>
+            <input matInput formControlName="featureFlagsJson" placeholder='["CUSTOM_BRAND"]'>
+            <mat-hint>Array of feature codes this plan unlocks. Leave as <code>[]</code> for none.</mat-hint>
+        </mat-form-field>
+
+        <div *ngIf="isEdit">
+            <mat-checkbox formControlName="isActive">Plan is active (visible to tenants picking a plan)</mat-checkbox>
+        </div>
+
+        <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">
+                <mat-icon class="mr-2" *ngIf="!saving">save</mat-icon>
+                {{ saving ? 'Saving…' : (isEdit ? 'Save Changes' : 'Create Plan') }}
+            </button>
+        </div>
+    </form>
+</div>

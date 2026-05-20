@@ -1,0 +1,84 @@
+<div class="flex flex-col flex-auto min-w-0 p-6">
+    <div class="flex items-center justify-between mb-6">
+        <div>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Subscription Plans</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                Manage the plans tenants subscribe to. Plan changes apply to new tenants from creation time;
+                existing tenants stay on their current plan until you reassign them.
+            </p>
+        </div>
+        <button mat-flat-button color="primary" (click)="add()">
+            <mat-icon class="mr-2">add</mat-icon>
+            New Plan
+        </button>
+    </div>
+
+    <div *ngIf="loading" class="flex justify-center p-12">
+        <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+    </div>
+
+    <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <table mat-table [dataSource]="plans" class="w-full">
+            <ng-container matColumnDef="code">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold">Code</th>
+                <td mat-cell *matCellDef="let p"><span class="font-mono text-sm">{{ p.code }}</span></td>
+            </ng-container>
+
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold">Name</th>
+                <td mat-cell *matCellDef="let p">{{ p.name }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="monthlyFeeBDT">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Monthly (BDT)</th>
+                <td mat-cell *matCellDef="let p" class="text-right">{{ p.monthlyFeeBDT | number:'1.0-2' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="trialDays">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Trial</th>
+                <td mat-cell *matCellDef="let p" class="text-right">
+                    <span *ngIf="p.trialDays > 0">{{ p.trialDays }}d</span>
+                    <span *ngIf="!p.trialDays" class="text-gray-400">—</span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="maxInstitutes">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Institutes</th>
+                <td mat-cell *matCellDef="let p" class="text-right">{{ p.maxInstitutes }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="maxUsers">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Users</th>
+                <td mat-cell *matCellDef="let p" class="text-right">{{ p.maxUsers }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="isActive">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold">Status</th>
+                <td mat-cell *matCellDef="let p">
+                    <span [class]="p.isActive
+                        ? 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800'
+                        : 'inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600'">
+                        {{ p.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                </td>
+            </ng-container>
+
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="font-semibold text-right">Actions</th>
+                <td mat-cell *matCellDef="let p" class="text-right">
+                    <button mat-icon-button (click)="edit(p)" matTooltip="Edit plan">
+                        <mat-icon class="text-blue-600">edit</mat-icon>
+                    </button>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+
+        <div *ngIf="!plans.length" class="p-12 text-center text-gray-500">
+            <mat-icon class="text-6xl mb-2 opacity-30">layers</mat-icon>
+            <p>No plans yet. Click "New Plan" to create your first subscription tier.</p>
+        </div>
+    </div>
+</div>
