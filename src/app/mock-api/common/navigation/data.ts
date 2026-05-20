@@ -173,6 +173,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
         icon: 'heroicons_outline:cog-6-tooth',
         children: [
             {
+                id   : 'admin-dashboard',
+                title: 'Admin Dashboard',
+                type : 'basic',
+                icon : 'heroicons_outline:squares-2x2',
+                link : '/admin-dashboard'
+            },
+            {
                 id   : 'tenant-management',
                 title: 'Tenant Management',
                 type : 'basic',
@@ -532,6 +539,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
         type: 'collapsable',
         icon: 'heroicons_outline:cog-6-tooth',
         children: [
+            {
+                id   : 'admin-dashboard',
+                title: 'Admin Dashboard',
+                type : 'basic',
+                icon : 'heroicons_outline:squares-2x2',
+                link : '/admin-dashboard'
+            },
             {
                 id   : 'tenant-management',
                 title: 'Tenant Management',
