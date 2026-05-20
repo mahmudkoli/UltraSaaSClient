@@ -16,7 +16,7 @@
                     Tenant Permissions Management
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Configure security permissions for {{ tenant?.name || 'tenant' }}
+                    Configure security permissions for {{ tenant?.systemName || 'tenant' }}
                 </p>
             </div>
         </div>
@@ -54,7 +54,7 @@
                         </div>
                         <div>
                             <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100">Tenant Information</h3>
-                            <p class="text-sm text-blue-700 dark:text-blue-300">{{ tenant.name }}</p>
+                            <p class="text-sm text-blue-700 dark:text-blue-300">{{ tenant.systemName }}</p>
                         </div>
                     </div>
                     <div class="space-y-3">

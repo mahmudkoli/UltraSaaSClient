@@ -185,7 +185,7 @@
                                     <mat-select formControlName="existingTenantId" required>
                                         <mat-option *ngFor="let tenant of existingTenants" [value]="tenant.id">
                                             <div class="flex items-center justify-between w-full">
-                                                <span>{{ tenant.systemName || tenant.name }}</span>
+                                                <span>{{ tenant.systemName }}</span>
                                                 <span class="text-xs text-gray-500">{{ tenant.id }}</span>
                                             </div>
                                         </mat-option>
@@ -692,12 +692,12 @@
                                         <p class="font-semibold">{{ tenant.technicalAdminEmail }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-sm text-gray-500">Billing Plan</p>
-                                        <p class="font-semibold">{{ tenant.billingPlan }}</p>
+                                        <p class="text-sm text-gray-500">Plan</p>
+                                        <p class="font-semibold">{{ tenant.planId || '—' }}</p>
                                     </div>
                                     <div>
-                                        <p class="text-sm text-gray-500">Monthly Fee</p>
-                                        <p class="font-semibold">${{ tenant.monthlyFee }}</p>
+                                        <p class="text-sm text-gray-500">Lifecycle</p>
+                                        <p class="font-semibold">{{ tenant.lifecycleState || 'Trial' }}</p>
                                     </div>
                                 </div>
                             </mat-expansion-panel>
