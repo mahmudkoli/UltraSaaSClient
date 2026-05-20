@@ -200,6 +200,10 @@
                                                 <mat-icon class="icon-size-5 text-blue-600 dark:text-blue-400">edit</mat-icon>
                                                 <span class="ml-2">Edit Student</span>
                                             </button>
+                                            <button mat-menu-item (click)="downloadIdCard(student)" class="hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-indigo-600 dark:text-indigo-400">badge</mat-icon>
+                                                <span class="ml-2">Print ID Card</span>
+                                            </button>
                                             <button mat-menu-item (click)="deleteStudent(student)" class="hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-red-600 dark:text-red-400">delete</mat-icon>
                                                 <span class="ml-2">Delete Student</span>

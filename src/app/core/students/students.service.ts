@@ -52,6 +52,13 @@ export class StudentsService {
     }
 
     /**
+     * Phase E2 — download the student's ID card as a printable PDF.
+     */
+    downloadIdCard(id: string): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/${id}/id-card.pdf`, { responseType: 'blob' });
+    }
+
+    /**
      * Export students data to file
      * Returns a blob that can be downloaded
      */

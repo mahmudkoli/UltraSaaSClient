@@ -159,6 +159,25 @@ export class StudentListComponent implements OnInit, OnDestroy {
         this._router.navigate([student.id, 'edit'], { relativeTo: this._route });
     }
 
+    /**
+     * Phase E2 — download printable ID card PDF for a single student.
+     */
+    downloadIdCard(student: StudentDto): void {
+        this._studentsService.downloadIdCard(student.id)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (blob: Blob) => {
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ID-Card-${student.firstName ?? student.id}.pdf`;
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                },
+                error: () => this._notificationService.error('Could not generate ID card.'),
+            });
+    }
+
     deleteStudent(student: StudentDto): void {
         const dialogRef = this._fuseConfirmationService.open({
             title: 'Delete Student',
