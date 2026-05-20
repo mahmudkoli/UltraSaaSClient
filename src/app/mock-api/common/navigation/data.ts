@@ -208,6 +208,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/institute'
             },
             {
+                id   : 'grade-bands',
+                title: 'Grade Bands',
+                type : 'basic',
+                icon : 'heroicons_outline:star',
+                link : '/grade-bands'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -587,6 +594,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:academic-cap',
                 link : '/institute'
+            },
+            {
+                id   : 'grade-bands',
+                title: 'Grade Bands',
+                type : 'basic',
+                icon : 'heroicons_outline:star',
+                link : '/grade-bands'
             },
             {
                 id   : 'subscription-plans',

@@ -1,0 +1,76 @@
+<div class="flex flex-col flex-auto min-w-0 p-6 max-w-5xl">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Grade Bands</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Configure percentage → letter grade mappings. Used by result-sheet rendering.</p>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+        <!-- Form -->
+        <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+            <h3 class="text-lg font-semibold mb-3">{{ editingId ? 'Edit band' : 'Add band' }}</h3>
+            <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-2">
+                <mat-form-field class="w-full">
+                    <mat-label>Label</mat-label>
+                    <input matInput formControlName="label" placeholder="A+ / A / B / Pass / Fail">
+                </mat-form-field>
+                <div class="grid grid-cols-2 gap-3">
+                    <mat-form-field><mat-label>Lower %</mat-label><input matInput type="number" formControlName="lowerPercent" min="0" max="100"></mat-form-field>
+                    <mat-form-field><mat-label>Upper %</mat-label><input matInput type="number" formControlName="upperPercent" min="0" max="100"></mat-form-field>
+                </div>
+                <mat-form-field class="w-full">
+                    <mat-label>GPA (optional)</mat-label>
+                    <input matInput type="number" formControlName="gpa" placeholder="e.g. 5">
+                </mat-form-field>
+                <mat-form-field class="w-full">
+                    <mat-label>Display Order</mat-label>
+                    <input matInput type="number" formControlName="displayOrder">
+                </mat-form-field>
+                <div class="flex gap-2 pt-2">
+                    <button mat-stroked-button type="button" (click)="reset()">Reset</button>
+                    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">
+                        {{ saving ? 'Saving…' : (editingId ? 'Save' : 'Add') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- List -->
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+            <div *ngIf="loading" class="my-4">
+                <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            </div>
+            <table mat-table [dataSource]="bands" class="w-full">
+                <ng-container matColumnDef="label">
+                    <th mat-header-cell *matHeaderCellDef>Label</th>
+                    <td mat-cell *matCellDef="let b" class="font-bold">{{ b.label }}</td>
+                </ng-container>
+                <ng-container matColumnDef="range">
+                    <th mat-header-cell *matHeaderCellDef>Range</th>
+                    <td mat-cell *matCellDef="let b">{{ b.lowerPercent }}% – {{ b.upperPercent }}%</td>
+                </ng-container>
+                <ng-container matColumnDef="gpa">
+                    <th mat-header-cell *matHeaderCellDef>GPA</th>
+                    <td mat-cell *matCellDef="let b">{{ b.gpa ?? '—' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="displayOrder">
+                    <th mat-header-cell *matHeaderCellDef>Order</th>
+                    <td mat-cell *matCellDef="let b">{{ b.displayOrder }}</td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="!text-right">Actions</th>
+                    <td mat-cell *matCellDef="let b" class="!text-right">
+                        <button mat-icon-button (click)="edit(b)" matTooltip="Edit"><mat-icon class="!w-5 !h-5 !text-base">edit</mat-icon></button>
+                        <button mat-icon-button color="warn" (click)="remove(b)" matTooltip="Delete"><mat-icon class="!w-5 !h-5 !text-base">delete</mat-icon></button>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="cols"></tr>
+                <tr mat-row *matRowDef="let row; columns: cols"></tr>
+            </table>
+            <div *ngIf="bands.length === 0 && !loading" class="py-8 text-center text-gray-500">
+                <p>No grade bands configured.</p>
+                <p class="text-xs mt-1">Suggested BD pattern: A+ 80–100, A 70–79, A− 60–69, B 50–59, C 40–49, D 33–39, F 0–32.</p>
+            </div>
+        </div>
+    </div>
+</div>
