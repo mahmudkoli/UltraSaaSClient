@@ -12,8 +12,6 @@ import {
     SuspendTenantRequest,
     ArchiveTenantRequest,
     TenantUsageDto,
-    BulkSuspendTenantsRequest,
-    BulkActivateTenantsRequest,
 } from './tenants.types';
 
 @Injectable({ providedIn: 'root' })
@@ -103,16 +101,6 @@ export class TenantsService extends BaseApiService {
 
     getAllUsage(): Observable<TenantUsageDto[]> {
         return this.get<TenantUsageDto[]>('/api/tenants/usage/all');
-    }
-
-    // ============= BULK =============
-
-    bulkSuspend(request: BulkSuspendTenantsRequest): Observable<string> {
-        return this.postText('/api/tenants/bulk/suspend', request);
-    }
-
-    bulkActivate(request: BulkActivateTenantsRequest): Observable<string> {
-        return this.postText('/api/tenants/bulk/activate', request);
     }
 
     // ============= PERMISSIONS =============

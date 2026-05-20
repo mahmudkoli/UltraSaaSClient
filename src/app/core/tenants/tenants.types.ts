@@ -194,11 +194,3 @@ export interface PaginationResponse<T> {
     hasNextPage: boolean;
 }
 
-export interface BulkSuspendTenantsRequest {
-    tenantIds: string[];
-    reason: string;
-}
-
-export interface BulkActivateTenantsRequest {
-    tenantIds: string[];
-}
