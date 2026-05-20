@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { FeeInvoiceDto, CreateFeeInvoiceRequest, UpdateFeeInvoiceRequest, SearchFeeInvoicesRequest, PaginationResponse, FeeAnalytics, InvoiceStatus } from './fee-invoices.types';
+import { FeeInvoiceDto, CreateFeeInvoiceRequest, UpdateFeeInvoiceRequest, SearchFeeInvoicesRequest, PaginationResponse, FeeAnalytics, InvoiceStatus, FeeDuesDto, FeeCollectionReportDto } from './fee-invoices.types';
 
 @Injectable({ providedIn: 'root' })
 export class FeeInvoicesService {
@@ -29,6 +29,27 @@ export class FeeInvoicesService {
 
     delete(id: string): Observable<string> {
         return this.http.delete(`${this.baseUrl}/${id}`, { responseType: 'text' });
+    }
+
+    /** Phase E3 — outstanding dues per student. */
+    getDues(opts?: { classId?: string; academicYearId?: string; overdueOnly?: boolean }): Observable<FeeDuesDto[]> {
+        const params: string[] = [];
+        if (opts?.classId) params.push(`classId=${opts.classId}`);
+        if (opts?.academicYearId) params.push(`academicYearId=${opts.academicYearId}`);
+        if (opts?.overdueOnly) params.push('overdueOnly=true');
+        const qs = params.length ? '?' + params.join('&') : '';
+        return this.http.get<FeeDuesDto[]>(`${this.baseUrl}/dues${qs}`);
+    }
+
+    /** Phase E3 — fee collection report for a date range. */
+    getCollectionReport(opts?: { from?: string; to?: string; bucket?: 'Day' | 'Month'; classId?: string }): Observable<FeeCollectionReportDto> {
+        const params: string[] = [];
+        if (opts?.from) params.push(`from=${opts.from}`);
+        if (opts?.to) params.push(`to=${opts.to}`);
+        if (opts?.bucket) params.push(`bucket=${opts.bucket}`);
+        if (opts?.classId) params.push(`classId=${opts.classId}`);
+        const qs = params.length ? '?' + params.join('&') : '';
+        return this.http.get<FeeCollectionReportDto>(`${this.baseUrl}/reports/collection${qs}`);
     }
 
     getAnalytics(): Observable<FeeAnalytics> {

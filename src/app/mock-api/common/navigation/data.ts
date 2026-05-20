@@ -163,6 +163,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:banknotes',
                 link : '/fee-invoices'
+            },
+            {
+                id   : 'fee-reports',
+                title: 'Fee Reports',
+                type : 'basic',
+                icon : 'heroicons_outline:chart-bar-square',
+                link : '/fee-reports'
             }
         ]
     },
@@ -530,6 +537,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:banknotes',
                 link : '/fee-invoices'
+            },
+            {
+                id   : 'fee-reports',
+                title: 'Fee Reports',
+                type : 'basic',
+                icon : 'heroicons_outline:chart-bar-square',
+                link : '/fee-reports'
             }
         ]
     },
@@ -737,6 +751,13 @@ export const horizontalNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:banknotes',
                 link : '/fee-invoices'
+            },
+            {
+                id   : 'fee-reports',
+                title: 'Fee Reports',
+                type : 'basic',
+                icon : 'heroicons_outline:chart-bar-square',
+                link : '/fee-reports'
             }
         ]
     },

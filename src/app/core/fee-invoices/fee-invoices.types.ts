@@ -85,3 +85,33 @@ export interface FeeAnalytics {
     collectionRate: number;
     statusBreakdown: FeeStatusBucket[];
 }
+
+// Phase E3 — dues + collection report
+export interface FeeDuesDto {
+    studentId: string;
+    studentName: string;
+    rollNumber?: string;
+    className?: string;
+    invoiceCount: number;
+    overdueCount: number;
+    totalOutstanding: number;
+    totalOverdue: number;
+    oldestDueDate: string;
+}
+
+export interface FeeCollectionReportDto {
+    from: string;
+    to: string;
+    totalCollected: number;
+    paidInvoiceCount: number;
+    totalOutstanding: number;
+    overdueInvoiceCount: number;
+    series: FeeCollectionRow[];
+}
+
+export interface FeeCollectionRow {
+    bucketStart: string;
+    label: string;
+    collected: number;
+    paidCount: number;
+}

@@ -97,6 +97,7 @@ export const appRoutes: Route[] = [
             {path: 'fee-types', loadChildren: () => import('app/modules/admin/fee-type/fee-type.routes')},
             {path: 'fee-structures', loadChildren: () => import('app/modules/admin/fee-structure/fee-structure.routes')},
             {path: 'fee-invoices', loadChildren: () => import('app/modules/admin/fee-invoice/fee-invoice.routes')},
+            {path: 'fee-reports', loadChildren: () => import('app/modules/admin/fee-reports/fee-reports.routes')},
             {path: 'class-subjects', loadChildren: () => import('app/modules/admin/class-subject/class-subject.routes')},
             {path: 'fee-structure-details', loadChildren: () => import('app/modules/admin/fee-structure-detail/fee-structure-detail.routes')},
             {path: 'profile', loadChildren: () => import('app/modules/admin/profile/profile.routes')},
