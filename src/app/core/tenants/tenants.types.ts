@@ -1,245 +1,113 @@
 /**
- * Tenant DTO for SYSTEM level data (authentication, billing, technical config)
- * NO institute-specific business data here - that goes in InstituteDto
- * Represents technical/system aspects of tenant
+ * Tenant DTO mirrored from develop-v1 backend after Phases v1-C1 / v1-C2.2 /
+ * v1-C7 cleanup. NO institute-specific business data here — that's in
+ * InstituteDto. Plan / fees / quotas / compliance flags / resource counters
+ * were dropped from FSHTenantInfo; lifecycle state added.
  */
 export interface TenantDto {
-    // ============= TENANT IDENTITY =============
+    // Identity
     id: string;
-    systemName: string; // Changed from name
+    systemName: string;
     connectionString?: string;
-
-    // ============= TECHNICAL CONFIGURATION =============
     isShared: boolean;
-    issuer?: string;
-    subdomain: string; // Changed from url
-    customDomain?: string;
+    subdomain: string;
 
-    // ============= BILLING & SUBSCRIPTION =============
-    billingPlan: string;
-    monthlyFee: number;
-    billingCurrency: string;
+    // Billing & subscription
+    planId?: string;
     validUpto: string;
     paymentStatus: string;
     lastPaymentDate?: string;
-    lastBillingDate?: string;
     nextBillingDate?: string;
 
-    // ============= SYSTEM STATUS =============
-    isSystemActive: boolean; // Changed from isActive
+    // System status
+    isSystemActive: boolean;
     suspensionReason?: string;
     suspendedUntil?: string;
 
-    // ============= TECHNICAL CONTACTS =============
-    technicalAdminEmail: string; // Changed from adminEmail
+    // Lifecycle (Phase v1-C7)
+    cancelledOn?: string;
+    cancelReason?: string;
+    archivedOn?: string;
+    /** Derived state — Trial / Active / GracePeriod / Suspended / Cancelled / Archived. */
+    lifecycleState: string;
+
+    // Contacts
+    technicalAdminEmail: string;
     billingEmail: string;
-    emergencyContact?: string;
 
-    // ============= SYSTEM LIMITS =============
-    maxDatabaseGB: number;
-    maxApiCallsPerMonth: number;
-    maxConcurrentUsers: number;
-    maxUsers: number;
-    maxInstitutes: number;
-    currentMonthApiCalls: number;
-    currentDatabaseMB: number;
-    currentUsers: number;
+    // Audit retention
+    auditRetentionDays: number;
 
-    // ============= COMPLIANCE & SECURITY =============
-    dataResidency: string;
-    requiresGDPR: boolean;
-    dataRetentionDays: number;
-    requires2FA: boolean;
-    ipWhitelist?: string;
+    // Theme
+    themeConfig?: string;
 
-    // ============= SUPPORT =============
-    supportTier: string;
-    accountManagerEmail?: string;
-
-    // ============= FEATURE FLAGS =============
-    enableAdvancedReporting: boolean;
-    enableCustomBranding: boolean;
-    enableApiAccess: boolean;
-    enableBackupRestore: boolean;
-    enableMultipleDatabases: boolean;
-
-    // ============= AUDIT =============
+    // Audit metadata
     createdOn: string;
     createdBy: string;
     lastModifiedOn?: string;
     lastModifiedBy?: string;
     lastLoginDate?: string;
 
-    // ============= COMPUTED PROPERTIES =============
+    // Computed
     isInTrial: boolean;
     isPaymentOverdue: boolean;
-    hasCustomDomain: boolean;
-    isApproachingLimit: boolean;
-    hasExceededApiLimit: boolean;
     daysUntilExpiry: number;
     isExpiringSoon: boolean;
     hasExpired: boolean;
-
-    // ============= THEME =============
-    themeConfig?: string;
-
-    // ============= BACKWARD COMPATIBILITY =============
-    /** @deprecated Use systemName instead */
-    name?: string;
-    /** @deprecated Use technicalAdminEmail instead */
-    adminEmail?: string;
-    /** @deprecated Use isSystemActive instead */
-    isActive?: boolean;
-    /** @deprecated Use subdomain instead */
-    url?: string;
 }
 
 /**
- * Request to create a new tenant with system-level configuration
- * Contains only technical/system fields - institute data goes in separate request
+ * Request to create a new tenant. Phase v1-C2.2 dropped BillingPlan /
+ * BillingCurrency / Issuer / CustomDomain / DataResidency / RequiresGDPR /
+ * DataRetentionDays / Requires2FA / IpWhitelist / SupportTier /
+ * AccountManagerEmail / EmergencyContact / Max* + back-compat aliases.
  */
 export interface CreateTenantRequest {
-    // ============= REQUIRED FIELDS =============
     id: string;
-    systemName: string; // Changed from name
-    technicalAdminEmail: string; // Changed from adminEmail
-    subdomain: string; // Changed from url
-    billingPlan?: string;
+    systemName: string;
+    technicalAdminEmail: string;
+    subdomain: string;
 
-    // ============= OPTIONAL TECHNICAL FIELDS =============
     connectionString?: string;
     isShared?: boolean;
-    issuer?: string;
-    customDomain?: string;
 
-    // ============= BILLING FIELDS =============
-    monthlyFee?: number;
-    billingCurrency?: string;
+    /** Phase v1-C1 — SubscriptionPlan FK. */
+    planId?: string;
     billingEmail?: string;
-    paymentStatus?: string;
-
-    // ============= COMPLIANCE FIELDS =============
-    dataResidency?: string;
-    requiresGDPR?: boolean;
-    dataRetentionDays?: number;
-    requires2FA?: boolean;
-    ipWhitelist?: string;
-
-    // ============= SUPPORT FIELDS =============
-    supportTier?: string;
-    accountManagerEmail?: string;
-    emergencyContact?: string;
-
-    // ============= SYSTEM SETTINGS =============
-    maxDatabaseGB?: number;
-    maxApiCallsPerMonth?: number;
-    maxConcurrentUsers?: number;
-    maxUsers?: number;
-    maxInstitutes?: number;
-
-    // ============= FEATURE FLAGS =============
-    enableAdvancedReporting?: boolean;
-    enableCustomBranding?: boolean;
-    enableApiAccess?: boolean;
-    enableBackupRestore?: boolean;
-    enableMultipleDatabases?: boolean;
-
-    // ============= BACKWARD COMPATIBILITY =============
-    /** @deprecated Use systemName instead */
-    name?: string;
-    /** @deprecated Use technicalAdminEmail instead */
-    adminEmail?: string;
-    /** @deprecated Use subdomain instead */
-    url?: string;
-    validUpto?: string;
-    isActive?: boolean;
 }
 
-/**
- * Request to update tenant system-level configuration
- * Contains only technical/system fields that can be updated
- */
+/** Phase v1-C2.2 — same cleanup as CreateTenantRequest. */
 export interface UpdateTenantRequest {
     id: string;
-
-    // ============= UPDATEABLE SYSTEM FIELDS =============
-    systemName?: string; // Changed from name
-    technicalAdminEmail?: string; // Changed from adminEmail
-    subdomain?: string; // Changed from url
+    systemName?: string;
+    technicalAdminEmail?: string;
+    subdomain?: string;
     connectionString?: string;
-    customDomain?: string;
-    issuer?: string;
 
-    // ============= BILLING FIELDS =============
-    billingPlan?: string;
-    monthlyFee?: number;
-    billingCurrency?: string;
+    /** Phase v1-C1 — change plan via PUT. */
+    planId?: string;
     billingEmail?: string;
-    paymentStatus?: string;
 
-    // ============= COMPLIANCE FIELDS =============
-    dataResidency?: string;
-    requiresGDPR?: boolean;
-    dataRetentionDays?: number;
-    requires2FA?: boolean;
-    ipWhitelist?: string;
-
-    // ============= SUPPORT FIELDS =============
-    supportTier?: string;
-    accountManagerEmail?: string;
-    emergencyContact?: string;
-
-    // ============= SYSTEM SETTINGS (Admin Only) =============
     isShared?: boolean;
-    maxDatabaseGB?: number;
-    maxApiCallsPerMonth?: number;
-    maxConcurrentUsers?: number;
-    maxUsers?: number;
-    maxInstitutes?: number;
-
-    // ============= FEATURE FLAGS =============
-    enableAdvancedReporting?: boolean;
-    enableCustomBranding?: boolean;
-    enableApiAccess?: boolean;
-    enableBackupRestore?: boolean;
-    enableMultipleDatabases?: boolean;
-
-    // ============= BACKWARD COMPATIBILITY =============
-    /** @deprecated Use systemName instead */
-    name?: string;
-    /** @deprecated Use technicalAdminEmail instead */
-    adminEmail?: string;
-    /** @deprecated Use subdomain instead */
-    url?: string;
-    validUpto?: string;
-    isActive?: boolean;
 }
 
-/**
- * Request to create both tenant and institute together
- * Combines system-level and business-level configuration
- */
 export interface CreateTenantWithInstituteRequest {
-    // ============= TENANT FIELDS =============
+    // Tenant fields
     id: string;
-    systemName: string; // Changed from name
-    technicalAdminEmail: string; // Changed from adminEmail
-    subdomain: string; // Changed from url
+    systemName: string;
+    technicalAdminEmail: string;
+    subdomain: string;
     connectionString?: string;
     isShared?: boolean;
-    issuer?: string;
-    billingPlan?: string;
-    billingCurrency?: string;
-    dataResidency?: string;
-    supportTier?: string;
+    planId?: string;
 
-    // ============= INSTITUTE FIELDS =============
-    instituteDisplayName: string; // Changed from instituteName
+    // Institute fields
+    instituteDisplayName: string;
     instituteCode: string;
-    instituteContactEmail: string; // Changed from instituteDescription
-    instituteAddressLine?: string; // Changed from instituteAddress
-    instituteContactPhone?: string; // Changed from institutePhone
-    instituteLogoUrl?: string; // Changed from instituteLogo
+    instituteContactEmail: string;
+    instituteAddressLine?: string;
+    instituteContactPhone?: string;
+    instituteLogoUrl?: string;
     instituteType: string;
     instituteCountry?: string;
     instituteCity?: string;
@@ -253,44 +121,14 @@ export interface CreateTenantWithInstituteRequest {
     language?: string;
     instituteBannerUrl?: string;
     institutePrimaryColor?: string;
-
-    // ============= BACKWARD COMPATIBILITY =============
-    /** @deprecated Use systemName instead */
-    name?: string;
-    /** @deprecated Use technicalAdminEmail instead */
-    adminEmail?: string;
-    /** @deprecated Use subdomain instead */
-    url?: string;
-    /** @deprecated Use instituteDisplayName instead */
-    instituteName?: string;
-    /** @deprecated Use instituteContactEmail instead */
-    instituteDescription?: string;
-    /** @deprecated Use instituteAddressLine instead */
-    instituteAddress?: string;
-    /** @deprecated Use instituteContactPhone instead */
-    institutePhone?: string;
-    /** @deprecated Use instituteLogoUrl instead */
-    instituteLogo?: string;
 }
 
 export interface CreateTenantWithInstituteResponse {
     tenantId: string;
     instituteId: string;
-    tenantSystemName: string; // Changed from tenantName
-    instituteDisplayName: string; // Changed from instituteName
+    tenantName: string;
+    instituteName: string;
     status: string;
-
-    // ============= BACKWARD COMPATIBILITY =============
-    /** @deprecated Use tenantSystemName instead */
-    tenantName?: string;
-    /** @deprecated Use instituteDisplayName instead */
-    instituteName?: string;
-}
-
-export interface UpgradeSubscriptionRequest {
-    tenantId: string;
-    billingPlan: string;
-    extendedExpiryDate?: string;
 }
 
 export interface TenantWithPermissionsDto extends TenantDto {
@@ -311,17 +149,6 @@ export interface PermissionDto {
     riskLevel: 'low' | 'medium' | 'high';
 }
 
-/**
- * Billing-specific requests
- */
-export interface UpdateBillingRequest {
-    tenantId: string;
-    billingPlan: string;
-    billingEmail?: string;
-    billingCurrency?: string;
-    monthlyFee?: number;
-}
-
 export interface SuspendTenantRequest {
     tenantId: string;
     reason: string;
@@ -334,22 +161,10 @@ export interface ArchiveTenantRequest {
     archiveDate?: string;
 }
 
-/**
- * Resource usage and monitoring
- */
-export interface TenantUsageDto {
+/** Phase v1-C7 — terminal cancellation (RecordPayment does NOT auto-reactivate). */
+export interface CancelTenantRequest {
     tenantId: string;
-    currentDatabaseMB: number;
-    maxDatabaseGB: number;
-    currentMonthApiCalls: number;
-    maxApiCallsPerMonth: number;
-    currentConcurrentUsers: number;
-    maxConcurrentUsers: number;
-    usagePercentages: {
-        database: number;
-        apiCalls: number;
-        users: number;
-    };
+    reason: string;
 }
 
 export interface PaginationResponse<T> {
@@ -361,33 +176,3 @@ export interface PaginationResponse<T> {
     hasPreviousPage: boolean;
     hasNextPage: boolean;
 }
-
-// ============= REQUEST INTERFACES =============
-
-export interface UpdateBillingPlanRequest {
-    tenantId: string;
-    billingPlan: string;
-    monthlyFee?: number;
-    billingCurrency?: string;
-    billingEmail?: string;
-    paymentStatus?: string;
-}
-
-export interface UpdateResourceLimitsRequest {
-    tenantId: string;
-    maxDatabaseGB?: number;
-    maxApiCallsPerMonth?: number;
-    maxConcurrentUsers?: number;
-}
-
-export interface ExtendValidityRequest {
-    tenantId: string;
-    months: number;
-}
-
-export interface UpdateResourceUsageRequest {
-    tenantId: string;
-    databaseMB: number;
-    apiCalls: number;
-}
-

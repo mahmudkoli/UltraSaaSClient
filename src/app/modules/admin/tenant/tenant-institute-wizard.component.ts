@@ -585,43 +585,17 @@ export class TenantInstituteWizardComponent implements OnInit, OnDestroy {
         const billingData = this.tenantBillingForm.value;
         const reviewData = this.reviewForm.value;
 
+        // Phase v1-C2.2 — minimal create payload (most fields removed).
+        // Wizard form steps still collect technical/billing data for UX
+        // continuity; only the surviving fields are sent to the API.
         return {
             id: basicData.id,
             systemName: basicData.systemName,
             technicalAdminEmail: basicData.technicalAdminEmail,
             subdomain: basicData.subdomain,
-            customDomain: basicData.customDomain || undefined,
-
-            // Technical configuration
-            dataResidency: technicalData.dataResidency,
-            maxDatabaseGB: technicalData.maxDatabaseGB,
-            maxApiCallsPerMonth: technicalData.maxApiCallsPerMonth,
-            maxConcurrentUsers: technicalData.maxConcurrentUsers,
-            dataRetentionDays: technicalData.dataRetentionDays,
-            requires2FA: technicalData.requires2FA,
-            requiresGDPR: technicalData.requiresGDPR,
-            ipWhitelist: technicalData.ipWhitelist || undefined,
-
-            // Billing configuration
-            billingPlan: billingData.billingPlan,
-            monthlyFee: billingData.monthlyFee,
-            billingCurrency: billingData.billingCurrency,
+            isShared: false,
+            planId: billingData.planId || undefined,
             billingEmail: billingData.billingEmail,
-            paymentStatus: billingData.paymentStatus,
-            supportTier: billingData.supportTier,
-            validUpto: new Date(billingData.validUpto).toISOString(),
-            accountManagerEmail: billingData.accountManagerEmail || undefined,
-            emergencyContact: billingData.emergencyContact || undefined,
-
-            // Features
-            enableAdvancedReporting: technicalData.enableAdvancedReporting,
-            enableCustomBranding: technicalData.enableCustomBranding,
-            enableApiAccess: technicalData.enableApiAccess,
-            enableBackupRestore: technicalData.enableBackupRestore,
-
-            // Auto-activate if selected
-            isActive: reviewData.autoActivate,
-            isShared: false
         };
     }
 
@@ -725,9 +699,9 @@ export class TenantInstituteWizardComponent implements OnInit, OnDestroy {
         if (this.wizardMode === 'institute-only') {
             const tenant = this.existingTenants.find(t => t.id === this.tenantBasicForm.get('existingTenantId')?.value);
             return tenant ? {
-                systemName: tenant.systemName || tenant.name,
-                subdomain: tenant.subdomain || tenant.url,
-                billingPlan: tenant.billingPlan
+                systemName: tenant.systemName,
+                subdomain: tenant.subdomain,
+                planId: tenant.planId,
             } : null;
         }
 

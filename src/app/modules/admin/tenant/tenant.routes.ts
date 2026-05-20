@@ -32,14 +32,12 @@ export default [
                 path: ':id/features',
                 loadComponent: () => import('./tenant-features.component').then(m => m.TenantFeaturesComponent)
             },
-            {
-                path: ':id/billing',
-                loadComponent: () => import('./tenant-billing.component').then(m => m.TenantBillingComponent)
-            },
-            {
-                path: ':id/usage',
-                loadComponent: () => import('./tenant-usage.component').then(m => m.TenantUsageComponent)
-            },
+            // Phase v1-C2.2 — /billing + /usage routes dropped. The
+            // backing endpoints + DTOs (TenantUsageDto, UpdateBillingPlanRequest,
+            // UpdateResourceLimitsRequest, ExtendValidityRequest,
+            // UpdateResourceUsageRequest, UpgradeSubscriptionRequest) are gone.
+            // New billing UI rebuilds against /api/mysubscription + the
+            // SubscriptionPlan admin module — separate FE pass.
             {
                 path: ':id/theme-settings',
                 loadComponent: () => import('./tenant-theme-settings.component').then(m => m.TenantThemeSettingsComponent)

@@ -315,7 +315,7 @@ export class TenantDashboardComponent implements OnInit {
     private calculateSummaryData(): void {
         this.summary = {
             totalTenants: this.recentTenants.length * 2, // Mock multiplier
-            activeTenants: this.recentTenants.filter(t => t.isActive || t.isSystemActive).length * 2,
+            activeTenants: this.recentTenants.filter(t => t.isSystemActive).length * 2,
             trialTenants: Math.floor(this.recentTenants.length * 0.3)
         };
     }

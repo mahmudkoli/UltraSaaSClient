@@ -99,12 +99,12 @@ export class TenantListComponent implements OnInit {
             const parsed = JSON.parse(filter) as { term: string; status: 'all' | 'active' | 'inactive' };
             const term = (parsed.term || '').toLowerCase().trim();
             const matchesTerm = !term || (
-                data.name?.toLowerCase().includes(term) ||
+                data.systemName?.toLowerCase().includes(term) ||
                 data.id?.toLowerCase().includes(term) ||
-                data.adminEmail?.toLowerCase().includes(term) ||
-                data.url?.toLowerCase().includes(term)
+                data.technicalAdminEmail?.toLowerCase().includes(term) ||
+                data.subdomain?.toLowerCase().includes(term)
             );
-            const matchesStatus = parsed.status === 'all' || (parsed.status === 'active' ? data.isActive : !data.isActive);
+            const matchesStatus = parsed.status === 'all' || (parsed.status === 'active' ? data.isSystemActive : !data.isSystemActive);
             return matchesTerm && matchesStatus;
         };
 
@@ -178,7 +178,7 @@ export class TenantListComponent implements OnInit {
     activateTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
             title: 'Activate Tenant',
-            message: `Are you sure you want to activate tenant "${tenant.name}"?`,
+            message: `Are you sure you want to activate tenant "${tenant.systemName}"?`,
             actions: {
                 confirm: {
                     label: 'Activate'
@@ -212,7 +212,7 @@ export class TenantListComponent implements OnInit {
     deactivateTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
             title: 'Deactivate Tenant',
-            message: `Are you sure you want to deactivate tenant "${tenant.name}"?`,
+            message: `Are you sure you want to deactivate tenant "${tenant.systemName}"?`,
             actions: {
                 confirm: {
                     label: 'Deactivate'
@@ -258,7 +258,7 @@ export class TenantListComponent implements OnInit {
     suspendTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
             title: 'Suspend Tenant',
-            message: `Are you sure you want to suspend tenant "${tenant.name}"? Users will not be able to access the system.`,
+            message: `Are you sure you want to suspend tenant "${tenant.systemName}"? Users will not be able to access the system.`,
             icon: {
                 show: true,
                 name: 'heroicons_outline:pause',
@@ -277,7 +277,7 @@ export class TenantListComponent implements OnInit {
 
         confirmation.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
-                this._tenantsService.suspendTenant(tenant.id, 'Manual suspension by administrator').subscribe({
+                this._tenantsService.suspend(tenant.id, { tenantId: tenant.id, reason: 'Manual suspension by administrator' }).subscribe({
                     next: () => {
                         this.loadTenants();
                     },
@@ -301,7 +301,7 @@ export class TenantListComponent implements OnInit {
     archiveTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
             title: 'Archive Tenant',
-            message: `Are you sure you want to archive tenant "${tenant.name}"? The data will be preserved but become read-only. This action should only be taken for closed accounts.`,
+            message: `Are you sure you want to archive tenant "${tenant.systemName}"? The data will be preserved but become read-only. This action should only be taken for closed accounts.`,
             icon: {
                 show: true,
                 name: 'heroicons_outline:archive',
@@ -320,7 +320,7 @@ export class TenantListComponent implements OnInit {
 
         confirmation.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
-                this._tenantsService.archiveTenant(tenant.id, 'Account closed - archived for record keeping').subscribe({
+                this._tenantsService.archive(tenant.id, { tenantId: tenant.id, reason: 'Account closed - archived for record keeping' }).subscribe({
                     next: () => {
                         this.loadTenants();
                     },
@@ -378,10 +378,10 @@ export class TenantListComponent implements OnInit {
         }
     }
 
-    getResourceUsagePercentage(tenant: TenantDto): number {
-        if (!tenant.maxApiCallsPerMonth) return 0;
-        return (tenant.currentMonthApiCalls / tenant.maxApiCallsPerMonth) * 100;
-    }
+    // Phase v1-C2.2 — resource-usage counters dropped. Plan-derived caps
+    // resolved via PlanId. Tile shows "—" until reattached if/when a
+    // metering middleware is built.
+    getResourceUsagePercentage(_tenant: TenantDto): number { return 0; }
 
     getUsageStatusColor(percentage: number): string {
         if (percentage >= 90) return 'text-red-600';

@@ -187,21 +187,17 @@ export class TenantWithInstituteFormComponent implements OnInit {
         this.saving = true;
         const formData = this.tenantForm.getRawValue();
 
+        // Phase v1-C2.2 — minimal request shape.
         const request: CreateTenantWithInstituteRequest = {
-            // ============= TENANT FIELDS (Supported by API) =============
             id: formData.id,
             systemName: formData.name,
             technicalAdminEmail: formData.adminEmail,
             subdomain: this.normalizeUrl(formData.url),
             connectionString: formData.connectionString || undefined,
             isShared: formData.isShared,
-            issuer: formData.issuer || undefined,
-            billingPlan: formData.billingPlan || undefined,
-            billingCurrency: formData.billingCurrency || undefined,
-            dataResidency: formData.dataResidency || undefined,
-            supportTier: formData.supportTier || undefined,
+            planId: formData.planId || undefined,
 
-            // ============= INSTITUTE FIELDS (Supported by API) =============
+            // Institute fields
             instituteDisplayName: formData.instituteName,
             instituteCode: formData.instituteCode,
             instituteContactEmail: formData.billingEmail || formData.adminEmail,
@@ -213,7 +209,7 @@ export class TenantWithInstituteFormComponent implements OnInit {
             maxTeachers: formData.maxTeachers || undefined,
             timeZone: formData.timeZone || undefined,
             currency: formData.currency || undefined,
-            language: formData.language || undefined
+            language: formData.language || undefined,
         };
 
         this._tenantsService.createWithInstitute(request).subscribe({

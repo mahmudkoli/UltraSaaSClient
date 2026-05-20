@@ -115,49 +115,24 @@ export class TenantFormComponent implements OnInit {
         this.loading = true;
         this._tenantsService.getById(this.tenantId).subscribe({
             next: (tenant) => {
+                // Phase v1-C2.2 — minimal form. Most of the FSH-template
+                // form fields were deleted along with their backing DTO
+                // properties. Form now only patches the surviving fields.
                 this.tenantForm.patchValue({
-                    // Basic Information
                     id: tenant.id,
-                    systemName: tenant.systemName || tenant.name,
-                    technicalAdminEmail: tenant.technicalAdminEmail || tenant.adminEmail,
-                    subdomain: tenant.subdomain || tenant.url,
-                    customDomain: tenant.customDomain || '',
+                    systemName: tenant.systemName,
+                    technicalAdminEmail: tenant.technicalAdminEmail,
+                    subdomain: tenant.subdomain,
                     connectionString: tenant.connectionString || '',
                     isShared: tenant.isShared,
-                    issuer: tenant.issuer || '',
-
-                    // Billing & Subscription
-                    billingPlan: tenant.billingPlan || 'Basic',
-                    monthlyFee: tenant.monthlyFee || 0,
-                    billingCurrency: tenant.billingCurrency || 'USD',
-                    billingEmail: tenant.billingEmail || tenant.technicalAdminEmail || tenant.adminEmail,
-                    paymentStatus: tenant.paymentStatus || 'Pending',
-                    supportTier: tenant.supportTier || 'Basic',
-                    accountManagerEmail: tenant.accountManagerEmail || '',
-                    emergencyContact: tenant.emergencyContact || '',
-
-                    // System Limits
-                    maxDatabaseGB: tenant.maxDatabaseGB || 5,
-                    maxApiCallsPerMonth: tenant.maxApiCallsPerMonth || 10000,
-                    maxConcurrentUsers: tenant.maxConcurrentUsers || 50,
-                    dataResidency: tenant.dataResidency || 'US',
-                    dataRetentionDays: tenant.dataRetentionDays || 365,
-
-                    // Status & Validity
+                    planId: tenant.planId || '',
+                    billingEmail: tenant.billingEmail || tenant.technicalAdminEmail,
+                    paymentStatus: tenant.paymentStatus || 'Trial',
                     validUpto: tenant.validUpto ? new Date(tenant.validUpto).toISOString().split('T')[0] : '',
-                    isSystemActive: tenant.isSystemActive ?? tenant.isActive,
+                    isSystemActive: tenant.isSystemActive,
                     suspensionReason: tenant.suspensionReason || '',
                     suspendedUntil: tenant.suspendedUntil ? new Date(tenant.suspendedUntil).toISOString().split('T')[0] : '',
-
-                    // Features & Settings
-                    requiresGDPR: tenant.requiresGDPR || false,
-                    requires2FA: tenant.requires2FA || false,
-                    ipWhitelist: tenant.ipWhitelist || '',
-                    enableAdvancedReporting: tenant.enableAdvancedReporting || false,
-                    enableCustomBranding: tenant.enableCustomBranding || false,
-                    enableApiAccess: tenant.enableApiAccess !== false,
-                    enableBackupRestore: tenant.enableBackupRestore || false,
-                    enableMultipleDatabases: tenant.enableMultipleDatabases || false
+                    auditRetentionDays: tenant.auditRetentionDays ?? 365,
                 });
                 // Parse theme config for display
                 if (tenant.themeConfig) {
@@ -188,47 +163,16 @@ export class TenantFormComponent implements OnInit {
         const formData = this.tenantForm.getRawValue();
 
         if (this.isEditMode && this.tenantId) {
-            // Update existing tenant
+            // Phase v1-C2.2 — minimal update payload.
             const updateRequest: UpdateTenantRequest = {
                 id: this.tenantId,
-                name: formData.systemName,
-                adminEmail: formData.technicalAdminEmail,
-                url: formData.subdomain,
+                systemName: formData.systemName,
+                technicalAdminEmail: formData.technicalAdminEmail,
+                subdomain: formData.subdomain,
                 connectionString: formData.connectionString || undefined,
                 isShared: formData.isShared,
-                issuer: formData.issuer || undefined,
-                customDomain: formData.customDomain || undefined,
-
-                // Billing & Subscription
-                billingPlan: formData.billingPlan,
-                monthlyFee: formData.monthlyFee,
-                billingCurrency: formData.billingCurrency,
+                planId: formData.planId || undefined,
                 billingEmail: formData.billingEmail,
-                paymentStatus: formData.paymentStatus,
-                supportTier: formData.supportTier,
-                accountManagerEmail: formData.accountManagerEmail || undefined,
-                emergencyContact: formData.emergencyContact || undefined,
-
-                // System Limits
-                maxDatabaseGB: formData.maxDatabaseGB,
-                maxApiCallsPerMonth: formData.maxApiCallsPerMonth,
-                maxConcurrentUsers: formData.maxConcurrentUsers,
-                dataResidency: formData.dataResidency,
-                dataRetentionDays: formData.dataRetentionDays,
-
-                // Status & Validity
-                validUpto: formData.validUpto ? new Date(formData.validUpto).toISOString() : undefined,
-                isActive: formData.isSystemActive,
-
-                // Features & Settings
-                requiresGDPR: formData.requiresGDPR,
-                requires2FA: formData.requires2FA,
-                ipWhitelist: formData.ipWhitelist || undefined,
-                enableAdvancedReporting: formData.enableAdvancedReporting,
-                enableCustomBranding: formData.enableCustomBranding,
-                enableApiAccess: formData.enableApiAccess,
-                enableBackupRestore: formData.enableBackupRestore,
-                enableMultipleDatabases: formData.enableMultipleDatabases
             };
 
             this._tenantsService.update(this.tenantId, updateRequest).subscribe({
@@ -261,44 +205,16 @@ export class TenantFormComponent implements OnInit {
                 }
             });
         } else {
-            // Create new tenant
+            // Phase v1-C2.2 — minimal create payload.
             const createRequest: CreateTenantRequest = {
                 id: formData.id,
                 systemName: formData.systemName,
                 technicalAdminEmail: formData.technicalAdminEmail,
                 subdomain: formData.subdomain,
-                customDomain: formData.customDomain || undefined,
                 connectionString: formData.connectionString || undefined,
                 isShared: formData.isShared,
-                issuer: formData.issuer || undefined,
-
-                // Billing & Subscription
-                billingPlan: formData.billingPlan,
-                monthlyFee: formData.monthlyFee,
-                billingCurrency: formData.billingCurrency,
+                planId: formData.planId || undefined,
                 billingEmail: formData.billingEmail,
-                paymentStatus: formData.paymentStatus,
-                supportTier: formData.supportTier,
-                accountManagerEmail: formData.accountManagerEmail || undefined,
-                emergencyContact: formData.emergencyContact || undefined,
-
-                // System Limits
-                maxDatabaseGB: formData.maxDatabaseGB,
-                maxApiCallsPerMonth: formData.maxApiCallsPerMonth,
-                maxConcurrentUsers: formData.maxConcurrentUsers,
-                dataResidency: formData.dataResidency,
-                dataRetentionDays: formData.dataRetentionDays,
-
-                // Status & Validity
-                validUpto: formData.validUpto ? new Date(formData.validUpto).toISOString() : undefined,
-                isActive: formData.isSystemActive,
-
-                // Features & Settings
-                enableAdvancedReporting: formData.enableAdvancedReporting,
-                enableCustomBranding: formData.enableCustomBranding,
-                enableApiAccess: formData.enableApiAccess,
-                enableBackupRestore: formData.enableBackupRestore,
-                enableMultipleDatabases: formData.enableMultipleDatabases
             };
 
             this._tenantsService.create(createRequest).subscribe({
