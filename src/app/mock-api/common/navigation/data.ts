@@ -634,6 +634,13 @@ export const horizontalNavigation: FuseNavigationItem[] = [
                 link : '/teachers'
             },
             {
+                id   : 'leaves',
+                title: 'Leaves',
+                type : 'basic',
+                icon : 'heroicons_outline:calendar',
+                link : '/leaves'
+            },
+            {
                 id   : 'academic-year-management',
                 title: 'Academic Years',
                 type : 'basic',
