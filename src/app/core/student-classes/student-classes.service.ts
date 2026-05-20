@@ -37,4 +37,22 @@ export class StudentClassesService {
     delete(id: string): Observable<string> {
         return this.http.delete<string>(`${this.baseUrl}/${id}`);
     }
+
+    /** Phase E4 — bulk-promote Enrolled students from one class to another. */
+    promote(request: PromoteStudentsRequest): Observable<PromoteStudentsResponse> {
+        return this.http.post<PromoteStudentsResponse>(`${this.baseUrl}/promote`, request);
+    }
+}
+
+export interface PromoteStudentsRequest {
+    sourceClassId: string;
+    targetClassId: string;
+    targetAcademicYearId: string;
+    holdBackStudentIds: string[];
+}
+
+export interface PromoteStudentsResponse {
+    promoted: number;
+    heldBack: number;
+    skipped: number;
 }

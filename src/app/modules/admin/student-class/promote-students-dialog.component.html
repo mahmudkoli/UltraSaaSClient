@@ -1,0 +1,42 @@
+<h2 mat-dialog-title class="!flex !items-center !gap-2">
+    <mat-icon class="text-primary">trending_up</mat-icon>
+    Bulk Promote Students
+</h2>
+
+<form [formGroup]="form" (ngSubmit)="submit()">
+    <mat-dialog-content>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Marks every <strong>Enrolled</strong> student in the source class as <strong>Graduated</strong>
+            and creates a fresh Enrolled row in the target class under the chosen Academic Year.
+        </p>
+
+        <mat-form-field class="w-full">
+            <mat-label>Source Class (current)</mat-label>
+            <mat-select formControlName="sourceClassId">
+                <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }} {{ c.section }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="w-full">
+            <mat-label>Target Class (next)</mat-label>
+            <mat-select formControlName="targetClassId">
+                <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }} {{ c.section }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field class="w-full">
+            <mat-label>Target Academic Year</mat-label>
+            <mat-select formControlName="targetAcademicYearId">
+                <mat-option *ngFor="let y of years" [value]="y.id">{{ y.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-stroked-button type="button" (click)="cancel()" [disabled]="saving">Cancel</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">
+            <mat-icon class="mr-1" *ngIf="!saving">check</mat-icon>
+            {{ saving ? 'Promoting…' : 'Promote' }}
+        </button>
+    </mat-dialog-actions>
+</form>

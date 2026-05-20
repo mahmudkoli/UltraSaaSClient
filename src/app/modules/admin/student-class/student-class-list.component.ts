@@ -8,6 +8,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
@@ -16,6 +17,7 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { StudentClassesService } from '../../../core/student-classes/student-classes.service';
 import { StudentClassDto, SearchStudentClassesRequest, PaginationResponse } from '../../../core/student-classes/student-classes.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { PromoteStudentsDialogComponent } from './promote-students-dialog.component';
 
 @Component({
     selector: 'student-class-list',
@@ -29,6 +31,7 @@ import { NotificationService } from '../../../core/services/notification.service
         ReactiveFormsModule,
         RouterModule,
         MatButtonModule,
+        MatDialogModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
@@ -56,10 +59,19 @@ export class StudentClassListComponent implements OnInit, OnDestroy {
         private _studentClassesService: StudentClassesService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
+        private _dialog: MatDialog,
         private _router: Router,
         private _route: ActivatedRoute,
         private _notificationService: NotificationService
     ) {}
+
+    /** Phase E4 — open the bulk promotion wizard. Reloads the list on success. */
+    openPromote(): void {
+        const ref = this._dialog.open(PromoteStudentsDialogComponent, { width: '560px' });
+        ref.afterClosed().pipe(takeUntil(this._unsubscribeAll)).subscribe((ok) => {
+            if (ok) this.loadData();
+        });
+    }
 
     ngOnInit(): void {
         this.searchControl.valueChanges

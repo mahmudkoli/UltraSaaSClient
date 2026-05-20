@@ -23,6 +23,10 @@
                 <input matInput [formControl]="searchControl" placeholder="Search by student or class name">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>
             </mat-form-field>
+            <button mat-stroked-button (click)="openPromote()" matTooltip="Promote enrolled students from one class to another">
+                <mat-icon class="mr-1">trending_up</mat-icon>
+                Bulk Promote
+            </button>
             <button mat-fab color="primary" (click)="add()" matTooltip="Assign Student to Class">
                 <mat-icon>add</mat-icon>
             </button>
