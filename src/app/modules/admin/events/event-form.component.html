@@ -1,0 +1,48 @@
+<div class="flex flex-col flex-auto min-w-0 p-6 max-w-3xl">
+    <div class="mb-6"><h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{{ editingId ? 'Edit event' : 'New event' }}</h2></div>
+    <form [formGroup]="form" (ngSubmit)="save()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3">
+        <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+        <mat-form-field class="w-full"><mat-label>Title</mat-label><input matInput formControlName="title"></mat-form-field>
+        <mat-form-field class="w-full"><mat-label>Description</mat-label><textarea matInput formControlName="description" rows="3"></textarea></mat-form-field>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <mat-form-field><mat-label>Type</mat-label><mat-select formControlName="eventType"><mat-option *ngFor="let t of types" [value]="t.v">{{ t.l }}</mat-option></mat-select></mat-form-field>
+            <mat-form-field><mat-label>Location</mat-label><input matInput formControlName="location"></mat-form-field>
+            <mat-form-field><mat-label>Start date</mat-label><input matInput type="date" formControlName="startDate"></mat-form-field>
+            <mat-form-field><mat-label>End date</mat-label><input matInput type="date" formControlName="endDate"></mat-form-field>
+            <mat-form-field><mat-label>Start time (hh:mm:ss)</mat-label><input matInput formControlName="startTime" placeholder="09:00:00"></mat-form-field>
+            <mat-form-field><mat-label>End time (hh:mm:ss)</mat-label><input matInput formControlName="endTime" placeholder="11:00:00"></mat-form-field>
+            <mat-form-field><mat-label>Calendar colour</mat-label><input matInput formControlName="color" placeholder="#4F46E5"></mat-form-field>
+            <mat-form-field><mat-label>Organizer</mat-label><input matInput formControlName="organizer"></mat-form-field>
+        </div>
+        <div class="flex gap-4">
+            <mat-checkbox formControlName="isAllDay">All day</mat-checkbox>
+            <mat-checkbox formControlName="isActive">Active</mat-checkbox>
+            <mat-checkbox formControlName="isRecurring">Recurring</mat-checkbox>
+            <mat-checkbox formControlName="requiresRegistration">Requires registration</mat-checkbox>
+        </div>
+        <ng-container *ngIf="form.value.isRecurring">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <mat-form-field><mat-label>Pattern</mat-label><mat-select formControlName="recurrencePattern"><mat-option *ngFor="let p of patterns" [value]="p">{{ p }}</mat-option></mat-select></mat-form-field>
+                <mat-form-field><mat-label>Interval</mat-label><input matInput type="number" formControlName="recurrenceInterval" min="1"></mat-form-field>
+                <mat-form-field><mat-label>Recurrence end</mat-label><input matInput type="date" formControlName="recurrenceEndDate"></mat-form-field>
+            </div>
+        </ng-container>
+        <ng-container *ngIf="form.value.requiresRegistration">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <mat-form-field><mat-label>Max participants</mat-label><input matInput type="number" formControlName="maxParticipants" min="1"></mat-form-field>
+                <mat-form-field><mat-label>Fee (BDT)</mat-label><input matInput type="number" formControlName="registrationFee"></mat-form-field>
+                <mat-form-field><mat-label>Deadline (date or text)</mat-label><input matInput formControlName="registrationDeadline"></mat-form-field>
+            </div>
+        </ng-container>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <mat-form-field><mat-label>Contact person</mat-label><input matInput formControlName="contactPerson"></mat-form-field>
+            <mat-form-field><mat-label>Contact phone</mat-label><input matInput formControlName="contactPhone"></mat-form-field>
+            <mat-form-field><mat-label>Contact email</mat-label><input matInput type="email" formControlName="contactEmail"></mat-form-field>
+        </div>
+        <mat-form-field class="w-full"><mat-label>Remarks</mat-label><input matInput formControlName="remarks"></mat-form-field>
+        <div class="flex justify-end gap-2 pt-2">
+            <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">{{ saving ? 'Saving…' : 'Save' }}</button>
+        </div>
+    </form>
+</div>

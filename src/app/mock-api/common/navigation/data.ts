@@ -306,6 +306,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/transport/routes'
             },
             {
+                id   : 'events',
+                title: 'Events',
+                type : 'basic',
+                icon : 'heroicons_outline:calendar',
+                link : '/events'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -783,6 +790,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:truck',
                 link : '/transport/routes'
+            },
+            {
+                id   : 'events',
+                title: 'Events',
+                type : 'basic',
+                icon : 'heroicons_outline:calendar',
+                link : '/events'
             },
             {
                 id   : 'subscription-plans',
