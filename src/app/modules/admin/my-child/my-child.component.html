@@ -54,6 +54,28 @@
             </div>
         </div>
 
+        <!-- Phase v1-K10 — Fee invoice history -->
+        <div *ngIf="data.feeInvoices && data.feeInvoices.length > 0" class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5 mb-6">
+            <div class="flex items-center gap-2 mb-3">
+                <mat-icon class="text-emerald-600">receipt_long</mat-icon>
+                <h3 class="text-lg font-semibold">Fee Invoices</h3>
+                <span class="text-xs text-gray-500">(last 24 months)</span>
+            </div>
+            <table mat-table [dataSource]="data.feeInvoices" class="w-full">
+                <ng-container matColumnDef="invoiceNumber"><th mat-header-cell *matHeaderCellDef>Invoice</th><td mat-cell *matCellDef="let i" class="font-medium">{{ i.invoiceNumber }}</td></ng-container>
+                <ng-container matColumnDef="invoiceDate"><th mat-header-cell *matHeaderCellDef>Issued</th><td mat-cell *matCellDef="let i" class="text-xs">{{ i.invoiceDate | date:'mediumDate' }}</td></ng-container>
+                <ng-container matColumnDef="dueDate"><th mat-header-cell *matHeaderCellDef>Due</th><td mat-cell *matCellDef="let i" class="text-xs">{{ i.dueDate | date:'mediumDate' }}</td></ng-container>
+                <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef class="!text-right">Total</th><td mat-cell *matCellDef="let i" class="!text-right">৳{{ i.totalAmount | number:'1.0-0' }}</td></ng-container>
+                <ng-container matColumnDef="paid"><th mat-header-cell *matHeaderCellDef class="!text-right">Paid</th><td mat-cell *matCellDef="let i" class="!text-right">৳{{ i.paidAmount | number:'1.0-0' }}</td></ng-container>
+                <ng-container matColumnDef="balance"><th mat-header-cell *matHeaderCellDef class="!text-right">Balance</th><td mat-cell *matCellDef="let i" class="!text-right" [ngClass]="i.balanceAmount > 0 ? 'text-red-600 font-semibold' : 'text-gray-700'">৳{{ i.balanceAmount | number:'1.0-0' }}</td></ng-container>
+                <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let i">
+                    <span class="inline-block px-2 py-0.5 rounded text-xs font-medium" [ngClass]="feeInvoiceStatusClass(i.status)">{{ i.status }}</span>
+                </td></ng-container>
+                <tr mat-header-row *matHeaderRowDef="feeCols"></tr>
+                <tr mat-row *matRowDef="let r; columns: feeCols"></tr>
+            </table>
+        </div>
+
         <!-- Recent exam results -->
         <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5 mb-6">
             <div class="flex items-center gap-2 mb-3">

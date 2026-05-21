@@ -19,6 +19,20 @@ export interface MyChildDashboardDto {
 
     recentExamResults: RecentExamResultDto[];
     siblings: SiblingDto[];
+
+    /** Phase v1-K10 — per-invoice history (last 24 months). */
+    feeInvoices?: FeeInvoiceSummaryDto[];
+}
+
+export interface FeeInvoiceSummaryDto {
+    id: string;
+    invoiceNumber: string;
+    invoiceDate: string;
+    dueDate: string;
+    totalAmount: number;
+    paidAmount: number;
+    balanceAmount: number;
+    status: string;
 }
 
 export interface RecentExamResultDto {

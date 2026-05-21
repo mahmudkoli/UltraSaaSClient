@@ -22,6 +22,7 @@ export class MyChildComponent implements OnInit, OnDestroy {
     loading = true;
     examCols = ['examName', 'subjectName', 'marks', 'percentage', 'grade', 'date'];
     sibCols = ['name', 'className'];
+    feeCols = ['invoiceNumber', 'invoiceDate', 'dueDate', 'total', 'paid', 'balance', 'status'];
     private _destroyed$ = new Subject<void>();
 
     constructor(
@@ -53,5 +54,16 @@ export class MyChildComponent implements OnInit, OnDestroy {
         if (this.data.overdueInvoices > 0) return 'text-red-700';
         if (this.data.feesOutstanding > 0) return 'text-amber-700';
         return 'text-emerald-700';
+    }
+
+    feeInvoiceStatusClass(s: string): string {
+        switch (s) {
+            case 'Paid': return 'bg-emerald-100 text-emerald-800';
+            case 'Partial': return 'bg-blue-100 text-blue-800';
+            case 'Pending': return 'bg-amber-100 text-amber-800';
+            case 'Overdue': return 'bg-red-100 text-red-800';
+            case 'Cancelled': return 'bg-gray-100 text-gray-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
     }
 }
