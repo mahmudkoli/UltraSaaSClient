@@ -201,6 +201,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/admin-dashboard'
             },
             {
+                id   : 'broadcast',
+                title: 'SMS Broadcast',
+                type : 'basic',
+                icon : 'heroicons_outline:megaphone',
+                link : '/broadcast'
+            },
+            {
                 id   : 'tenant-management',
                 title: 'Tenant Management',
                 type : 'basic',
@@ -594,6 +601,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:squares-2x2',
                 link : '/admin-dashboard'
+            },
+            {
+                id   : 'broadcast',
+                title: 'SMS Broadcast',
+                type : 'basic',
+                icon : 'heroicons_outline:megaphone',
+                link : '/broadcast'
             },
             {
                 id   : 'tenant-management',
