@@ -83,6 +83,7 @@ export const appRoutes: Route[] = [
             {path: 'payroll', loadChildren: () => import('app/modules/admin/payroll/payroll.routes')},
             {path: 'reports', loadChildren: () => import('app/modules/admin/reports/reports.routes')},
             {path: 'grade-bands', loadChildren: () => import('app/modules/admin/grade-bands/grade-bands.routes')},
+            {path: 'my-profile', loadChildren: () => import('app/modules/admin/my-child/my-child.routes')},
             {path: 'student-academics', loadChildren: () => import('app/modules/admin/student-academics/student-academics.routes')},
             {path: 'student-health', loadChildren: () => import('app/modules/admin/student-health/student-health.routes')},
             {path: 'teacher-qualifications', loadChildren: () => import('app/modules/admin/teacher-qualifications/teacher-qualifications.routes')},

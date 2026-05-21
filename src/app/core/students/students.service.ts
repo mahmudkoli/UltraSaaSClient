@@ -2,15 +2,16 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { 
-    StudentDto, 
-    CreateStudentRequest, 
-    UpdateStudentRequest, 
-    SearchStudentsRequest, 
+import {
+    StudentDto,
+    CreateStudentRequest,
+    UpdateStudentRequest,
+    SearchStudentsRequest,
     ExportStudentsRequest,
     ExportProgress,
-    PaginationResponse 
+    PaginationResponse
 } from './students.types';
+import { MyChildDashboardDto } from './my-child.types';
 
 @Injectable({
     providedIn: 'root'
@@ -75,6 +76,14 @@ export class StudentsService {
      */
     downloadImportTemplate(): Observable<Blob> {
         return this.http.get(`${this.baseUrl}/import/template.xlsx`, { responseType: 'blob' });
+    }
+
+    /**
+     * Phase F6 — single-page parent / student dashboard for the
+     * logged-in user. Resolves user → student via Student.UserId.
+     */
+    getMyChild(): Observable<MyChildDashboardDto> {
+        return this.http.get<MyChildDashboardDto>(`${this.baseUrl}/me`);
     }
 
     /**

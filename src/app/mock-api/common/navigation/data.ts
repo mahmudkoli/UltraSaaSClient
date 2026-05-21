@@ -3,6 +3,13 @@ import { FuseNavigationItem } from '@fuse/components/navigation';
 
 export const defaultNavigation: FuseNavigationItem[] = [
     {
+        id   : 'my-profile',
+        title: 'My Profile',
+        type : 'basic',
+        icon : 'heroicons_outline:user',
+        link : '/my-profile'
+    },
+    {
         id   : 'analytics',
         title: 'Analytics Dashboard',
         type : 'basic',
@@ -233,6 +240,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
 ];
 
 export const compactNavigation: FuseNavigationItem[] = [
+    {
+        id   : 'my-profile',
+        title: 'My Profile',
+        type : 'basic',
+        icon : 'heroicons_outline:user',
+        link : '/my-profile'
+    },
     {
         id   : 'analytics',
         title: 'Analytics',
