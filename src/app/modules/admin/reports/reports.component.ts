@@ -79,4 +79,14 @@ export class ReportsComponent implements OnInit, OnDestroy {
     attendanceReport(): void {
         this.fetch(this._reports.attendanceSummary(this.attFrom, this.attTo, this.attClassId || undefined), `AttendanceSummary-${this.attFrom}-${this.attTo}.pdf`);
     }
+
+    rosterClassId = '';
+    rosterDate = new Date().toISOString().slice(0, 10);
+
+    classRoster(): void {
+        if (!this.rosterClassId) return;
+        const cls = this.classes.find(c => c.id === this.rosterClassId);
+        const label = cls ? `${cls.name}${cls.section}`.replace(/\s+/g, '') : 'class';
+        this.fetch(this._reports.classRoster(this.rosterClassId, this.rosterDate), `Roster-${label}-${this.rosterDate}.pdf`);
+    }
 }

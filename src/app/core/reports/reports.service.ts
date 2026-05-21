@@ -21,6 +21,12 @@ export class ReportsService {
         return this.http.get(`${this.baseUrl}/attendance/summary.pdf?from=${from}&to=${to}${cls}`, { responseType: 'blob' });
     }
 
+    /** Phase G3 — printable class roster (paper attendance sheet). */
+    classRoster(classId: string, date?: string): Observable<Blob> {
+        const qs = date ? `?date=${date}` : '';
+        return this.http.get(`${this.baseUrl}/classes/${classId}/roster.pdf${qs}`, { responseType: 'blob' });
+    }
+
     static downloadBlob(blob: Blob, fileName: string): void {
         const url = window.URL.createObjectURL(blob);
         const a = document.createElement('a');
