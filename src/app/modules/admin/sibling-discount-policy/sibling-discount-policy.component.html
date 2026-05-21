@@ -1,0 +1,49 @@
+<div class="flex flex-col flex-auto min-w-0 p-6 max-w-3xl">
+    <div class="mb-6">
+        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Sibling Discount Policy</h2>
+        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+            When enabled, the auto-discount is applied at fee-invoice creation for students sharing a
+            <strong>Family Code</strong>. The first enrolled sibling pays full fees; later children get
+            the configured % discount. Cashier-supplied discount overrides this automatic value.
+        </p>
+    </div>
+
+    <div *ngIf="loading" class="mb-4"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-4">
+
+        <mat-slide-toggle formControlName="isEnabled">
+            Apply sibling discount automatically
+        </mat-slide-toggle>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+            <mat-form-field>
+                <mat-label>2nd child discount %</mat-label>
+                <input matInput type="number" formControlName="secondChildDiscountPercent" min="0" max="100">
+                <mat-icon matSuffix>percent</mat-icon>
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>3rd child discount %</mat-label>
+                <input matInput type="number" formControlName="thirdChildDiscountPercent" min="0" max="100">
+                <mat-icon matSuffix>percent</mat-icon>
+            </mat-form-field>
+            <mat-form-field>
+                <mat-label>4th+ child discount %</mat-label>
+                <input matInput type="number" formControlName="fourthPlusChildDiscountPercent" min="0" max="100">
+                <mat-icon matSuffix>percent</mat-icon>
+            </mat-form-field>
+        </div>
+
+        <div class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+            <p>Rank is decided by ascending Enrollment Date among enrolled siblings sharing a Family Code (set on the student form).</p>
+            <p class="mt-1">Suggested BD pattern: 10 % / 15 % / 20 %. Set all values to 0 to log siblings without applying a discount.</p>
+        </div>
+
+        <div class="flex gap-2 pt-2">
+            <button mat-stroked-button type="button" (click)="load()" [disabled]="loading || saving">Reload</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">
+                {{ saving ? 'Saving…' : 'Save policy' }}
+            </button>
+        </div>
+    </form>
+</div>

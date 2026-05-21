@@ -229,6 +229,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/grade-bands'
             },
             {
+                id   : 'sibling-discount-policy',
+                title: 'Sibling Discount',
+                type : 'basic',
+                icon : 'heroicons_outline:users',
+                link : '/sibling-discount-policy'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -629,6 +636,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:star',
                 link : '/grade-bands'
+            },
+            {
+                id   : 'sibling-discount-policy',
+                title: 'Sibling Discount',
+                type : 'basic',
+                icon : 'heroicons_outline:users',
+                link : '/sibling-discount-policy'
             },
             {
                 id   : 'subscription-plans',
