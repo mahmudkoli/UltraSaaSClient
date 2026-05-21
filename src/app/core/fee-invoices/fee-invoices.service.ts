@@ -31,6 +31,16 @@ export class FeeInvoicesService {
         return this.http.delete(`${this.baseUrl}/${id}`, { responseType: 'text' });
     }
 
+    /** Phase v1-I2 — mint (or fetch existing) share-token for the public invoice viewer. Idempotent. */
+    createShareToken(id: string): Observable<{ token: string }> {
+        return this.http.post<{ token: string }>(`${this.baseUrl}/${id}/share-token`, {});
+    }
+
+    /** Phase v1-I2 — anonymous public viewer (no auth, tenant via ?tenant=<id>). */
+    getPublic(token: string, tenant: string): Observable<unknown> {
+        return this.http.get(`${this.baseUrl}/public/${encodeURIComponent(token)}?tenant=${encodeURIComponent(tenant)}`);
+    }
+
     /** Phase E3 — outstanding dues per student. */
     getDues(opts?: { classId?: string; academicYearId?: string; overdueOnly?: boolean }): Observable<FeeDuesDto[]> {
         const params: string[] = [];

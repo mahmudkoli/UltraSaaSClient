@@ -21,6 +21,7 @@ import { ClassDto } from '../../../core/classes/classes.types';
 import { AcademicYearsService } from '../../../core/academic-years/academic-years.service';
 import { AcademicYearDto } from '../../../core/academic-years/academic-years.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { TenantService } from '../../../core/tenant/tenant.service';
 
 @Component({
     selector: 'fee-invoice-list',
@@ -60,7 +61,8 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _notificationService: NotificationService
+        private _notificationService: NotificationService,
+        private _tenant: TenantService,
     ) {}
 
     ngOnInit(): void {
@@ -125,6 +127,32 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
                     error: () => this._notificationService.error('Error deleting invoice')
                 });
             }
+        });
+    }
+
+    /** Phase v1-I2 — mint a share-token then open wa.me with a prefilled
+     * parent-friendly message containing the public viewer link. The cashier
+     * picks the contact in WhatsApp after the message text is pre-staged. */
+    shareViaWhatsApp(item: FeeInvoiceDto): void {
+        const tenantId = this._tenant.resolve();
+        if (!tenantId) {
+            this._notificationService.error('Tenant ID not available — log in again.');
+            return;
+        }
+        this._service.createShareToken(item.id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (res) => {
+                const url = `${window.location.origin}/public/invoice/${encodeURIComponent(res.token)}?tenant=${encodeURIComponent(tenantId)}`;
+                const money = (item.balanceAmount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const due = item.dueDate ? new Date(item.dueDate).toLocaleDateString() : '';
+                const lines = [
+                    `Dear Parent,`,
+                    `Fee invoice ${item.invoiceNumber} for ${item.studentName ?? 'your child'} — balance BDT ${money}${due ? `, due ${due}` : ''}.`,
+                    `View / pay: ${url}`,
+                ];
+                const text = encodeURIComponent(lines.join('\n'));
+                window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener');
+            },
+            error: () => this._notificationService.error('Could not generate share link.'),
         });
     }
 

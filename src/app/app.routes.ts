@@ -64,6 +64,18 @@ export const appRoutes: Route[] = [
         ]
     },
 
+    // Public (no-auth) routes — Phase v1-I2 fee-invoice WhatsApp share viewer
+    {
+        path: 'public',
+        component: LayoutComponent,
+        data: {
+            layout: 'empty'
+        },
+        children: [
+            {path: 'invoice', loadChildren: () => import('app/modules/public/invoice/public-invoice.routes')},
+        ]
+    },
+
     // Admin routes
     {
         path: '',

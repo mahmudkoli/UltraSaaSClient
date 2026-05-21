@@ -90,6 +90,7 @@
                         <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6"><div class="flex justify-end"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></div></th>
                         <td mat-cell *matCellDef="let item" class="pr-4 sm:pr-6">
                             <div class="flex items-center justify-end space-x-2">
+                                <button mat-icon-button (click)="shareViaWhatsApp(item)" class="text-green-600 hover:bg-green-50 rounded-full" matTooltip="Share via WhatsApp" data-testid="fee-invoice-whatsapp"><mat-icon class="icon-size-5">share</mat-icon></button>
                                 <button mat-icon-button (click)="printReceipt(item)" class="text-gray-600 hover:bg-gray-100 rounded-full" matTooltip="Print Receipt" data-testid="fee-invoice-print"><mat-icon class="icon-size-5">print</mat-icon></button>
                                 <button mat-icon-button (click)="edit(item)" class="text-blue-600 hover:bg-blue-50 rounded-full" matTooltip="Record Payment"><mat-icon class="icon-size-5">edit</mat-icon></button>
                                 <button mat-icon-button (click)="deleteItem(item)" class="text-red-600 hover:bg-red-50 rounded-full" matTooltip="Delete"><mat-icon class="icon-size-5">delete</mat-icon></button>
