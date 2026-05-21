@@ -33,6 +33,21 @@ export class StudentImportDialogComponent {
         if (f) { this.file = f; this._cdr.markForCheck(); }
     }
 
+    /** Phase F2 — download the .xlsx template with all expected headers + a sample row. */
+    downloadTemplate(): void {
+        this._svc.downloadImportTemplate().pipe(takeUntil(this._destroyed$)).subscribe({
+            next: (blob) => {
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'students-import-template.xlsx';
+                a.click();
+                window.URL.revokeObjectURL(url);
+            },
+            error: () => this._notify.error('Could not download template.'),
+        });
+    }
+
     upload(): void {
         if (!this.file) return;
         this.uploading = true;

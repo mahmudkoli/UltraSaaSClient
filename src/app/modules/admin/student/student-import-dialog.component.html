@@ -8,13 +8,20 @@
         Upload an <strong>.xlsx</strong> file with these column headers
         (case-insensitive):
     </p>
-    <p class="text-xs text-gray-500 mb-4">
+    <p class="text-xs text-gray-500 mb-3">
         FirstName, LastName, UserName, Email, PhoneNumber, Gender, DateOfBirth,
         FathersName, FathersPhoneNumber, MothersName, MothersPhoneNumber,
         GuardianName, GuardianPhone, RollNumber, AdmissionNumber, Address.
         <strong>FirstName / LastName / UserName / FathersName / MothersName</strong>
         are required per row.
     </p>
+
+    <div class="mb-4">
+        <button mat-stroked-button type="button" (click)="downloadTemplate()">
+            <mat-icon class="mr-1">download</mat-icon>
+            Download template
+        </button>
+    </div>
 
     <div class="rounded-lg border border-dashed border-gray-300 dark:border-gray-600 p-4 mb-3">
         <input type="file" accept=".xlsx" (change)="onFile($event)" class="block">

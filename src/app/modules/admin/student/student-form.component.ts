@@ -170,6 +170,7 @@ export class StudentFormComponent implements OnInit, OnDestroy {
             }),
             
             guardianInfo: this._formBuilder.group({
+                familyCode: ['', Validators.maxLength(64)],
                 guardianName: ['', Validators.maxLength(100)],
                 guardianPhone: ['', [Validators.maxLength(15), Validators.pattern('^[+]?[0-9\\s\\-\\(\\)]+$')]],
                 guardianEmail: ['', [Validators.email]],
@@ -259,6 +260,7 @@ export class StudentFormComponent implements OnInit, OnDestroy {
                 mothersIncome: student.mothersIncome
             },
             guardianInfo: {
+                familyCode: student.familyCode,
                 guardianName: student.guardianName,
                 guardianPhone: student.guardianPhone,
                 guardianEmail: student.guardianEmail,

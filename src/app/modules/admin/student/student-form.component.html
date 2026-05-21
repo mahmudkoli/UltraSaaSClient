@@ -273,6 +273,12 @@
                             <div class="p-6 space-y-6" formGroupName="guardianInfo">
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                     <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Family Code (sibling group)</mat-label>
+                                        <input matInput formControlName="familyCode" placeholder="e.g. RAHMAN-FAMILY">
+                                        <mat-hint>Students sharing this code are treated as siblings.</mat-hint>
+                                    </mat-form-field>
+
+                                    <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Guardian Name</mat-label>
                                         <input matInput formControlName="guardianName">
                                     </mat-form-field>

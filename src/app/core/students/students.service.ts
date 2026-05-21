@@ -71,6 +71,13 @@ export class StudentsService {
     }
 
     /**
+     * Phase F2 — download the import template .xlsx with sample row.
+     */
+    downloadImportTemplate(): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/import/template.xlsx`, { responseType: 'blob' });
+    }
+
+    /**
      * Export students data to file
      * Returns a blob that can be downloaded
      */

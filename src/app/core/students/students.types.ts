@@ -61,6 +61,9 @@ export interface StudentDto {
     mothersOccupation?: string;
     mothersIncome?: string;
     
+    // Family (Phase F4)
+    familyCode?: string;
+
     // Guardian Information
     guardianName?: string;
     guardianPhone?: string;
