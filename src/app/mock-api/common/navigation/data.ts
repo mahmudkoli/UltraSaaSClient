@@ -313,6 +313,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/events'
             },
             {
+                id   : 'timetable',
+                title: 'Timetable',
+                type : 'basic',
+                icon : 'heroicons_outline:table-cells',
+                link : '/timetable'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -797,6 +804,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:calendar',
                 link : '/events'
+            },
+            {
+                id   : 'timetable',
+                title: 'Timetable',
+                type : 'basic',
+                icon : 'heroicons_outline:table-cells',
+                link : '/timetable'
             },
             {
                 id   : 'subscription-plans',
