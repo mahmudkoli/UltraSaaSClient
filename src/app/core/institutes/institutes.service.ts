@@ -14,10 +14,7 @@ import {
     InstituteDashboardSummary,
     UpdateInstituteCapacityRequest,
     SuspendInstituteRequest,
-    ArchiveInstituteRequest,
-    BulkActivateInstitutesRequest,
-    BulkSuspendInstitutesRequest,
-    BulkUpdateInstituteTypeRequest
+    ArchiveInstituteRequest
 } from './institutes.types';
 
 @Injectable({
@@ -182,50 +179,6 @@ export class InstitutesService extends BaseApiService {
         return this.get<InstituteDto[]>('/api/institute/pending-setup');
     }
 
-    /**
-     * Get institutes by country
-     */
-    getByCountry(country: string): Observable<InstituteDto[]> {
-        return this.get<InstituteDto[]>(`/api/institute/by-country/${country}`);
-    }
-
-    /**
-     * Get institutes by type
-     */
-    getByType(type: string): Observable<InstituteDto[]> {
-        return this.get<InstituteDto[]>(`/api/institute/by-type/${type}`);
-    }
-
-    /**
-     * Get institute analytics
-     */
-    getAnalytics(id: string): Observable<any> {
-        return this.get<any>(`/api/institute/${id}/analytics`);
-    }
-
-    // ============= BULK OPERATIONS =============
-
-    /**
-     * Activate multiple institutes
-     */
-    bulkActivate(request: BulkActivateInstitutesRequest): Observable<string> {
-        return this.post<string>('/api/institute/bulk/activate', request);
-    }
-
-    /**
-     * Suspend multiple institutes
-     */
-    bulkSuspend(request: BulkSuspendInstitutesRequest): Observable<string> {
-        return this.post<string>('/api/institute/bulk/suspend', request);
-    }
-
-    /**
-     * Update type for multiple institutes
-     */
-    bulkUpdateType(request: BulkUpdateInstituteTypeRequest): Observable<string> {
-        return this.put<string>('/api/institute/bulk/update-type', request);
-    }
-
     // ============= SETUP & VALIDATION =============
 
     /**
@@ -236,21 +189,7 @@ export class InstitutesService extends BaseApiService {
     }
 
     /**
-     * Validate institute setup
-     */
-    validateSetup(id: string): Observable<any> {
-        return this.get<any>(`/api/institute/${id}/validate-setup`);
-    }
-
-    /**
-     * Get institute health summary
-     */
-    getHealthSummary(id: string): Observable<any> {
-        return this.get<any>(`/api/institute/${id}/health`);
-    }
-
-    /**
-     * Validate institute health
+     * Validate institute is fully set up (returns true if all required fields populated).
      */
     validateHealth(id: string): Observable<boolean> {
         return this.post<boolean>(`/api/institute/${id}/validate`, {});
