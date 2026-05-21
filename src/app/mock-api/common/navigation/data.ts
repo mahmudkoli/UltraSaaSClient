@@ -285,6 +285,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/comms-config'
             },
             {
+                id   : 'library',
+                title: 'Library',
+                type : 'basic',
+                icon : 'heroicons_outline:book-open',
+                link : '/library/books'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -741,6 +748,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:adjustments-horizontal',
                 link : '/comms-config'
+            },
+            {
+                id   : 'library',
+                title: 'Library',
+                type : 'basic',
+                icon : 'heroicons_outline:book-open',
+                link : '/library/books'
             },
             {
                 id   : 'subscription-plans',
