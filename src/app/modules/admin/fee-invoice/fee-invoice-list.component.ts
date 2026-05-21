@@ -144,10 +144,17 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
                 const url = `${window.location.origin}/public/invoice/${encodeURIComponent(res.token)}?tenant=${encodeURIComponent(tenantId)}`;
                 const money = (item.balanceAmount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 const due = item.dueDate ? new Date(item.dueDate).toLocaleDateString() : '';
+                const child = item.studentName ?? 'your child';
+                // Bilingual Bangla + English so the cashier doesn't have to
+                // pre-judge the parent's preferred language. Compact lines
+                // because WhatsApp's prefill ?text= gets noisy past ~4 lines.
                 const lines = [
-                    `Dear Parent,`,
-                    `Fee invoice ${item.invoiceNumber} for ${item.studentName ?? 'your child'} — balance BDT ${money}${due ? `, due ${due}` : ''}.`,
-                    `View / pay: ${url}`,
+                    `প্রিয় অভিভাবক / Dear Parent,`,
+                    `ফি ইনভয়েস / Fee invoice: ${item.invoiceNumber}`,
+                    `শিক্ষার্থী / Student: ${child}`,
+                    `বকেয়া / Balance: BDT ${money}${due ? `   (শেষ তারিখ / Due: ${due})` : ''}`,
+                    ``,
+                    `বিস্তারিত / Details: ${url}`,
                 ];
                 const text = encodeURIComponent(lines.join('\n'));
                 window.open(`https://wa.me/?text=${text}`, '_blank', 'noopener');

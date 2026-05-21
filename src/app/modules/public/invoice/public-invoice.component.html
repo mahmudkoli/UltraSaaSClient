@@ -2,12 +2,13 @@
     <div class="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg overflow-hidden">
 
         <div *ngIf="loading" class="p-12 text-center text-gray-500">
-            <p>Loading invoice…</p>
+            <p>Loading invoice… / লোড হচ্ছে…</p>
         </div>
 
         <div *ngIf="!loading && error" class="p-12 text-center text-gray-500">
-            <h1 class="text-xl font-semibold mb-2">Invoice not found</h1>
+            <h1 class="text-xl font-semibold mb-2">Invoice not found / ইনভয়েস পাওয়া যায়নি</h1>
             <p>This link may have expired or been entered incorrectly.</p>
+            <p class="mt-1">এই লিঙ্কটির মেয়াদ শেষ অথবা ভুল লেখা হয়েছে।</p>
         </div>
 
         <ng-container *ngIf="!loading && invoice">
@@ -15,25 +16,26 @@
             <div class="px-5 sm:px-8 py-5 sm:py-6 border-b border-gray-200 flex flex-col sm:flex-row justify-between sm:items-end gap-3">
                 <div>
                     <h1 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">FEE INVOICE</h1>
+                    <p class="text-xs text-gray-500 leading-snug">ফি ইনভয়েস</p>
                     <p class="text-xs sm:text-sm text-gray-500 mt-1">{{ invoice.invoiceNumber }}</p>
                 </div>
                 <div class="text-left sm:text-right">
                     <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold" [ngClass]="statusClass()">{{ invoice.status }}</span>
-                    <p class="text-xs text-gray-500 mt-2">Issued {{ date(invoice.invoiceDate) }}</p>
-                    <p class="text-xs text-gray-500">Due {{ date(invoice.dueDate) }}</p>
+                    <p class="text-xs text-gray-500 mt-2">Issued / ইস্যু: {{ date(invoice.invoiceDate) }}</p>
+                    <p class="text-xs text-gray-500">Due / শেষ তারিখ: {{ date(invoice.dueDate) }}</p>
                 </div>
             </div>
 
             <!-- Billed to -->
             <div class="px-5 sm:px-8 py-4 sm:py-5 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                    <h3 class="text-xs uppercase tracking-wider text-gray-500 font-medium">Billed to</h3>
+                    <h3 class="text-xs uppercase tracking-wider text-gray-500 font-medium">Billed to · বিল প্রাপক</h3>
                     <p class="text-base font-semibold mt-1 text-gray-900">{{ invoice.studentName }}</p>
-                    <p class="text-sm text-gray-600">Class: {{ invoice.className || '—' }}</p>
-                    <p class="text-sm text-gray-600">Academic Year: {{ invoice.academicYearName || '—' }}</p>
+                    <p class="text-sm text-gray-600">Class / শ্রেণী: {{ invoice.className || '—' }}</p>
+                    <p class="text-sm text-gray-600">Academic Year / শিক্ষাবর্ষ: {{ invoice.academicYearName || '—' }}</p>
                 </div>
                 <div>
-                    <h3 class="text-xs uppercase tracking-wider text-gray-500 font-medium">School</h3>
+                    <h3 class="text-xs uppercase tracking-wider text-gray-500 font-medium">School · বিদ্যালয়</h3>
                     <p class="text-base font-semibold mt-1 text-gray-900">{{ invoice.schoolName || 'School' }}</p>
                 </div>
             </div>
@@ -43,15 +45,15 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="text-xs uppercase tracking-wider text-gray-500">
-                            <th class="text-left py-2">Description</th>
-                            <th class="text-right py-2">Amount (BDT)</th>
+                            <th class="text-left py-2">Description · বিবরণ</th>
+                            <th class="text-right py-2">Amount · পরিমাণ (BDT)</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr class="border-t border-gray-100"><td class="py-2">Tuition / Fees</td><td class="py-2 text-right">{{ money(invoice.totalAmount) }}</td></tr>
-                        <tr *ngIf="invoice.discountAmount" class="border-t border-gray-100"><td class="py-2 text-green-700">Discount</td><td class="py-2 text-right text-green-700">−{{ money(invoice.discountAmount) }}</td></tr>
-                        <tr *ngIf="invoice.taxAmount" class="border-t border-gray-100"><td class="py-2">Tax</td><td class="py-2 text-right">{{ money(invoice.taxAmount) }}</td></tr>
-                        <tr *ngIf="invoice.lateFeeAmount" class="border-t border-gray-100"><td class="py-2 text-red-700">Late Fee</td><td class="py-2 text-right text-red-700">{{ money(invoice.lateFeeAmount) }}</td></tr>
+                        <tr class="border-t border-gray-100"><td class="py-2">Tuition / Fees · শিক্ষা ফি</td><td class="py-2 text-right">{{ money(invoice.totalAmount) }}</td></tr>
+                        <tr *ngIf="invoice.discountAmount" class="border-t border-gray-100"><td class="py-2 text-green-700">Discount · ছাড়</td><td class="py-2 text-right text-green-700">−{{ money(invoice.discountAmount) }}</td></tr>
+                        <tr *ngIf="invoice.taxAmount" class="border-t border-gray-100"><td class="py-2">Tax · ভ্যাট</td><td class="py-2 text-right">{{ money(invoice.taxAmount) }}</td></tr>
+                        <tr *ngIf="invoice.lateFeeAmount" class="border-t border-gray-100"><td class="py-2 text-red-700">Late Fee · বিলম্ব ফি</td><td class="py-2 text-right text-red-700">{{ money(invoice.lateFeeAmount) }}</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -59,21 +61,22 @@
             <!-- Totals -->
             <div class="px-5 sm:px-8 py-4 sm:py-5 border-t border-gray-200 bg-gray-50">
                 <div class="ml-auto w-full sm:w-72 space-y-1 text-sm">
-                    <div class="flex justify-between"><span class="text-gray-600">Subtotal</span><span>BDT {{ money(invoice.totalAmount) }}</span></div>
-                    <div class="flex justify-between"><span class="text-gray-600">Paid</span><span>BDT {{ money(invoice.paidAmount) }}</span></div>
-                    <div class="flex justify-between pt-2 border-t border-gray-300 text-base font-bold"><span>Balance Due</span><span>BDT {{ money(invoice.balanceAmount) }}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-600">Subtotal · উপমোট</span><span>BDT {{ money(invoice.totalAmount) }}</span></div>
+                    <div class="flex justify-between"><span class="text-gray-600">Paid · পরিশোধিত</span><span>BDT {{ money(invoice.paidAmount) }}</span></div>
+                    <div class="flex justify-between pt-2 border-t border-gray-300 text-base font-bold"><span>Balance Due · বকেয়া</span><span>BDT {{ money(invoice.balanceAmount) }}</span></div>
                 </div>
             </div>
 
             <!-- Footer -->
-            <div class="px-5 sm:px-8 py-5 sm:py-6 border-t border-gray-200 text-center text-xs text-gray-500">
-                Thank you for your prompt payment. This is a system-generated invoice.
+            <div class="px-5 sm:px-8 py-5 sm:py-6 border-t border-gray-200 text-center text-xs text-gray-500 leading-relaxed">
+                <p>Thank you for your prompt payment. This is a system-generated invoice.</p>
+                <p class="mt-1">সময়মতো পরিশোধের জন্য ধন্যবাদ। এটি সিস্টেমে তৈরি ইনভয়েস।</p>
             </div>
 
             <!-- Print bar (hidden when printing) -->
             <div class="px-5 sm:px-8 py-3 sm:py-4 border-t border-gray-200 flex justify-end gap-2 no-print">
                 <button (click)="print()" class="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 active:bg-indigo-800 transition-colors">
-                    Print / Save as PDF
+                    Print / প্রিন্ট
                 </button>
             </div>
         </ng-container>
