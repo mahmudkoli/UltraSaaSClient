@@ -299,6 +299,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/hostels'
             },
             {
+                id   : 'transport',
+                title: 'Transport',
+                type : 'basic',
+                icon : 'heroicons_outline:truck',
+                link : '/transport/routes'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -769,6 +776,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:home-modern',
                 link : '/hostels'
+            },
+            {
+                id   : 'transport',
+                title: 'Transport',
+                type : 'basic',
+                icon : 'heroicons_outline:truck',
+                link : '/transport/routes'
             },
             {
                 id   : 'subscription-plans',

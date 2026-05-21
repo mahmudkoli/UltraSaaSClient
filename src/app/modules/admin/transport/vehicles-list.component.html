@@ -1,0 +1,36 @@
+<div class="flex flex-col flex-auto min-w-0 p-6">
+    <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-6">
+        <div>
+            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Transport — Vehicles</h2>
+            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Fleet inventory + insurance / fitness expiry tracking.</p>
+        </div>
+        <div class="flex gap-2 items-center">
+            <mat-form-field appearance="outline" subscriptSizing="dynamic" class="sm:w-72"><mat-label>Search</mat-label><input matInput [formControl]="search"><mat-icon matSuffix>search</mat-icon></mat-form-field>
+            <button mat-flat-button color="primary" (click)="add()"><mat-icon>add</mat-icon> New vehicle</button>
+            <a mat-stroked-button routerLink="/transport/routes">Routes →</a>
+        </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+        <table mat-table [dataSource]="rows" class="w-full">
+            <ng-container matColumnDef="vehicleNumber"><th mat-header-cell *matHeaderCellDef>Number</th><td mat-cell *matCellDef="let v" class="font-mono text-sm">{{ v.vehicleNumber }}</td></ng-container>
+            <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef>Type</th><td mat-cell *matCellDef="let v" class="text-sm">{{ v.vehicleType }}</td></ng-container>
+            <ng-container matColumnDef="makeModel"><th mat-header-cell *matHeaderCellDef>Make / Model</th><td mat-cell *matCellDef="let v" class="text-sm">{{ v.make }} {{ v.model }} <span class="text-gray-500">({{ v.year }})</span></td></ng-container>
+            <ng-container matColumnDef="capacity"><th mat-header-cell *matHeaderCellDef class="!text-right">Capacity</th><td mat-cell *matCellDef="let v" class="!text-right">{{ v.capacity }}</td></ng-container>
+            <ng-container matColumnDef="driver"><th mat-header-cell *matHeaderCellDef>Driver</th><td mat-cell *matCellDef="let v" class="text-sm">{{ v.driverName || '—' }}</td></ng-container>
+            <ng-container matColumnDef="expiry"><th mat-header-cell *matHeaderCellDef>Expiry</th><td mat-cell *matCellDef="let v" class="text-xs">
+                <div *ngIf="v.insuranceExpiryDate"><span class="text-gray-500">Insurance:</span> {{ v.insuranceExpiryDate | date:'mediumDate' }}</div>
+                <div *ngIf="v.fitnessExpiryDate"><span class="text-gray-500">Fitness:</span> {{ v.fitnessExpiryDate | date:'mediumDate' }}</div>
+                <span *ngIf="expiresSoon(v)" class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 mt-1">Renew soon</span>
+            </td></ng-container>
+            <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="!text-right">Actions</th><td mat-cell *matCellDef="let v" class="!text-right">
+                <button mat-icon-button (click)="edit(v)" matTooltip="Edit"><mat-icon class="!w-5 !h-5 !text-base">edit</mat-icon></button>
+                <button mat-icon-button color="warn" (click)="remove(v)" matTooltip="Delete"><mat-icon class="!w-5 !h-5 !text-base">delete</mat-icon></button>
+            </td></ng-container>
+            <tr mat-header-row *matHeaderRowDef="cols"></tr>
+            <tr mat-row *matRowDef="let row; columns: cols"></tr>
+        </table>
+        <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No vehicles in the fleet yet.</div>
+        <mat-paginator [length]="total" [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)"></mat-paginator>
+    </div>
+</div>
