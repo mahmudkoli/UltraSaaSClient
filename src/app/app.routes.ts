@@ -2,6 +2,7 @@ import { Route } from '@angular/router';
 import { initialDataResolver } from 'app/app.resolvers';
 import { AuthGuard } from 'app/core/auth/guards/auth.guard';
 import { NoAuthGuard } from 'app/core/auth/guards/noAuth.guard';
+import { SubscriptionGuard } from 'app/core/auth/guards/subscription.guard';
 import { LayoutComponent } from 'app/layout/layout.component';
 
 // @formatter:off
@@ -48,7 +49,11 @@ export const appRoutes: Route[] = [
         },
         children: [
             {path: 'sign-out', loadChildren: () => import('app/modules/auth/sign-out/sign-out.routes')},
-            {path: 'unlock-session', loadChildren: () => import('app/modules/auth/unlock-session/unlock-session.routes')}
+            {path: 'unlock-session', loadChildren: () => import('app/modules/auth/unlock-session/unlock-session.routes')},
+            // Phase v1-J1 — lockout landing when SubscriptionGuard finds the
+            // tenant is suspended. Auth-required (user must sign in to see
+            // their own school's status) but NOT subscription-guarded.
+            {path: 'subscription-expired', loadChildren: () => import('app/modules/subscription-expired/subscription-expired.routes')},
         ]
     },
 
@@ -79,8 +84,8 @@ export const appRoutes: Route[] = [
     // Admin routes
     {
         path: '',
-        canActivate: [AuthGuard],
-        canActivateChild: [AuthGuard],
+        canActivate: [AuthGuard, SubscriptionGuard],
+        canActivateChild: [AuthGuard, SubscriptionGuard],
         component: LayoutComponent,
         resolve: {
             initialData: initialDataResolver
