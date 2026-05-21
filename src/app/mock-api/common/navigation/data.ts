@@ -236,6 +236,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/sibling-discount-policy'
             },
             {
+                id   : 'audit-trail',
+                title: 'Audit Trail',
+                type : 'basic',
+                icon : 'heroicons_outline:clipboard-document-list',
+                link : '/audit-trail'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -643,6 +650,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:users',
                 link : '/sibling-discount-policy'
+            },
+            {
+                id   : 'audit-trail',
+                title: 'Audit Trail',
+                type : 'basic',
+                icon : 'heroicons_outline:clipboard-document-list',
+                link : '/audit-trail'
             },
             {
                 id   : 'subscription-plans',
