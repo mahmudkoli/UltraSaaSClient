@@ -65,8 +65,8 @@ export interface SearchTimetableEntriesRequest {
 
 @Injectable({ providedIn: 'root' })
 export class TimetableService {
-    private baseUrl = `${environment.apiUrl}/api/timetableentries`;
-    private timeSlotsUrl = `${environment.apiUrl}/api/timeslots`;
+    private baseUrl = `${environment.apiUrl}/api/v1/timetableentries`;
+    private timeSlotsUrl = `${environment.apiUrl}/api/v1/timeslots`;
     constructor(private http: HttpClient) {}
 
     search(req: SearchTimetableEntriesRequest): Observable<TimetableEntryDto[]> {
