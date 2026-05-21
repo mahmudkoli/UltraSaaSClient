@@ -19,7 +19,6 @@ import {
     BulkMarkExamResultEntry,
     BulkMarkExamResultsRequest,
     ExamType,
-    Grade
 } from '../../../core/exam-results/exam-results.types';
 import { ExamsService } from '../../../core/exams/exams.service';
 import { ExamDto } from '../../../core/exams/exams.types';

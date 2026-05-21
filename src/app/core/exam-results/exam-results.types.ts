@@ -30,23 +30,10 @@ export enum ExamType {
     Other = 99
 }
 
-export enum Grade {
-    APlus = 1,
-    A = 2,
-    BPlus = 3,
-    B = 4,
-    CPlus = 5,
-    C = 6,
-    D = 7,
-    F = 8,
-    Pass = 9,
-    Fail = 10,
-    Outstanding = 11,
-    Excellent = 12,
-    Good = 13,
-    Satisfactory = 14,
-    NeedsImprovement = 15
-}
+// Phase v1-I3 — grade is now a tenant-resolved string label
+// (e.g. "A+", "A", "Pass") computed at read time on the backend by
+// IGradeResolver against the configured GradeBand rows. No longer
+// a numeric enum.
 
 export interface ExamResultDto {
     id: string;
@@ -61,7 +48,8 @@ export interface ExamResultDto {
     marksObtained: number;
     totalMarks: number;
     percentage: number;
-    grade: Grade;
+    grade?: string;
+    gpaPoint?: number;
     remarks?: string;
     markedBy: string;
     examType: ExamType;

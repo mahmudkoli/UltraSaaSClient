@@ -14,7 +14,7 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ExamResultsService } from '../../../core/exam-results/exam-results.service';
-import { ExamResultDto, Grade, SearchExamResultsRequest, PaginationResponse } from '../../../core/exam-results/exam-results.types';
+import { ExamResultDto, SearchExamResultsRequest, PaginationResponse } from '../../../core/exam-results/exam-results.types';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
@@ -103,28 +103,21 @@ export class ExamResultListComponent implements OnInit, OnDestroy {
         });
     }
 
-    getGradeName(grade: Grade): string {
-        const map: Record<number, string> = {
-            1: 'A+', 2: 'A', 3: 'B+', 4: 'B', 5: 'C+', 6: 'C', 7: 'D', 8: 'F',
-            9: 'Pass', 10: 'Fail', 11: 'Outstanding', 12: 'Excellent', 13: 'Good', 14: 'Satisfactory', 15: 'Needs Improvement'
-        };
-        return map[grade] || '-';
+    /** Phase v1-I3 — grade now arrives as a tenant-configured label string;
+     * we colour-bucket by the leading letter so any reasonable GradeBand
+     * naming (A+ / B / Pass / Fail / ক / খ) gets a sensible tint. */
+    getGradeName(grade?: string | null): string {
+        return grade && grade.trim().length ? grade : '—';
     }
 
-    getGradeClass(grade: Grade): string {
-        switch (grade) {
-            case Grade.APlus: case Grade.A: case Grade.Outstanding: case Grade.Excellent:
-                return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
-            case Grade.BPlus: case Grade.B: case Grade.Good: case Grade.Pass:
-                return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
-            case Grade.CPlus: case Grade.C: case Grade.Satisfactory:
-                return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
-            case Grade.D: case Grade.NeedsImprovement:
-                return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
-            case Grade.F: case Grade.Fail:
-                return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
-            default:
-                return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
-        }
+    getGradeClass(grade?: string | null): string {
+        const g = (grade || '').trim().toUpperCase();
+        if (!g || g === '—') return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+        if (g.startsWith('A') || g === 'OUTSTANDING' || g === 'EXCELLENT') return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        if (g.startsWith('B') || g === 'GOOD' || g === 'PASS') return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        if (g.startsWith('C') || g === 'SATISFACTORY') return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200';
+        if (g.startsWith('D') || g === 'NEEDSIMPROVEMENT' || g === 'NEEDS IMPROVEMENT') return 'bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200';
+        if (g.startsWith('F') || g === 'FAIL' || g === 'ABS') return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
     }
 }
