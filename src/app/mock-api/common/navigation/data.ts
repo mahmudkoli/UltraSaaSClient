@@ -250,6 +250,41 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/announcement-archive'
             },
             {
+                id   : 'sms-templates',
+                title: 'SMS Templates',
+                type : 'basic',
+                icon : 'heroicons_outline:chat-bubble-bottom-center-text',
+                link : '/sms-templates'
+            },
+            {
+                id   : 'mail-templates',
+                title: 'Mail Templates',
+                type : 'basic',
+                icon : 'heroicons_outline:envelope',
+                link : '/mail-templates'
+            },
+            {
+                id   : 'sms-logs',
+                title: 'SMS Logs',
+                type : 'basic',
+                icon : 'heroicons_outline:queue-list',
+                link : '/sms-logs'
+            },
+            {
+                id   : 'mail-logs',
+                title: 'Mail Logs',
+                type : 'basic',
+                icon : 'heroicons_outline:inbox-stack',
+                link : '/mail-logs'
+            },
+            {
+                id   : 'comms-config',
+                title: 'SMS/Mail Config',
+                type : 'basic',
+                icon : 'heroicons_outline:adjustments-horizontal',
+                link : '/comms-config'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -671,6 +706,41 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:megaphone',
                 link : '/announcement-archive'
+            },
+            {
+                id   : 'sms-templates',
+                title: 'SMS Templates',
+                type : 'basic',
+                icon : 'heroicons_outline:chat-bubble-bottom-center-text',
+                link : '/sms-templates'
+            },
+            {
+                id   : 'mail-templates',
+                title: 'Mail Templates',
+                type : 'basic',
+                icon : 'heroicons_outline:envelope',
+                link : '/mail-templates'
+            },
+            {
+                id   : 'sms-logs',
+                title: 'SMS Logs',
+                type : 'basic',
+                icon : 'heroicons_outline:queue-list',
+                link : '/sms-logs'
+            },
+            {
+                id   : 'mail-logs',
+                title: 'Mail Logs',
+                type : 'basic',
+                icon : 'heroicons_outline:inbox-stack',
+                link : '/mail-logs'
+            },
+            {
+                id   : 'comms-config',
+                title: 'SMS/Mail Config',
+                type : 'basic',
+                icon : 'heroicons_outline:adjustments-horizontal',
+                link : '/comms-config'
             },
             {
                 id   : 'subscription-plans',
