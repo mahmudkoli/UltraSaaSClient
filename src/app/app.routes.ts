@@ -102,6 +102,7 @@ export const appRoutes: Route[] = [
             {path: 'grade-bands', loadChildren: () => import('app/modules/admin/grade-bands/grade-bands.routes')},
             {path: 'sibling-discount-policy', loadChildren: () => import('app/modules/admin/sibling-discount-policy/sibling-discount-policy.routes')},
             {path: 'audit-trail', loadChildren: () => import('app/modules/admin/audit-trail/audit-trail.routes')},
+            {path: 'announcement-archive', loadChildren: () => import('app/modules/admin/announcement-archive/announcement-archive.routes')},
             {path: 'broadcast', loadChildren: () => import('app/modules/admin/broadcast/broadcast.routes')},
             {path: 'my-profile', loadChildren: () => import('app/modules/admin/my-child/my-child.routes')},
             {path: 'student-academics', loadChildren: () => import('app/modules/admin/student-academics/student-academics.routes')},

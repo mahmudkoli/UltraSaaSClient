@@ -243,6 +243,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/audit-trail'
             },
             {
+                id   : 'announcement-archive',
+                title: 'Announcements',
+                type : 'basic',
+                icon : 'heroicons_outline:megaphone',
+                link : '/announcement-archive'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -657,6 +664,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:clipboard-document-list',
                 link : '/audit-trail'
+            },
+            {
+                id   : 'announcement-archive',
+                title: 'Announcements',
+                type : 'basic',
+                icon : 'heroicons_outline:megaphone',
+                link : '/announcement-archive'
             },
             {
                 id   : 'subscription-plans',
