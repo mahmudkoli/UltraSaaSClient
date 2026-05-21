@@ -73,4 +73,8 @@ export class PublicInvoiceComponent implements OnInit {
             default: return 'bg-gray-100 text-gray-800';
         }
     }
+
+    print(): void {
+        window.print();
+    }
 }
