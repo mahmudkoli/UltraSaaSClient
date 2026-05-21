@@ -40,22 +40,6 @@ export class StudentHealthService {
     }
 
     /**
-     * Get health record by student ID
-     */
-    getByStudentId(studentId: string): Observable<StudentHealthDto | null> {
-        return this.search({
-            pageNumber: 1,
-            pageSize: 1,
-            advancedSearch: {
-                fields: ['studentId'],
-                keyword: studentId
-            }
-        }).pipe(
-            map(response => response.data.length > 0 ? response.data[0] : null)
-        );
-    }
-
-    /**
      * Create new student health record
      */
     create(request: CreateStudentHealthRequest): Observable<string> {

@@ -34,21 +34,6 @@ export class StudentAcademicsService {
         return this.http.get<StudentAcademicDto>(`${this.baseUrl}/${id}`);
     }
 
-    /**
-     * Get academic records by student ID
-     */
-    getByStudentId(studentId: string): Observable<StudentAcademicDto[]> {
-        return this.search({
-            pageNumber: 1,
-            pageSize: 100,
-            advancedSearch: {
-                fields: ['studentId'],
-                keyword: studentId
-            }
-        }).pipe(
-            map(response => response.data)
-        );
-    }
 
     /**
      * Create new student academic record

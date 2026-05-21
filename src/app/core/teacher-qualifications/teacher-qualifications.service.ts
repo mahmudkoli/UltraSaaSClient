@@ -41,22 +41,6 @@ export class TeacherQualificationsService {
     }
 
     /**
-     * Get qualifications by teacher ID
-     */
-    getByTeacherId(teacherId: string): Observable<TeacherQualificationDto[]> {
-        return this.search({
-            pageNumber: 1,
-            pageSize: 100,
-            advancedSearch: {
-                fields: ['teacherId'],
-                keyword: teacherId
-            }
-        }).pipe(
-            map(response => response.data)
-        );
-    }
-
-    /**
      * Create new teacher qualification record
      */
     create(request: CreateTeacherQualificationRequest): Observable<string> {
