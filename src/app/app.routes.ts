@@ -109,6 +109,7 @@ export const appRoutes: Route[] = [
             {path: 'mail-logs', loadChildren: () => import('app/modules/admin/mail-logs/mail-logs.routes')},
             {path: 'comms-config', loadChildren: () => import('app/modules/admin/comms-config/comms-config.routes')},
             {path: 'library', loadChildren: () => import('app/modules/admin/library/library.routes')},
+            {path: 'hostels', loadChildren: () => import('app/modules/admin/hostel/hostel.routes')},
             {path: 'broadcast', loadChildren: () => import('app/modules/admin/broadcast/broadcast.routes')},
             {path: 'my-profile', loadChildren: () => import('app/modules/admin/my-child/my-child.routes')},
             {path: 'student-academics', loadChildren: () => import('app/modules/admin/student-academics/student-academics.routes')},

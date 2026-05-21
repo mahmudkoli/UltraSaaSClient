@@ -292,6 +292,13 @@ export const defaultNavigation: FuseNavigationItem[] = [
                 link : '/library/books'
             },
             {
+                id   : 'hostels',
+                title: 'Hostels',
+                type : 'basic',
+                icon : 'heroicons_outline:home-modern',
+                link : '/hostels'
+            },
+            {
                 id   : 'subscription-plans',
                 title: 'Subscription Plans',
                 type : 'basic',
@@ -755,6 +762,13 @@ export const futuristicNavigation: FuseNavigationItem[] = [
                 type : 'basic',
                 icon : 'heroicons_outline:book-open',
                 link : '/library/books'
+            },
+            {
+                id   : 'hostels',
+                title: 'Hostels',
+                type : 'basic',
+                icon : 'heroicons_outline:home-modern',
+                link : '/hostels'
             },
             {
                 id   : 'subscription-plans',
