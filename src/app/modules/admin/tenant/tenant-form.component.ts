@@ -88,6 +88,9 @@ export class TenantFormComponent implements OnInit {
             suspensionReason: [''],
             suspendedUntil: [''],
 
+            // Phase v1-K7 — audit retention input (BE accepts 1–3650)
+            auditRetentionDays: [365, [Validators.min(1), Validators.max(3650)]],
+
             // Features & Settings
             requiresGDPR: [false],
             requires2FA: [false],

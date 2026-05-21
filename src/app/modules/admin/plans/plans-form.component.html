@@ -50,11 +50,18 @@
             </mat-form-field>
         </div>
 
-        <mat-form-field class="w-full">
-            <mat-label>Feature Flags (JSON array)</mat-label>
-            <input matInput formControlName="featureFlagsJson" placeholder='["CUSTOM_BRAND"]'>
-            <mat-hint>Array of feature codes this plan unlocks. Leave as <code>[]</code> for none.</mat-hint>
-        </mat-form-field>
+        <!-- Phase v1-K6 — known feature flags as a checklist. Raw JSON
+             still flows through featureFlagsJson FormControl unchanged. -->
+        <div class="border border-gray-200 dark:border-gray-700 rounded-lg p-3">
+            <div class="text-xs font-medium text-gray-500 uppercase tracking-wider mb-2">Feature flags</div>
+            <div class="space-y-1">
+                <mat-checkbox *ngFor="let f of knownFlags" [checked]="hasFlag(f.code)" (change)="setFlag(f.code, $event.checked)">
+                    <span class="text-sm font-medium">{{ f.code }}</span>
+                    <span class="text-xs text-gray-500 ml-2">{{ f.description }}</span>
+                </mat-checkbox>
+            </div>
+            <div class="text-xs text-gray-400 mt-2">Stored as: <code>{{ form.value.featureFlagsJson }}</code></div>
+        </div>
 
         <div *ngIf="isEdit">
             <mat-checkbox formControlName="isActive">Plan is active (visible to tenants picking a plan)</mat-checkbox>

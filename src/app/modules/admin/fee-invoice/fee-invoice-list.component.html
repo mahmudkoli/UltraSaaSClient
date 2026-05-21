@@ -83,8 +83,15 @@
                     <ng-container matColumnDef="status">
                         <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
                         <td mat-cell *matCellDef="let item">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(item.status)">{{ getStatusName(item.status) }}</span>
+                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" [class]="getStatusClass(item.status)" [matTooltip]="item.remarks || ''">{{ getStatusName(item.status) }}</span>
+                            <!-- Phase v1-K5 — surface the auto-applied sibling-discount annotation -->
+                            <div *ngIf="item.remarks" class="text-[10px] text-gray-500 mt-0.5 max-w-[180px] truncate" [title]="item.remarks">{{ item.remarks }}</div>
                         </td>
+                    </ng-container>
+                    <!-- Phase v1-K3 — Paid By column for cashier audit -->
+                    <ng-container matColumnDef="paidBy">
+                        <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Paid By</span></th>
+                        <td mat-cell *matCellDef="let item"><span class="text-xs text-gray-600">{{ item.paidBy || '—' }}</span></td>
                     </ng-container>
                     <ng-container matColumnDef="actions">
                         <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6"><div class="flex justify-end"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></div></th>

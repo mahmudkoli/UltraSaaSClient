@@ -47,6 +47,28 @@ export class PlansFormComponent implements OnInit, OnDestroy {
         });
     }
 
+    /** Phase v1-K6 — known feature flags. Extend as the platform adds toggles. */
+    readonly knownFlags = [
+        { code: 'CUSTOM_BRAND', description: 'Tenant can customize UI theme (logo / colors stay baseline)' },
+    ];
+
+    hasFlag(code: string): boolean {
+        try {
+            const arr = JSON.parse(this.form.value.featureFlagsJson || '[]');
+            return Array.isArray(arr) && arr.includes(code);
+        } catch { return false; }
+    }
+
+    setFlag(code: string, on: boolean): void {
+        let arr: string[];
+        try { arr = JSON.parse(this.form.value.featureFlagsJson || '[]'); if (!Array.isArray(arr)) arr = []; }
+        catch { arr = []; }
+        const has = arr.includes(code);
+        if (on && !has) arr.push(code);
+        if (!on && has) arr = arr.filter((c) => c !== code);
+        this.form.patchValue({ featureFlagsJson: JSON.stringify(arr) });
+    }
+
     ngOnInit(): void {
         this.planId = this._route.snapshot.paramMap.get('id') ?? undefined;
         if (this.planId) {

@@ -49,7 +49,7 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
     overdueOnly = false;
     classes: ClassDto[] = [];
     academicYears: AcademicYearDto[] = [];
-    displayedColumns: string[] = ['invoiceNumber', 'studentName', 'className', 'totalAmount', 'paidAmount', 'balanceAmount', 'dueDate', 'status', 'actions'];
+    displayedColumns: string[] = ['invoiceNumber', 'studentName', 'className', 'totalAmount', 'paidAmount', 'balanceAmount', 'dueDate', 'status', 'paidBy', 'actions'];
     Math = Math;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
