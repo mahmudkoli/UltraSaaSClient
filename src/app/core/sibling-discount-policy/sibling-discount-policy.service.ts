@@ -8,6 +8,8 @@ export interface SiblingDiscountPolicyDto {
     secondChildDiscountPercent: number;
     thirdChildDiscountPercent: number;
     fourthPlusChildDiscountPercent: number;
+    /** Phase v1-O (K4) — tenant-wide ceiling on any cashier-supplied discount at fee-invoice creation. null = no cap. */
+    maxDiscountPercentage?: number | null;
 }
 
 export type UpsertSiblingDiscountPolicyRequest = SiblingDiscountPolicyDto;

@@ -47,6 +47,7 @@ export class SiblingDiscountPolicyComponent implements OnInit, OnDestroy {
             secondChildDiscountPercent: [10, [Validators.required, Validators.min(0), Validators.max(100)]],
             thirdChildDiscountPercent: [15, [Validators.required, Validators.min(0), Validators.max(100)]],
             fourthPlusChildDiscountPercent: [20, [Validators.required, Validators.min(0), Validators.max(100)]],
+            maxDiscountPercentage: [null, [Validators.min(0), Validators.max(100)]],
         });
     }
 
@@ -62,6 +63,7 @@ export class SiblingDiscountPolicyComponent implements OnInit, OnDestroy {
                     secondChildDiscountPercent: p.secondChildDiscountPercent ?? 10,
                     thirdChildDiscountPercent: p.thirdChildDiscountPercent ?? 15,
                     fourthPlusChildDiscountPercent: p.fourthPlusChildDiscountPercent ?? 20,
+                    maxDiscountPercentage: p.maxDiscountPercentage ?? null,
                 });
                 this.loading = false;
                 this._cdr.markForCheck();
