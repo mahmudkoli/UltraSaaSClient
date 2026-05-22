@@ -31,6 +31,7 @@ import { StudentClassDto } from '../../../core/student-classes/student-classes.t
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
 import { UserService } from '../../../core/user/user.service';
+import { GradeBandDto, GradeBandsService } from '../../../core/grade-bands/grade-bands.service';
 
 interface MarkRow {
     studentId: string;
@@ -62,6 +63,7 @@ export class ExamResultBulkEntryComponent implements OnInit, OnDestroy {
     exams: ExamDto[] = [];
     subjects: SubjectDto[] = [];
     classes: ClassDto[] = [];
+    gradeBands: GradeBandDto[] = [];
     rows: MarkRow[] = [];
     rosterLoaded = false;
     isLoadingRoster = false;
@@ -90,6 +92,7 @@ export class ExamResultBulkEntryComponent implements OnInit, OnDestroy {
         private _notification: NotificationService,
         private _dateUtils: DateUtils,
         private _userService: UserService,
+        private _gradeBandsService: GradeBandsService,
         private _router: Router,
         private _cdr: ChangeDetectorRef
     ) {
@@ -116,6 +119,15 @@ export class ExamResultBulkEntryComponent implements OnInit, OnDestroy {
         this._classesService.search({ pageNumber: 1, pageSize: 200 })
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(r => { this.classes = r.data; this._cdr.markForCheck(); });
+        this._gradeBandsService.list()
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: bands => {
+                    this.gradeBands = [...bands].sort((a, b) => a.displayOrder - b.displayOrder);
+                    this._cdr.markForCheck();
+                },
+                error: () => { /* no bands configured -> legacy fallback */ }
+            });
     }
 
     ngOnDestroy(): void { this._unsubscribeAll.next(); this._unsubscribeAll.complete(); }
@@ -168,8 +180,16 @@ export class ExamResultBulkEntryComponent implements OnInit, OnDestroy {
         return Math.round((row.marksObtained / row.totalMarks) * 1000) / 10;
     }
 
+    private bandFor(row: MarkRow): GradeBandDto | undefined {
+        if (this.gradeBands.length === 0) return undefined;
+        const pct = this.percentage(row);
+        return this.gradeBands.find(b => pct >= b.lowerPercent && pct <= b.upperPercent);
+    }
+
     grade(row: MarkRow): string {
-        if (row.isAbsent) return 'F';
+        if (row.isAbsent) return 'ABS';
+        const band = this.bandFor(row);
+        if (band) return band.label;
         const pct = this.percentage(row);
         if (pct >= 90) return 'A+';
         if (pct >= 80) return 'A';
@@ -181,12 +201,19 @@ export class ExamResultBulkEntryComponent implements OnInit, OnDestroy {
         return 'F';
     }
 
+    gpa(row: MarkRow): number | null {
+        if (row.isAbsent) return null;
+        return this.bandFor(row)?.gpa ?? null;
+    }
+
     gradeClass(row: MarkRow): string {
-        const g = this.grade(row);
-        if (g === 'A+' || g === 'A') return 'bg-green-100 text-green-800';
-        if (g === 'B+' || g === 'B') return 'bg-blue-100 text-blue-800';
-        if (g === 'C+' || g === 'C') return 'bg-yellow-100 text-yellow-800';
-        if (g === 'D') return 'bg-orange-100 text-orange-800';
+        const label = this.grade(row);
+        if (label === 'ABS') return 'bg-gray-100 text-gray-800';
+        const head = label.charAt(0).toUpperCase();
+        if (head === 'A') return 'bg-green-100 text-green-800';
+        if (head === 'B') return 'bg-blue-100 text-blue-800';
+        if (head === 'C') return 'bg-yellow-100 text-yellow-800';
+        if (head === 'D') return 'bg-orange-100 text-orange-800';
         return 'bg-red-100 text-red-800';
     }
 
