@@ -10,6 +10,7 @@ import { PayrollService } from '../../../core/payroll/payroll.service';
 import { PayrollSlipDto } from '../../../core/payroll/payroll.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { TenantCurrencyPipe } from '../../../shared/pipes/currency.pipe';
 import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
@@ -18,7 +19,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule, MatTooltipModule, ListPageComponent],
+    imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule, MatTooltipModule, ListPageComponent, TenantCurrencyPipe],
 })
 export class PayrollListComponent implements OnInit, OnDestroy {
     slips: PayrollSlipDto[] = [];

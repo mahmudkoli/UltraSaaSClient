@@ -8,8 +8,10 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { MySubscriptionService } from '../../../core/billing/my-subscription.service';
 import { MySubscriptionDto, TenantInvoiceDto, TenantPaymentDto } from '../../../core/billing/billing.types';
+import { CurrencyService } from '../../../core/currency/currency.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { TenantCurrencyPipe } from '../../../shared/pipes/currency.pipe';
 
 @Component({
     selector: 'my-subscription',
@@ -17,7 +19,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatIconModule, MatTableModule, MatTabsModule, MatTooltipModule, ListPageComponent],
+    imports: [CommonModule, MatButtonModule, MatIconModule, MatTableModule, MatTabsModule, MatTooltipModule, ListPageComponent, TenantCurrencyPipe],
 })
 export class MySubscriptionComponent implements OnInit, OnDestroy {
     sub?: MySubscriptionDto;
@@ -30,9 +32,19 @@ export class MySubscriptionComponent implements OnInit, OnDestroy {
 
     constructor(
         private _service: MySubscriptionService,
+        private _currencyService: CurrencyService,
         private _cdr: ChangeDetectorRef,
         private _notify: NotificationService,
     ) {}
+
+    /** The plan's price in the active tenant's currency, or null when the plan
+     * doesn't publish a row in this currency. The MySubscriptionRequest handler
+     * sends every published price; the FE picks the one that matches. */
+    get planPrice(): number | null {
+        const code = this._currencyService.current()?.code;
+        if (!code || !this.sub?.plan?.prices) return null;
+        return this.sub.plan.prices[code] ?? null;
+    }
 
     ngOnInit(): void {
         forkJoin({

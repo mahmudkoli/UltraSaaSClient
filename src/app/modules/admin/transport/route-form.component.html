@@ -14,7 +14,7 @@
             <mat-form-field appearance="outline" class="w-full"><mat-label>End location</mat-label><input matInput formControlName="endLocation"></mat-form-field>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Distance (km)</mat-label><input matInput type="number" formControlName="distance" step="0.1"></mat-form-field>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Estimated time (hh:mm:ss)</mat-label><input matInput formControlName="estimatedTime" placeholder="00:30:00"></mat-form-field>
-            <mat-form-field appearance="outline" class="w-full"><mat-label>Fare (BDT)</mat-label><input matInput type="number" formControlName="fare"></mat-form-field>
+            <mat-form-field appearance="outline" class="w-full"><mat-label>Fare</mat-label><input matInput type="number" formControlName="fare"><mat-hint>In your tenant's currency.</mat-hint></mat-form-field>
         </div>
         <mat-form-field appearance="outline" class="w-full"><mat-label>Description</mat-label><textarea matInput formControlName="description" rows="2"></textarea></mat-form-field>
         <mat-form-field appearance="outline" class="w-full"><mat-label>Stops (JSON or text)</mat-label><textarea matInput formControlName="stops" rows="2"></textarea></mat-form-field>

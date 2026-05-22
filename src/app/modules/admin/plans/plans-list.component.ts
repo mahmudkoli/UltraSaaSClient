@@ -8,6 +8,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { PlansService } from '../../../core/billing/plans.service';
 import { PlanDto } from '../../../core/billing/billing.types';
+import { CurrencyDescriptor, CurrencyService } from '../../../core/currency/currency.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
 
@@ -22,11 +23,15 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
 export class PlansListComponent implements OnInit, OnDestroy {
     plans: PlanDto[] = [];
     loading = false;
-    displayedColumns = ['code', 'name', 'monthlyFeeBDT', 'trialDays', 'maxInstitutes', 'maxUsers', 'isActive', 'actions'];
+    /** Currency descriptors from /api/currencies — one price column per entry. */
+    currencies: CurrencyDescriptor[] = [];
+    /** Built dynamically once currencies arrive: code/name/<price-per-currency>/limits/status/actions. */
+    displayedColumns: string[] = [];
     private _destroyed$ = new Subject<void>();
 
     constructor(
         private _service: PlansService,
+        private _currencyService: CurrencyService,
         private _cdr: ChangeDetectorRef,
         private _router: Router,
         private _route: ActivatedRoute,
@@ -34,7 +39,21 @@ export class PlansListComponent implements OnInit, OnDestroy {
     ) {}
 
     ngOnInit(): void {
-        this.load();
+        this._currencyService.list().pipe(takeUntil(this._destroyed$)).subscribe({
+            next: (currencies) => {
+                this.currencies = currencies;
+                const priceCols = currencies.map(c => `price_${c.code}`);
+                this.displayedColumns = ['code', 'name', ...priceCols, 'trialDays', 'maxInstitutes', 'maxUsers', 'isActive', 'actions'];
+                this._cdr.markForCheck();
+                this.load();
+            },
+            error: () => this._notify.error('Could not load currency list.'),
+        });
+    }
+
+    /** Price lookup the template binds to — null when the plan doesn't publish that currency. */
+    priceOf(plan: PlanDto, code: string): number | null {
+        return plan.prices?.[code] ?? null;
     }
 
     ngOnDestroy(): void {

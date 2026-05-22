@@ -14,6 +14,8 @@ export interface TenantDto {
 
     // Billing & subscription
     planId?: string;
+    /** Phase v1-O — ISO 4217 (see /api/currencies). Set at create-time, immutable. */
+    currencyCode: string;
     validUpto: string;
     paymentStatus: string;
     lastPaymentDate?: string;
@@ -74,6 +76,12 @@ export interface CreateTenantRequest {
     /** Phase v1-C1 — SubscriptionPlan FK. */
     planId?: string;
     billingEmail?: string;
+
+    /**
+     * Phase v1-O — ISO 4217 code (e.g. "BDT", "USD"). Defaults to platform
+     * primary on the backend if omitted. Immutable once the tenant exists.
+     */
+    currencyCode?: string;
 }
 
 /** Phase v1-C2.2 — same cleanup as CreateTenantRequest. */

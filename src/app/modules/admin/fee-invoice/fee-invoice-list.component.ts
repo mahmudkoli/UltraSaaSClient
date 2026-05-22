@@ -22,6 +22,7 @@ import { AcademicYearsService } from '../../../core/academic-years/academic-year
 import { AcademicYearDto } from '../../../core/academic-years/academic-years.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { TenantService } from '../../../core/tenant/tenant.service';
+import { CurrencyService } from '../../../core/currency/currency.service';
 
 @Component({
     selector: 'fee-invoice-list',
@@ -63,6 +64,7 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
         private _route: ActivatedRoute,
         private _notificationService: NotificationService,
         private _tenant: TenantService,
+        private _currency: CurrencyService,
     ) {}
 
     ngOnInit(): void {
@@ -142,11 +144,11 @@ export class FeeInvoiceListComponent implements OnInit, OnDestroy {
         this._service.createShareToken(item.id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (res) => {
                 const url = `${window.location.origin}/public/invoice/${encodeURIComponent(res.token)}?tenant=${encodeURIComponent(tenantId)}`;
-                const money = (item.balanceAmount ?? 0).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                const money = this._currency.format(item.balanceAmount ?? 0);
                 const due = item.dueDate ? new Date(item.dueDate).toLocaleDateString() : '';
                 const lines = [
                     `Dear Parent,`,
-                    `Fee invoice ${item.invoiceNumber} for ${item.studentName ?? 'your child'} — balance BDT ${money}${due ? `, due ${due}` : ''}.`,
+                    `Fee invoice ${item.invoiceNumber} for ${item.studentName ?? 'your child'} — balance ${money}${due ? `, due ${due}` : ''}.`,
                     `View / pay: ${url}`,
                 ];
                 const text = encodeURIComponent(lines.join('\n'));

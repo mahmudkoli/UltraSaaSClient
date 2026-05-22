@@ -1,21 +1,18 @@
-import { Component, OnInit, ViewEncapsulation } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTabsModule } from '@angular/material/tabs';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
-import { TranslocoModule } from '@ngneat/transloco';
-import { TenantDto, CreateTenantRequest, UpdateTenantRequest } from '../../../core/tenants/tenants.types';
+import { CreateTenantRequest, UpdateTenantRequest } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
+import { CurrencyDescriptor, CurrencyService } from '../../../core/currency/currency.service';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
     selector: 'tenant-form',
@@ -26,90 +23,84 @@ import { TenantsService } from '../../../core/tenants/tenants.service';
         CommonModule,
         ReactiveFormsModule,
         MatButtonModule,
-        MatCardModule,
-        MatCheckboxModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
-        MatProgressSpinnerModule,
         MatSelectModule,
         MatSlideToggleModule,
-        MatTabsModule,
-        TranslocoModule,
     ],
 })
-export class TenantFormComponent implements OnInit {
+export class TenantFormComponent implements OnInit, OnDestroy {
     tenantForm: FormGroup;
     isEditMode: boolean = false;
     tenantId: string | null = null;
     loading: boolean = false;
     saving: boolean = false;
     themeLabel: string = 'Not configured';
+    /** Phase v1-O — supported currencies. The Currency field is shown on
+     * create only (immutable post-create per backend rule). */
+    currencies: CurrencyDescriptor[] = [];
+    private _destroyed$ = new Subject<void>();
 
 
     constructor(
         private _formBuilder: FormBuilder,
         private _tenantsService: TenantsService,
+        private _currencyService: CurrencyService,
         private _router: Router,
         private _route: ActivatedRoute,
         private _fuseConfirmationService: FuseConfirmationService
     ) {
         this.tenantForm = this._formBuilder.group({
-            // Basic Information
+            // Identity (Phase v1-C2.2 — the only fields with backend persistence)
             id: ['', [Validators.required, Validators.pattern('^[a-zA-Z0-9_-]+$')]],
             systemName: ['', [Validators.required, Validators.maxLength(100)]],
             technicalAdminEmail: ['', [Validators.required, Validators.email]],
             subdomain: ['', [Validators.required, Validators.maxLength(255)]],
-            customDomain: [''],
             connectionString: [''],
             isShared: [false],
-            issuer: [''],
 
-            // Billing & Subscription
-            billingPlan: ['Basic', [Validators.required]],
-            monthlyFee: [0, [Validators.min(0)]],
-            billingCurrency: ['USD', [Validators.required]],
+            // Billing
+            planId: [''],
             billingEmail: ['', [Validators.required, Validators.email]],
-            paymentStatus: ['Pending', [Validators.required]],
-            supportTier: ['Basic', [Validators.required]],
-            accountManagerEmail: [''],
-            emergencyContact: [''],
+            // Phase v1-O — ISO 4217. Defaults to primary; immutable post-create.
+            currencyCode: ['BDT', [Validators.required]],
 
-            // System Limits
-            maxDatabaseGB: [5, [Validators.required, Validators.min(1)]],
-            maxApiCallsPerMonth: [10000, [Validators.required, Validators.min(1000)]],
-            maxConcurrentUsers: [50, [Validators.required, Validators.min(1)]],
-            dataResidency: ['US', [Validators.required]],
-            dataRetentionDays: [365, [Validators.required, Validators.min(30)]],
-
-            // Status & Validity
-            validUpto: ['', [Validators.required]],
-            isSystemActive: [true],
-            suspensionReason: [''],
-            suspendedUntil: [''],
+            // Read-only state (edit-mode display only — no UpdateTenantRequest field)
+            paymentStatus: [{ value: 'Trial', disabled: true }],
+            validUpto: [{ value: '', disabled: true }],
+            isSystemActive: [{ value: true, disabled: true }],
+            suspensionReason: [{ value: '', disabled: true }],
+            suspendedUntil: [{ value: '', disabled: true }],
 
             // Phase v1-K7 — audit retention input (BE accepts 1–3650)
             auditRetentionDays: [365, [Validators.min(1), Validators.max(3650)]],
-
-            // Features & Settings
-            requiresGDPR: [false],
-            requires2FA: [false],
-            ipWhitelist: [''],
-            enableAdvancedReporting: [false],
-            enableCustomBranding: [false],
-            enableApiAccess: [true],
-            enableBackupRestore: [false],
-            enableMultipleDatabases: [false]
         });
     }
 
     ngOnInit(): void {
+        this._currencyService.list().pipe(takeUntil(this._destroyed$)).subscribe({
+            next: (list) => {
+                this.currencies = list;
+                // Default to platform primary on the create form.
+                if (!this.isEditMode) {
+                    const primary = list.find(c => c.isPrimary) ?? list[0];
+                    if (primary) this.tenantForm.patchValue({ currencyCode: primary.code });
+                }
+            },
+        });
+
         this.tenantId = this._route.snapshot.paramMap.get('id');
-        
+
         if (this.tenantId) {
             this.isEditMode = true;
             this.loadTenant();
         }
+    }
+
+    ngOnDestroy(): void {
+        this._destroyed$.next();
+        this._destroyed$.complete();
     }
 
     loadTenant(): void {
@@ -131,12 +122,15 @@ export class TenantFormComponent implements OnInit {
                     planId: tenant.planId || '',
                     billingEmail: tenant.billingEmail || tenant.technicalAdminEmail,
                     paymentStatus: tenant.paymentStatus || 'Trial',
+                    currencyCode: tenant.currencyCode,
                     validUpto: tenant.validUpto ? new Date(tenant.validUpto).toISOString().split('T')[0] : '',
                     isSystemActive: tenant.isSystemActive,
                     suspensionReason: tenant.suspensionReason || '',
                     suspendedUntil: tenant.suspendedUntil ? new Date(tenant.suspendedUntil).toISOString().split('T')[0] : '',
                     auditRetentionDays: tenant.auditRetentionDays ?? 365,
                 });
+                // Currency is immutable post-create.
+                this.tenantForm.get('currencyCode')?.disable();
                 // Parse theme config for display
                 if (tenant.themeConfig) {
                     try {
@@ -218,6 +212,7 @@ export class TenantFormComponent implements OnInit {
                 isShared: formData.isShared,
                 planId: formData.planId || undefined,
                 billingEmail: formData.billingEmail,
+                currencyCode: formData.currencyCode || undefined,
             };
 
             this._tenantsService.create(createRequest).subscribe({

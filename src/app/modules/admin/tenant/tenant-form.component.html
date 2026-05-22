@@ -1,657 +1,162 @@
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
-    <!-- Background Pattern -->
     <div class="absolute inset-0 opacity-5 dark:opacity-10">
         <div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div>
     </div>
     <div class="relative z-10 flex flex-col flex-auto min-w-0">
 
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
-        <div class="flex items-center space-x-4">
-            <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200">
-                <mat-icon class="text-white">business</mat-icon>
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg">
+                    <mat-icon class="text-white">business</mat-icon>
+                </div>
+                <div>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
+                        {{ isEditMode ? 'Edit Tenant' : 'Create Tenant' }}
+                    </h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
+                        {{ isEditMode ? 'Update tenant identity, billing and audit retention.' : 'Provision a new tenant.' }}
+                    </p>
+                </div>
             </div>
-            <div>
-                <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                    {{ isEditMode ? 'Edit Tenant' : 'Create Tenant' }}
-                </h2>
-                <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {{ isEditMode ? 'Update tenant configuration' : 'Create a new tenant for your multi-tenant system' }}
-                </p>
+            <div class="flex items-center space-x-3">
+                <button mat-stroked-button (click)="cancel()" class="px-6">
+                    <mat-icon class="mr-2">arrow_back</mat-icon>
+                    Cancel
+                </button>
             </div>
         </div>
-        <div class="flex items-center space-x-3">
-            <button
-                mat-stroked-button
-                (click)="cancel()"
-                class="px-6">
-                <mat-icon class="mr-2">arrow_back</mat-icon>
-                Cancel
-            </button>
-        </div>
-    </div>
 
-    <!-- Content -->
-    <div class="flex-auto p-4 sm:p-6">
-        <div class="flex flex-col flex-auto min-w-0">
-            <div class="flex-auto">
+        <!-- Content -->
+        <div class="flex-auto p-4 sm:p-6">
+            <div *ngIf="loading" class="flex items-center justify-center p-12">
+                <div class="flex flex-col items-center space-y-4">
+                    <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
+                    <p class="text-gray-600 dark:text-gray-400">Loading tenant…</p>
+                </div>
+            </div>
 
-                <!-- Loading -->
-                <div *ngIf="loading" class="flex items-center justify-center p-12">
-                    <div class="flex flex-col items-center space-y-4">
-                        <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                        <p class="text-gray-600 dark:text-gray-400">Loading tenant information...</p>
+            <form *ngIf="!loading" [formGroup]="tenantForm" (ngSubmit)="save()"
+                  class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 space-y-8">
+
+                <!-- Identity -->
+                <section class="space-y-4">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Identity</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Tenant ID</mat-label>
+                            <input matInput formControlName="id" placeholder="e.g. acme-school">
+                            <mat-icon matSuffix>tag</mat-icon>
+                            <mat-hint>Letters, numbers, hyphens, underscores. Immutable.</mat-hint>
+                            <mat-error *ngIf="tenantForm.get('id')?.hasError('required')">Tenant ID is required</mat-error>
+                            <mat-error *ngIf="tenantForm.get('id')?.hasError('pattern')">Use only letters, numbers, hyphens, underscores</mat-error>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>System Name</mat-label>
+                            <input matInput formControlName="systemName" placeholder="Acme School">
+                            <mat-icon matSuffix>business</mat-icon>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Subdomain</mat-label>
+                            <input matInput formControlName="subdomain" placeholder="acme">
+                            <mat-icon matSuffix>language</mat-icon>
+                            <mat-hint>Used in {{ '{subdomain}' }}.mkcorex.com</mat-hint>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Technical admin email</mat-label>
+                            <input matInput formControlName="technicalAdminEmail" type="email" placeholder="admin@acme.com">
+                            <mat-icon matSuffix>person</mat-icon>
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Billing email</mat-label>
+                            <input matInput formControlName="billingEmail" type="email" placeholder="billing@acme.com">
+                            <mat-icon matSuffix>receipt</mat-icon>
+                        </mat-form-field>
+
+                        <!-- Phase v1-O — Currency picker. Sourced from /api/currencies, immutable post-create. -->
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Currency</mat-label>
+                            <mat-select formControlName="currencyCode">
+                                <mat-option *ngFor="let c of currencies" [value]="c.code">
+                                    {{ c.symbol }} — {{ c.name }} ({{ c.code }})
+                                </mat-option>
+                            </mat-select>
+                            <mat-icon matSuffix>currency_exchange</mat-icon>
+                            <mat-hint *ngIf="!isEditMode">Both school operations and SaaS subscription billing use this currency. Immutable after create.</mat-hint>
+                            <mat-hint *ngIf="isEditMode">Fixed at create-time; cannot be changed.</mat-hint>
+                        </mat-form-field>
                     </div>
-                </div>
+                </section>
 
-                <!-- Form -->
-                <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <!-- System -->
+                <section class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">System</h3>
 
-                    <form [formGroup]="tenantForm" (ngSubmit)="save()">
-                        <mat-tab-group class="tenant-form-tabs" animationDuration="300ms">
+                    <mat-form-field appearance="outline" class="w-full">
+                        <mat-label>Connection string (optional)</mat-label>
+                        <textarea matInput formControlName="connectionString" rows="2" placeholder="Leave empty to use shared database"></textarea>
+                        <mat-icon matSuffix>database</mat-icon>
+                    </mat-form-field>
 
-                        <!-- Basic Information Tab -->
-                        <mat-tab>
-                            <ng-template mat-tab-label>
-                                <div class="flex items-center space-x-2">
-                                    <div class="flex items-center justify-center w-6 h-6 bg-blue-100 dark:bg-blue-900 text-blue-600 dark:text-blue-400 rounded-full text-xs font-semibold">
-                                        1
-                                    </div>
-                                    <span>Basic Information</span>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
+                            <mat-slide-toggle formControlName="isShared">
+                                <div class="flex flex-col ml-4">
+                                    <span class="font-medium">Shared database</span>
+                                    <span class="text-sm text-gray-600 dark:text-gray-400">Use the platform-shared DB instead of a dedicated one</span>
                                 </div>
-                            </ng-template>
-                            <div class="p-6 space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                                    <!-- Tenant ID -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Tenant ID</mat-label>
-                                        <input matInput formControlName="id" placeholder="Enter tenant ID">
-                                        <mat-icon matSuffix class="text-secondary">tag</mat-icon>
-                                        <mat-error *ngIf="tenantForm.get('id')?.hasError('required')">
-                                            Tenant ID is required
-                                        </mat-error>
-                                        <mat-error *ngIf="tenantForm.get('id')?.hasError('pattern')">
-                                            Tenant ID can only contain letters, numbers, hyphens, and underscores
-                                        </mat-error>
-                                    </mat-form-field>
-
-                                    <!-- Generate ID Button -->
-                                    <div class="flex items-center">
-                                        <button
-                                            type="button"
-                                            mat-stroked-button
-                                            (click)="generateTenantId()"
-                                            class="!h-[56px] w-full px-3 text-xs font-medium border-gray-300 dark:border-gray-600 transform -translate-y-2">
-                                            <mat-icon class="mr-1 text-base">auto_fix_high</mat-icon>
-                                            Generate from Name
-                                        </button>
-                                    </div>
-
-                                    <!-- System Name -->
-                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
-                                        <mat-label>System Name</mat-label>
-                                        <input matInput formControlName="systemName" placeholder="Enter system name">
-                                        <mat-icon matSuffix class="text-secondary">business</mat-icon>
-                                        <mat-error *ngIf="tenantForm.get('systemName')?.hasError('required')">
-                                            System name is required
-                                        </mat-error>
-                                        <mat-error *ngIf="tenantForm.get('systemName')?.hasError('maxlength')">
-                                            System name cannot exceed 100 characters
-                                        </mat-error>
-                                    </mat-form-field>
-
-                                    <!-- Technical Admin Email -->
-                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
-                                        <mat-label>Technical Admin Email</mat-label>
-                                        <input matInput formControlName="technicalAdminEmail" placeholder="Enter technical admin email" type="email">
-                                        <mat-icon matSuffix class="text-secondary">email</mat-icon>
-                                        <mat-error *ngIf="tenantForm.get('technicalAdminEmail')?.hasError('required')">
-                                            Technical admin email is required
-                                        </mat-error>
-                                        <mat-error *ngIf="tenantForm.get('technicalAdminEmail')?.hasError('email')">
-                                            Please enter a valid email address
-                                        </mat-error>
-                                    </mat-form-field>
-
-                                    <!-- Subdomain -->
-                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
-                                        <mat-label>Subdomain</mat-label>
-                                        <input matInput formControlName="subdomain" placeholder="Enter subdomain">
-                                        <mat-icon matSuffix class="text-secondary">language</mat-icon>
-                                        <mat-error *ngIf="tenantForm.get('subdomain')?.hasError('required')">
-                                            Subdomain is required
-                                        </mat-error>
-                                        <mat-error *ngIf="tenantForm.get('subdomain')?.hasError('maxlength')">
-                                            Subdomain cannot exceed 255 characters
-                                        </mat-error>
-                                    </mat-form-field>
-
-                                    <!-- Custom Domain -->
-                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
-                                        <mat-label>Custom Domain (Optional)</mat-label>
-                                        <input matInput formControlName="customDomain" placeholder="Enter custom domain">
-                                        <mat-icon matSuffix class="text-secondary">public</mat-icon>
-                                        <mat-hint>Custom domain for white-label solution</mat-hint>
-                                    </mat-form-field>
-
-                                </div>
-                            </div>
-                        </mat-tab>
-
-                        <!-- Billing & Subscription Tab -->
-                        <mat-tab>
-                            <ng-template mat-tab-label>
-                                <div class="flex items-center space-x-2">
-                                    <div class="flex items-center justify-center w-6 h-6 bg-green-100 dark:bg-green-900 text-green-600 dark:text-green-400 rounded-full text-xs font-semibold">
-                                        2
-                                    </div>
-                                    <span>Billing & Subscription</span>
-                                </div>
-                            </ng-template>
-                            <div class="p-6 space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                                    <!-- Billing Plan -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Billing Plan</mat-label>
-                                        <mat-select formControlName="billingPlan">
-                                            <mat-option value="Basic">Basic</mat-option>
-                                            <mat-option value="Standard">Standard</mat-option>
-                                            <mat-option value="Premium">Premium</mat-option>
-                                            <mat-option value="Enterprise">Enterprise</mat-option>
-                                        </mat-select>
-                                        <mat-icon matSuffix>payment</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Monthly Fee -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Monthly Fee</mat-label>
-                                        <input matInput formControlName="monthlyFee" type="number" placeholder="0">
-                                        <mat-icon matSuffix>attach_money</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Billing Currency -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Billing Currency</mat-label>
-                                        <mat-select formControlName="billingCurrency">
-                                            <mat-option value="USD">USD</mat-option>
-                                            <mat-option value="EUR">EUR</mat-option>
-                                            <mat-option value="GBP">GBP</mat-option>
-                                        </mat-select>
-                                        <mat-icon matSuffix>currency_exchange</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Billing Email -->
-                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
-                                        <mat-label>Billing Email</mat-label>
-                                        <input matInput formControlName="billingEmail" type="email" placeholder="Enter billing email">
-                                        <mat-icon matSuffix>receipt</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Payment Status -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Payment Status</mat-label>
-                                        <mat-select formControlName="paymentStatus">
-                                            <mat-option value="Pending">Pending</mat-option>
-                                            <mat-option value="Active">Active</mat-option>
-                                            <mat-option value="Overdue">Overdue</mat-option>
-                                            <mat-option value="Suspended">Suspended</mat-option>
-                                        </mat-select>
-                                        <mat-icon matSuffix>credit_card</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Support Tier -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Support Tier</mat-label>
-                                        <mat-select formControlName="supportTier">
-                                            <mat-option value="Basic">Basic</mat-option>
-                                            <mat-option value="Standard">Standard</mat-option>
-                                            <mat-option value="Premium">Premium</mat-option>
-                                            <mat-option value="Enterprise">Enterprise</mat-option>
-                                        </mat-select>
-                                        <mat-icon matSuffix>support</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Valid Until -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Valid Until</mat-label>
-                                        <input matInput formControlName="validUpto" type="date">
-                                        <mat-icon matSuffix>event</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Account Manager Email -->
-                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
-                                        <mat-label>Account Manager Email (Optional)</mat-label>
-                                        <input matInput formControlName="accountManagerEmail" type="email" placeholder="Enter account manager email">
-                                        <mat-icon matSuffix>person</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Emergency Contact -->
-                                    <mat-form-field appearance="outline" class="w-full lg:col-span-2">
-                                        <mat-label>Emergency Contact (Optional)</mat-label>
-                                        <input matInput formControlName="emergencyContact" placeholder="Enter emergency contact">
-                                        <mat-icon matSuffix>emergency</mat-icon>
-                                    </mat-form-field>
-
-                                </div>
-                            </div>
-                        </mat-tab>
-
-                        <!-- System Limits Tab -->
-                        <mat-tab>
-                            <ng-template mat-tab-label>
-                                <div class="flex items-center space-x-2">
-                                    <div class="flex items-center justify-center w-6 h-6 bg-orange-100 dark:bg-orange-900 text-orange-600 dark:text-orange-400 rounded-full text-xs font-semibold">
-                                        3
-                                    </div>
-                                    <span>System Limits</span>
-                                </div>
-                            </ng-template>
-                            <div class="p-6 space-y-6">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-
-                                    <!-- Max Database GB -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Max Database (GB)</mat-label>
-                                        <input matInput formControlName="maxDatabaseGB" type="number" placeholder="5">
-                                        <mat-icon matSuffix>storage</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Max API Calls -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Max API Calls/Month</mat-label>
-                                        <input matInput formControlName="maxApiCallsPerMonth" type="number" placeholder="10000">
-                                        <mat-icon matSuffix>api</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Max Concurrent Users -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Max Concurrent Users</mat-label>
-                                        <input matInput formControlName="maxConcurrentUsers" type="number" placeholder="50">
-                                        <mat-icon matSuffix>group</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Data Residency -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Data Residency</mat-label>
-                                        <mat-select formControlName="dataResidency">
-                                            <mat-option value="US">United States</mat-option>
-                                            <mat-option value="EU">European Union</mat-option>
-                                            <mat-option value="APAC">Asia Pacific</mat-option>
-                                            <mat-option value="CA">Canada</mat-option>
-                                        </mat-select>
-                                        <mat-icon matSuffix>public</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Data Retention Days -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Data Retention (Days)</mat-label>
-                                        <input matInput formControlName="dataRetentionDays" type="number" placeholder="365">
-                                        <mat-icon matSuffix>schedule</mat-icon>
-                                    </mat-form-field>
-
-                                </div>
-                            </div>
-                        </mat-tab>
-
-                        <!-- Features & Security Tab -->
-                        <mat-tab>
-                            <ng-template mat-tab-label>
-                                <div class="flex items-center space-x-2">
-                                    <div class="flex items-center justify-center w-6 h-6 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded-full text-xs font-semibold">
-                                        4
-                                    </div>
-                                    <span>Features & Security</span>
-                                </div>
-                            </ng-template>
-                            <div class="p-6 space-y-6">
-
-                                <!-- Security Features -->
-                                <div class="space-y-4">
-                                    <h3 class="text-lg font-semibold">Security Features</h3>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <mat-slide-toggle formControlName="requiresGDPR">
-                                                <div class="flex flex-col ml-4">
-                                                    <span class="font-medium">GDPR Compliance</span>
-                                                    <span class="text-sm text-gray-600">Enable GDPR compliance features</span>
-                                                </div>
-                                            </mat-slide-toggle>
-                                        </div>
-
-                                        <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <mat-slide-toggle formControlName="requires2FA">
-                                                <div class="flex flex-col ml-4">
-                                                    <span class="font-medium">2FA Required</span>
-                                                    <span class="text-sm text-gray-600">Require two-factor authentication</span>
-                                                </div>
-                                            </mat-slide-toggle>
-                                        </div>
-                                    </div>
-
-                                    <!-- IP Whitelist -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>IP Whitelist (Optional)</mat-label>
-                                        <textarea matInput formControlName="ipWhitelist" placeholder="Enter IP addresses separated by commas" rows="3"></textarea>
-                                        <mat-icon matSuffix>security</mat-icon>
-                                        <mat-hint>Comma-separated list of allowed IP addresses</mat-hint>
-                                    </mat-form-field>
-                                </div>
-
-                                <!-- Feature Toggles -->
-                                <div class="space-y-4">
-                                    <h3 class="text-lg font-semibold">Feature Toggles</h3>
-
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                        <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <mat-slide-toggle formControlName="enableAdvancedReporting">
-                                                <div class="flex flex-col ml-4">
-                                                    <span class="font-medium">Advanced Reporting</span>
-                                                    <span class="text-sm text-gray-600">Enable advanced analytics and reports</span>
-                                                </div>
-                                            </mat-slide-toggle>
-                                        </div>
-
-                                        <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <mat-slide-toggle formControlName="enableCustomBranding">
-                                                <div class="flex flex-col ml-4">
-                                                    <span class="font-medium">Custom Branding</span>
-                                                    <span class="text-sm text-gray-600">Allow custom branding and themes</span>
-                                                </div>
-                                            </mat-slide-toggle>
-                                        </div>
-
-                                        <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <mat-slide-toggle formControlName="enableApiAccess">
-                                                <div class="flex flex-col ml-4">
-                                                    <span class="font-medium">API Access</span>
-                                                    <span class="text-sm text-gray-600">Enable API access for integrations</span>
-                                                </div>
-                                            </mat-slide-toggle>
-                                        </div>
-
-                                        <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <mat-slide-toggle formControlName="enableBackupRestore">
-                                                <div class="flex flex-col ml-4">
-                                                    <span class="font-medium">Backup & Restore</span>
-                                                    <span class="text-sm text-gray-600">Enable backup and restore features</span>
-                                                </div>
-                                            </mat-slide-toggle>
-                                        </div>
-
-                                        <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                            <mat-slide-toggle formControlName="enableMultipleDatabases">
-                                                <div class="flex flex-col ml-4">
-                                                    <span class="font-medium">Multiple Databases</span>
-                                                    <span class="text-sm text-gray-600">Allow multiple database connections</span>
-                                                </div>
-                                            </mat-slide-toggle>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </mat-tab>
-
-                        <!-- Advanced Configuration Tab -->
-                        <mat-tab>
-                            <ng-template mat-tab-label>
-                                <div class="flex items-center space-x-2">
-                                    <div class="flex items-center justify-center w-6 h-6 bg-red-100 dark:bg-red-900 text-red-600 dark:text-red-400 rounded-full text-xs font-semibold">
-                                        5
-                                    </div>
-                                    <span>Advanced Configuration</span>
-                                </div>
-                            </ng-template>
-                            <div class="p-6 space-y-6">
-
-                                <!-- Connection String -->
-                                <mat-form-field appearance="outline" class="w-full">
-                                    <mat-label>Database Connection String (Optional)</mat-label>
-                                    <textarea matInput formControlName="connectionString" placeholder="Enter database connection string" rows="3"></textarea>
-                                    <mat-icon matSuffix>database</mat-icon>
-                                    <mat-hint>Leave empty to use shared database</mat-hint>
-                                </mat-form-field>
-
-                                <!-- JWT Issuer -->
-                                <mat-form-field appearance="outline" class="w-full">
-                                    <mat-label>JWT Issuer (Optional)</mat-label>
-                                    <input matInput formControlName="issuer" placeholder="Enter JWT issuer">
-                                    <mat-icon matSuffix>key</mat-icon>
-                                    <mat-hint>Custom JWT issuer for this tenant</mat-hint>
-                                </mat-form-field>
-
-                                <!-- System Settings -->
-                                <div class="space-y-4">
-                                    <h3 class="text-lg font-semibold">System Settings</h3>
-
-                                    <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <mat-slide-toggle formControlName="isShared">
-                                            <div class="flex flex-col ml-4">
-                                                <span class="font-medium text-gray-900 dark:text-white">Shared Resources</span>
-                                                <span class="text-sm text-gray-600 dark:text-gray-400">Allow this tenant to share resources with other tenants</span>
-                                            </div>
-                                        </mat-slide-toggle>
-                                    </div>
-
-                                    <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
-                                        <mat-slide-toggle formControlName="isSystemActive">
-                                            <div class="flex flex-col ml-4">
-                                                <span class="font-medium text-gray-900 dark:text-white">System Active</span>
-                                                <span class="text-sm text-gray-600 dark:text-gray-400">Enable or disable this tenant</span>
-                                            </div>
-                                        </mat-slide-toggle>
-                                    </div>
-
-                                    <!-- Phase v1-K7 — AuditRetentionDays input (BE accepts 1–3650).
-                                         Daily AuditRetentionJob purges trail rows older than this. -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Audit retention (days)</mat-label>
-                                        <input matInput type="number" formControlName="auditRetentionDays" min="1" max="3650" placeholder="365">
-                                        <mat-hint>Trail rows older than this are purged by the daily AuditRetentionJob (02:00 UTC).</mat-hint>
-                                    </mat-form-field>
-                                </div>
-
-                                <!-- Suspension Settings -->
-                                <div class="space-y-4">
-                                    <h3 class="text-lg font-semibold">Suspension Settings</h3>
-
-                                    <!-- Suspension Reason -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Suspension Reason (Optional)</mat-label>
-                                        <textarea matInput formControlName="suspensionReason" placeholder="Enter suspension reason" rows="2"></textarea>
-                                        <mat-icon matSuffix>block</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Suspended Until -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Suspended Until (Optional)</mat-label>
-                                        <input matInput formControlName="suspendedUntil" type="date">
-                                        <mat-icon matSuffix>schedule</mat-icon>
-                                    </mat-form-field>
-                                </div>
-
-                            </div>
-                        </mat-tab>
-
-                        <!-- Review & Create Tab -->
-                        <mat-tab>
-                            <ng-template mat-tab-label>
-                                <div class="flex items-center space-x-2">
-                                    <div class="flex items-center justify-center w-6 h-6 bg-teal-100 dark:bg-teal-900 text-teal-600 dark:text-teal-400 rounded-full text-xs font-semibold">
-                                        6
-                                    </div>
-                                    <span>Review & Create</span>
-                                </div>
-                            </ng-template>
-                            <div class="p-6 space-y-6">
-                                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-
-                                    <!-- Basic Information -->
-                                    <mat-card class="p-4">
-                                        <h3 class="text-lg font-semibold mb-4 text-blue-600 dark:text-blue-400 flex items-center">
-                                            <mat-icon class="mr-2">business</mat-icon>
-                                            Basic Information
-                                        </h3>
-                                        <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Tenant ID:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('id')?.value || 'Not set' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">System Name:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('systemName')?.value || 'Not set' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Technical Admin Email:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('technicalAdminEmail')?.value || 'Not set' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Subdomain:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('subdomain')?.value || 'Not set' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Custom Domain:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('customDomain')?.value || 'Not provided' }}</span></div>
-                                        </div>
-                                    </mat-card>
-
-                                    <!-- Billing & Subscription -->
-                                    <mat-card class="p-4">
-                                        <h3 class="text-lg font-semibold mb-4 text-green-600 dark:text-green-400 flex items-center">
-                                            <mat-icon class="mr-2">payment</mat-icon>
-                                            Billing & Subscription
-                                        </h3>
-                                        <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Plan:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('billingPlan')?.value || 'Basic' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Monthly Fee:</span> <span class="text-gray-900 dark:text-white">${{ tenantForm.get('monthlyFee')?.value || '0' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Currency:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('billingCurrency')?.value || 'USD' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Billing Email:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('billingEmail')?.value || 'Not set' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Payment Status:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('paymentStatus')?.value || 'Pending' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Support Tier:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('supportTier')?.value || 'Basic' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Valid Until:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('validUpto')?.value || 'Not set' }}</span></div>
-                                        </div>
-                                    </mat-card>
-
-                                    <!-- System Limits -->
-                                    <mat-card class="p-4">
-                                        <h3 class="text-lg font-semibold mb-4 text-orange-600 dark:text-orange-400 flex items-center">
-                                            <mat-icon class="mr-2">storage</mat-icon>
-                                            System Limits
-                                        </h3>
-                                        <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Database:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('maxDatabaseGB')?.value || '5' }} GB</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">API Calls/Month:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('maxApiCallsPerMonth')?.value || '10,000' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Concurrent Users:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('maxConcurrentUsers')?.value || '50' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Data Residency:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('dataResidency')?.value || 'US' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Data Retention:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('dataRetentionDays')?.value || '365' }} days</span></div>
-                                        </div>
-                                    </mat-card>
-
-                                    <!-- Features & Security -->
-                                    <mat-card class="p-4">
-                                        <h3 class="text-lg font-semibold mb-4 text-purple-600 dark:text-purple-400 flex items-center">
-                                            <mat-icon class="mr-2">security</mat-icon>
-                                            Features & Security
-                                        </h3>
-                                        <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">GDPR Compliance:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('requiresGDPR')?.value ? 'Enabled' : 'Disabled' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">2FA Required:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('requires2FA')?.value ? 'Yes' : 'No' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">IP Whitelist:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('ipWhitelist')?.value || 'Not configured' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Advanced Reporting:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('enableAdvancedReporting')?.value ? 'Enabled' : 'Disabled' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Custom Branding:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('enableCustomBranding')?.value ? 'Enabled' : 'Disabled' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">API Access:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('enableApiAccess')?.value ? 'Enabled' : 'Disabled' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Backup & Restore:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('enableBackupRestore')?.value ? 'Enabled' : 'Disabled' }}</span></div>
-                                        </div>
-                                    </mat-card>
-
-                                    <!-- Theme Settings -->
-                                    <mat-card class="p-4" *ngIf="isEditMode">
-                                        <h3 class="text-lg font-semibold mb-4 text-pink-600 dark:text-pink-400 flex items-center">
-                                            <mat-icon class="mr-2">palette</mat-icon>
-                                            Theme Settings
-                                        </h3>
-                                        <div class="space-y-3 text-sm">
-                                            <div>
-                                                <span class="font-medium text-gray-700 dark:text-gray-300">Current Theme:</span>
-                                                <span class="ml-2 text-gray-900 dark:text-white capitalize">{{ themeLabel }}</span>
-                                            </div>
-                                            <button mat-stroked-button color="primary" (click)="openThemeSettings()" type="button">
-                                                <mat-icon class="mr-2">palette</mat-icon>
-                                                Configure Theme
-                                            </button>
-                                        </div>
-                                    </mat-card>
-
-                                    <!-- Advanced Configuration -->
-                                    <mat-card class="p-4">
-                                        <h3 class="text-lg font-semibold mb-4 text-red-600 dark:text-red-400 flex items-center">
-                                            <mat-icon class="mr-2">settings</mat-icon>
-                                            Advanced Configuration
-                                        </h3>
-                                        <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Connection String:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('connectionString')?.value ? 'Custom' : 'Shared Database' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">JWT Issuer:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('issuer')?.value || 'Default' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Shared Resources:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('isShared')?.value ? 'Yes' : 'No' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">System Active:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('isSystemActive')?.value ? 'Yes' : 'No' }}</span></div>
-                                        </div>
-                                    </mat-card>
-
-                                    <!-- Contact Information -->
-                                    <mat-card class="p-4">
-                                        <h3 class="text-lg font-semibold mb-4 text-indigo-600 dark:text-indigo-400 flex items-center">
-                                            <mat-icon class="mr-2">contacts</mat-icon>
-                                            Contact Information
-                                        </h3>
-                                        <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Account Manager:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('accountManagerEmail')?.value || 'Not assigned' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Emergency Contact:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('emergencyContact')?.value || 'Not provided' }}</span></div>
-                                        </div>
-                                    </mat-card>
-
-                                </div>
-
-                                <!-- Suspension Information -->
-                                <mat-card class="p-4" *ngIf="tenantForm.get('suspensionReason')?.value || tenantForm.get('suspendedUntil')?.value">
-                                    <h3 class="text-lg font-semibold mb-4 text-red-600 dark:text-red-400 flex items-center">
-                                        <mat-icon class="mr-2">block</mat-icon>
-                                        Suspension Information
-                                    </h3>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                        <div *ngIf="tenantForm.get('suspensionReason')?.value"><span class="font-medium text-gray-700 dark:text-gray-300">Reason:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('suspensionReason')?.value }}</span></div>
-                                        <div *ngIf="tenantForm.get('suspendedUntil')?.value"><span class="font-medium text-gray-700 dark:text-gray-300">Suspended Until:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('suspendedUntil')?.value }}</span></div>
-                                    </div>
-                                </mat-card>
-
-                                <!-- Review Notice -->
-                                <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-lg p-4">
-                                    <div class="flex items-start space-x-3">
-                                        <mat-icon class="text-blue-600 dark:text-blue-400 mt-0.5">info</mat-icon>
-                                        <div class="text-sm">
-                                            <p class="font-medium text-blue-900 dark:text-blue-100 mb-1">Review Your Tenant Configuration</p>
-                                            <p class="text-blue-700 dark:text-blue-300">
-                                                Please review all the information above carefully. You can navigate back to any tab to make changes before creating or updating the tenant. Make sure all details are accurate as some settings may require additional steps to modify later.
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </mat-tab>
-
-                        </mat-tab-group>
-
-                        <!-- Form Actions -->
-                        <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end p-6 border-t border-gray-200 dark:border-gray-700">
-                            <button
-                                type="button"
-                                mat-stroked-button
-                                class="w-full sm:w-auto h-12 px-6 rounded-lg border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
-                                (click)="cancel()">
-                                <mat-icon class="icon-size-5 mr-2">close</mat-icon>
-                                <span>Cancel</span>
-                            </button>
-                            <button
-                                type="submit"
-                                mat-flat-button
-                                color="primary"
-                                class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
-                                [disabled]="tenantForm.invalid || saving">
-                                <mat-icon *ngIf="!saving" class="icon-size-5 mr-2">check</mat-icon>
-                                <mat-spinner *ngIf="saving" diameter="20" class="mr-2"></mat-spinner>
-                                <span>{{ saving ? 'Saving...' : (isEditMode ? 'Update' : 'Create') }}</span>
-                            </button>
+                            </mat-slide-toggle>
                         </div>
-                    </form>
+
+                        <mat-form-field appearance="outline" class="w-full">
+                            <mat-label>Audit retention (days)</mat-label>
+                            <input matInput type="number" formControlName="auditRetentionDays" min="1" max="3650" placeholder="365">
+                            <mat-hint>Trail rows older than this are purged daily by AuditRetentionJob (02:00 UTC).</mat-hint>
+                        </mat-form-field>
+                    </div>
+                </section>
+
+                <!-- Read-only status (edit mode only) -->
+                <section *ngIf="isEditMode" class="space-y-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Status</h3>
+                    <p class="text-sm text-gray-500">State below is managed by billing / lifecycle actions (Record Payment, Suspend, Cancel, Archive) and isn't editable here.</p>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Payment status:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('paymentStatus')?.value || '—' }}</span></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Valid until:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('validUpto')?.value || '—' }}</span></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Active:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('isSystemActive')?.value ? 'Yes' : 'No' }}</span></div>
+                        <div *ngIf="tenantForm.get('suspendedUntil')?.value"><span class="font-medium text-gray-700 dark:text-gray-300">Suspended until:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('suspendedUntil')?.value }}</span></div>
+                        <div *ngIf="tenantForm.get('suspensionReason')?.value" class="md:col-span-2 lg:col-span-4"><span class="font-medium text-gray-700 dark:text-gray-300">Suspension reason:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('suspensionReason')?.value }}</span></div>
+                    </div>
+                </section>
+
+                <!-- Theme (edit mode only) -->
+                <section *ngIf="isEditMode" class="space-y-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Theme</h3>
+                    <div class="text-sm text-gray-700 dark:text-gray-300">
+                        Current theme: <span class="font-medium capitalize">{{ themeLabel }}</span>
+                    </div>
+                    <button type="button" mat-stroked-button color="primary" (click)="openThemeSettings()">
+                        <mat-icon class="mr-2">palette</mat-icon>
+                        Configure theme
+                    </button>
+                </section>
+
+                <!-- Actions -->
+                <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-3 sm:justify-end pt-4 border-t border-gray-200 dark:border-gray-700">
+                    <button type="button" mat-stroked-button class="h-12 px-6 rounded-lg" (click)="cancel()">
+                        <mat-icon class="mr-2">close</mat-icon>
+                        Cancel
+                    </button>
+                    <button type="submit" mat-flat-button color="primary" class="h-12 px-6 rounded-lg" [disabled]="tenantForm.invalid || saving">
+                        <mat-icon *ngIf="!saving" class="mr-2">check</mat-icon>
+                        {{ saving ? 'Saving…' : (isEditMode ? 'Save changes' : 'Create tenant') }}
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
-    </div>
     </div>
 </div>

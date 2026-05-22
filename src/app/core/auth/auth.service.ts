@@ -9,6 +9,7 @@ import {
 } from './auth.types';
 import { UserService } from '../user/user.service';
 import { TenantService } from '../tenant/tenant.service';
+import { CurrencyService } from '../currency/currency.service';
 
 @Injectable({providedIn: 'root'})
 export class AuthService
@@ -16,6 +17,7 @@ export class AuthService
     private _httpClient = inject(HttpClient);
     private _userService = inject(UserService);
     private _tenantService = inject(TenantService);
+    private _currencyService = inject(CurrencyService);
     private readonly baseUrl = environment.apiUrl;
 
     // -----------------------------------------------------------------------------------------------------
@@ -46,6 +48,14 @@ export class AuthService
                 
                 // Initialize user data from token
                 this._userService.initializeUserFromToken();
+
+                // Phase v1-O — prime the tenant's currency descriptor so the
+                // first render of fee/plan/payroll pages shows the right symbol
+                // (vs. flickering through "no symbol → BDT/USD" once the call
+                // completes). Fire-and-forget; the pipe handles the null state.
+                this._currencyService.refresh();
+                this._currencyService.list().subscribe({ error: () => {} });
+                this._currencyService.loadCurrent().subscribe({ error: () => {} });
             })
         );
     }

@@ -13,6 +13,7 @@ import { AdminDashboardDto, DashboardPaymentRow, DashboardTenantRow } from '../.
 import { NotificationService } from '../../../core/services/notification.service';
 import { RecordPaymentDialogComponent, RecordPaymentDialogData } from './record-payment-dialog.component';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { TenantCurrencyPipe } from '../../../shared/pipes/currency.pipe';
 
 @Component({
     selector: 'admin-dashboard',
@@ -30,6 +31,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
         MatTableModule,
         MatTooltipModule,
         ListPageComponent,
+        TenantCurrencyPipe,
     ],
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {
@@ -82,7 +84,7 @@ export class AdminDashboardComponent implements OnInit, OnDestroy {
             RecordPaymentDialogComponent,
             {
                 width: '720px',
-                data: { tenantId: row.id, tenantName: row.name },
+                data: { tenantId: row.id, tenantName: row.name, tenantCurrencyCode: row.currencyCode },
             }
         );
         dlg.afterClosed().pipe(takeUntil(this._destroyed$)).subscribe((req) => {

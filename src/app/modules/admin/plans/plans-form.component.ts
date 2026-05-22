@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,6 +10,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { PlansService } from '../../../core/billing/plans.service';
 import { CreatePlanRequest, UpdatePlanRequest } from '../../../core/billing/billing.types';
+import { CurrencyDescriptor, CurrencyService } from '../../../core/currency/currency.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
 
@@ -26,11 +27,14 @@ export class PlansFormComponent implements OnInit, OnDestroy {
     saving = false;
     isEdit = false;
     planId?: string;
+    /** Driven by /api/currencies — one price input rendered per descriptor. */
+    currencies: CurrencyDescriptor[] = [];
     private _destroyed$ = new Subject<void>();
 
     constructor(
         private _fb: FormBuilder,
         private _service: PlansService,
+        private _currencyService: CurrencyService,
         private _route: ActivatedRoute,
         private _router: Router,
         private _cdr: ChangeDetectorRef,
@@ -39,7 +43,9 @@ export class PlansFormComponent implements OnInit, OnDestroy {
         this.form = this._fb.group({
             code: ['', [Validators.required, Validators.maxLength(32), Validators.pattern(/^[a-z0-9_-]+$/)]],
             name: ['', [Validators.required, Validators.maxLength(100)]],
-            monthlyFeeBDT: [0, [Validators.required, Validators.min(0)]],
+            // Per-currency prices live in this FormGroup, populated dynamically
+            // once /api/currencies returns. Each child control is keyed by ISO code.
+            prices: this._fb.group({}),
             trialDays: [0, [Validators.required, Validators.min(0)]],
             maxInstitutes: [1, [Validators.required, Validators.min(1)]],
             maxUsers: [5, [Validators.required, Validators.min(1)]],
@@ -70,20 +76,59 @@ export class PlansFormComponent implements OnInit, OnDestroy {
         this.form.patchValue({ featureFlagsJson: JSON.stringify(arr) });
     }
 
+    get pricesGroup(): FormGroup {
+        return this.form.get('prices') as FormGroup;
+    }
+
     ngOnInit(): void {
+        this._currencyService.list().pipe(takeUntil(this._destroyed$)).subscribe({
+            next: (currencies) => {
+                this.currencies = currencies;
+                // Add one form control per supported currency. Primary defaults
+                // to 0 (cheapest possible); alternates default to null (empty
+                // input → "plan not available in this currency" semantics).
+                const group = this.pricesGroup;
+                for (const c of currencies) {
+                    if (!group.contains(c.code)) {
+                        group.addControl(c.code, new FormControl<number | null>(
+                            c.isPrimary ? 0 : null,
+                            [Validators.min(0)],
+                        ));
+                    }
+                }
+                this._cdr.markForCheck();
+                // Edit path loads after currencies arrive, so patchValue can
+                // hit the now-existing child controls.
+                this._loadIfEditing();
+            },
+            error: () => this._notify.error('Could not load currency list.'),
+        });
+    }
+
+    private _loadIfEditing(): void {
         this.planId = this._route.snapshot.paramMap.get('id') ?? undefined;
-        if (this.planId) {
-            this.isEdit = true;
-            this._service.getById(this.planId).pipe(takeUntil(this._destroyed$)).subscribe({
-                next: (plan) => {
-                    this.form.patchValue(plan);
-                    // Code is immutable post-create.
-                    this.form.get('code')?.disable();
-                    this._cdr.markForCheck();
-                },
-                error: () => this._notify.error('Could not load plan.'),
-            });
-        }
+        if (!this.planId) return;
+        this.isEdit = true;
+        this._service.getById(this.planId).pipe(takeUntil(this._destroyed$)).subscribe({
+            next: (plan) => {
+                this.form.patchValue({
+                    code: plan.code,
+                    name: plan.name,
+                    trialDays: plan.trialDays,
+                    maxInstitutes: plan.maxInstitutes,
+                    maxUsers: plan.maxUsers,
+                    featureFlagsJson: plan.featureFlagsJson,
+                    isActive: plan.isActive,
+                });
+                for (const c of this.currencies) {
+                    const v = plan.prices?.[c.code];
+                    this.pricesGroup.get(c.code)?.setValue(v ?? null);
+                }
+                this.form.get('code')?.disable(); // Code is immutable post-create.
+                this._cdr.markForCheck();
+            },
+            error: () => this._notify.error('Could not load plan.'),
+        });
     }
 
     ngOnDestroy(): void {
@@ -91,8 +136,23 @@ export class PlansFormComponent implements OnInit, OnDestroy {
         this._destroyed$.complete();
     }
 
+    /** Build the prices dict, dropping currencies left blank (= not offered). */
+    private _collectPrices(): Record<string, number> {
+        const raw = this.pricesGroup.value as Record<string, number | null>;
+        const out: Record<string, number> = {};
+        for (const [code, v] of Object.entries(raw)) {
+            if (v != null && v >= 0) out[code] = v;
+        }
+        return out;
+    }
+
     save(): void {
         if (this.form.invalid) return;
+        const prices = this._collectPrices();
+        if (Object.keys(prices).length === 0) {
+            this._notify.error('At least one currency price is required.');
+            return;
+        }
         this.saving = true;
         this._cdr.markForCheck();
 
@@ -100,7 +160,7 @@ export class PlansFormComponent implements OnInit, OnDestroy {
             const req: UpdatePlanRequest = {
                 id: this.planId,
                 name: this.form.value.name,
-                monthlyFeeBDT: this.form.value.monthlyFeeBDT,
+                prices,
                 maxInstitutes: this.form.value.maxInstitutes,
                 maxUsers: this.form.value.maxUsers,
                 featureFlagsJson: this.form.value.featureFlagsJson || '[]',
@@ -121,7 +181,7 @@ export class PlansFormComponent implements OnInit, OnDestroy {
             const req: CreatePlanRequest = {
                 code: this.form.value.code,
                 name: this.form.value.name,
-                monthlyFeeBDT: this.form.value.monthlyFeeBDT,
+                prices,
                 trialDays: this.form.value.trialDays,
                 maxInstitutes: this.form.value.maxInstitutes,
                 maxUsers: this.form.value.maxUsers,

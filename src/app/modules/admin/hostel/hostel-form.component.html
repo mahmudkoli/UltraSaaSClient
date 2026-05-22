@@ -20,7 +20,7 @@
                 <mat-form-field appearance="outline" class="w-full"><mat-label>Warden name</mat-label><input matInput formControlName="wardenName"></mat-form-field>
                 <mat-form-field appearance="outline" class="w-full"><mat-label>Warden phone</mat-label><input matInput formControlName="wardenPhone"></mat-form-field>
                 <mat-form-field appearance="outline" class="w-full"><mat-label>Total rooms</mat-label><input matInput type="number" formControlName="totalRooms" min="0"></mat-form-field>
-                <mat-form-field appearance="outline" class="w-full"><mat-label>Monthly fee (BDT)</mat-label><input matInput type="number" formControlName="monthlyFee" min="0"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Monthly fee</mat-label><input matInput type="number" formControlName="monthlyFee" min="0"><mat-hint>In your tenant's currency.</mat-hint></mat-form-field>
             </div>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Description</mat-label><textarea matInput formControlName="description" rows="2"></textarea></mat-form-field>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Facilities (JSON or text)</mat-label><textarea matInput formControlName="facilities" rows="2"></textarea></mat-form-field>

@@ -7,9 +7,9 @@
     <mat-dialog-content class="!pt-2">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <mat-form-field>
-                <mat-label>Amount (BDT)</mat-label>
+                <mat-label>Amount ({{ currencyCode }})</mat-label>
                 <input matInput type="number" formControlName="amount" min="1">
-                <span matSuffix class="pr-2 text-gray-500">BDT</span>
+                <span matSuffix class="pr-2 text-gray-500">{{ currencyLabel }}</span>
             </mat-form-field>
 
             <mat-form-field>

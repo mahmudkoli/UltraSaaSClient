@@ -1,7 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { environment } from '../../../environments/environment';
-import { User, 
+import { User,
     UserDetailsDto,
     CreateUserRequest,
     UpdateUserRequest,
@@ -13,11 +13,13 @@ import { User,
     SelfRegisterRequest
 } from './user.types';
 import { map, Observable, ReplaySubject, tap, catchError, from, mergeMap } from 'rxjs';
+import { CurrencyService } from '../currency/currency.service';
 
 @Injectable({providedIn: 'root'})
 export class UserService
 {
     private _httpClient = inject(HttpClient);
+    private _currencyService = inject(CurrencyService);
     private _user: ReplaySubject<User | null> = new ReplaySubject<User | null>(1);
     private readonly baseUrl = environment.apiUrl;
 
@@ -75,6 +77,13 @@ export class UserService
                     status: 'online'
                 };
                 this._user.next(user);
+
+                // Phase v1-O — prime the tenant-currency descriptor on app
+                // boot too, not just on fresh login. Otherwise refresh-with-
+                // saved-token would render the first fee/plan page without
+                // a symbol until the lazy load fires.
+                this._currencyService.list().subscribe({ error: () => {} });
+                this._currencyService.loadCurrent().subscribe({ error: () => {} });
             } catch (error) {
                 console.error('Error parsing token:', error);
                 this._user.next(null);

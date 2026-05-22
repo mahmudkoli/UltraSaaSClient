@@ -15,6 +15,7 @@ import { FeeInvoicesService } from '../../../core/fee-invoices/fee-invoices.serv
 import { FeeCollectionReportDto, FeeDuesDto } from '../../../core/fee-invoices/fee-invoices.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { TenantCurrencyPipe } from '../../../shared/pipes/currency.pipe';
 
 @Component({
     selector: 'fee-reports',
@@ -26,7 +27,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
         CommonModule, FormsModule,
         MatButtonModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule,
         MatIconModule, MatInputModule, MatProgressBarModule, MatTableModule, MatTabsModule,
-        ListPageComponent,
+        ListPageComponent, TenantCurrencyPipe,
     ],
 })
 export class FeeReportsComponent implements OnInit, OnDestroy {

@@ -8,10 +8,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { RecordPaymentRequest, TenantPaymentMethod } from '../../../core/billing/billing.types';
+import { CurrencyService } from '../../../core/currency/currency.service';
 
 export interface RecordPaymentDialogData {
     tenantId: string;
     tenantName: string;
+    /** Target tenant's ISO 4217 code. Omit to fall back to the platform primary. */
+    tenantCurrencyCode?: string;
 }
 
 @Component({
@@ -32,12 +35,23 @@ export interface RecordPaymentDialogData {
 })
 export class RecordPaymentDialogComponent {
     form: FormGroup;
+    /** Label / suffix copy ("৳ BDT", "$ USD") derived from the target tenant
+     * (falls back to the platform-admin's own current currency). */
+    currencyLabel: string;
+    currencyCode: string;
 
     constructor(
         private _fb: FormBuilder,
+        private _currencyService: CurrencyService,
         public dialogRef: MatDialogRef<RecordPaymentDialogComponent>,
         @Inject(MAT_DIALOG_DATA) public data: RecordPaymentDialogData,
     ) {
+        const targetCode = data.tenantCurrencyCode?.toUpperCase()
+            ?? _currencyService.current()?.code
+            ?? 'BDT';
+        const d = _currencyService.descriptor(targetCode);
+        this.currencyCode = targetCode;
+        this.currencyLabel = d ? `${d.symbol} ${d.code}` : targetCode;
         const today = new Date();
         const periodEnd = new Date(today);
         periodEnd.setDate(periodEnd.getDate() + 30);

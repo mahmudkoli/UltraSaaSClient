@@ -11,7 +11,12 @@ export interface PlanDto {
     id: string;
     code: string;
     name: string;
-    monthlyFeeBDT: number;
+    /**
+     * Phase v1-O — per-currency monthly fees keyed by ISO 4217 code (see
+     * /api/currencies). A plan may publish a subset of supported currencies;
+     * a missing key means the plan isn't offered in that currency.
+     */
+    prices: Record<string, number>;
     trialDays: number;
     maxInstitutes: number;
     maxUsers: number;
@@ -23,7 +28,8 @@ export interface PlanDto {
 export interface CreatePlanRequest {
     code: string;
     name: string;
-    monthlyFeeBDT: number;
+    /** At least one currency required. Keys must be one of /api/currencies. */
+    prices: Record<string, number>;
     trialDays: number;
     maxInstitutes: number;
     maxUsers: number;
@@ -33,7 +39,7 @@ export interface CreatePlanRequest {
 export interface UpdatePlanRequest {
     id: string;
     name: string;
-    monthlyFeeBDT: number;
+    prices: Record<string, number>;
     maxInstitutes: number;
     maxUsers: number;
     featureFlagsJson?: string;
@@ -154,6 +160,9 @@ export interface DashboardTenantRow {
     id: string;
     name: string;
     planCode?: string;
+    /** Phase v1-O — ISO 4217 code, used by the record-payment dialog to label
+     * its amount input in the target tenant's currency. */
+    currencyCode: string;
     validUpto: string;
     daysUntilExpiry: number;
     paymentStatus: string;
@@ -166,6 +175,7 @@ export interface DashboardPaymentRow {
     tenantId: string;
     tenantName?: string;
     amount: number;
+    currencyCode: string;
     method: string;
     paidOn: string;
 }

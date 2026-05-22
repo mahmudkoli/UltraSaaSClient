@@ -3,17 +3,13 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AsyncValidatorFn, AbstractControl, ValidationErrors } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
-import { MatCardModule } from '@angular/material/card';
-import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
-import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
-import { MatTabsModule } from '@angular/material/tabs';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
-import { TranslocoModule } from '@ngneat/transloco';
 import { CreateTenantWithInstituteRequest, CreateTenantWithInstituteResponse } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
 import { Observable, of } from 'rxjs';
@@ -28,16 +24,12 @@ import { catchError, map } from 'rxjs/operators';
         CommonModule,
         ReactiveFormsModule,
         MatButtonModule,
-        MatCardModule,
-        MatCheckboxModule,
         MatFormFieldModule,
         MatIconModule,
         MatInputModule,
-        MatProgressSpinnerModule,
         MatSelectModule,
         MatSlideToggleModule,
-        MatTabsModule,
-        TranslocoModule,
+        MatTooltipModule,
     ],
 })
 export class TenantWithInstituteFormComponent implements OnInit {
@@ -67,16 +59,16 @@ export class TenantWithInstituteFormComponent implements OnInit {
         private _fuseConfirmationService: FuseConfirmationService
     ) {
         this.tenantForm = this._formBuilder.group({
-            // Tenant Information
+            // Tenant identity (Phase v1-C2.2 — the surviving fields)
             id: ['', [Validators.required, Validators.pattern('^[a-zA-Z0-9_-]+$')], [this.tenantIdUniqueValidator()]],
             name: ['', [Validators.required, Validators.maxLength(100)]],
             adminEmail: ['', [Validators.required, Validators.email]],
             url: ['', [Validators.required, Validators.maxLength(255)]],
             connectionString: [''],
             isShared: [false],
-            issuer: [''],
+            billingEmail: ['', [Validators.required, Validators.email]],
 
-            // Institute Information
+            // Institute information
             instituteName: ['', [Validators.required, Validators.maxLength(100)]],
             instituteCode: ['', [Validators.required, Validators.maxLength(50), Validators.pattern('^[A-Z0-9_-]+$')]],
             instituteDescription: ['', [Validators.maxLength(500)]],
@@ -89,39 +81,6 @@ export class TenantWithInstituteFormComponent implements OnInit {
             timeZone: ['', [Validators.maxLength(50)]],
             currency: ['', [Validators.maxLength(3)]],
             language: ['', [Validators.maxLength(5)]],
-
-            // Billing & Subscription
-            billingPlan: ['Basic', [Validators.required]],
-            monthlyFee: [0, [Validators.min(0)]],
-            billingCurrency: ['USD', [Validators.required]],
-            billingEmail: ['', [Validators.required, Validators.email]],
-            paymentStatus: ['Pending', [Validators.required]],
-            supportTier: ['Basic', [Validators.required]],
-            accountManagerEmail: [''],
-            emergencyContact: [''],
-
-            // System Limits
-            maxDatabaseGB: [5, [Validators.required, Validators.min(1)]],
-            maxApiCallsPerMonth: [10000, [Validators.required, Validators.min(1000)]],
-            maxConcurrentUsers: [50, [Validators.required, Validators.min(1)]],
-            dataResidency: ['US', [Validators.required]],
-            dataRetentionDays: [365, [Validators.required, Validators.min(30)]],
-
-            // Status & Validity
-            validUpto: ['', [Validators.required]],
-            isSystemActive: [true],
-            suspensionReason: [''],
-            suspendedUntil: [''],
-
-            // Features & Settings
-            requiresGDPR: [false],
-            requires2FA: [false],
-            ipWhitelist: [''],
-            enableAdvancedReporting: [false],
-            enableCustomBranding: [false],
-            enableApiAccess: [true],
-            enableBackupRestore: [false],
-            enableMultipleDatabases: [false]
         });
     }
 
