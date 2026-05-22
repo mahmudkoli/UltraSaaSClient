@@ -65,7 +65,7 @@ export class HostelsService {
 export class StudentHostelsService {
     private baseUrl = `${environment.apiUrl}/api/v1/studenthostels`;
     constructor(private http: HttpClient) {}
-    search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<StudentHostelDto>> {
+    search(req: { pageNumber: number; pageSize: number; keyword?: string; studentId?: string }): Observable<PaginationResponse<StudentHostelDto>> {
         return this.http.post<PaginationResponse<StudentHostelDto>>(`${this.baseUrl}/search`, req);
     }
     getById(id: string): Observable<StudentHostelDto> { return this.http.get<StudentHostelDto>(`${this.baseUrl}/${id}`); }

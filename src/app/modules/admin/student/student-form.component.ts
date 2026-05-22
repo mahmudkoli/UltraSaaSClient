@@ -21,6 +21,8 @@ import { StudentDto, CreateStudentRequest, UpdateStudentRequest, EnrollmentStatu
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
 import { passwordMatchValidator } from '../../../core/validators/password-match.validator';
+import { StudentDocumentsTabComponent } from './student-documents-tab.component';
+import { StudentAssignmentsTabComponent } from './student-assignments-tab.component';
 
 @Component({
     selector: 'student-form',
@@ -42,7 +44,9 @@ import { passwordMatchValidator } from '../../../core/validators/password-match.
         MatCheckboxModule,
         MatProgressSpinnerModule,
         MatSnackBarModule,
-        MatTooltipModule
+        MatTooltipModule,
+        StudentDocumentsTabComponent,
+        StudentAssignmentsTabComponent,
     ]
 })
 export class StudentFormComponent implements OnInit, OnDestroy {

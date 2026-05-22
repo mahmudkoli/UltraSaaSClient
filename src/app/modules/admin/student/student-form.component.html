@@ -480,6 +480,20 @@
                             </div>
                         </mat-tab>
 
+                        <!-- Phase v1-O (K8) — read-only cross-link to current transport + hostel assignment. -->
+                        <mat-tab label="Transport & Hostel">
+                            <div class="p-6">
+                                <student-assignments-tab [studentId]="studentId || undefined"></student-assignments-tab>
+                            </div>
+                        </mat-tab>
+
+                        <!-- Phase v1-O (K9) — file artifacts: birth cert, ID copies, photos, transcripts. -->
+                        <mat-tab label="Documents">
+                            <div class="p-6">
+                                <student-documents-tab [studentId]="studentId || undefined"></student-documents-tab>
+                            </div>
+                        </mat-tab>
+
                     </mat-tab-group>
 
                     <!-- Form Actions -->

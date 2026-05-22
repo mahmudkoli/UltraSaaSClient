@@ -92,7 +92,7 @@ export class VehiclesService {
 export class StudentTransportsService {
     private baseUrl = `${environment.apiUrl}/api/v1/studenttransports`;
     constructor(private http: HttpClient) {}
-    search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<StudentTransportDto>> {
+    search(req: { pageNumber: number; pageSize: number; keyword?: string; studentId?: string }): Observable<PaginationResponse<StudentTransportDto>> {
         return this.http.post<PaginationResponse<StudentTransportDto>>(`${this.baseUrl}/search`, req);
     }
     getById(id: string): Observable<StudentTransportDto> { return this.http.get<StudentTransportDto>(`${this.baseUrl}/${id}`); }
