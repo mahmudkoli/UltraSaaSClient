@@ -8,9 +8,14 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router } from '@angular/router';
-import { BookIssuesService } from '../../../core/library/library.service';
+import { map, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { BookDto, BookIssuesService, BooksService } from '../../../core/library/library.service';
+import { StudentsService } from '../../../core/students/students.service';
+import { StudentDto } from '../../../core/students/students.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { EntityPickerComponent } from '../../../shared/components/entity-picker.component';
 
 @Component({
     selector: 'issue-form',
@@ -18,7 +23,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, ListPageComponent],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, ListPageComponent, EntityPickerComponent],
 })
 export class IssueFormComponent implements OnInit {
     form: FormGroup;
@@ -26,7 +31,28 @@ export class IssueFormComponent implements OnInit {
     loading = false;
     editingId?: string;
 
-    constructor(private _svc: BookIssuesService, private _fb: FormBuilder, private _route: ActivatedRoute, private _router: Router, private _cdr: ChangeDetectorRef, private _notify: NotificationService) {
+    searchBooks = (q: string): Observable<BookDto[]> =>
+        this._books.search({ pageNumber: 1, pageSize: 10, keyword: q || undefined }).pipe(map(r => r.data ?? []), catchError(() => of([])));
+    displayBook = (b: BookDto): string => `${b.title} — ${b.author}${b.isbn ? ' · ' + b.isbn : ''}`;
+    resolveBook = (id: string): Observable<BookDto | null> =>
+        this._books.getById(id).pipe(catchError(() => of(null)));
+    searchStudents = (q: string): Observable<StudentDto[]> =>
+        this._students.search({ pageNumber: 1, pageSize: 10, keyword: q || undefined } as any).pipe(map(r => r.data ?? []), catchError(() => of([])));
+    displayStudent = (s: StudentDto): string =>
+        `${s.firstName ?? ''} ${s.lastName ?? ''} ${s.rollNumber ? '· ' + s.rollNumber : ''}`.trim() || s.id;
+    resolveStudent = (id: string): Observable<StudentDto | null> =>
+        this._students.getById(id).pipe(catchError(() => of(null)));
+
+    constructor(
+        private _svc: BookIssuesService,
+        private _books: BooksService,
+        private _students: StudentsService,
+        private _fb: FormBuilder,
+        private _route: ActivatedRoute,
+        private _router: Router,
+        private _cdr: ChangeDetectorRef,
+        private _notify: NotificationService,
+    ) {
         this.form = this._fb.group({
             bookId: ['', [Validators.required]],
             studentId: ['', [Validators.required]],

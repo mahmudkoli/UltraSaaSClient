@@ -8,9 +8,16 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StudentTransportsService } from '../../../core/transport/transport.service';
+import { map, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import {
+    RouteDto, RoutesService, StudentTransportsService, VehicleDto, VehiclesService,
+} from '../../../core/transport/transport.service';
+import { StudentsService } from '../../../core/students/students.service';
+import { StudentDto } from '../../../core/students/students.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { EntityPickerComponent } from '../../../shared/components/entity-picker.component';
 
 @Component({
     selector: 'assignment-form',
@@ -18,7 +25,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatSelectModule, ListPageComponent],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatSelectModule, ListPageComponent, EntityPickerComponent],
 })
 export class AssignmentFormComponent implements OnInit {
     form: FormGroup;
@@ -26,7 +33,34 @@ export class AssignmentFormComponent implements OnInit {
     editingId?: string;
     statuses = [{ v: 1, l: 'Active' }, { v: 2, l: 'Suspended' }, { v: 3, l: 'Ended' }];
 
-    constructor(private _svc: StudentTransportsService, private _fb: FormBuilder, private _route: ActivatedRoute, private _router: Router, private _cdr: ChangeDetectorRef, private _notify: NotificationService) {
+    searchStudents = (q: string): Observable<StudentDto[]> =>
+        this._students.search({ pageNumber: 1, pageSize: 10, keyword: q || undefined } as any).pipe(map(r => r.data ?? []), catchError(() => of([])));
+    displayStudent = (s: StudentDto): string =>
+        `${s.firstName ?? ''} ${s.lastName ?? ''} ${s.rollNumber ? '· ' + s.rollNumber : ''}`.trim() || s.id;
+    resolveStudent = (id: string): Observable<StudentDto | null> =>
+        this._students.getById(id).pipe(catchError(() => of(null)));
+    searchRoutes = (q: string): Observable<RouteDto[]> =>
+        this._routes.search({ pageNumber: 1, pageSize: 10, keyword: q || undefined }).pipe(map(r => r.data ?? []), catchError(() => of([])));
+    displayRoute = (r: RouteDto): string => `${r.name} (${r.code})`;
+    resolveRoute = (id: string): Observable<RouteDto | null> =>
+        this._routes.getById(id).pipe(catchError(() => of(null)));
+    searchVehicles = (q: string): Observable<VehicleDto[]> =>
+        this._vehicles.search({ pageNumber: 1, pageSize: 10, keyword: q || undefined }).pipe(map(r => r.data ?? []), catchError(() => of([])));
+    displayVehicle = (v: VehicleDto): string => `${v.vehicleNumber} — ${v.make} ${v.model}`;
+    resolveVehicle = (id: string): Observable<VehicleDto | null> =>
+        this._vehicles.getById(id).pipe(catchError(() => of(null)));
+
+    constructor(
+        private _svc: StudentTransportsService,
+        private _students: StudentsService,
+        private _routes: RoutesService,
+        private _vehicles: VehiclesService,
+        private _fb: FormBuilder,
+        private _route: ActivatedRoute,
+        private _router: Router,
+        private _cdr: ChangeDetectorRef,
+        private _notify: NotificationService,
+    ) {
         this.form = this._fb.group({
             studentId: ['', [Validators.required]],
             routeId: ['', [Validators.required]],

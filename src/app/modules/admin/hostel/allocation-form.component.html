@@ -8,8 +8,20 @@
     <form [formGroup]="form" (ngSubmit)="save()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-5 space-y-3">
         <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <mat-form-field appearance="outline" class="w-full"><mat-label>Student ID</mat-label><input matInput formControlName="studentId" placeholder="guid"></mat-form-field>
-            <mat-form-field appearance="outline" class="w-full"><mat-label>Hostel ID</mat-label><input matInput formControlName="hostelId" placeholder="guid"></mat-form-field>
+            <app-entity-picker
+                label="Student"
+                placeholder="Type a student's name"
+                formControlName="studentId"
+                [searchFn]="searchStudents"
+                [displayFn]="displayStudent"
+                [resolveFn]="resolveStudent"></app-entity-picker>
+            <app-entity-picker
+                label="Hostel"
+                placeholder="Type a hostel name or code"
+                formControlName="hostelId"
+                [searchFn]="searchHostels"
+                [displayFn]="displayHostel"
+                [resolveFn]="resolveHostel"></app-entity-picker>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Room number</mat-label><input matInput formControlName="roomNumber"></mat-form-field>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Bed</mat-label><input matInput formControlName="bedNumber"></mat-form-field>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Floor</mat-label><input matInput formControlName="floor"></mat-form-field>

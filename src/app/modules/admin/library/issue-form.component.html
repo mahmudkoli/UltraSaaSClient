@@ -1,6 +1,6 @@
 <app-list-page
     [title]="editingId ? 'Edit issue' : 'Issue book'"
-    subtitle="Paste the Book ID and Student ID from their respective list pages. (Picker UI is a follow-up.)"
+    subtitle="Pick a book + borrower, set due date. Fines accrue automatically past due."
     icon="local_library"
     iconGradient="from-emerald-500 to-teal-600"
     pageGradient="from-gray-50 via-emerald-50/30 to-teal-50/30">
@@ -8,8 +8,20 @@
     <form [formGroup]="form" (ngSubmit)="save()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-5 space-y-3">
         <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <mat-form-field appearance="outline" class="w-full"><mat-label>Book ID</mat-label><input matInput formControlName="bookId" placeholder="guid"></mat-form-field>
-            <mat-form-field appearance="outline" class="w-full"><mat-label>Student ID</mat-label><input matInput formControlName="studentId" placeholder="guid"></mat-form-field>
+            <app-entity-picker
+                label="Book"
+                placeholder="Title / author / ISBN"
+                formControlName="bookId"
+                [searchFn]="searchBooks"
+                [displayFn]="displayBook"
+                [resolveFn]="resolveBook"></app-entity-picker>
+            <app-entity-picker
+                label="Borrower (Student)"
+                placeholder="Student name or roll"
+                formControlName="studentId"
+                [searchFn]="searchStudents"
+                [displayFn]="displayStudent"
+                [resolveFn]="resolveStudent"></app-entity-picker>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Issue date</mat-label><input matInput type="date" formControlName="issueDate"></mat-form-field>
             <mat-form-field appearance="outline" class="w-full"><mat-label>Due date</mat-label><input matInput type="date" formControlName="dueDate"></mat-form-field>
             <mat-form-field *ngIf="editingId" class="sm:col-span-2"><mat-label>Return date</mat-label><input matInput type="date" formControlName="returnDate"></mat-form-field>

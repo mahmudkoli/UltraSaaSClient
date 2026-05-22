@@ -8,9 +8,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router } from '@angular/router';
-import { StudentHostelsService } from '../../../core/hostel/hostel.service';
+import { map, Observable, of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { HostelDto, HostelsService, StudentHostelsService } from '../../../core/hostel/hostel.service';
+import { StudentsService } from '../../../core/students/students.service';
+import { StudentDto } from '../../../core/students/students.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { EntityPickerComponent } from '../../../shared/components/entity-picker.component';
 
 @Component({
     selector: 'allocation-form',
@@ -18,7 +23,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatSelectModule, ListPageComponent],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatSelectModule, ListPageComponent, EntityPickerComponent],
 })
 export class AllocationFormComponent implements OnInit {
     form: FormGroup;
@@ -27,7 +32,29 @@ export class AllocationFormComponent implements OnInit {
     editingId?: string;
     statuses = [{ v: 1, l: 'Active' }, { v: 2, l: 'CheckedOut' }, { v: 3, l: 'Suspended' }, { v: 4, l: 'Inactive' }];
 
-    constructor(private _svc: StudentHostelsService, private _fb: FormBuilder, private _route: ActivatedRoute, private _router: Router, private _cdr: ChangeDetectorRef, private _notify: NotificationService) {
+    // Phase v1-O (carry-forward) — entity-picker bindings.
+    searchStudents = (q: string): Observable<StudentDto[]> =>
+        this._students.search({ pageNumber: 1, pageSize: 10, keyword: q || undefined } as any).pipe(map(r => r.data ?? []), catchError(() => of([])));
+    displayStudent = (s: StudentDto): string =>
+        `${s.firstName ?? ''} ${s.lastName ?? ''} ${s.rollNumber ? '· ' + s.rollNumber : ''}`.trim() || s.id;
+    resolveStudent = (id: string): Observable<StudentDto | null> =>
+        this._students.getById(id).pipe(catchError(() => of(null)));
+    searchHostels = (q: string): Observable<HostelDto[]> =>
+        this._hostels.search({ pageNumber: 1, pageSize: 10, keyword: q || undefined }).pipe(map(r => r.data ?? []), catchError(() => of([])));
+    displayHostel = (h: HostelDto): string => `${h.name} (${h.code})`;
+    resolveHostel = (id: string): Observable<HostelDto | null> =>
+        this._hostels.getById(id).pipe(catchError(() => of(null)));
+
+    constructor(
+        private _svc: StudentHostelsService,
+        private _students: StudentsService,
+        private _hostels: HostelsService,
+        private _fb: FormBuilder,
+        private _route: ActivatedRoute,
+        private _router: Router,
+        private _cdr: ChangeDetectorRef,
+        private _notify: NotificationService,
+    ) {
         this.form = this._fb.group({
             studentId: ['', [Validators.required]],
             hostelId: ['', [Validators.required]],
