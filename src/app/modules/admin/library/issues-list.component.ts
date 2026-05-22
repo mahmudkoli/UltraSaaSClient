@@ -13,6 +13,7 @@ import { Router, RouterModule } from '@angular/router';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { BookIssueDto, BookIssuesService } from '../../../core/library/library.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'issues-list',
@@ -20,7 +21,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, DatePipe, ReactiveFormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressBarModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, DatePipe, ReactiveFormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressBarModule, MatTableModule, MatTooltipModule, ListPageComponent],
 })
 export class IssuesListComponent implements OnInit, OnDestroy {
     rows: BookIssueDto[] = [];

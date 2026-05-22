@@ -10,6 +10,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BookIssuesService } from '../../../core/library/library.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'issue-form',
@@ -17,7 +18,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, ListPageComponent],
 })
 export class IssueFormComponent implements OnInit {
     form: FormGroup;

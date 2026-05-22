@@ -1,12 +1,12 @@
-<div class="flex flex-col flex-auto min-w-0 p-6">
+<app-list-page
+    title="Platform Admin Dashboard"
+    subtitle="Tenant health, billing snapshots, and the daily action queue."
+    icon="space_dashboard"
+    iconGradient="from-blue-500 to-indigo-600"
+    pageGradient="from-gray-50 via-blue-50/30 to-indigo-50/30">
 
-    <!-- Header -->
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Platform Admin Dashboard</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Tenant health, billing snapshots, and the daily action queue.</p>
-        </div>
-        <button mat-stroked-button (click)="load()" [disabled]="loading" class="mt-3 sm:mt-0">
+    <div pageActions class="flex flex-col w-full sm:w-auto sm:flex-row sm:items-center sm:justify-end gap-3">
+        <button mat-stroked-button (click)="load()" [disabled]="loading" matTooltip="Reload dashboard">
             <mat-icon class="mr-2">refresh</mat-icon>
             Refresh
         </button>
@@ -21,7 +21,7 @@
     <ng-container *ngIf="!loading && data">
         <!-- KPI Tiles -->
         <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
-            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">MRR</div>
                     <mat-icon class="text-emerald-500 !w-5 !h-5 !text-base">trending_up</mat-icon>
@@ -30,7 +30,7 @@
                 <div class="mt-1 text-xs text-gray-500">monthly recurring</div>
             </div>
 
-            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Active</div>
                     <mat-icon class="text-blue-500 !w-5 !h-5 !text-base">verified</mat-icon>
@@ -39,7 +39,7 @@
                 <div class="mt-1 text-xs text-gray-500">tenants paying</div>
             </div>
 
-            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">New / mo</div>
                     <mat-icon class="text-purple-500 !w-5 !h-5 !text-base">person_add</mat-icon>
@@ -48,7 +48,7 @@
                 <div class="mt-1 text-xs text-gray-500">signups this month</div>
             </div>
 
-            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Expiring 7d</div>
                     <mat-icon class="text-amber-500 !w-5 !h-5 !text-base">schedule</mat-icon>
@@ -57,7 +57,7 @@
                 <div class="mt-1 text-xs text-gray-500">need outreach</div>
             </div>
 
-            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Overdue</div>
                     <mat-icon class="text-red-500 !w-5 !h-5 !text-base">error</mat-icon>
@@ -66,7 +66,7 @@
                 <div class="mt-1 text-xs text-gray-500">overdue / suspended</div>
             </div>
 
-            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                 <div class="flex items-center justify-between">
                     <div class="text-xs font-medium uppercase text-gray-500 dark:text-gray-400">Collected</div>
                     <mat-icon class="text-teal-500 !w-5 !h-5 !text-base">payments</mat-icon>
@@ -86,7 +86,7 @@
         </div>
 
         <!-- Action Queue -->
-        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5 mb-6">
+        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-5 mb-6">
             <div class="flex items-center justify-between mb-3">
                 <div class="flex items-center gap-2">
                     <mat-icon class="text-amber-500">priority_high</mat-icon>
@@ -162,7 +162,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
 
             <!-- Recent Payments (2 cols) -->
-            <div class="lg:col-span-2 rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+            <div class="lg:col-span-2 rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-5">
                 <div class="flex items-center justify-between mb-3">
                     <div class="flex items-center gap-2">
                         <mat-icon class="text-emerald-500">receipt_long</mat-icon>
@@ -203,7 +203,7 @@
             </div>
 
             <!-- Plan Mix -->
-            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+            <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-5">
                 <div class="flex items-center gap-2 mb-3">
                     <mat-icon class="text-purple-500">pie_chart</mat-icon>
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Plan Mix</h3>
@@ -222,7 +222,7 @@
         </div>
 
         <!-- Recent Signups -->
-        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-5">
             <div class="flex items-center gap-2 mb-3">
                 <mat-icon class="text-blue-500">person_add</mat-icon>
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Recent Signups</h3>
@@ -260,4 +260,4 @@
             </div>
         </div>
     </ng-container>
-</div>
+</app-list-page>

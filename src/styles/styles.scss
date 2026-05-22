@@ -2,3 +2,21 @@
 /*  @ Import/write your custom styles here.
 /*  @ Styles from this file will override 'vendors.scss' and Fuse's base styles.
 /* ----------------------------------------------------------------------------------------------------- */
+
+/* Canonical mat-table column-header styling — matches the explicit inline
+   spans used by pre-freeze pages (students/classes/tenants/users/etc.) so
+   any list page rendered through <app-list-page> picks it up automatically
+   without restating the inner <span> per column.
+
+   Rule of thumb: tiny uppercase gray-500 labels with widened tracking. */
+.mat-mdc-table .mat-mdc-header-cell {
+    font-size: 0.75rem;       /* text-xs */
+    font-weight: 500;          /* font-medium */
+    color: rgb(107 114 128);   /* text-gray-500 */
+    text-transform: uppercase;
+    letter-spacing: 0.05em;    /* tracking-wider */
+}
+
+.dark .mat-mdc-table .mat-mdc-header-cell {
+    color: rgb(156 163 175);   /* dark:text-gray-400 */
+}

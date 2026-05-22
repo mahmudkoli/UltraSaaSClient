@@ -9,6 +9,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { Subject, takeUntil } from 'rxjs';
 import { environment } from '../../../../environments/environment';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 interface SentAnnouncementDto {
     batchId: string;
@@ -28,7 +29,7 @@ interface SentAnnouncementDto {
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, DatePipe, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, DatePipe, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule, MatTooltipModule, ListPageComponent],
 })
 export class AnnouncementArchiveComponent implements OnInit, OnDestroy {
     rows: SentAnnouncementDto[] = [];

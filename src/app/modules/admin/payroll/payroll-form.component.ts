@@ -12,13 +12,14 @@ import { PayrollService } from '../../../core/payroll/payroll.service';
 import { TeachersService } from '../../../core/teachers/teachers.service';
 import { TeacherDto } from '../../../core/teachers/teachers.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'payroll-form',
     templateUrl: './payroll-form.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, ListPageComponent],
 })
 export class PayrollFormComponent implements OnInit, OnDestroy {
     form: FormGroup;

@@ -1,21 +1,19 @@
-<div class="flex flex-col flex-auto min-w-0 p-6">
+<app-list-page
+    title="Payroll Slips"
+    subtitle="Monthly salary slips per teacher. Click Download to print."
+    icon="receipt_long"
+    iconGradient="from-emerald-500 to-green-600"
+    pageGradient="from-gray-50 via-emerald-50/30 to-green-50/30">
 
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Payroll Slips</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Monthly salary slips per teacher. Click Download to print.</p>
-        </div>
-        <a mat-flat-button color="primary" routerLink="generate" class="mt-3 sm:mt-0">
-            <mat-icon class="mr-2">add</mat-icon>
-            Generate Slip
-        </a>
+    <div pageActions class="flex flex-col w-full sm:w-auto sm:flex-row sm:items-center sm:justify-end gap-3">
+        <a mat-fab color="primary" routerLink="generate" matTooltip="Generate slip"><mat-icon>add</mat-icon></a>
     </div>
 
     <div *ngIf="loading" class="my-8 flex flex-col items-center">
         <mat-progress-bar mode="indeterminate" class="w-full max-w-md"></mat-progress-bar>
     </div>
 
-    <div *ngIf="!loading" class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div *ngIf="!loading" class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <table mat-table [dataSource]="slips" class="w-full">
             <ng-container matColumnDef="serialNumber">
                 <th mat-header-cell *matHeaderCellDef>Slip #</th>
@@ -58,4 +56,4 @@
         </table>
         <div *ngIf="slips.length === 0" class="py-8 text-center text-gray-500">No payroll slips generated yet.</div>
     </div>
-</div>
+</app-list-page>

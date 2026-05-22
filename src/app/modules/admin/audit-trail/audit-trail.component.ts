@@ -12,6 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { Subject, takeUntil } from 'rxjs';
 import { AuditTrailDto, AuditTrailService, PaginationResponse } from '../../../core/audit-trail/audit-trail.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'audit-trail',
@@ -23,6 +24,7 @@ import { NotificationService } from '../../../core/services/notification.service
         CommonModule, ReactiveFormsModule, DatePipe,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatProgressBarModule, MatSelectModule, MatTableModule,
+        ListPageComponent,
     ],
 })
 export class AuditTrailComponent implements OnInit, OnDestroy {

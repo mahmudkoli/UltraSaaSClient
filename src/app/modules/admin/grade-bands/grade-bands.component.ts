@@ -10,6 +10,8 @@ import { MatTableModule } from '@angular/material/table';
 import { Subject, takeUntil } from 'rxjs';
 import { GradeBandDto, GradeBandsService } from '../../../core/grade-bands/grade-bands.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
     selector: 'grade-bands',
@@ -17,7 +19,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatTableModule],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatTableModule, MatTooltipModule, ListPageComponent],
 })
 export class GradeBandsComponent implements OnInit, OnDestroy {
     bands: GradeBandDto[] = [];

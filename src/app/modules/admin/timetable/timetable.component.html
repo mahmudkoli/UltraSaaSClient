@@ -1,14 +1,16 @@
-<div class="flex flex-col flex-auto min-w-0 p-6">
-    <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between mb-6">
-        <div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Class Timetable</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Weekly schedule grid. Pick a class to see its timetable; leave empty for the school-wide view.</p>
-        </div>
-        <button mat-flat-button color="primary" (click)="add()"><mat-icon>add</mat-icon> Add entry</button>
+<app-list-page
+    title="Class Timetable"
+    subtitle="Weekly schedule grid. Pick a class to see its timetable; leave empty for the school-wide view."
+    icon="schedule"
+    iconGradient="from-violet-500 to-purple-600"
+    pageGradient="from-gray-50 via-violet-50/30 to-purple-50/30">
+
+    <div pageActions class="flex flex-col w-full sm:w-auto sm:flex-row sm:items-center sm:justify-end gap-3">
+        <button mat-fab color="primary" (click)="add()" matTooltip="Add timetable entry"><mat-icon>add</mat-icon></button>
     </div>
 
     <!-- Filters -->
-    <form [formGroup]="filterForm" (ngSubmit)="load()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-4 mb-4">
+    <form [formGroup]="filterForm" (ngSubmit)="load()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 mb-4">
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <mat-form-field appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Academic year</mat-label>
@@ -32,7 +34,7 @@
     <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
 
     <!-- Grid -->
-    <div *ngIf="!loading && slots.length > 0" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-x-auto">
+    <div *ngIf="!loading && slots.length > 0" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-x-auto">
         <table class="w-full text-sm">
             <thead>
                 <tr class="bg-gray-50 dark:bg-gray-700">
@@ -60,7 +62,7 @@
         </table>
     </div>
 
-    <div *ngIf="!loading && slots.length === 0" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-12 text-center text-sm text-gray-500">
+    <div *ngIf="!loading && slots.length === 0" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-12 text-center text-sm text-gray-500">
         No time slots configured yet. Configure time slots first before assigning subjects.
     </div>
-</div>
+</app-list-page>

@@ -1,36 +1,36 @@
-<div class="flex flex-col flex-auto min-w-0 p-6 max-w-3xl">
+<app-list-page
+    title="SMS Broadcast"
+    subtitle="Send a one-off SMS to every guardian phone for a class — or school-wide."
+    icon="campaign"
+    iconGradient="from-rose-500 to-red-600"
+    pageGradient="from-gray-50 via-rose-50/30 to-red-50/30">
 
-    <div class="mb-6">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">SMS Broadcast</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Send a one-off SMS to every guardian phone for a class — or school-wide.</p>
-    </div>
+    <form [formGroup]="form" (ngSubmit)="send()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-6 space-y-4">
 
-    <form [formGroup]="form" (ngSubmit)="send()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-6 space-y-4">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Target audience</mat-label>
+                <mat-select formControlName="classId">
+                    <mat-option [value]="''">Whole school (all enrolled students)</mat-option>
+                    <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }} {{ c.section }}</mat-option>
+                </mat-select>
+            </mat-form-field>
 
-        <mat-form-field class="w-full">
-            <mat-label>Target audience</mat-label>
-            <mat-select formControlName="classId">
-                <mat-option [value]="''">Whole school (all enrolled students)</mat-option>
-                <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }} {{ c.section }}</mat-option>
-            </mat-select>
-        </mat-form-field>
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Message</mat-label>
+                <textarea matInput formControlName="message" rows="4" maxlength="640" placeholder="School will remain closed tomorrow due to inclement weather. Please stay safe."></textarea>
+                <mat-hint align="end">{{ charCount }} / 640 chars · {{ smsCount }} SMS each</mat-hint>
+            </mat-form-field>
 
-        <mat-form-field class="w-full">
-            <mat-label>Message</mat-label>
-            <textarea matInput formControlName="message" rows="4" maxlength="640" placeholder="School will remain closed tomorrow due to inclement weather. Please stay safe."></textarea>
-            <mat-hint align="end">{{ charCount }} / 640 chars · {{ smsCount }} SMS each</mat-hint>
-        </mat-form-field>
+            <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-800 dark:text-amber-300">
+                <mat-icon class="!w-4 !h-4 !text-base align-middle mr-1">info</mat-icon>
+                Recipients are deduped across Father, Mother, and Guardian phone numbers. Phone numbers that don't start with <strong>01</strong> or <strong>8801</strong> are filtered by the provider.
+            </div>
 
-        <div class="rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 p-3 text-xs text-amber-800 dark:text-amber-300">
-            <mat-icon class="!w-4 !h-4 !text-base align-middle mr-1">info</mat-icon>
-            Recipients are deduped across Father, Mother, and Guardian phone numbers. Phone numbers that don't start with <strong>01</strong> or <strong>8801</strong> are filtered by the provider.
-        </div>
-
-        <div class="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
-            <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || sending">
-                <mat-icon class="mr-1" *ngIf="!sending">send</mat-icon>
-                {{ sending ? 'Sending…' : 'Send Broadcast' }}
-            </button>
-        </div>
+            <div class="flex justify-end pt-2 border-t border-gray-200 dark:border-gray-700">
+                <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || sending">
+                    <mat-icon class="mr-1" *ngIf="!sending">send</mat-icon>
+                    {{ sending ? 'Sending…' : 'Send Broadcast' }}
+                </button>
+            </div>
     </form>
-</div>
+</app-list-page>

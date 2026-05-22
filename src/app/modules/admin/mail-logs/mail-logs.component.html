@@ -1,9 +1,11 @@
-<div class="flex flex-col flex-auto min-w-0 p-6">
-    <div class="mb-6">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Mail Logs</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Read-only audit of every email the platform attempted to send (success + failure).</p>
-    </div>
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+<app-list-page
+    title="Mail Logs"
+    subtitle="Read-only audit of every email the platform attempted to send (success + failure)."
+    icon="all_inbox"
+    iconGradient="from-blue-500 to-indigo-600"
+    pageGradient="from-gray-50 via-blue-50/30 to-indigo-50/30">
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
         <table mat-table [dataSource]="rows" class="w-full">
             <ng-container matColumnDef="schedule"><th mat-header-cell *matHeaderCellDef class="whitespace-nowrap">Scheduled</th><td mat-cell *matCellDef="let r" class="whitespace-nowrap text-xs">{{ r.schedule ? (r.schedule | date:'short') : '—' }}</td></ng-container>
@@ -19,4 +21,4 @@
         <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No emails have been sent yet.</div>
         <mat-paginator [length]="total" [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)"></mat-paginator>
     </div>
-</div>
+</app-list-page>

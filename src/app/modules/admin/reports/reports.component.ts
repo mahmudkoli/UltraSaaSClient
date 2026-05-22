@@ -13,6 +13,7 @@ import { ReportsService } from '../../../core/reports/reports.service';
 import { StudentsService } from '../../../core/students/students.service';
 import { StudentDto } from '../../../core/students/students.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'reports',
@@ -20,7 +21,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, ListPageComponent],
 })
 export class ReportsComponent implements OnInit, OnDestroy {
     students: StudentDto[] = [];

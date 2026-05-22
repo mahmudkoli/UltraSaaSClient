@@ -1,22 +1,24 @@
-<div class="flex flex-col flex-auto min-w-0 p-6 max-w-6xl">
-    <div class="mb-6">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Mail Templates</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Reusable email message bodies. Used by lifecycle emails + custom broadcasts.</p>
-    </div>
+<app-list-page
+    title="Mail Templates"
+    subtitle="Reusable email message bodies. Used by lifecycle emails + custom broadcasts."
+    icon="mail"
+    iconGradient="from-blue-500 to-indigo-600"
+    pageGradient="from-gray-50 via-blue-50/30 to-indigo-50/30">
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+        <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-5">
             <h3 class="text-lg font-semibold mb-3">{{ editingId ? 'Edit template' : 'New template' }}</h3>
             <form [formGroup]="form" (ngSubmit)="save()" class="space-y-2">
-                <mat-form-field class="w-full"><mat-label>Title</mat-label><input matInput formControlName="title"></mat-form-field>
-                <mat-form-field class="w-full"><mat-label>Subject</mat-label><input matInput formControlName="subject"></mat-form-field>
-                <mat-form-field class="w-full"><mat-label>Body (HTML or text)</mat-label><textarea matInput formControlName="body" rows="8"></textarea></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Title</mat-label><input matInput formControlName="title"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Subject</mat-label><input matInput formControlName="subject"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Body (HTML or text)</mat-label><textarea matInput formControlName="body" rows="8"></textarea></mat-form-field>
                 <div class="flex gap-2 pt-2">
                     <button mat-stroked-button type="button" (click)="reset()">Reset</button>
                     <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">{{ saving ? 'Saving…' : (editingId ? 'Save' : 'Add') }}</button>
                 </div>
             </form>
         </div>
-        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
             <table mat-table [dataSource]="rows" class="w-full">
                 <ng-container matColumnDef="title"><th mat-header-cell *matHeaderCellDef>Title</th><td mat-cell *matCellDef="let t" class="font-medium">{{ t.title }}</td></ng-container>
@@ -31,4 +33,4 @@
             <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No mail templates yet.</div>
         </div>
     </div>
-</div>
+</app-list-page>

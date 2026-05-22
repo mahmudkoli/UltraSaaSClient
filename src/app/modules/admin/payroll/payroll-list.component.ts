@@ -9,6 +9,8 @@ import { Subject, takeUntil } from 'rxjs';
 import { PayrollService } from '../../../core/payroll/payroll.service';
 import { PayrollSlipDto } from '../../../core/payroll/payroll.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
     selector: 'payroll-list',
@@ -16,7 +18,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule],
+    imports: [CommonModule, RouterLink, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule, MatTooltipModule, ListPageComponent],
 })
 export class PayrollListComponent implements OnInit, OnDestroy {
     slips: PayrollSlipDto[] = [];

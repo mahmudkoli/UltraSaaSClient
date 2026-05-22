@@ -1,11 +1,9 @@
-<div class="flex flex-col flex-auto min-w-0 p-6">
-
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Fee Reports</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Outstanding dues, collection summary, and fee health snapshot.</p>
-        </div>
-    </div>
+<app-list-page
+    title="Fee Reports"
+    subtitle="Outstanding dues, collection summary, and fee health snapshot."
+    icon="account_balance_wallet"
+    iconGradient="from-emerald-500 to-teal-600"
+    pageGradient="from-gray-50 via-emerald-50/30 to-teal-50/30">
 
     <mat-tab-group>
 
@@ -27,7 +25,7 @@
                     <mat-progress-bar mode="indeterminate" class="w-full max-w-md"></mat-progress-bar>
                 </div>
 
-                <div *ngIf="!loadingDues" class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                <div *ngIf="!loadingDues" class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <table mat-table [dataSource]="dues" class="w-full">
                         <ng-container matColumnDef="studentName">
                             <th mat-header-cell *matHeaderCellDef>Student</th>
@@ -101,29 +99,29 @@
 
                 <ng-container *ngIf="!loadingReport && report">
                     <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
-                        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                             <div class="text-xs uppercase text-gray-500">Collected</div>
                             <div class="mt-1 text-2xl font-bold text-emerald-700">৳{{ report.totalCollected | number:'1.0-0' }}</div>
                             <div class="text-xs text-gray-500">in selected period</div>
                         </div>
-                        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                             <div class="text-xs uppercase text-gray-500">Paid Invoices</div>
                             <div class="mt-1 text-2xl font-bold">{{ report.paidInvoiceCount }}</div>
                             <div class="text-xs text-gray-500">in selected period</div>
                         </div>
-                        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                             <div class="text-xs uppercase text-gray-500">Outstanding</div>
                             <div class="mt-1 text-2xl font-bold text-amber-700">৳{{ report.totalOutstanding | number:'1.0-0' }}</div>
                             <div class="text-xs text-gray-500">snapshot today</div>
                         </div>
-                        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 p-4">
+                        <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 p-4">
                             <div class="text-xs uppercase text-gray-500">Overdue Invoices</div>
                             <div class="mt-1 text-2xl font-bold text-red-700">{{ report.overdueInvoiceCount }}</div>
                             <div class="text-xs text-gray-500">snapshot today</div>
                         </div>
                     </div>
 
-                    <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                    <div class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                         <table mat-table [dataSource]="report.series" class="w-full">
                             <ng-container matColumnDef="label">
                                 <th mat-header-cell *matHeaderCellDef>{{ bucket === 'Month' ? 'Month' : 'Date' }}</th>
@@ -148,4 +146,4 @@
             </div>
         </mat-tab>
     </mat-tab-group>
-</div>
+</app-list-page>

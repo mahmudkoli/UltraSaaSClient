@@ -1,10 +1,11 @@
-<div class="flex flex-col flex-auto min-w-0 p-6">
-    <div class="mb-6">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Announcements — sent</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Past broadcasts grouped by batch. Shows how many tenants received each announcement and how many have marked it read.</p>
-    </div>
+<app-list-page
+    title="Announcements — sent"
+    subtitle="Past broadcasts grouped by batch. Shows how many tenants received each announcement and how many have marked it read."
+    icon="campaign"
+    iconGradient="from-rose-500 to-red-600"
+    pageGradient="from-gray-50 via-rose-50/30 to-red-50/30">
 
-    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
 
         <table mat-table [dataSource]="rows" class="w-full">
@@ -54,4 +55,4 @@
             <p>No announcements have been broadcast yet.</p>
         </div>
     </div>
-</div>
+</app-list-page>

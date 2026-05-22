@@ -11,6 +11,8 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { LeavesService } from '../../../core/leaves/leaves.service';
 import { LeaveDto, LeaveStatus } from '../../../core/leaves/leaves.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
     selector: 'leave-list',
@@ -18,7 +20,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, RouterLink, MatButtonModule, MatChipsModule, MatIconModule, MatProgressBarModule, MatTableModule],
+    imports: [CommonModule, RouterLink, MatButtonModule, MatChipsModule, MatIconModule, MatProgressBarModule, MatTableModule, MatTooltipModule, ListPageComponent],
 })
 export class LeaveListComponent implements OnInit, OnDestroy {
     leaves: LeaveDto[] = [];

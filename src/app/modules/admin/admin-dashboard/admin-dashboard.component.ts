@@ -12,6 +12,7 @@ import { AdminDashboardService } from '../../../core/billing/admin-dashboard.ser
 import { AdminDashboardDto, DashboardPaymentRow, DashboardTenantRow } from '../../../core/billing/billing.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { RecordPaymentDialogComponent, RecordPaymentDialogData } from './record-payment-dialog.component';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'admin-dashboard',
@@ -28,6 +29,7 @@ import { RecordPaymentDialogComponent, RecordPaymentDialogData } from './record-
         MatProgressBarModule,
         MatTableModule,
         MatTooltipModule,
+        ListPageComponent,
     ],
 })
 export class AdminDashboardComponent implements OnInit, OnDestroy {

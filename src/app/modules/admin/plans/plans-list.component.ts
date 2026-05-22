@@ -9,6 +9,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { PlansService } from '../../../core/billing/plans.service';
 import { PlanDto } from '../../../core/billing/billing.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'plans-list',
@@ -16,7 +17,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule, ListPageComponent],
 })
 export class PlansListComponent implements OnInit, OnDestroy {
     plans: PlanDto[] = [];

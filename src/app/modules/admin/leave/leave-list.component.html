@@ -1,21 +1,19 @@
-<div class="flex flex-col flex-auto min-w-0 p-6">
+<app-list-page
+    title="Staff Leave Applications"
+    subtitle="Apply, approve and review staff leave requests."
+    icon="event_busy"
+    iconGradient="from-amber-500 to-orange-600"
+    pageGradient="from-gray-50 via-amber-50/30 to-orange-50/30">
 
-    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
-        <div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Staff Leave Applications</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Apply, approve and review staff leave requests.</p>
-        </div>
-        <a mat-flat-button color="primary" routerLink="apply" class="mt-3 sm:mt-0">
-            <mat-icon class="mr-2">add</mat-icon>
-            Apply for Leave
-        </a>
+    <div pageActions class="flex flex-col w-full sm:w-auto sm:flex-row sm:items-center sm:justify-end gap-3">
+        <a mat-fab color="primary" routerLink="apply" matTooltip="Apply for leave"><mat-icon>add</mat-icon></a>
     </div>
 
     <div *ngIf="loading" class="my-8 flex flex-col items-center">
         <mat-progress-bar mode="indeterminate" class="w-full max-w-md"></mat-progress-bar>
     </div>
 
-    <div *ngIf="!loading" class="rounded-2xl bg-white dark:bg-gray-800 shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div *ngIf="!loading" class="rounded-2xl bg-white dark:bg-gray-800 shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <table mat-table [dataSource]="leaves" class="w-full">
             <ng-container matColumnDef="teacherName">
                 <th mat-header-cell *matHeaderCellDef>Staff</th>
@@ -86,4 +84,4 @@
             No leave applications yet.
         </div>
     </div>
-</div>
+</app-list-page>

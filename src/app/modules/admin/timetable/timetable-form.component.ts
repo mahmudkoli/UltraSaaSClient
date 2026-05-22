@@ -19,6 +19,7 @@ import { TeachersService } from '../../../core/teachers/teachers.service';
 import { TeacherDto } from '../../../core/teachers/teachers.types';
 import { DAYS_OF_WEEK, TimeSlotDto, TimetableService } from '../../../core/timetable/timetable.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'timetable-form',
@@ -26,7 +27,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatSelectModule],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatSelectModule, ListPageComponent],
 })
 export class TimetableFormComponent implements OnInit {
     form: FormGroup;

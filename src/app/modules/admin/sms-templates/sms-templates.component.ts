@@ -10,6 +10,8 @@ import { MatTableModule } from '@angular/material/table';
 import { Subject, takeUntil } from 'rxjs';
 import { SMSTemplateDto, SMSTemplatesService } from '../../../core/comms/sms-templates.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
     selector: 'sms-templates',
@@ -17,7 +19,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatTableModule],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatTableModule, MatTooltipModule, ListPageComponent],
 })
 export class SmsTemplatesComponent implements OnInit, OnDestroy {
     rows: SMSTemplateDto[] = [];

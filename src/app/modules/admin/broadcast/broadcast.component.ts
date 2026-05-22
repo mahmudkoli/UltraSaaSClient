@@ -12,6 +12,7 @@ import { BroadcastsService } from '../../../core/notifications/broadcasts.servic
 import { ClassesService } from '../../../core/classes/classes.service';
 import { ClassDto } from '../../../core/classes/classes.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'broadcast',
@@ -19,7 +20,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, ListPageComponent],
 })
 export class BroadcastComponent implements OnInit, OnDestroy {
     form: FormGroup;

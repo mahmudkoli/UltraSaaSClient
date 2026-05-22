@@ -6,6 +6,7 @@ import { MatTableModule } from '@angular/material/table';
 import { Subject, takeUntil } from 'rxjs';
 import { MailLogDto, MailLogsService } from '../../../core/comms/mail-logs.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'mail-logs',
@@ -13,7 +14,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, DatePipe, MatPaginatorModule, MatProgressBarModule, MatTableModule],
+    imports: [CommonModule, DatePipe, MatPaginatorModule, MatProgressBarModule, MatTableModule, ListPageComponent],
 })
 export class MailLogsComponent implements OnInit, OnDestroy {
     rows: MailLogDto[] = [];

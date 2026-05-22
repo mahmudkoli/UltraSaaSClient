@@ -10,6 +10,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { Subject, takeUntil } from 'rxjs';
 import { MailConfigService, SMSConfigService } from '../../../core/comms/config.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'comms-config',
@@ -17,7 +18,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatTabsModule],
+    imports: [CommonModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatTabsModule, ListPageComponent],
 })
 export class CommsConfigComponent implements OnInit, OnDestroy {
     smsForm: FormGroup;

@@ -8,6 +8,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { MyChildDashboardDto } from '../../../core/students/my-child.types';
 import { StudentsService } from '../../../core/students/students.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'my-child',
@@ -15,7 +16,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule],
+    imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule, ListPageComponent],
 })
 export class MyChildComponent implements OnInit, OnDestroy {
     data?: MyChildDashboardDto;

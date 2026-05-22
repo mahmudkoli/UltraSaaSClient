@@ -1,26 +1,35 @@
-<div class="flex flex-col flex-auto min-w-0 p-6 max-w-3xl">
-    <div class="mb-6"><h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">{{ editingId ? 'Edit hostel' : 'New hostel' }}</h2></div>
-    <form [formGroup]="form" (ngSubmit)="save()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-3">
-        <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <mat-form-field><mat-label>Name</mat-label><input matInput formControlName="name"></mat-form-field>
-            <mat-form-field><mat-label>Code</mat-label><input matInput formControlName="code"></mat-form-field>
-            <mat-form-field class="sm:col-span-2"><mat-label>Address</mat-label><input matInput formControlName="address"></mat-form-field>
-            <mat-form-field><mat-label>Contact number</mat-label><input matInput formControlName="contactNumber"></mat-form-field>
-            <mat-form-field><mat-label>Email</mat-label><input matInput type="email" formControlName="email"></mat-form-field>
-            <mat-form-field><mat-label>Warden name</mat-label><input matInput formControlName="wardenName"></mat-form-field>
-            <mat-form-field><mat-label>Warden phone</mat-label><input matInput formControlName="wardenPhone"></mat-form-field>
-            <mat-form-field><mat-label>Total rooms</mat-label><input matInput type="number" formControlName="totalRooms" min="0"></mat-form-field>
-            <mat-form-field><mat-label>Monthly fee (BDT)</mat-label><input matInput type="number" formControlName="monthlyFee" min="0"></mat-form-field>
-        </div>
-        <mat-form-field class="w-full"><mat-label>Description</mat-label><textarea matInput formControlName="description" rows="2"></textarea></mat-form-field>
-        <mat-form-field class="w-full"><mat-label>Facilities (JSON or text)</mat-label><textarea matInput formControlName="facilities" rows="2"></textarea></mat-form-field>
-        <mat-form-field class="w-full"><mat-label>Rules</mat-label><textarea matInput formControlName="rules" rows="2"></textarea></mat-form-field>
-        <mat-form-field class="w-full"><mat-label>Remarks</mat-label><input matInput formControlName="remarks"></mat-form-field>
-        <mat-checkbox formControlName="isActive">Active</mat-checkbox>
-        <div class="flex justify-end gap-2 pt-2">
-            <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
-            <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">{{ saving ? 'Saving…' : 'Save' }}</button>
-        </div>
+<app-list-page
+    [title]="editingId ? 'Edit hostel' : 'New hostel'"
+    subtitle="Hostel building details: capacity, warden, fees, facilities."
+    icon="apartment"
+    iconGradient="from-amber-500 to-orange-600"
+    pageGradient="from-gray-50 via-amber-50/30 to-orange-50/30">
+
+    <div pageActions class="flex flex-col w-full sm:w-auto sm:flex-row sm:items-center sm:justify-end gap-3">
+        <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+    </div>
+
+    <form [formGroup]="form" (ngSubmit)="save()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-5 space-y-3">
+            <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Name</mat-label><input matInput formControlName="name"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Code</mat-label><input matInput formControlName="code"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full sm:col-span-2"><mat-label>Address</mat-label><input matInput formControlName="address"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Contact number</mat-label><input matInput formControlName="contactNumber"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Email</mat-label><input matInput type="email" formControlName="email"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Warden name</mat-label><input matInput formControlName="wardenName"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Warden phone</mat-label><input matInput formControlName="wardenPhone"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Total rooms</mat-label><input matInput type="number" formControlName="totalRooms" min="0"></mat-form-field>
+                <mat-form-field appearance="outline" class="w-full"><mat-label>Monthly fee (BDT)</mat-label><input matInput type="number" formControlName="monthlyFee" min="0"></mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="w-full"><mat-label>Description</mat-label><textarea matInput formControlName="description" rows="2"></textarea></mat-form-field>
+            <mat-form-field appearance="outline" class="w-full"><mat-label>Facilities (JSON or text)</mat-label><textarea matInput formControlName="facilities" rows="2"></textarea></mat-form-field>
+            <mat-form-field appearance="outline" class="w-full"><mat-label>Rules</mat-label><textarea matInput formControlName="rules" rows="2"></textarea></mat-form-field>
+            <mat-form-field appearance="outline" class="w-full"><mat-label>Remarks</mat-label><input matInput formControlName="remarks"></mat-form-field>
+            <mat-checkbox formControlName="isActive">Active</mat-checkbox>
+            <div class="flex justify-end gap-2 pt-2">
+                <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">{{ saving ? 'Saving…' : 'Save' }}</button>
+            </div>
     </form>
-</div>
+</app-list-page>

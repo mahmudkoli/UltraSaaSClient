@@ -13,13 +13,14 @@ import { LeaveType } from '../../../core/leaves/leaves.types';
 import { TeachersService } from '../../../core/teachers/teachers.service';
 import { TeacherDto } from '../../../core/teachers/teachers.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'leave-form',
     templateUrl: './leave-form.component.html',
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSelectModule, ListPageComponent],
 })
 export class LeaveFormComponent implements OnInit, OnDestroy {
     form: FormGroup;

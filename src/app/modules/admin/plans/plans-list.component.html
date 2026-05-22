@@ -1,23 +1,19 @@
-<div class="flex flex-col flex-auto min-w-0 p-6">
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Subscription Plans</h2>
-            <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                Manage the plans tenants subscribe to. Plan changes apply to new tenants from creation time;
-                existing tenants stay on their current plan until you reassign them.
-            </p>
-        </div>
-        <button mat-flat-button color="primary" (click)="add()">
-            <mat-icon class="mr-2">add</mat-icon>
-            New Plan
-        </button>
+<app-list-page
+    title="Subscription Plans"
+    subtitle="Manage the plans tenants subscribe to. Plan changes apply to new tenants from creation time; existing tenants stay on their current plan until you reassign them."
+    icon="layers"
+    iconGradient="from-violet-500 to-fuchsia-600"
+    pageGradient="from-gray-50 via-violet-50/30 to-fuchsia-50/30">
+
+    <div pageActions class="flex flex-col w-full sm:w-auto sm:flex-row sm:items-center sm:justify-end gap-3">
+        <button mat-fab color="primary" (click)="add()" matTooltip="New plan"><mat-icon>add</mat-icon></button>
     </div>
 
     <div *ngIf="loading" class="flex justify-center p-12">
         <div class="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
     </div>
 
-    <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+    <div *ngIf="!loading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <table mat-table [dataSource]="plans" class="w-full">
             <ng-container matColumnDef="code">
                 <th mat-header-cell *matHeaderCellDef class="font-semibold">Code</th>
@@ -78,7 +74,7 @@
 
         <div *ngIf="!plans.length" class="p-12 text-center text-gray-500">
             <mat-icon class="text-6xl mb-2 opacity-30">layers</mat-icon>
-            <p>No plans yet. Click "New Plan" to create your first subscription tier.</p>
+            <p>No plans yet. Click the FAB to create your first subscription tier.</p>
         </div>
     </div>
-</div>
+</app-list-page>

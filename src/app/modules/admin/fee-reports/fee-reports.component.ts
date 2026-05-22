@@ -14,6 +14,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { FeeInvoicesService } from '../../../core/fee-invoices/fee-invoices.service';
 import { FeeCollectionReportDto, FeeDuesDto } from '../../../core/fee-invoices/fee-invoices.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'fee-reports',
@@ -25,6 +26,7 @@ import { NotificationService } from '../../../core/services/notification.service
         CommonModule, FormsModule,
         MatButtonModule, MatButtonToggleModule, MatCardModule, MatFormFieldModule,
         MatIconModule, MatInputModule, MatProgressBarModule, MatTableModule, MatTabsModule,
+        ListPageComponent,
     ],
 })
 export class FeeReportsComponent implements OnInit, OnDestroy {

@@ -1,33 +1,34 @@
-<div class="flex flex-col flex-auto min-w-0 p-6 max-w-3xl">
-    <div class="mb-6">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">SMS &amp; Mail Configuration</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Provider credentials for outbound communications. One row per channel per tenant.</p>
-    </div>
+<app-list-page
+    title="SMS &amp; Mail Configuration"
+    subtitle="Provider credentials for outbound communications. One row per channel per tenant."
+    icon="settings_input_antenna"
+    iconGradient="from-indigo-500 to-blue-600"
+    pageGradient="from-gray-50 via-indigo-50/30 to-blue-50/30">
 
     <mat-tab-group>
-        <mat-tab label="SMS">
-            <form [formGroup]="smsForm" (ngSubmit)="saveSms()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 mt-4 space-y-3">
-                <div *ngIf="loadingSms"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
-                <mat-form-field class="w-full"><mat-label>API URL</mat-label><input matInput formControlName="apiUrl" placeholder="https://api.smsprovider.com/send"></mat-form-field>
-                <mat-form-field class="w-full"><mat-label>Sender ID / SID (optional)</mat-label><input matInput formControlName="sid"></mat-form-field>
-                <mat-form-field class="w-full"><mat-label>User ID</mat-label><input matInput formControlName="userId"></mat-form-field>
-                <mat-form-field class="w-full"><mat-label>Password / API key</mat-label><input matInput type="password" formControlName="password"></mat-form-field>
-                <div class="flex justify-end pt-2"><button mat-flat-button color="primary" type="submit" [disabled]="smsForm.invalid || savingSms">{{ savingSms ? 'Saving…' : 'Save SMS' }}</button></div>
-            </form>
-        </mat-tab>
-        <mat-tab label="Mail">
-            <form [formGroup]="mailForm" (ngSubmit)="saveMail()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 mt-4 space-y-3">
-                <div *ngIf="loadingMail"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <mat-form-field><mat-label>SMTP host</mat-label><input matInput formControlName="host" placeholder="smtp.gmail.com"></mat-form-field>
-                    <mat-form-field><mat-label>Port</mat-label><input matInput type="number" formControlName="port"></mat-form-field>
-                </div>
-                <mat-form-field class="w-full"><mat-label>Display name</mat-label><input matInput formControlName="displayName" placeholder="UltraEdu"></mat-form-field>
-                <mat-form-field class="w-full"><mat-label>From address</mat-label><input matInput type="email" formControlName="from" placeholder="no-reply@school.edu"></mat-form-field>
-                <mat-form-field class="w-full"><mat-label>SMTP username</mat-label><input matInput formControlName="userName"></mat-form-field>
-                <mat-form-field class="w-full"><mat-label>SMTP password</mat-label><input matInput type="password" formControlName="password"></mat-form-field>
-                <div class="flex justify-end pt-2"><button mat-flat-button color="primary" type="submit" [disabled]="mailForm.invalid || savingMail">{{ savingMail ? 'Saving…' : 'Save Mail' }}</button></div>
-            </form>
-        </mat-tab>
+            <mat-tab label="SMS">
+                <form [formGroup]="smsForm" (ngSubmit)="saveSms()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-5 mt-4 space-y-3">
+                    <div *ngIf="loadingSms"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>API URL</mat-label><input matInput formControlName="apiUrl" placeholder="https://api.smsprovider.com/send"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>Sender ID / SID (optional)</mat-label><input matInput formControlName="sid"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>User ID</mat-label><input matInput formControlName="userId"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>Password / API key</mat-label><input matInput type="password" formControlName="password"></mat-form-field>
+                    <div class="flex justify-end pt-2"><button mat-flat-button color="primary" type="submit" [disabled]="smsForm.invalid || savingSms">{{ savingSms ? 'Saving…' : 'Save SMS' }}</button></div>
+                </form>
+            </mat-tab>
+            <mat-tab label="Mail">
+                <form [formGroup]="mailForm" (ngSubmit)="saveMail()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-5 mt-4 space-y-3">
+                    <div *ngIf="loadingMail"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <mat-form-field appearance="outline" class="w-full"><mat-label>SMTP host</mat-label><input matInput formControlName="host" placeholder="smtp.gmail.com"></mat-form-field>
+                        <mat-form-field appearance="outline" class="w-full"><mat-label>Port</mat-label><input matInput type="number" formControlName="port"></mat-form-field>
+                    </div>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>Display name</mat-label><input matInput formControlName="displayName" placeholder="UltraEdu"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>From address</mat-label><input matInput type="email" formControlName="from" placeholder="no-reply@school.edu"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>SMTP username</mat-label><input matInput formControlName="userName"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>SMTP password</mat-label><input matInput type="password" formControlName="password"></mat-form-field>
+                    <div class="flex justify-end pt-2"><button mat-flat-button color="primary" type="submit" [disabled]="mailForm.invalid || savingMail">{{ savingMail ? 'Saving…' : 'Save Mail' }}</button></div>
+                </form>
+            </mat-tab>
     </mat-tab-group>
-</div>
+</app-list-page>

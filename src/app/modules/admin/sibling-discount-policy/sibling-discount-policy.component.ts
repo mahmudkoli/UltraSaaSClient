@@ -10,6 +10,7 @@ import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { Subject, takeUntil } from 'rxjs';
 import { SiblingDiscountPolicyService } from '../../../core/sibling-discount-policy/sibling-discount-policy.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'sibling-discount-policy',
@@ -26,6 +27,7 @@ import { NotificationService } from '../../../core/services/notification.service
         MatInputModule,
         MatProgressBarModule,
         MatSlideToggleModule,
+        ListPageComponent,
     ],
 })
 export class SiblingDiscountPolicyComponent implements OnInit, OnDestroy {

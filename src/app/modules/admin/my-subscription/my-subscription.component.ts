@@ -9,6 +9,7 @@ import { Subject, takeUntil, forkJoin } from 'rxjs';
 import { MySubscriptionService } from '../../../core/billing/my-subscription.service';
 import { MySubscriptionDto, TenantInvoiceDto, TenantPaymentDto } from '../../../core/billing/billing.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'my-subscription',
@@ -16,7 +17,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatIconModule, MatTableModule, MatTabsModule, MatTooltipModule],
+    imports: [CommonModule, MatButtonModule, MatIconModule, MatTableModule, MatTabsModule, MatTooltipModule, ListPageComponent],
 })
 export class MySubscriptionComponent implements OnInit, OnDestroy {
     sub?: MySubscriptionDto;

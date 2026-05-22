@@ -1,28 +1,28 @@
-<div class="flex flex-col flex-auto min-w-0 p-6 max-w-5xl">
-    <div class="mb-6">
-        <h2 class="text-3xl font-bold tracking-tight text-gray-900 dark:text-white">Grade Bands</h2>
-        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Configure percentage → letter grade mappings. Used by result-sheet rendering.</p>
-    </div>
+<app-list-page
+    title="Grade Bands"
+    subtitle="Configure percentage → letter grade mappings. Used by result-sheet rendering."
+    icon="grade"
+    iconGradient="from-violet-500 to-purple-600"
+    pageGradient="from-gray-50 via-violet-50/30 to-purple-50/30">
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Form -->
-        <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 p-5">
+        <div class="lg:col-span-1 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-5">
             <h3 class="text-lg font-semibold mb-3">{{ editingId ? 'Edit band' : 'Add band' }}</h3>
             <form [formGroup]="form" (ngSubmit)="submit()" class="space-y-2">
-                <mat-form-field class="w-full">
+                <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Label</mat-label>
                     <input matInput formControlName="label" placeholder="A+ / A / B / Pass / Fail">
                 </mat-form-field>
                 <div class="grid grid-cols-2 gap-3">
-                    <mat-form-field><mat-label>Lower %</mat-label><input matInput type="number" formControlName="lowerPercent" min="0" max="100"></mat-form-field>
-                    <mat-form-field><mat-label>Upper %</mat-label><input matInput type="number" formControlName="upperPercent" min="0" max="100"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>Lower %</mat-label><input matInput type="number" formControlName="lowerPercent" min="0" max="100"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>Upper %</mat-label><input matInput type="number" formControlName="upperPercent" min="0" max="100"></mat-form-field>
                 </div>
-                <mat-form-field class="w-full">
+                <mat-form-field appearance="outline" class="w-full">
                     <mat-label>GPA (optional)</mat-label>
                     <input matInput type="number" formControlName="gpa" placeholder="e.g. 5">
                 </mat-form-field>
-                <mat-form-field class="w-full">
+                <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Display Order</mat-label>
                     <input matInput type="number" formControlName="displayOrder">
                 </mat-form-field>
@@ -35,8 +35,7 @@
             </form>
         </div>
 
-        <!-- List -->
-        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+        <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div *ngIf="loading" class="my-4">
                 <mat-progress-bar mode="indeterminate"></mat-progress-bar>
             </div>
@@ -73,4 +72,4 @@
             </div>
         </div>
     </div>
-</div>
+</app-list-page>

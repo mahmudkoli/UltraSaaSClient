@@ -17,6 +17,7 @@ import { ClassesService } from '../../../core/classes/classes.service';
 import { ClassDto } from '../../../core/classes/classes.types';
 import { TimeSlotDto, TimetableEntryDto, TimetableService, DAYS_OF_WEEK } from '../../../core/timetable/timetable.service';
 import { NotificationService } from '../../../core/services/notification.service';
+import { ListPageComponent } from '../../../shared/components/list-page.component';
 
 @Component({
     selector: 'timetable',
@@ -24,7 +25,7 @@ import { NotificationService } from '../../../core/services/notification.service
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatSelectModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, ReactiveFormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressBarModule, MatSelectModule, MatTableModule, MatTooltipModule, ListPageComponent],
 })
 export class TimetableComponent implements OnInit, OnDestroy {
     classes: ClassDto[] = [];
