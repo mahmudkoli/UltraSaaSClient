@@ -18,7 +18,7 @@ export interface PaginationResponse<T> {
 
 @Injectable({ providedIn: 'root' })
 export class SMSTemplatesService {
-    private baseUrl = `${environment.apiUrl}/api/smstemplates`;
+    private baseUrl = `${environment.apiUrl}/api/v1/smstemplates`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<SMSTemplateDto>> {
         return this.http.post<PaginationResponse<SMSTemplateDto>>(`${this.baseUrl}/search`, req);

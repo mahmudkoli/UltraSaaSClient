@@ -19,7 +19,7 @@ export interface MailLogDto {
 
 @Injectable({ providedIn: 'root' })
 export class MailLogsService {
-    private baseUrl = `${environment.apiUrl}/api/maillogs`;
+    private baseUrl = `${environment.apiUrl}/api/v1/maillogs`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<MailLogDto>> {
         return this.http.post<PaginationResponse<MailLogDto>>(`${this.baseUrl}/search`, req);

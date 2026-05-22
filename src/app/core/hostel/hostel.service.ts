@@ -50,7 +50,7 @@ export interface UpdateStudentHostelRequest extends CreateStudentHostelRequest {
 
 @Injectable({ providedIn: 'root' })
 export class HostelsService {
-    private baseUrl = `${environment.apiUrl}/api/hostels`;
+    private baseUrl = `${environment.apiUrl}/api/v1/hostels`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<HostelDto>> {
         return this.http.post<PaginationResponse<HostelDto>>(`${this.baseUrl}/search`, req);
@@ -63,7 +63,7 @@ export class HostelsService {
 
 @Injectable({ providedIn: 'root' })
 export class StudentHostelsService {
-    private baseUrl = `${environment.apiUrl}/api/studenthostels`;
+    private baseUrl = `${environment.apiUrl}/api/v1/studenthostels`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<StudentHostelDto>> {
         return this.http.post<PaginationResponse<StudentHostelDto>>(`${this.baseUrl}/search`, req);

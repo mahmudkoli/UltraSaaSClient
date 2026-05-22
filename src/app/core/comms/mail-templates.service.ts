@@ -10,7 +10,7 @@ export interface UpdateMailTemplateRequest extends CreateMailTemplateRequest { i
 
 @Injectable({ providedIn: 'root' })
 export class MailTemplatesService {
-    private baseUrl = `${environment.apiUrl}/api/mailtemplates`;
+    private baseUrl = `${environment.apiUrl}/api/v1/mailtemplates`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<MailTemplateDto>> {
         return this.http.post<PaginationResponse<MailTemplateDto>>(`${this.baseUrl}/search`, req);

@@ -16,7 +16,7 @@ export interface SMSLogDto {
 
 @Injectable({ providedIn: 'root' })
 export class SMSLogsService {
-    private baseUrl = `${environment.apiUrl}/api/smslogs`;
+    private baseUrl = `${environment.apiUrl}/api/v1/smslogs`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<SMSLogDto>> {
         return this.http.post<PaginationResponse<SMSLogDto>>(`${this.baseUrl}/search`, req);

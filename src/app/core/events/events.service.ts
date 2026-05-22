@@ -66,7 +66,7 @@ export interface UpdateEventRequest extends CreateEventRequest { id: string; }
 
 @Injectable({ providedIn: 'root' })
 export class EventsService {
-    private baseUrl = `${environment.apiUrl}/api/events`;
+    private baseUrl = `${environment.apiUrl}/api/v1/events`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<EventDto>> {
         return this.http.post<PaginationResponse<EventDto>>(`${this.baseUrl}/search`, req);

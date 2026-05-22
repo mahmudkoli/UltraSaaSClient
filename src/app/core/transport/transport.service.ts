@@ -64,7 +64,7 @@ export interface UpdateStudentTransportRequest extends CreateStudentTransportReq
 
 @Injectable({ providedIn: 'root' })
 export class RoutesService {
-    private baseUrl = `${environment.apiUrl}/api/routes`;
+    private baseUrl = `${environment.apiUrl}/api/v1/routes`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<RouteDto>> {
         return this.http.post<PaginationResponse<RouteDto>>(`${this.baseUrl}/search`, req);
@@ -77,7 +77,7 @@ export class RoutesService {
 
 @Injectable({ providedIn: 'root' })
 export class VehiclesService {
-    private baseUrl = `${environment.apiUrl}/api/vehicles`;
+    private baseUrl = `${environment.apiUrl}/api/v1/vehicles`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<VehicleDto>> {
         return this.http.post<PaginationResponse<VehicleDto>>(`${this.baseUrl}/search`, req);
@@ -90,7 +90,7 @@ export class VehiclesService {
 
 @Injectable({ providedIn: 'root' })
 export class StudentTransportsService {
-    private baseUrl = `${environment.apiUrl}/api/studenttransports`;
+    private baseUrl = `${environment.apiUrl}/api/v1/studenttransports`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<StudentTransportDto>> {
         return this.http.post<PaginationResponse<StudentTransportDto>>(`${this.baseUrl}/search`, req);

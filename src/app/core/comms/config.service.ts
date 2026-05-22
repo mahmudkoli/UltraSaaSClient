@@ -8,7 +8,7 @@ export interface MailConfigDto { id?: string; host: string; port: number; displa
 
 @Injectable({ providedIn: 'root' })
 export class SMSConfigService {
-    private baseUrl = `${environment.apiUrl}/api/smsconfig`;
+    private baseUrl = `${environment.apiUrl}/api/v1/smsconfig`;
     constructor(private http: HttpClient) {}
     get(): Observable<SMSConfigDto> { return this.http.get<SMSConfigDto>(this.baseUrl); }
     upsert(req: SMSConfigDto): Observable<string> { return this.http.post(this.baseUrl, req, { responseType: 'text' }); }
@@ -16,7 +16,7 @@ export class SMSConfigService {
 
 @Injectable({ providedIn: 'root' })
 export class MailConfigService {
-    private baseUrl = `${environment.apiUrl}/api/mailconfig`;
+    private baseUrl = `${environment.apiUrl}/api/v1/mailconfig`;
     constructor(private http: HttpClient) {}
     get(): Observable<MailConfigDto> { return this.http.get<MailConfigDto>(this.baseUrl); }
     upsert(req: MailConfigDto): Observable<string> { return this.http.post(this.baseUrl, req, { responseType: 'text' }); }

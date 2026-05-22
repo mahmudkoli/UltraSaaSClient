@@ -82,7 +82,7 @@ export interface UpdateBookIssueRequest {
 
 @Injectable({ providedIn: 'root' })
 export class BooksService {
-    private baseUrl = `${environment.apiUrl}/api/books`;
+    private baseUrl = `${environment.apiUrl}/api/v1/books`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<BookDto>> {
         return this.http.post<PaginationResponse<BookDto>>(`${this.baseUrl}/search`, req);
@@ -95,7 +95,7 @@ export class BooksService {
 
 @Injectable({ providedIn: 'root' })
 export class BookIssuesService {
-    private baseUrl = `${environment.apiUrl}/api/bookissues`;
+    private baseUrl = `${environment.apiUrl}/api/v1/bookissues`;
     constructor(private http: HttpClient) {}
     search(req: { pageNumber: number; pageSize: number; keyword?: string }): Observable<PaginationResponse<BookIssueDto>> {
         return this.http.post<PaginationResponse<BookIssueDto>>(`${this.baseUrl}/search`, req);
