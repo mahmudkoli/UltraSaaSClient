@@ -51,6 +51,17 @@ export class UserService
     get(): Observable<User>
     {
         return this._httpClient.get<User>(`${this.baseUrl}/api/personal/profile`).pipe(
+            map((user) =>
+            {
+                // /api/personal/profile returns firstName + lastName separately
+                // but the sidebar header and the avatar initials read user.name.
+                // Compose the display name once here so every consumer gets it.
+                const composed = [user.firstName, user.lastName]
+                    .filter(part => part && part.trim().length > 0)
+                    .join(' ')
+                    .trim();
+                return { ...user, name: user.name || composed || user.email };
+            }),
             tap((user) =>
             {
                 this._user.next(user);

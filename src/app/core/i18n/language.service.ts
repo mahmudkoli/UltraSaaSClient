@@ -37,7 +37,7 @@ export class LanguageService {
 
     /** Pre-auth boot — synchronous, safe to call in APP_INITIALIZER. */
     resolveBootLang(): SupportedLang {
-        return this.coerce(safeReadLocalStorage(STORAGE_KEY));
+        return this.coerce(safeReadLocalStorage(STORAGE_KEY)) ?? DEFAULT;
     }
 
     /**

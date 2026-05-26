@@ -6,7 +6,7 @@ import { Navigation } from 'app/core/navigation/navigation.types';
 import { FeaturesService } from 'app/core/auth/features.service';
 import { PermissionsService } from 'app/core/auth/permissions.service';
 import { BusinessType, TenantInfoService } from 'app/core/auth/tenant-info.service';
-import { Observable, ReplaySubject, tap } from 'rxjs';
+import { Observable, ReplaySubject, switchMap, tap } from 'rxjs';
 
 @Injectable({providedIn: 'root'})
 export class NavigationService
@@ -24,7 +24,13 @@ export class NavigationService
 
     constructor()
     {
-        this._translocoService.langChanges$.subscribe(() => {
+        // langChanges$ fires synchronously on setActiveLang — but the scoped
+        // translation dictionary is lazy-loaded, so translate() returns the
+        // raw key on the first emission. Wait for load() to resolve (cached
+        // on subsequent calls) before re-emitting the translated nav.
+        this._translocoService.langChanges$.pipe(
+            switchMap(lang => this._translocoService.load(lang)),
+        ).subscribe(() => {
             if (this._filteredCache) {
                 this._navigation.next(this._translateNavigation(this._filteredCache));
             }
