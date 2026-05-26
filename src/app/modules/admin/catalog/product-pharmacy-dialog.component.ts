@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { ProductDto } from 'app/core/catalog/catalog.types';
 import { ProductPharmacyService } from 'app/core/pharmacy/pharmacy.service';
 import { ProductPharmacyDto } from 'app/core/pharmacy/pharmacy.types';
@@ -25,6 +26,7 @@ export interface PharmacyDialogData {
         CommonModule, FormsModule,
         MatButtonModule, MatCheckboxModule, MatDialogModule, MatFormFieldModule,
         MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatSnackBarModule,
+        TranslocoModule,
     ],
     template: `
 <div class="p-1">
@@ -33,7 +35,7 @@ export interface PharmacyDialogData {
             <mat-icon class="text-white">medication</mat-icon>
         </div>
         <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Pharmacy Details</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'CATALOG.PRODUCTS.PHARMACY.TITLE' | transloco }}</h2>
             <p class="text-sm text-gray-600 dark:text-gray-400">{{ data.product.name }} · {{ data.product.sku }}</p>
         </div>
     </div>
@@ -41,61 +43,61 @@ export interface PharmacyDialogData {
         @if (loading()) {
             <div class="flex items-center justify-center py-8"><mat-spinner [diameter]="32"></mat-spinner></div>
         } @else {
-            <p class="text-xs text-gray-500 mb-3">Set the medication metadata used by FEFO batch picking and prescription validation. Leave fields blank if not applicable.</p>
+            <p class="text-xs text-gray-500 mb-3">{{ 'CATALOG.PRODUCTS.PHARMACY.INTRO' | transloco }}</p>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Generic name</mat-label>
-                    <input matInput [(ngModel)]="form.genericName" placeholder="e.g. Paracetamol">
+                    <mat-label>{{ 'CATALOG.PRODUCTS.PHARMACY.GENERIC_NAME_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="form.genericName" [placeholder]="'CATALOG.PRODUCTS.PHARMACY.GENERIC_NAME_PLACEHOLDER' | transloco">
                 </mat-form-field>
                 <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Active ingredient</mat-label>
+                    <mat-label>{{ 'CATALOG.PRODUCTS.PHARMACY.ACTIVE_INGREDIENT_LABEL' | transloco }}</mat-label>
                     <input matInput [(ngModel)]="form.activeIngredient">
                 </mat-form-field>
                 <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Strength</mat-label>
-                    <input matInput [(ngModel)]="form.strength" placeholder="e.g. 500 mg">
+                    <mat-label>{{ 'CATALOG.PRODUCTS.PHARMACY.STRENGTH_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="form.strength" [placeholder]="'CATALOG.PRODUCTS.PHARMACY.STRENGTH_PLACEHOLDER' | transloco">
                 </mat-form-field>
                 <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Dosage form</mat-label>
+                    <mat-label>{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_FORM_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="form.dosageForm">
-                        <mat-option [value]="undefined">—</mat-option>
-                        <mat-option value="Tablet">Tablet</mat-option>
-                        <mat-option value="Capsule">Capsule</mat-option>
-                        <mat-option value="Syrup">Syrup</mat-option>
-                        <mat-option value="Suspension">Suspension</mat-option>
-                        <mat-option value="Injection">Injection</mat-option>
-                        <mat-option value="Cream">Cream / Ointment</mat-option>
-                        <mat-option value="Drops">Drops</mat-option>
-                        <mat-option value="Inhaler">Inhaler</mat-option>
-                        <mat-option value="Other">Other</mat-option>
+                        <mat-option [value]="undefined">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_FORM_NONE' | transloco }}</mat-option>
+                        <mat-option value="Tablet">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_TABLET' | transloco }}</mat-option>
+                        <mat-option value="Capsule">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_CAPSULE' | transloco }}</mat-option>
+                        <mat-option value="Syrup">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_SYRUP' | transloco }}</mat-option>
+                        <mat-option value="Suspension">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_SUSPENSION' | transloco }}</mat-option>
+                        <mat-option value="Injection">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_INJECTION' | transloco }}</mat-option>
+                        <mat-option value="Cream">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_CREAM' | transloco }}</mat-option>
+                        <mat-option value="Drops">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_DROPS' | transloco }}</mat-option>
+                        <mat-option value="Inhaler">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_INHALER' | transloco }}</mat-option>
+                        <mat-option value="Other">{{ 'CATALOG.PRODUCTS.PHARMACY.DOSAGE_OTHER' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="sm:col-span-2">
-                    <mat-label>Manufacturer</mat-label>
+                    <mat-label>{{ 'CATALOG.PRODUCTS.PHARMACY.MANUFACTURER_LABEL' | transloco }}</mat-label>
                     <input matInput [(ngModel)]="form.manufacturer">
                 </mat-form-field>
             </div>
 
             <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 space-y-2">
                 <mat-checkbox [(ngModel)]="form.requiresBatch">
-                    <span class="text-sm">Requires batch tracking</span>
-                    <span class="block text-xs text-gray-500">Sales must pick a batch (FEFO by default). Goods receipts upsert batches.</span>
+                    <span class="text-sm">{{ 'CATALOG.PRODUCTS.PHARMACY.REQUIRES_BATCH_LABEL' | transloco }}</span>
+                    <span class="block text-xs text-gray-500">{{ 'CATALOG.PRODUCTS.PHARMACY.REQUIRES_BATCH_HINT' | transloco }}</span>
                 </mat-checkbox>
                 <mat-checkbox [(ngModel)]="form.requiresPrescription">
-                    <span class="text-sm">Requires prescription</span>
-                    <span class="block text-xs text-gray-500">POS will prompt for a prescription # when this product is sold.</span>
+                    <span class="text-sm">{{ 'CATALOG.PRODUCTS.PHARMACY.REQUIRES_PRESCRIPTION_LABEL' | transloco }}</span>
+                    <span class="block text-xs text-gray-500">{{ 'CATALOG.PRODUCTS.PHARMACY.REQUIRES_PRESCRIPTION_HINT' | transloco }}</span>
                 </mat-checkbox>
                 <mat-checkbox [(ngModel)]="form.controlledSubstance">
-                    <span class="text-sm">Controlled substance</span>
-                    <span class="block text-xs text-gray-500">Flagged on receipts and reports for regulatory tracking.</span>
+                    <span class="text-sm">{{ 'CATALOG.PRODUCTS.PHARMACY.CONTROLLED_LABEL' | transloco }}</span>
+                    <span class="block text-xs text-gray-500">{{ 'CATALOG.PRODUCTS.PHARMACY.CONTROLLED_HINT' | transloco }}</span>
                 </mat-checkbox>
             </div>
         }
     </mat-dialog-content>
     <mat-dialog-actions align="end" class="!px-4 !pb-4">
-        <button mat-button (click)="close()" [disabled]="saving()">Cancel</button>
+        <button mat-button (click)="close()" [disabled]="saving()">{{ 'COMMON.CANCEL' | transloco }}</button>
         <button mat-flat-button color="primary" (click)="save()" [disabled]="loading() || saving()">
-            <mat-icon class="icon-size-5 mr-2">save</mat-icon>{{ saving() ? 'Saving…' : 'Save' }}
+            <mat-icon class="icon-size-5 mr-2">save</mat-icon>{{ (saving() ? 'CATALOG.PRODUCTS.PHARMACY.SAVING' : 'COMMON.SAVE') | transloco }}
         </button>
     </mat-dialog-actions>
 </div>
@@ -105,6 +107,7 @@ export class ProductPharmacyDialogComponent implements OnInit {
     private readonly api = inject(ProductPharmacyService);
     private readonly snack = inject(MatSnackBar);
     private readonly dialogRef = inject(MatDialogRef<ProductPharmacyDialogComponent>);
+    private readonly _transloco = inject(TranslocoService);
 
     loading = signal(true);
     saving = signal(false);
@@ -158,8 +161,8 @@ export class ProductPharmacyDialogComponent implements OnInit {
             next: () => { this.saving.set(false); this.dialogRef.close(true); },
             error: err => {
                 this.saving.set(false);
-                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Save failed';
-                this.snack.open(msg, 'OK', { duration: 6000 });
+                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? this._transloco.translate('CATALOG.PRODUCTS.PHARMACY.SAVE_FAILED');
+                this.snack.open(msg, this._transloco.translate('CATALOG.PRODUCTS.PHARMACY.TOAST_OK'), { duration: 6000 });
             },
         });
     }

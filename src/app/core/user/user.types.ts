@@ -1,10 +1,14 @@
 export interface User
 {
     id: string;
-    name: string;
+    name?: string;
+    firstName?: string;
+    lastName?: string;
     email: string;
     avatar?: string;
     status?: string;
+    /** Phase 2.58 — null = inherit tenant default. */
+    preferredLanguage?: string | null;
 }
 
 // API User Management Types (exactly matching API docs)
@@ -23,6 +27,8 @@ export interface UserDetailsDto
     address?: string;
     gender?: string;
     dateOfBirth?: string;
+    /** Phase 2.58 — null = inherit tenant default. */
+    preferredLanguage?: string | null;
 }
 
 export interface CreateUserRequest
@@ -51,6 +57,8 @@ export interface UpdateUserRequest
     dateOfBirth?: string;
     image?: FileUploadRequest;
     deleteCurrentImage?: boolean;
+    /** Phase 2.58 — null = inherit tenant default. */
+    preferredLanguage?: string | null;
 }
 
 export interface ToggleUserStatusRequest

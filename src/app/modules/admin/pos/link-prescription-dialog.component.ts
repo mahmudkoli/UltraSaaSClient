@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TranslocoModule } from '@ngneat/transloco';
 import { debounceTime, Subject } from 'rxjs';
 import { PrescriptionsService } from 'app/core/pharmacy/pharmacy.service';
 import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
@@ -28,7 +29,7 @@ export interface LinkPrescriptionResult {
     standalone: true,
     imports: [
         CommonModule, FormsModule, MatButtonModule, MatDialogModule,
-        MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule,
+        MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, TranslocoModule,
     ],
     template: `
         <div class="flex items-center gap-3 px-6 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700">
@@ -36,8 +37,8 @@ export interface LinkPrescriptionResult {
                 <mat-icon class="text-white">prescriptions</mat-icon>
             </div>
             <div class="flex flex-col">
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Link prescription</h2>
-                <p class="text-xs text-gray-500">Search an Active prescription by Rx # or patient name. The sale will mark it Dispensed on finalize.</p>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'POS.LINK_PRESCRIPTION.TITLE' | transloco }}</h2>
+                <p class="text-xs text-gray-500">{{ 'POS.LINK_PRESCRIPTION.SUBTITLE' | transloco }}</p>
             </div>
             <button mat-icon-button class="ml-auto" mat-dialog-close>
                 <mat-icon>close</mat-icon>
@@ -46,8 +47,8 @@ export interface LinkPrescriptionResult {
 
         <div class="px-6 py-4 min-w-[560px] flex flex-col gap-3">
             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full">
-                <mat-label>Search</mat-label>
-                <input matInput autofocus [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="e.g. RX-1234 or John">
+                <mat-label>{{ 'POS.LINK_PRESCRIPTION.SEARCH_LABEL' | transloco }}</mat-label>
+                <input matInput autofocus [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" [placeholder]="'POS.LINK_PRESCRIPTION.SEARCH_PLACEHOLDER' | transloco">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>
             </mat-form-field>
 
@@ -56,9 +57,9 @@ export interface LinkPrescriptionResult {
             } @else if (results().length === 0) {
                 <div class="text-center text-sm text-gray-500 py-6">
                     @if (search.trim()) {
-                        No Active prescriptions match "{{ search }}".
+                        {{ 'POS.LINK_PRESCRIPTION.NO_MATCH' | transloco:{ q: search } }}
                     } @else {
-                        Start typing to search prescriptions.
+                        {{ 'POS.LINK_PRESCRIPTION.START_TYPING' | transloco }}
                     }
                 </div>
             } @else {
@@ -69,7 +70,7 @@ export interface LinkPrescriptionResult {
                             <div class="flex flex-col min-w-0">
                                 <span class="font-mono text-sm font-semibold text-gray-900 dark:text-white truncate">{{ r.prescriptionNumber }}</span>
                                 <span class="text-xs text-gray-500 truncate">{{ r.patientName }}<span *ngIf="r.patientPhone"> · {{ r.patientPhone }}</span></span>
-                                <span class="text-xs text-gray-400 truncate">Dr. {{ r.doctorName }} · {{ r.prescriptionDate | date:'mediumDate' }}</span>
+                                <span class="text-xs text-gray-400 truncate">{{ 'POS.LINK_PRESCRIPTION.DR_PREFIX' | transloco }} {{ r.doctorName }} · {{ r.prescriptionDate | date:'mediumDate' }}</span>
                             </div>
                             <mat-icon class="text-gray-400 flex-shrink-0">arrow_forward</mat-icon>
                         </button>
@@ -79,7 +80,7 @@ export interface LinkPrescriptionResult {
         </div>
 
         <div class="flex items-center justify-end gap-2 px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-            <button mat-button mat-dialog-close>Cancel</button>
+            <button mat-button mat-dialog-close>{{ 'COMMON.CANCEL' | transloco }}</button>
         </div>
     `,
 })

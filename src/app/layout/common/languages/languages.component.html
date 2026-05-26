@@ -2,7 +2,7 @@
 <button
     mat-icon-button
     [matMenuTriggerFor]="languages">
-    <ng-container *ngTemplateOutlet="flagImage; context: {$implicit: activeLang}"></ng-container>
+    <ng-container *ngTemplateOutlet="flagImage; context: {$implicit: activeLang()}"></ng-container>
 </button>
 
 <!-- Language menu -->

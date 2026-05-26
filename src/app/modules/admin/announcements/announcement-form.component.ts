@@ -8,8 +8,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterLink } from '@angular/router';
 import { AnnouncementsService } from 'app/core/billing/billing.service';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import {
     AnnouncementAudienceKind,
     AnnouncementDto,
@@ -29,53 +31,54 @@ import {
     imports: [
         CommonModule, FormsModule, RouterLink,
         MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule,
-        MatInputModule, MatSelectModule,
+        MatInputModule, MatSelectModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 p-4 sm:p-6">
     <div class="flex items-center gap-3 mb-6">
-        <button mat-icon-button routerLink="/announcements" matTooltip="Back to history">
+        <button mat-icon-button routerLink="/announcements" [matTooltip]="'ADMIN.ANNOUNCEMENT.FORM.BACK_TOOLTIP' | transloco">
             <mat-icon>arrow_back</mat-icon>
         </button>
         <div class="w-10 h-10 rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 flex items-center justify-center">
             <mat-icon class="text-white">campaign</mat-icon>
         </div>
         <div>
-            <h1 class="text-2xl font-bold">{{ isResend ? 'Resend broadcast' : 'New broadcast' }}</h1>
-            <p class="text-sm text-gray-500">Send an in-app message to All tenants / a plan tier / a single tenant. Fans out at publish time.</p>
+            <h1 class="text-2xl font-bold">{{ (isResend ? 'ADMIN.ANNOUNCEMENT.FORM.TITLE_RESEND' : 'ADMIN.ANNOUNCEMENT.FORM.TITLE_NEW') | transloco }}</h1>
+            <p class="text-sm text-gray-500">{{ 'ADMIN.ANNOUNCEMENT.FORM.SUBTITLE' | transloco }}</p>
         </div>
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-200 dark:border-gray-700 p-5">
         <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Title</mat-label>
-            <input matInput [(ngModel)]="title" maxlength="150" placeholder="e.g. System maintenance tonight 11pm–12am">
+            <mat-label>{{ 'ADMIN.ANNOUNCEMENT.FORM.TITLE_LABEL' | transloco }}</mat-label>
+            <input matInput [(ngModel)]="title" maxlength="150" [placeholder]="'ADMIN.ANNOUNCEMENT.FORM.TITLE_PLACEHOLDER' | transloco">
         </mat-form-field>
         <mat-form-field appearance="outline" class="w-full">
-            <mat-label>Body</mat-label>
-            <textarea matInput [(ngModel)]="body" rows="5" maxlength="2000" placeholder="The full message — shown in the bell drawer."></textarea>
+            <mat-label>{{ 'ADMIN.ANNOUNCEMENT.FORM.BODY_LABEL' | transloco }}</mat-label>
+            <textarea matInput [(ngModel)]="body" rows="5" maxlength="2000" [placeholder]="'ADMIN.ANNOUNCEMENT.FORM.BODY_PLACEHOLDER' | transloco"></textarea>
         </mat-form-field>
 
         <div class="grid grid-cols-2 gap-3">
             <mat-form-field appearance="outline">
-                <mat-label>Severity</mat-label>
+                <mat-label>{{ 'ADMIN.ANNOUNCEMENT.FORM.SEVERITY_LABEL' | transloco }}</mat-label>
                 <mat-select [(ngModel)]="severity">
-                    <mat-option value="Info">Info</mat-option>
-                    <mat-option value="Warning">Warning</mat-option>
-                    <mat-option value="Urgent">Urgent</mat-option>
+                    <mat-option value="Info">{{ 'ADMIN.ANNOUNCEMENT.FORM.SEV_INFO' | transloco }}</mat-option>
+                    <mat-option value="Warning">{{ 'ADMIN.ANNOUNCEMENT.FORM.SEV_WARNING' | transloco }}</mat-option>
+                    <mat-option value="Urgent">{{ 'ADMIN.ANNOUNCEMENT.FORM.SEV_URGENT' | transloco }}</mat-option>
                 </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline">
-                <mat-label>Audience</mat-label>
+                <mat-label>{{ 'ADMIN.ANNOUNCEMENT.FORM.AUDIENCE_LABEL' | transloco }}</mat-label>
                 <mat-select [(ngModel)]="audienceKind">
-                    <mat-option value="All">All tenants</mat-option>
-                    <mat-option value="Plan">Plan tier</mat-option>
-                    <mat-option value="Tenant">Specific tenant</mat-option>
+                    <mat-option value="All">{{ 'ADMIN.ANNOUNCEMENT.FORM.AUD_ALL' | transloco }}</mat-option>
+                    <mat-option value="Plan">{{ 'ADMIN.ANNOUNCEMENT.FORM.AUD_PLAN' | transloco }}</mat-option>
+                    <mat-option value="Tenant">{{ 'ADMIN.ANNOUNCEMENT.FORM.AUD_TENANT' | transloco }}</mat-option>
                 </mat-select>
             </mat-form-field>
             @if (audienceKind !== 'All') {
                 <mat-form-field appearance="outline" class="col-span-2">
-                    <mat-label>{{ audienceKind === 'Plan' ? 'Plan code (e.g. starter)' : 'Tenant id (e.g. electroplus)' }}</mat-label>
+                    <mat-label>{{ (audienceKind === 'Plan' ? 'ADMIN.ANNOUNCEMENT.FORM.AUD_PLAN_PLACEHOLDER' : 'ADMIN.ANNOUNCEMENT.FORM.AUD_TENANT_PLACEHOLDER') | transloco }}</mat-label>
                     <input matInput [(ngModel)]="audienceTarget">
                 </mat-form-field>
             }
@@ -83,13 +86,13 @@ import {
 
         <div class="border-t border-gray-200 dark:border-gray-700 pt-4 mt-2">
             <mat-checkbox [(ngModel)]="visibleToAllUsers">
-                <span class="text-sm">Visible to all users in the tenant <span class="text-xs text-gray-500">(default: Admin only — uncheck for maintenance windows / feature releases cashiers should see)</span></span>
+                <span class="text-sm">{{ 'ADMIN.ANNOUNCEMENT.FORM.VISIBLE_ALL_USERS' | transloco }} <span class="text-xs text-gray-500">{{ 'ADMIN.ANNOUNCEMENT.FORM.VISIBLE_HINT' | transloco }}</span></span>
             </mat-checkbox>
         </div>
 
         <mat-form-field appearance="outline" class="w-full mt-3">
-            <mat-label>Link URL (optional)</mat-label>
-            <input matInput [(ngModel)]="linkUrl" placeholder="/subscription">
+            <mat-label>{{ 'ADMIN.ANNOUNCEMENT.FORM.LINK_LABEL' | transloco }}</mat-label>
+            <input matInput [(ngModel)]="linkUrl" [placeholder]="'ADMIN.ANNOUNCEMENT.FORM.LINK_PLACEHOLDER' | transloco">
         </mat-form-field>
 
         @if (errorMsg()) {
@@ -97,10 +100,10 @@ import {
         }
 
         <div class="flex justify-end gap-2 mt-4">
-            <button mat-button routerLink="/announcements" [disabled]="busy()">Cancel</button>
+            <button mat-button routerLink="/announcements" [disabled]="busy()">{{ 'COMMON.CANCEL' | transloco }}</button>
             <button mat-flat-button color="primary" (click)="submit()" [disabled]="busy() || !valid()">
                 <mat-icon class="icon-size-5 mr-1">send</mat-icon>
-                <span>{{ busy() ? 'Sending…' : 'Send announcement' }}</span>
+                <span>{{ (busy() ? 'ADMIN.ANNOUNCEMENT.FORM.SENDING' : 'ADMIN.ANNOUNCEMENT.FORM.SEND_BUTTON') | transloco }}</span>
             </button>
         </div>
     </div>
@@ -111,6 +114,7 @@ export class AnnouncementFormComponent implements OnInit {
     private readonly api = inject(AnnouncementsService);
     private readonly snack = inject(MatSnackBar);
     private readonly router = inject(Router);
+    private readonly _transloco = inject(TranslocoService);
 
     title = '';
     body = '';
@@ -165,12 +169,12 @@ export class AnnouncementFormComponent implements OnInit {
         }).subscribe({
             next: r => {
                 this.busy.set(false);
-                this.snack.open(`Announcement delivered to ${r.deliveredTo} tenant(s).`, 'OK', { duration: 3500 });
+                this.snack.open(this._transloco.translate('ADMIN.ANNOUNCEMENT.FORM.TOAST_SUCCESS', { count: r.deliveredTo }), this._transloco.translate('COMMON.YES'), { duration: 3500 });
                 this.router.navigate(['/announcements']);
             },
             error: err => {
                 this.busy.set(false);
-                this.errorMsg.set(err?.error?.exception ?? err?.error?.title ?? 'Send failed.');
+                this.errorMsg.set(err?.error?.exception ?? err?.error?.title ?? this._transloco.translate('ADMIN.ANNOUNCEMENT.FORM.ERROR_DEFAULT'));
             },
         });
     }

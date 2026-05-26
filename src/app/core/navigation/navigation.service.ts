@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { inject, Injectable } from '@angular/core';
 import { FuseNavigationItem } from '@fuse/components/navigation';
+import { TranslocoService } from '@ngneat/transloco';
 import { Navigation } from 'app/core/navigation/navigation.types';
 import { FeaturesService } from 'app/core/auth/features.service';
 import { PermissionsService } from 'app/core/auth/permissions.service';
@@ -14,7 +15,21 @@ export class NavigationService
     private _permissionsService = inject(PermissionsService);
     private _featuresService = inject(FeaturesService);
     private _tenantInfoService = inject(TenantInfoService);
+    private _translocoService = inject(TranslocoService);
     private _navigation: ReplaySubject<Navigation> = new ReplaySubject<Navigation>(1);
+
+    // Phase 2.58 — cache the filtered (but pre-translation) nav so we can
+    // re-emit with translated titles when the user switches language.
+    private _filteredCache: Navigation | null = null;
+
+    constructor()
+    {
+        this._translocoService.langChanges$.subscribe(() => {
+            if (this._filteredCache) {
+                this._navigation.next(this._translateNavigation(this._filteredCache));
+            }
+        });
+    }
 
     get navigation$(): Observable<Navigation>
     {
@@ -41,9 +56,29 @@ export class NavigationService
                     futuristic: this._filterByPermissions(navigation.futuristic, permissions, features, businessType),
                     horizontal: this._filterByPermissions(navigation.horizontal, permissions, features, businessType),
                 };
-                this._navigation.next(filtered);
+                this._filteredCache = filtered;
+                this._navigation.next(this._translateNavigation(filtered));
             }),
         );
+    }
+
+    // Phase 2.58 — walk each variant and replace `title` (a transloco key) with
+    // its translated label. Falls back to the raw key when no translation exists
+    // (e.g. an item added before its key landed in en.json / bn.json).
+    private _translateNavigation(nav: Navigation): Navigation
+    {
+        const tr = (items: FuseNavigationItem[]): FuseNavigationItem[] =>
+            items.map(item => ({
+                ...item,
+                title: item.title ? this._translocoService.translate(item.title) : item.title,
+                children: item.children ? tr(item.children) : item.children,
+            }));
+        return {
+            default: tr(nav.default),
+            compact: tr(nav.compact),
+            futuristic: tr(nav.futuristic),
+            horizontal: tr(nav.horizontal),
+        };
     }
 
     /**

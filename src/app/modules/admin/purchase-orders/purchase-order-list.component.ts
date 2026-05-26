@@ -11,6 +11,7 @@ import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
+import { TranslocoModule } from '@ngneat/transloco';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { PurchaseOrdersService, SearchPurchaseOrdersRequest, SuppliersService } from 'app/core/purchasing/purchasing.service';
@@ -23,7 +24,7 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
     selector: 'app-purchase-order-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
@@ -35,37 +36,37 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl shadow-lg"><mat-icon class="text-white">request_quote</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Purchase Orders</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Procurement to suppliers</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'PURCHASING.ORDERS.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'PURCHASING.ORDERS.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search</mat-label>
-                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="PO # / supplier">
+                    <mat-label>{{ 'PURCHASING.ORDERS.LIST.SEARCH_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" [placeholder]="'PURCHASING.ORDERS.LIST.SEARCH_PLACEHOLDER' | transloco">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Outlet</mat-label>
+                    <mat-label>{{ 'PURCHASING.ORDERS.LIST.OUTLET_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="outletFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option [value]="''">All outlets</mat-option>
+                        <mat-option [value]="''">{{ 'PURCHASING.ORDERS.LIST.OUTLET_ALL' | transloco }}</mat-option>
                         @for (o of outlets(); track o.id) {
                             <mat-option [value]="o.id">{{ o.name }}</mat-option>
                         }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'PURCHASING.ORDERS.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All Status</mat-option>
-                        <mat-option value="Draft">Draft</mat-option>
-                        <mat-option value="Submitted">Submitted</mat-option>
-                        <mat-option value="PartiallyReceived">Partially Received</mat-option>
-                        <mat-option value="Received">Received</mat-option>
-                        <mat-option value="Cancelled">Cancelled</mat-option>
+                        <mat-option value="all">{{ 'PURCHASING.ORDERS.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="Draft">{{ 'PURCHASING.ORDERS.LIST.STATUS_DRAFT' | transloco }}</mat-option>
+                        <mat-option value="Submitted">{{ 'PURCHASING.ORDERS.LIST.STATUS_SUBMITTED' | transloco }}</mat-option>
+                        <mat-option value="PartiallyReceived">{{ 'PURCHASING.ORDERS.LIST.STATUS_PARTIALLY_RECEIVED' | transloco }}</mat-option>
+                        <mat-option value="Received">{{ 'PURCHASING.ORDERS.LIST.STATUS_RECEIVED' | transloco }}</mat-option>
+                        <mat-option value="Cancelled">{{ 'PURCHASING.ORDERS.LIST.STATUS_CANCELLED' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-fab color="primary" routerLink="create" matTooltip="New purchase order"><mat-icon>add</mat-icon></button>
+                <button mat-fab color="primary" routerLink="create" [matTooltip]="'PURCHASING.ORDERS.LIST.ADD_TOOLTIP' | transloco"><mat-icon>add</mat-icon></button>
             </div>
         </div>
 
@@ -73,29 +74,29 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
-                        <ng-container matColumnDef="poNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">PO #</span></th>
+                        <ng-container matColumnDef="poNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.LIST.COL_PO_NUMBER' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.poNumber }}</td></ng-container>
-                        <ng-container matColumnDef="orderDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Ordered</span></th>
+                        <ng-container matColumnDef="orderDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.LIST.COL_ORDERED' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.orderDate | date:'short' }}</td></ng-container>
-                        <ng-container matColumnDef="supplier"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</span></th>
+                        <ng-container matColumnDef="supplier"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.LIST.COL_SUPPLIER' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ supplierName(r.supplierId) }}</td></ng-container>
-                        <ng-container matColumnDef="expectedDeliveryDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">ETA</span></th>
+                        <ng-container matColumnDef="expectedDeliveryDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.LIST.COL_ETA' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.expectedDeliveryDate ? (r.expectedDeliveryDate | date:'shortDate') : '—' }}</td></ng-container>
-                        <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Items</span></th>
+                        <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.LIST.COL_ITEMS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.items.length }}</td></ng-container>
-                        <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</span></th>
+                        <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.LIST.COL_TOTAL' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-semibold">{{ r.total | number:'1.2-2' }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="statusClass(r.status)">
-                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ r.status }}
+                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                                 </span>
                             </td></ng-container>
-                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); view(r)" matTooltip="View"><mat-icon class="icon-size-5">visibility</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); view(r)" [matTooltip]="'PURCHASING.ORDERS.LIST.VIEW_TOOLTIP' | transloco"><mat-icon class="icon-size-5">visibility</mat-icon></button>
                                 </div>
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
@@ -113,9 +114,9 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 
                 <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">request_quote</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No purchase orders</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Create your first PO to track procurement.</p>
-                    <button mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>New PO</span></button>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'PURCHASING.ORDERS.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ 'PURCHASING.ORDERS.LIST.EMPTY_SUBTITLE' | transloco }}</p>
+                    <button mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>{{ 'PURCHASING.ORDERS.LIST.NEW_PO_BUTTON' | transloco }}</span></button>
                 </div>
             </div>
         </div>
@@ -169,6 +170,17 @@ export class PurchaseOrderListComponent implements OnInit {
              : s === 'PartiallyReceived' ? 'pending'
              : s === 'Submitted' ? 'send'
              : 'edit';
+    }
+    /** Map a PO status enum to its translation key. */
+    statusLabel(s: PurchaseOrderStatus): string {
+        switch (s) {
+            case 'Draft': return 'PURCHASING.ORDERS.LIST.STATUS_DRAFT';
+            case 'Submitted': return 'PURCHASING.ORDERS.LIST.STATUS_SUBMITTED';
+            case 'PartiallyReceived': return 'PURCHASING.ORDERS.LIST.STATUS_PARTIALLY_RECEIVED';
+            case 'Received': return 'PURCHASING.ORDERS.LIST.STATUS_RECEIVED';
+            case 'Cancelled': return 'PURCHASING.ORDERS.LIST.STATUS_CANCELLED';
+            default: return 'PURCHASING.ORDERS.LIST.STATUS_DRAFT';
+        }
     }
 
     ngOnInit(): void {

@@ -11,6 +11,7 @@ import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { TranslocoModule } from '@ngneat/transloco';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
@@ -23,7 +24,7 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
     selector: 'app-shift-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule,
         MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
@@ -35,33 +36,33 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-xl shadow-lg"><mat-icon class="text-white">point_of_sale</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Shifts</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Cash-register shifts: open, close, and review variance</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'SHIFTS.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'SHIFTS.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-56">
-                    <mat-label>Outlet</mat-label>
+                    <mat-label>{{ 'SHIFTS.LIST.OUTLET_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="filterOutletId" (ngModelChange)="resetAndLoad()">
-                        <mat-option [value]="''">All</mat-option>
+                        <mat-option [value]="''">{{ 'SHIFTS.LIST.OUTLET_ALL' | transloco }}</mat-option>
                         @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'SHIFTS.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All</mat-option>
-                        <mat-option value="Open">Open</mat-option>
-                        <mat-option value="Closed">Closed</mat-option>
+                        <mat-option value="all">{{ 'SHIFTS.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="Open">{{ 'SHIFTS.LIST.STATUS_OPEN' | transloco }}</mat-option>
+                        <mat-option value="Closed">{{ 'SHIFTS.LIST.STATUS_CLOSED' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
                 @if (currentShift(); as cs) {
                     <button mat-flat-button color="warn" (click)="closeShift(cs)">
-                        <mat-icon class="icon-size-5 mr-2">stop_circle</mat-icon>Close current shift
+                        <mat-icon class="icon-size-5 mr-2">stop_circle</mat-icon>{{ 'SHIFTS.LIST.CLOSE_CURRENT_BUTTON' | transloco }}
                     </button>
                 } @else {
                     <button mat-flat-button color="primary" (click)="openShift()" [disabled]="!activeOutletId()">
-                        <mat-icon class="icon-size-5 mr-2">play_arrow</mat-icon>Open new shift
+                        <mat-icon class="icon-size-5 mr-2">play_arrow</mat-icon>{{ 'SHIFTS.LIST.OPEN_NEW_BUTTON' | transloco }}
                     </button>
                 }
             </div>
@@ -71,34 +72,34 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
-                        <ng-container matColumnDef="outlet"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Outlet</span></th>
+                        <ng-container matColumnDef="outlet"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_OUTLET' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">{{ outletName(r.outletId) }}</td></ng-container>
-                        <ng-container matColumnDef="openedAt"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Opened</span></th>
+                        <ng-container matColumnDef="openedAt"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_OPENED' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.openedAt | date:'short' }}</td></ng-container>
-                        <ng-container matColumnDef="closedAt"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Closed</span></th>
+                        <ng-container matColumnDef="closedAt"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_CLOSED' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.closedAt ? (r.closedAt | date:'short') : '—' }}</td></ng-container>
-                        <ng-container matColumnDef="opening"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Opening</span></th>
+                        <ng-container matColumnDef="opening"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_OPENING' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.openingFloat | number:'1.2-2' }}</td></ng-container>
-                        <ng-container matColumnDef="closing"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Closing</span></th>
+                        <ng-container matColumnDef="closing"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_CLOSING' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.closingFloat != null ? (r.closingFloat | number:'1.2-2') : '—' }}</td></ng-container>
-                        <ng-container matColumnDef="expected"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Expected</span></th>
+                        <ng-container matColumnDef="expected"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_EXPECTED' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.expectedCash != null ? (r.expectedCash | number:'1.2-2') : '—' }}</td></ng-container>
-                        <ng-container matColumnDef="variance"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Variance</span></th>
+                        <ng-container matColumnDef="variance"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_VARIANCE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right" [class.text-rose-700]="r.variance != null && r.variance < 0" [class.text-emerald-700]="r.variance != null && r.variance >= 0">
                                 {{ r.variance != null ? (r.variance | number:'1.2-2') : '—' }}
                             </td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="r.status === 'Open' ? 'bg-emerald-100 text-emerald-800' : 'bg-gray-100 text-gray-800'">
-                                    <mat-icon class="icon-size-4 mr-1">{{ r.status === 'Open' ? 'play_circle' : 'check_circle' }}</mat-icon>{{ r.status }}
+                                    <mat-icon class="icon-size-4 mr-1">{{ r.status === 'Open' ? 'play_circle' : 'check_circle' }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                                 </span>
                             </td></ng-container>
-                        <ng-container matColumnDef="report"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Report</span></th>
+                        <ng-container matColumnDef="report"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SHIFTS.LIST.COL_REPORT' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">
                                 <button mat-stroked-button class="!min-w-0 !px-2 !h-8 !leading-7"
                                         [routerLink]="['/shifts', r.id, 'report']"
-                                        [matTooltip]="r.status === 'Open' ? 'X-report (live snapshot)' : 'Z-report (closed shift record)'">
+                                        [matTooltip]="(r.status === 'Open' ? 'SHIFTS.LIST.REPORT_X_TOOLTIP' : 'SHIFTS.LIST.REPORT_Z_TOOLTIP') | transloco">
                                     <mat-icon class="icon-size-4 mr-1">summarize</mat-icon>{{ r.status === 'Open' ? 'X' : 'Z' }}
                                 </button>
                             </td></ng-container>
@@ -116,8 +117,8 @@ import { CloseShiftDialogComponent, OpenShiftDialogComponent } from './shift-dia
                 </div>
                 <div *ngIf="rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">point_of_sale</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No shifts yet</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Open a shift before ringing up sales.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'SHIFTS.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'SHIFTS.LIST.EMPTY_SUBTITLE' | transloco }}</p>
                 </div>
             </div>
         </div>
@@ -151,6 +152,10 @@ export class ShiftListComponent implements OnInit {
     activeOutletId = computed(() => this.filterOutletId || this.currentOutlet.outletId());
 
     outletName(id: string): string { return this.outlets().find(o => o.id === id)?.name ?? '—'; }
+
+    statusLabel(s: string): string {
+        return s === 'Open' ? 'SHIFTS.LIST.STATUS_OPEN' : 'SHIFTS.LIST.STATUS_CLOSED';
+    }
 
     ngOnInit(): void {
         this.outletsApi.getAll().subscribe(o => {

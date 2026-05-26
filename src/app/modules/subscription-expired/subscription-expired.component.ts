@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslocoModule } from '@ngneat/transloco';
 import { MyBillingService } from 'app/core/billing/billing.service';
 import { MySubscriptionDto } from 'app/core/billing/billing.types';
 
@@ -16,7 +17,7 @@ import { MySubscriptionDto } from 'app/core/billing/billing.types';
 @Component({
     selector: 'app-subscription-expired',
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule, RouterModule],
+    imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule, RouterModule, TranslocoModule],
     template: `
 <div class="flex min-h-screen items-center justify-center bg-gradient-to-br from-rose-50 via-white to-amber-50 dark:from-rose-950/40 dark:via-gray-900 dark:to-amber-950/40 p-6">
     <div class="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-rose-200 dark:border-rose-700 overflow-hidden">
@@ -25,8 +26,8 @@ import { MySubscriptionDto } from 'app/core/billing/billing.types';
                 <mat-icon class="text-rose-600 icon-size-8">lock</mat-icon>
             </div>
             <div>
-                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">Subscription is currently inactive</h1>
-                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Your tenant has been flipped to read-only.</p>
+                <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ 'SUBSCRIPTION_EXPIRED.TITLE' | transloco }}</h1>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">{{ 'SUBSCRIPTION_EXPIRED.SUBTITLE' | transloco }}</p>
             </div>
         </div>
 
@@ -38,44 +39,44 @@ import { MySubscriptionDto } from 'app/core/billing/billing.types';
 
             <!-- Tenant + reason -->
             <div class="space-y-1">
-                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Tenant</div>
+                <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ 'SUBSCRIPTION_EXPIRED.TENANT' | transloco }}</div>
                 <div class="font-semibold text-base">{{ sub.tenantName }}</div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Status</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ 'SUBSCRIPTION_EXPIRED.STATUS' | transloco }}</div>
                     <div class="font-medium text-rose-700 dark:text-rose-300 capitalize">
-                        {{ sub.paymentStatus || 'Suspended' }}
+                        {{ sub.paymentStatus || ('SUBSCRIPTION_EXPIRED.STATUS_SUSPENDED' | transloco) }}
                     </div>
                 </div>
                 <div>
-                    <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Valid until</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ 'SUBSCRIPTION_EXPIRED.VALID_UNTIL' | transloco }}</div>
                     <div class="font-medium">
                         {{ sub.validUpto | date:'mediumDate' }}
                         <span *ngIf="sub.daysUntilExpiry < 0" class="text-rose-600 dark:text-rose-400 text-xs ml-1">
-                            (expired {{ -sub.daysUntilExpiry }}d ago)
+                            ({{ 'SUBSCRIPTION_EXPIRED.EXPIRED_AGO' | transloco:{ days: -sub.daysUntilExpiry } }})
                         </span>
                     </div>
                 </div>
                 <div *ngIf="sub.lastPaymentDate">
-                    <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Last payment</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ 'SUBSCRIPTION_EXPIRED.LAST_PAYMENT' | transloco }}</div>
                     <div class="font-medium">{{ sub.lastPaymentDate | date:'mediumDate' }}</div>
                 </div>
                 <div *ngIf="sub.plan">
-                    <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">Plan</div>
-                    <div class="font-medium">{{ sub.plan.name }} — BDT {{ sub.plan.monthlyFeeBDT }}/mo</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500 dark:text-gray-400">{{ 'SUBSCRIPTION_EXPIRED.PLAN' | transloco }}</div>
+                    <div class="font-medium">{{ 'SUBSCRIPTION_EXPIRED.PLAN_PRICE_FORMAT' | transloco:{ name: sub.plan.name, price: sub.plan.monthlyFeeBDT } }}</div>
                 </div>
             </div>
 
             <div *ngIf="sub.suspensionReason" class="p-4 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-rose-800 dark:text-rose-200">
                 <div class="font-semibold mb-1 flex items-center gap-2">
                     <mat-icon class="icon-size-5">info</mat-icon>
-                    Reason
+                    {{ 'SUBSCRIPTION_EXPIRED.REASON' | transloco }}
                 </div>
                 <div class="text-sm">{{ sub.suspensionReason }}</div>
                 <div *ngIf="sub.suspendedUntil" class="text-xs mt-1 opacity-80">
-                    Suspended until {{ sub.suspendedUntil | date:'mediumDate' }}
+                    {{ 'SUBSCRIPTION_EXPIRED.SUSPENDED_UNTIL' | transloco:{ date: (sub.suspendedUntil | date:'mediumDate') } }}
                 </div>
             </div>
 
@@ -83,31 +84,31 @@ import { MySubscriptionDto } from 'app/core/billing/billing.types';
             <div class="p-4 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
                 <div class="font-semibold text-amber-900 dark:text-amber-100 mb-1.5 flex items-center gap-2">
                     <mat-icon class="icon-size-5">support_agent</mat-icon>
-                    What to do
+                    {{ 'SUBSCRIPTION_EXPIRED.WHAT_TO_DO' | transloco }}
                 </div>
                 <ul class="list-disc list-inside text-sm text-amber-900 dark:text-amber-100 space-y-1">
                     <li *ngIf="sub.technicalAdminEmail">
-                        Your tenant admin: <a [href]="'mailto:' + sub.technicalAdminEmail" class="underline font-medium">{{ sub.technicalAdminEmail }}</a> can request a payment to be recorded.
+                        {{ 'SUBSCRIPTION_EXPIRED.WTD_TENANT_ADMIN_PREFIX' | transloco }} <a [href]="'mailto:' + sub.technicalAdminEmail" class="underline font-medium">{{ sub.technicalAdminEmail }}</a> {{ 'SUBSCRIPTION_EXPIRED.WTD_TENANT_ADMIN_SUFFIX' | transloco }}
                     </li>
-                    <li>Contact <a [href]="'mailto:' + supportEmail" class="underline font-medium">{{ supportEmail }}</a> (MK Corex support) to confirm the payment.</li>
-                    <li>Once the payment is recorded by the platform admin, this page goes away automatically — refresh.</li>
+                    <li>{{ 'SUBSCRIPTION_EXPIRED.WTD_CONTACT_PREFIX' | transloco }} <a [href]="'mailto:' + supportEmail" class="underline font-medium">{{ supportEmail }}</a> {{ 'SUBSCRIPTION_EXPIRED.WTD_CONTACT_SUFFIX' | transloco }}</li>
+                    <li>{{ 'SUBSCRIPTION_EXPIRED.WTD_AUTO_REFRESH' | transloco }}</li>
                 </ul>
             </div>
 
             <div class="flex flex-col sm:flex-row gap-3 pt-2">
                 <button mat-stroked-button color="primary" (click)="refresh()">
                     <mat-icon class="mr-2">refresh</mat-icon>
-                    I've paid — check again
+                    {{ 'SUBSCRIPTION_EXPIRED.BUTTON_CHECK_AGAIN' | transloco }}
                 </button>
                 <button mat-stroked-button [routerLink]="['/sign-out']">
                     <mat-icon class="mr-2">logout</mat-icon>
-                    Sign out
+                    {{ 'SUBSCRIPTION_EXPIRED.BUTTON_SIGN_OUT' | transloco }}
                 </button>
             </div>
         </div>
 
         <div *ngIf="!loading() && !info()" class="px-8 pb-8 text-sm text-gray-600 dark:text-gray-400">
-            Unable to load subscription details. Refresh the page or sign out and back in.
+            {{ 'SUBSCRIPTION_EXPIRED.LOAD_ERROR' | transloco }}
         </div>
     </div>
 </div>

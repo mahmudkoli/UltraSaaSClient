@@ -12,6 +12,7 @@ import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
@@ -22,7 +23,7 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
     selector: 'app-prescriptions-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatSelectModule, MatSnackBarModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
@@ -34,74 +35,74 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl shadow-lg"><mat-icon class="text-white">prescriptions</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Prescriptions</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Doctor prescriptions on file. Dispensing is recorded via the regular Sale flow.</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'PHARMACY.PRESCRIPTIONS.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'PHARMACY.PRESCRIPTIONS.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search</mat-label>
-                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Rx # / patient / doctor">
+                    <mat-label>{{ 'PHARMACY.PRESCRIPTIONS.LIST.SEARCH_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" [placeholder]="'PHARMACY.PRESCRIPTIONS.LIST.SEARCH_PLACEHOLDER' | transloco">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Patient phone</mat-label>
+                    <mat-label>{{ 'PHARMACY.PRESCRIPTIONS.LIST.PHONE_LABEL' | transloco }}</mat-label>
                     <input matInput [(ngModel)]="phoneFilter" (ngModelChange)="phoneChanged.next($event)">
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All</mat-option>
-                        <mat-option value="Active">Active</mat-option>
-                        <mat-option value="Dispensed">Dispensed</mat-option>
-                        <mat-option value="Expired">Expired</mat-option>
-                        <mat-option value="Cancelled">Cancelled</mat-option>
+                        <mat-option value="all">{{ 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="Active">{{ 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_ACTIVE' | transloco }}</mat-option>
+                        <mat-option value="Dispensed">{{ 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_DISPENSED' | transloco }}</mat-option>
+                        <mat-option value="Expired">{{ 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_EXPIRED' | transloco }}</mat-option>
+                        <mat-option value="Cancelled">{{ 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_CANCELLED' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-fab color="primary" routerLink="create" matTooltip="Record new prescription"><mat-icon>add</mat-icon></button>
+                <button mat-fab color="primary" routerLink="create" [matTooltip]="'PHARMACY.PRESCRIPTIONS.LIST.ADD_TOOLTIP' | transloco"><mat-icon>add</mat-icon></button>
             </div>
         </div>
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
-                        <ng-container matColumnDef="prescriptionNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Rx #</span></th>
+                        <ng-container matColumnDef="prescriptionNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PHARMACY.PRESCRIPTIONS.LIST.COL_RX' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.prescriptionNumber }}</td></ng-container>
-                        <ng-container matColumnDef="prescriptionDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</span></th>
+                        <ng-container matColumnDef="prescriptionDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PHARMACY.PRESCRIPTIONS.LIST.COL_DATE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.prescriptionDate | date:'shortDate' }}</td></ng-container>
-                        <ng-container matColumnDef="doctor"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</span></th>
+                        <ng-container matColumnDef="doctor"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PHARMACY.PRESCRIPTIONS.LIST.COL_DOCTOR' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-medium">{{ r.doctorName }}</span>
                                     <span class="text-xs text-gray-500">{{ r.hospital || r.doctorPhone || '—' }}</span>
                                 </div>
                             </td></ng-container>
-                        <ng-container matColumnDef="patient"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</span></th>
+                        <ng-container matColumnDef="patient"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PHARMACY.PRESCRIPTIONS.LIST.COL_PATIENT' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-medium">{{ r.patientName }}</span>
                                     <span class="text-xs text-gray-500">{{ r.patientPhone || '—' }}{{ r.patientAge ? ' · ' + r.patientAge + 'y' : '' }}</span>
                                 </div>
                             </td></ng-container>
-                        <ng-container matColumnDef="validUntil"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Valid until</span></th>
+                        <ng-container matColumnDef="validUntil"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PHARMACY.PRESCRIPTIONS.LIST.COL_VALID_UNTIL' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="text-gray-600 dark:text-gray-400">{{ r.validUntil ? (r.validUntil | date:'shortDate') : '—' }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PHARMACY.PRESCRIPTIONS.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" [ngClass]="badgeClass(r.status)">
-                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ r.status }}
+                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                                 </span>
                             </td></ng-container>
-                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PHARMACY.PRESCRIPTIONS.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
                                     <button mat-icon-button class="text-blue-600"
                                             (click)="view(r); $event.stopPropagation()"
-                                            matTooltip="View details">
+                                            [matTooltip]="'PHARMACY.PRESCRIPTIONS.LIST.VIEW_TOOLTIP' | transloco">
                                         <mat-icon class="icon-size-5">visibility</mat-icon>
                                     </button>
                                     <button mat-icon-button class="text-red-600"
                                             (click)="cancel(r); $event.stopPropagation()"
-                                            matTooltip="Cancel prescription"
+                                            [matTooltip]="'PHARMACY.PRESCRIPTIONS.LIST.CANCEL_TOOLTIP' | transloco"
                                             [disabled]="r.status !== 'Active'">
                                         <mat-icon class="icon-size-5">cancel</mat-icon>
                                     </button>
@@ -123,8 +124,8 @@ import { PrescriptionDto } from 'app/core/pharmacy/pharmacy.types';
                 </div>
                 <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">prescriptions</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No prescriptions</h3>
-                    <button mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Record Prescription</span></button>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'PHARMACY.PRESCRIPTIONS.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <button mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>{{ 'PHARMACY.PRESCRIPTIONS.LIST.RECORD_BUTTON' | transloco }}</span></button>
                 </div>
             </div>
         </div>
@@ -137,6 +138,7 @@ export class PrescriptionsListComponent implements OnInit {
     private readonly snack = inject(MatSnackBar);
     private readonly router = inject(Router);
     private readonly _confirm = inject(FuseConfirmationService);
+    private readonly _transloco = inject(TranslocoService);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -164,6 +166,16 @@ export class PrescriptionsListComponent implements OnInit {
             case 'Cancelled': return 'cancel';
             case 'Expired': return 'event_busy';
             default: return 'help';
+        }
+    }
+
+    statusLabel(s: PrescriptionDto['status']): string {
+        switch (s) {
+            case 'Active': return 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_ACTIVE';
+            case 'Dispensed': return 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_DISPENSED';
+            case 'Cancelled': return 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_CANCELLED';
+            case 'Expired': return 'PHARMACY.PRESCRIPTIONS.LIST.STATUS_EXPIRED';
+            default: return '';
         }
     }
 
@@ -212,18 +224,21 @@ export class PrescriptionsListComponent implements OnInit {
     cancel(r: PrescriptionDto): void {
         if (r.status !== 'Active') return;
         const ref = this._confirm.open({
-            title: 'Cancel prescription',
-            message: `Cancel prescription <b>${r.prescriptionNumber}</b> for ${r.patientName}? This can't be undone — the patient will need a new prescription.`,
+            title: this._transloco.translate('PHARMACY.PRESCRIPTIONS.LIST.CANCEL_TITLE'),
+            message: this._transloco.translate('PHARMACY.PRESCRIPTIONS.LIST.CANCEL_CONFIRM', { number: r.prescriptionNumber, patient: r.patientName }),
             icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
-            actions: { confirm: { label: 'Cancel prescription', color: 'warn' }, cancel: { label: 'Keep active' } },
+            actions: {
+                confirm: { label: this._transloco.translate('PHARMACY.PRESCRIPTIONS.LIST.CANCEL_LABEL'), color: 'warn' },
+                cancel: { label: this._transloco.translate('PHARMACY.PRESCRIPTIONS.LIST.KEEP_LABEL') },
+            },
         });
         ref.afterClosed().subscribe(result => {
             if (result !== 'confirmed') return;
             this.api.cancel(r.id).subscribe({
-                next: () => { this.snack.open('Prescription cancelled', 'OK', { duration: 3000 }); this.load(); },
+                next: () => { this.snack.open(this._transloco.translate('PHARMACY.PRESCRIPTIONS.LIST.TOAST_CANCELLED'), this._transloco.translate('PHARMACY.PRESCRIPTIONS.LIST.TOAST_OK'), { duration: 3000 }); this.load(); },
                 error: err => {
-                    const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Cancel failed';
-                    this.snack.open(msg, 'OK', { duration: 6000 });
+                    const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? this._transloco.translate('PHARMACY.PRESCRIPTIONS.LIST.TOAST_CANCEL_FAILED');
+                    this.snack.open(msg, this._transloco.translate('PHARMACY.PRESCRIPTIONS.LIST.TOAST_OK'), { duration: 6000 });
                 },
             });
         });

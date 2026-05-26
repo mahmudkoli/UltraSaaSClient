@@ -23,6 +23,8 @@ export interface TenantInfoDto {
     showPriceOnLabel?: boolean;
     /** Tenant default for "use outlet-resolved price on barcode label". */
     useOutletPriceOnLabel?: boolean;
+    /** Phase 2.58 — tenant default UI language ("en" / "bn"). Cascades to users without their own preferredLanguage. */
+    defaultLanguage?: string;
 }
 
 /**

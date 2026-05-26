@@ -61,6 +61,9 @@ export interface TenantDto {
     // Theme
     themeConfig?: string;
 
+    /** Phase 2.58 — tenant default UI language ("en" / "bn"). Cascades to users without their own preferredLanguage. */
+    defaultLanguage?: string;
+
     // Audit
     createdOn: string;
     createdBy: string;
@@ -104,6 +107,9 @@ export interface CreateTenantRequest {
 
     // Optional billing
     billingEmail?: string;
+
+    /** Phase 2.58 — tenant default UI language ("en" / "bn"). */
+    defaultLanguage?: string;
 }
 
 export interface UpdateTenantRequest {
@@ -138,6 +144,9 @@ export interface UpdateTenantRequest {
     // Label preferences
     showPriceOnLabel?: boolean;
     useOutletPriceOnLabel?: boolean;
+
+    /** Phase 2.58 — tenant default UI language ("en" / "bn"). */
+    defaultLanguage?: string;
 }
 
 export interface TenantWithPermissionsDto extends TenantDto {

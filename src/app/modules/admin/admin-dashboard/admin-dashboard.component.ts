@@ -12,6 +12,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AdminDashboardService } from 'app/core/billing/billing.service';
 import { AdminDashboardDto, DashboardTenantRow } from 'app/core/billing/billing.types';
 import { RecordPaymentDialogComponent, RecordPaymentDialogData } from '../tenant/record-payment-dialog.component';
+import { TranslocoModule } from '@ngneat/transloco';
 
 type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
 
@@ -22,6 +23,7 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatButtonToggleModule, MatChipsModule, MatDialogModule,
         MatIconModule, MatTableModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20">
@@ -32,8 +34,8 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
                 <mat-icon class="text-white">dashboard</mat-icon>
             </div>
             <div>
-                <h1 class="text-3xl font-bold tracking-tight">Platform Dashboard</h1>
-                <p class="text-sm text-gray-500">Cross-tenant KPIs, action queue, and recent activity.</p>
+                <h1 class="text-3xl font-bold tracking-tight">{{ 'ADMIN.PLATFORM_DASHBOARD.TITLE' | transloco }}</h1>
+                <p class="text-sm text-gray-500">{{ 'ADMIN.PLATFORM_DASHBOARD.SUBTITLE' | transloco }}</p>
             </div>
         </div>
 
@@ -41,31 +43,31 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
             <!-- Row 1: KPI cards -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs uppercase tracking-wider text-gray-500">MRR (BDT)</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_MRR' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1">{{ d.mrr | number:'1.0-0' }}</div>
-                    <div class="text-xs text-gray-400 mt-1">Monthly recurring revenue</div>
+                    <div class="text-xs text-gray-400 mt-1">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_MRR_HINT' | transloco }}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs uppercase tracking-wider text-gray-500">Active tenants</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_ACTIVE_TENANTS' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1 text-emerald-600">{{ d.activeTenants }}</div>
-                    <div class="text-xs text-gray-400 mt-1">+{{ d.newTenantsThisMonth }} this month</div>
+                    <div class="text-xs text-gray-400 mt-1">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_NEW_THIS_MONTH' | transloco:{ count: d.newTenantsThisMonth } }}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs uppercase tracking-wider text-gray-500">Expiring 7d</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_EXPIRING' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1" [class.text-amber-600]="d.expiringThisWeek > 0">{{ d.expiringThisWeek }}</div>
-                    <div class="text-xs text-gray-400 mt-1">Renewal nudges</div>
+                    <div class="text-xs text-gray-400 mt-1">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_EXPIRING_HINT' | transloco }}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs uppercase tracking-wider text-gray-500">Overdue / Suspended</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_OVERDUE' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1" [class.text-rose-600]="d.overdueOrSuspended > 0">{{ d.overdueOrSuspended }}</div>
-                    <div class="text-xs text-gray-400 mt-1">Needs action</div>
+                    <div class="text-xs text-gray-400 mt-1">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_OVERDUE_HINT' | transloco }}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl shadow-md p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs uppercase tracking-wider text-gray-500">Collected (BDT) this month</div>
+                    <div class="text-xs uppercase tracking-wider text-gray-500">{{ 'ADMIN.PLATFORM_DASHBOARD.KPI_COLLECTED' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1">{{ d.collectedThisMonth | number:'1.0-0' }}</div>
                     <div class="text-xs text-gray-400 mt-1">
                         <span *ngIf="deltaPct(d) as pct" [class.text-emerald-600]="pct.value >= 0" [class.text-rose-600]="pct.value < 0">
-                            {{ pct.label }} vs last month
+                            {{ pct.label }} {{ 'ADMIN.PLATFORM_DASHBOARD.KPI_VS_LAST_MONTH' | transloco }}
                         </span>
                     </div>
                 </div>
@@ -78,55 +80,55 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
                         <div class="w-8 h-8 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center">
                             <mat-icon class="text-amber-600 icon-size-5">flag</mat-icon>
                         </div>
-                        <h3 class="text-lg font-semibold">Action queue</h3>
-                        <span class="text-xs text-gray-500">({{ filteredQueue().length }} of {{ d.actionQueue.length }})</span>
+                        <h3 class="text-lg font-semibold">{{ 'ADMIN.PLATFORM_DASHBOARD.ACTION_QUEUE' | transloco }}</h3>
+                        <span class="text-xs text-gray-500">{{ 'ADMIN.PLATFORM_DASHBOARD.QUEUE_COUNT' | transloco:{ filtered: filteredQueue().length, total: d.actionQueue.length } }}</span>
                     </div>
                     <mat-button-toggle-group [(ngModel)]="queueFilter" hideSingleSelectionIndicator>
-                        <mat-button-toggle value="all">All</mat-button-toggle>
-                        <mat-button-toggle value="expiring7">≤ 7d</mat-button-toggle>
-                        <mat-button-toggle value="expiring14">≤ 14d</mat-button-toggle>
-                        <mat-button-toggle value="overdue">Overdue</mat-button-toggle>
-                        <mat-button-toggle value="suspended">Suspended</mat-button-toggle>
+                        <mat-button-toggle value="all">{{ 'ADMIN.PLATFORM_DASHBOARD.FILTER_ALL' | transloco }}</mat-button-toggle>
+                        <mat-button-toggle value="expiring7">{{ 'ADMIN.PLATFORM_DASHBOARD.FILTER_7D' | transloco }}</mat-button-toggle>
+                        <mat-button-toggle value="expiring14">{{ 'ADMIN.PLATFORM_DASHBOARD.FILTER_14D' | transloco }}</mat-button-toggle>
+                        <mat-button-toggle value="overdue">{{ 'ADMIN.PLATFORM_DASHBOARD.FILTER_OVERDUE' | transloco }}</mat-button-toggle>
+                        <mat-button-toggle value="suspended">{{ 'ADMIN.PLATFORM_DASHBOARD.FILTER_SUSPENDED' | transloco }}</mat-button-toggle>
                     </mat-button-toggle-group>
                 </div>
                 @if (filteredQueue().length === 0) {
-                    <div class="p-6 text-center text-gray-500 text-sm">Nothing in this filter. Quiet day.</div>
+                    <div class="p-6 text-center text-gray-500 text-sm">{{ 'ADMIN.PLATFORM_DASHBOARD.QUEUE_EMPTY' | transloco }}</div>
                 } @else {
                     <table mat-table [dataSource]="filteredQueue()" class="w-full">
                         <ng-container matColumnDef="name">
-                            <th mat-header-cell *matHeaderCellDef class="pl-5"><span class="text-xs font-medium text-gray-500 uppercase">Tenant</span></th>
+                            <th mat-header-cell *matHeaderCellDef class="pl-5"><span class="text-xs font-medium text-gray-500 uppercase">{{ 'ADMIN.PLATFORM_DASHBOARD.COL_TENANT' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-5">
                                 <a [routerLink]="['/tenant', r.id]" class="text-indigo-600 hover:underline font-medium">{{ r.name }}</a>
                                 <div class="text-xs text-gray-500">{{ r.businessType }}</div>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="plan">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase">Plan</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase">{{ 'ADMIN.PLATFORM_DASHBOARD.COL_PLAN' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">{{ r.planCode || '—' }}</span>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="validUpto">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase">Valid Upto</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase">{{ 'ADMIN.PLATFORM_DASHBOARD.COL_VALID_UPTO' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span [class.text-rose-600]="r.daysUntilExpiry < 0" [class.text-amber-600]="r.daysUntilExpiry >= 0 && r.daysUntilExpiry <= 7" [class.font-semibold]="r.daysUntilExpiry <= 7">
                                     {{ r.validUpto | date:'mediumDate' }}
-                                    <span class="text-xs text-gray-500">({{ r.daysUntilExpiry }}d)</span>
+                                    <span class="text-xs text-gray-500">({{ 'ADMIN.PLATFORM_DASHBOARD.DAYS_SHORT' | transloco:{ days: r.daysUntilExpiry } }})</span>
                                 </span>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="status">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase">Status</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase">{{ 'ADMIN.PLATFORM_DASHBOARD.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
-                                <span *ngIf="!r.isSystemActive" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">Suspended</span>
+                                <span *ngIf="!r.isSystemActive" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">{{ 'ADMIN.PLATFORM_DASHBOARD.STATUS_SUSPENDED' | transloco }}</span>
                                 <span *ngIf="r.isSystemActive" class="text-sm text-gray-600">{{ r.paymentStatus }}</span>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="actions">
-                            <th mat-header-cell *matHeaderCellDef class="pr-5 !text-right"><span class="text-xs font-medium text-gray-500 uppercase">Action</span></th>
+                            <th mat-header-cell *matHeaderCellDef class="pr-5 !text-right"><span class="text-xs font-medium text-gray-500 uppercase">{{ 'ADMIN.PLATFORM_DASHBOARD.COL_ACTION' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-5 !text-right">
                                 <button mat-stroked-button color="primary" (click)="openRecordPayment(r)">
-                                    <mat-icon class="icon-size-4 mr-1">payments</mat-icon>Record Payment
+                                    <mat-icon class="icon-size-4 mr-1">payments</mat-icon>{{ 'ADMIN.PLATFORM_DASHBOARD.RECORD_PAYMENT' | transloco }}
                                 </button>
                             </td>
                         </ng-container>
@@ -141,10 +143,10 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
                 <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
                     <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
                         <mat-icon class="text-emerald-600">payments</mat-icon>
-                        <h3 class="text-lg font-semibold">Recent payments</h3>
+                        <h3 class="text-lg font-semibold">{{ 'ADMIN.PLATFORM_DASHBOARD.RECENT_PAYMENTS' | transloco }}</h3>
                     </div>
                     @if (d.recentPayments.length === 0) {
-                        <div class="p-6 text-center text-gray-500 text-sm">No payments recorded yet.</div>
+                        <div class="p-6 text-center text-gray-500 text-sm">{{ 'ADMIN.PLATFORM_DASHBOARD.NO_PAYMENTS_YET' | transloco }}</div>
                     } @else {
                         <ul class="divide-y divide-gray-200 dark:divide-gray-700">
                             @for (p of d.recentPayments; track p.id) {
@@ -163,11 +165,11 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700">
                     <div class="px-5 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center gap-3">
                         <mat-icon class="text-indigo-600">pie_chart</mat-icon>
-                        <h3 class="text-lg font-semibold">Mix</h3>
+                        <h3 class="text-lg font-semibold">{{ 'ADMIN.PLATFORM_DASHBOARD.MIX_TITLE' | transloco }}</h3>
                     </div>
                     <div class="p-5 space-y-4">
                         <div>
-                            <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">By plan</div>
+                            <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">{{ 'ADMIN.PLATFORM_DASHBOARD.BY_PLAN' | transloco }}</div>
                             <div class="flex flex-wrap gap-2 text-sm">
                                 @for (row of d.planMix; track row.label) {
                                     <span class="inline-flex items-center px-3 py-1 rounded-full bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200">{{ row.label }}: <strong class="ml-1">{{ row.count }}</strong></span>
@@ -175,7 +177,7 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
                             </div>
                         </div>
                         <div>
-                            <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">By vertical</div>
+                            <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">{{ 'ADMIN.PLATFORM_DASHBOARD.BY_VERTICAL' | transloco }}</div>
                             <div class="flex flex-wrap gap-2 text-sm">
                                 @for (row of d.verticalMix; track row.label) {
                                     <span class="inline-flex items-center px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200">{{ row.label }}: <strong class="ml-1">{{ row.count }}</strong></span>
@@ -183,7 +185,7 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
                             </div>
                         </div>
                         <div class="pt-3 border-t border-gray-200 dark:border-gray-700">
-                            <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">Recent signups</div>
+                            <div class="text-xs uppercase tracking-wider text-gray-500 mb-2">{{ 'ADMIN.PLATFORM_DASHBOARD.RECENT_SIGNUPS' | transloco }}</div>
                             <ul class="text-sm space-y-1">
                                 @for (s of d.recentSignups; track s.id) {
                                     <li class="flex justify-between">
@@ -199,7 +201,7 @@ type QueueFilter = 'all' | 'expiring7' | 'expiring14' | 'overdue' | 'suspended';
         } @else if (loading()) {
             <div class="flex items-center gap-3 text-gray-500 mt-8">
                 <mat-icon class="icon-size-5 animate-spin">progress_activity</mat-icon>
-                <span>Loading dashboard…</span>
+                <span>{{ 'ADMIN.PLATFORM_DASHBOARD.LOADING' | transloco }}</span>
             </div>
         } @else if (errorMsg()) {
             <div class="bg-rose-50 dark:bg-rose-900/30 border-l-4 border-rose-500 p-4 text-rose-800 dark:text-rose-200">
@@ -247,7 +249,7 @@ export class AdminDashboardComponent implements OnInit {
             next: d => { this.dash.set(d); this.loading.set(false); },
             error: err => {
                 this.loading.set(false);
-                this.errorMsg.set(err?.error?.exception ?? err?.error?.title ?? 'Failed to load dashboard.');
+                this.errorMsg.set(err?.error?.exception ?? err?.error?.title ?? 'Failed to load dashboard.'); // fallback only — UI uses translated key
             },
         });
     }

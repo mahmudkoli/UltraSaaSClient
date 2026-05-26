@@ -15,6 +15,7 @@ import { TenantInfoService } from 'app/core/auth/tenant-info.service';
 import { PlansService } from 'app/core/billing/billing.service';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
 import { environment } from 'environments/environment';
+import { TranslocoModule } from '@ngneat/transloco';
 
 @Component({
     selector: 'tenant-theme-settings',
@@ -29,6 +30,7 @@ import { environment } from 'environments/environment';
         MatProgressSpinnerModule,
         RouterLink,
         FuseAlertComponent,
+        TranslocoModule,
     ],
 })
 export class TenantThemeSettingsComponent implements OnInit, OnDestroy {

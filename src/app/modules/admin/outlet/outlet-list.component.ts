@@ -12,6 +12,7 @@ import { RouterModule } from '@angular/router';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.types';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 @Component({
     selector: 'app-outlet-list',
@@ -20,6 +21,7 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatSelectModule, MatTableModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -32,35 +34,35 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
                     <mat-icon class="text-white">storefront</mat-icon>
                 </div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Outlets</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Branches / locations selling under this tenant</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'ADMIN.OUTLET.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'ADMIN.OUTLET.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search outlets</mat-label>
-                    <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)" placeholder="Search by code, name, city">
+                    <mat-label>{{ 'ADMIN.OUTLET.LIST.SEARCH_LABEL' | transloco }}</mat-label>
+                    <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)" [placeholder]="'ADMIN.OUTLET.LIST.SEARCH_PLACEHOLDER' | transloco">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Type</mat-label>
+                    <mat-label>{{ 'ADMIN.OUTLET.LIST.TYPE_LABEL' | transloco }}</mat-label>
                     <mat-select [ngModel]="typeFilter()" (ngModelChange)="typeFilter.set($event)">
-                        <mat-option value="all">All Types</mat-option>
-                        <mat-option value="Retail">Retail</mat-option>
-                        <mat-option value="Warehouse">Warehouse</mat-option>
-                        <mat-option value="HQ">HQ</mat-option>
+                        <mat-option value="all">{{ 'ADMIN.OUTLET.LIST.TYPE_ALL' | transloco }}</mat-option>
+                        <mat-option value="Retail">{{ 'ADMIN.OUTLET.LIST.TYPE_RETAIL' | transloco }}</mat-option>
+                        <mat-option value="Warehouse">{{ 'ADMIN.OUTLET.LIST.TYPE_WAREHOUSE' | transloco }}</mat-option>
+                        <mat-option value="HQ">{{ 'ADMIN.OUTLET.LIST.TYPE_HQ' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'ADMIN.OUTLET.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)">
-                        <mat-option value="all">All Status</mat-option>
-                        <mat-option value="Active">Active</mat-option>
-                        <mat-option value="Suspended">Suspended</mat-option>
-                        <mat-option value="Archived">Archived</mat-option>
+                        <mat-option value="all">{{ 'ADMIN.OUTLET.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="Active">{{ 'ADMIN.OUTLET.LIST.STATUS_ACTIVE' | transloco }}</mat-option>
+                        <mat-option value="Suspended">{{ 'ADMIN.OUTLET.LIST.STATUS_SUSPENDED' | transloco }}</mat-option>
+                        <mat-option value="Archived">{{ 'ADMIN.OUTLET.LIST.STATUS_ARCHIVED' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-fab color="primary" routerLink="create" matTooltip="Add new outlet"><mat-icon>add</mat-icon></button>
+                <button mat-fab color="primary" routerLink="create" [matTooltip]="'ADMIN.OUTLET.LIST.ADD_TOOLTIP' | transloco"><mat-icon>add</mat-icon></button>
             </div>
         </div>
 
@@ -69,11 +71,11 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
                 <div class="relative overflow-x-auto">
                     <table mat-table [dataSource]="filtered()" class="w-full">
                         <ng-container matColumnDef="code">
-                            <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Code</span></th>
+                            <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.OUTLET.LIST.COL_CODE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-xs">{{ r.code }}</td>
                         </ng-container>
                         <ng-container matColumnDef="name">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.OUTLET.LIST.COL_NAME' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.name }}</span>
@@ -82,22 +84,22 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="type">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Type</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.OUTLET.LIST.COL_TYPE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="{
                                         'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': r.type === 'Retail',
                                         'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200': r.type === 'Warehouse',
                                         'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200': r.type === 'HQ'
-                                      }">{{ r.type }}</span>
+                                      }">{{ typeLabel(r.type) | transloco }}</span>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="city">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">City</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.OUTLET.LIST.COL_CITY' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.city || '—' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="status">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.OUTLET.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="{
@@ -105,18 +107,18 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
                                         'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': r.status === 'Suspended',
                                         'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': r.status === 'Archived'
                                       }">
-                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ r.status }}
+                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                                 </span>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="actions">
-                            <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                            <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.OUTLET.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" [routerLink]="[r.id]" matTooltip="Edit"><mat-icon class="icon-size-5">edit</mat-icon></button>
-                                    <button *ngIf="r.status === 'Active'" mat-icon-button class="text-amber-600" (click)="suspend(r)" matTooltip="Suspend"><mat-icon class="icon-size-5">pause_circle</mat-icon></button>
-                                    <button *ngIf="r.status !== 'Active'" mat-icon-button class="text-green-600" (click)="reactivate(r)" matTooltip="Reactivate"><mat-icon class="icon-size-5">play_circle</mat-icon></button>
-                                    <button mat-icon-button class="text-red-600" (click)="remove(r)" matTooltip="Delete"><mat-icon class="icon-size-5">delete</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" [routerLink]="[r.id]" [matTooltip]="'ADMIN.OUTLET.LIST.EDIT_TOOLTIP' | transloco"><mat-icon class="icon-size-5">edit</mat-icon></button>
+                                    <button *ngIf="r.status === 'Active'" mat-icon-button class="text-amber-600" (click)="suspend(r)" [matTooltip]="'ADMIN.OUTLET.LIST.SUSPEND_TOOLTIP' | transloco"><mat-icon class="icon-size-5">pause_circle</mat-icon></button>
+                                    <button *ngIf="r.status !== 'Active'" mat-icon-button class="text-green-600" (click)="reactivate(r)" [matTooltip]="'ADMIN.OUTLET.LIST.REACTIVATE_TOOLTIP' | transloco"><mat-icon class="icon-size-5">play_circle</mat-icon></button>
+                                    <button mat-icon-button class="text-red-600" (click)="remove(r)" [matTooltip]="'ADMIN.OUTLET.LIST.DELETE_TOOLTIP' | transloco"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </div>
                             </td>
                         </ng-container>
@@ -127,9 +129,9 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
 
                 <div *ngIf="!loading() && filtered().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">storefront</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No outlets found</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ search() || typeFilter() !== 'all' || statusFilter() !== 'all' ? 'Try adjusting your filters.' : 'Add your first outlet to get started.' }}</p>
-                    <button *ngIf="!search() && typeFilter() === 'all' && statusFilter() === 'all'" mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Outlet</span></button>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'ADMIN.OUTLET.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ (search() || typeFilter() !== 'all' || statusFilter() !== 'all' ? 'ADMIN.OUTLET.LIST.EMPTY_FILTERED' : 'ADMIN.OUTLET.LIST.EMPTY_DEFAULT') | transloco }}</p>
+                    <button *ngIf="!search() && typeFilter() === 'all' && statusFilter() === 'all'" mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>{{ 'ADMIN.OUTLET.LIST.ADD_BUTTON' | transloco }}</span></button>
                 </div>
             </div>
         </div>
@@ -140,6 +142,7 @@ import { OutletDto, OutletStatus, OutletType } from 'app/core/outlets/outlets.ty
 export class OutletListComponent implements OnInit {
     private readonly api = inject(OutletsService);
     private readonly _confirm = inject(FuseConfirmationService);
+    private readonly _transloco = inject(TranslocoService);
     rows = signal<OutletDto[]>([]);
     loading = signal(true);
     search = signal('');
@@ -165,6 +168,18 @@ export class OutletListComponent implements OnInit {
         return s === 'Active' ? 'check_circle' : s === 'Suspended' ? 'pause_circle' : 'archive';
     }
 
+    typeLabel(t: OutletType): string {
+        if (t === 'Retail') return 'ADMIN.OUTLET.LIST.TYPE_RETAIL';
+        if (t === 'Warehouse') return 'ADMIN.OUTLET.LIST.TYPE_WAREHOUSE';
+        return 'ADMIN.OUTLET.LIST.TYPE_HQ';
+    }
+
+    statusLabel(s: OutletStatus): string {
+        if (s === 'Active') return 'ADMIN.OUTLET.LIST.STATUS_ACTIVE';
+        if (s === 'Suspended') return 'ADMIN.OUTLET.LIST.STATUS_SUSPENDED';
+        return 'ADMIN.OUTLET.LIST.STATUS_ARCHIVED';
+    }
+
     ngOnInit(): void { this.load(); }
     load(): void {
         this.loading.set(true);
@@ -181,10 +196,13 @@ export class OutletListComponent implements OnInit {
     }
     remove(r: OutletDto): void {
         this._confirm.open({
-            title: 'Delete outlet',
-            message: `Delete outlet "${r.name}"?`,
+            title: this._transloco.translate('ADMIN.OUTLET.DELETE_TITLE'),
+            message: this._transloco.translate('ADMIN.OUTLET.DELETE_CONFIRM', { name: r.name }),
             icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
-            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+            actions: {
+                confirm: { label: this._transloco.translate('COMMON.DELETE'), color: 'warn' },
+                cancel: { label: this._transloco.translate('COMMON.CANCEL') },
+            },
         }).afterClosed().subscribe(result => {
             if (result !== 'confirmed') return;
             this.api.delete(r.id).subscribe(() => this.load());

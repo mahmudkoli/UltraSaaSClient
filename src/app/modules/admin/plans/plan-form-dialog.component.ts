@@ -9,6 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { PlansService } from 'app/core/billing/billing.service';
 import { PlanDto } from 'app/core/billing/billing.types';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 export type PlanFormDialogData =
     | { mode: 'create' }
@@ -17,49 +18,49 @@ export type PlanFormDialogData =
 @Component({
     selector: 'app-plan-form-dialog',
     standalone: true,
-    imports: [CommonModule, FormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSlideToggleModule],
+    imports: [CommonModule, FormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule, MatSlideToggleModule, TranslocoModule],
     template: `
 <div class="p-6 min-w-[440px] max-w-[520px]">
     <div class="flex items-center gap-3 mb-4">
         <div class="w-10 h-10 rounded-lg bg-indigo-100 dark:bg-indigo-900/40 flex items-center justify-center">
             <mat-icon class="text-indigo-600">{{ isEdit ? 'edit' : 'add' }}</mat-icon>
         </div>
-        <h2 class="text-lg font-semibold">{{ isEdit ? 'Edit plan' : 'New plan' }}</h2>
+        <h2 class="text-lg font-semibold">{{ (isEdit ? 'ADMIN.PLAN.FORM.TITLE_EDIT' : 'ADMIN.PLAN.FORM.TITLE_NEW') | transloco }}</h2>
     </div>
 
     <div class="grid grid-cols-2 gap-3">
         <mat-form-field appearance="outline" class="col-span-2">
-            <mat-label>Code (immutable post-creation)</mat-label>
-            <input matInput [(ngModel)]="code" [disabled]="isEdit" placeholder="e.g. starter">
+            <mat-label>{{ 'ADMIN.PLAN.FORM.CODE_LABEL' | transloco }}</mat-label>
+            <input matInput [(ngModel)]="code" [disabled]="isEdit" [placeholder]="'ADMIN.PLAN.FORM.CODE_PLACEHOLDER' | transloco">
         </mat-form-field>
         <mat-form-field appearance="outline" class="col-span-2">
-            <mat-label>Name</mat-label>
-            <input matInput [(ngModel)]="name" placeholder="e.g. Starter">
+            <mat-label>{{ 'ADMIN.PLAN.FORM.NAME_LABEL' | transloco }}</mat-label>
+            <input matInput [(ngModel)]="name" [placeholder]="'ADMIN.PLAN.FORM.NAME_PLACEHOLDER' | transloco">
         </mat-form-field>
         <mat-form-field appearance="outline">
-            <mat-label>Monthly fee (BDT)</mat-label>
+            <mat-label>{{ 'ADMIN.PLAN.FORM.MONTHLY_FEE_LABEL' | transloco }}</mat-label>
             <input matInput type="number" min="0" step="1" [(ngModel)]="monthlyFeeBDT">
         </mat-form-field>
         <mat-form-field appearance="outline">
-            <mat-label>Trial days</mat-label>
+            <mat-label>{{ 'ADMIN.PLAN.FORM.TRIAL_DAYS_LABEL' | transloco }}</mat-label>
             <input matInput type="number" min="0" step="1" [(ngModel)]="trialDays" [disabled]="isEdit">
         </mat-form-field>
         <mat-form-field appearance="outline">
-            <mat-label>Max outlets</mat-label>
+            <mat-label>{{ 'ADMIN.PLAN.FORM.MAX_OUTLETS_LABEL' | transloco }}</mat-label>
             <input matInput type="number" min="1" step="1" [(ngModel)]="maxOutlets">
         </mat-form-field>
         <mat-form-field appearance="outline">
-            <mat-label>Max users</mat-label>
+            <mat-label>{{ 'ADMIN.PLAN.FORM.MAX_USERS_LABEL' | transloco }}</mat-label>
             <input matInput type="number" min="1" step="1" [(ngModel)]="maxUsers">
         </mat-form-field>
         <mat-form-field appearance="outline" class="col-span-2">
-            <mat-label>Feature flags (JSON array)</mat-label>
-            <input matInput [(ngModel)]="featureFlagsJson" placeholder='["CUSTOM_BRAND"]'>
+            <mat-label>{{ 'ADMIN.PLAN.FORM.FEATURE_FLAGS_LABEL' | transloco }}</mat-label>
+            <input matInput [(ngModel)]="featureFlagsJson" [placeholder]="'ADMIN.PLAN.FORM.FEATURE_FLAGS_PLACEHOLDER' | transloco">
         </mat-form-field>
         @if (isEdit) {
             <div class="col-span-2 flex items-center gap-3 pt-1">
-                <mat-slide-toggle [(ngModel)]="isActive">Active</mat-slide-toggle>
-                <span class="text-xs text-gray-500">Inactive plans are hidden from tenant pickers but existing assignments remain valid.</span>
+                <mat-slide-toggle [(ngModel)]="isActive">{{ 'ADMIN.PLAN.FORM.ACTIVE_LABEL' | transloco }}</mat-slide-toggle>
+                <span class="text-xs text-gray-500">{{ 'ADMIN.PLAN.FORM.ACTIVE_HINT' | transloco }}</span>
             </div>
         }
     </div>
@@ -69,10 +70,10 @@ export type PlanFormDialogData =
     }
 
     <div class="flex justify-end gap-2 mt-4">
-        <button mat-button (click)="ref.close()" [disabled]="busy()">Cancel</button>
+        <button mat-button (click)="ref.close()" [disabled]="busy()">{{ 'COMMON.CANCEL' | transloco }}</button>
         <button mat-flat-button color="primary" (click)="submit()" [disabled]="busy() || !valid()">
             <mat-icon class="icon-size-5 mr-1">save</mat-icon>
-            <span>{{ busy() ? 'Saving…' : 'Save' }}</span>
+            <span>{{ (busy() ? 'ADMIN.PLAN.FORM.SAVING' : 'COMMON.SAVE') | transloco }}</span>
         </button>
     </div>
 </div>
@@ -80,6 +81,7 @@ export type PlanFormDialogData =
 })
 export class PlanFormDialogComponent implements OnInit {
     private readonly api = inject(PlansService);
+    private readonly _transloco = inject(TranslocoService);
 
     code = '';
     name = '';
@@ -151,7 +153,7 @@ export class PlanFormDialogComponent implements OnInit {
             next: () => { this.busy.set(false); this.ref.close(true); },
             error: err => {
                 this.busy.set(false);
-                this.errorMsg.set(err?.error?.exception ?? err?.error?.title ?? 'Save failed.');
+                this.errorMsg.set(err?.error?.exception ?? err?.error?.title ?? this._transloco.translate('ADMIN.PLAN.FORM.ERROR_DEFAULT'));
             },
         });
     }

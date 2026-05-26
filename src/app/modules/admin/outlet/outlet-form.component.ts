@@ -13,6 +13,7 @@ import { OutletType } from 'app/core/outlets/outlets.types';
 import { BrandingProfilesService } from 'app/core/branding/branding.service';
 import { BrandingProfileDto, PAPER_FORMAT_LABELS } from 'app/core/branding/branding.types';
 import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 @Component({
     selector: 'app-outlet-form',
@@ -20,6 +21,7 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
     imports: [
         CommonModule, ReactiveFormsModule, RouterModule,
         MatFormFieldModule, MatInputModule, MatSelectModule, MatButtonModule, MatIconModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -29,12 +31,12 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg"><mat-icon class="text-white">{{ id ? 'edit' : 'storefront' }}</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ id ? 'Edit Outlet' : 'New Outlet' }}</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ id ? 'Update outlet details' : 'Add a new outlet / branch' }}</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ (id ? 'ADMIN.OUTLET.FORM.TITLE_EDIT' : 'ADMIN.OUTLET.FORM.TITLE_NEW') | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ (id ? 'ADMIN.OUTLET.FORM.SUBTITLE_EDIT' : 'ADMIN.OUTLET.FORM.SUBTITLE_NEW') | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-                <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/outlet"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Cancel</span></button>
+                <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/outlet"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'COMMON.CANCEL' | transloco }}</span></button>
             </div>
         </div>
         <div class="flex-auto p-4 sm:p-6">
@@ -44,46 +46,46 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
                     <div class="mb-6">
                         <div class="flex items-center space-x-3 mb-4">
                             <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center"><mat-icon class="text-blue-600 dark:text-blue-400 text-lg">store</mat-icon></div>
-                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Basic Information</h3>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.OUTLET.FORM.BASIC_SECTION' | transloco }}</h3>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <mat-form-field class="w-full" appearance="outline"><mat-label>Code</mat-label><input matInput formControlName="code" placeholder="e.g. DHN-01"><mat-error *ngIf="form.get('code')?.hasError('required')">Code is required</mat-error></mat-form-field>
-                            <mat-form-field class="w-full" appearance="outline"><mat-label>Name</mat-label><input matInput formControlName="name"><mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error></mat-form-field>
+                            <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.CODE_LABEL' | transloco }}</mat-label><input matInput formControlName="code" [placeholder]="'ADMIN.OUTLET.FORM.CODE_PLACEHOLDER' | transloco"><mat-error *ngIf="form.get('code')?.hasError('required')">{{ 'ADMIN.OUTLET.FORM.CODE_REQUIRED' | transloco }}</mat-error></mat-form-field>
+                            <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.NAME_LABEL' | transloco }}</mat-label><input matInput formControlName="name"><mat-error *ngIf="form.get('name')?.hasError('required')">{{ 'ADMIN.OUTLET.FORM.NAME_REQUIRED' | transloco }}</mat-error></mat-form-field>
                             <mat-form-field class="w-full" appearance="outline">
-                                <mat-label>Type</mat-label>
+                                <mat-label>{{ 'ADMIN.OUTLET.FORM.TYPE_LABEL' | transloco }}</mat-label>
                                 <mat-select formControlName="type">
-                                    <mat-option value="Retail">Retail</mat-option>
-                                    <mat-option value="Warehouse">Warehouse</mat-option>
-                                    <mat-option value="HQ">HQ</mat-option>
+                                    <mat-option value="Retail">{{ 'ADMIN.OUTLET.LIST.TYPE_RETAIL' | transloco }}</mat-option>
+                                    <mat-option value="Warehouse">{{ 'ADMIN.OUTLET.LIST.TYPE_WAREHOUSE' | transloco }}</mat-option>
+                                    <mat-option value="HQ">{{ 'ADMIN.OUTLET.LIST.TYPE_HQ' | transloco }}</mat-option>
                                 </mat-select>
                             </mat-form-field>
-                            <mat-form-field *ngIf="!id" class="w-full" appearance="outline"><mat-label>Tenant ID</mat-label><input matInput formControlName="tenantId"></mat-form-field>
+                            <mat-form-field *ngIf="!id" class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.TENANT_ID_LABEL' | transloco }}</mat-label><input matInput formControlName="tenantId"></mat-form-field>
                         </div>
                     </div>
 
                     <div class="mb-6">
                         <div class="flex items-center space-x-3 mb-4">
                             <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center"><mat-icon class="text-emerald-600 dark:text-emerald-400 text-lg">contact_mail</mat-icon></div>
-                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Contact</h3>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.OUTLET.FORM.CONTACT_SECTION' | transloco }}</h3>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <mat-form-field class="w-full" appearance="outline"><mat-label>Contact Email</mat-label><input matInput type="email" formControlName="contactEmail"></mat-form-field>
-                            <mat-form-field class="w-full" appearance="outline"><mat-label>Contact Phone</mat-label><input matInput formControlName="contactPhone"></mat-form-field>
+                            <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.CONTACT_EMAIL_LABEL' | transloco }}</mat-label><input matInput type="email" formControlName="contactEmail"></mat-form-field>
+                            <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.CONTACT_PHONE_LABEL' | transloco }}</mat-label><input matInput formControlName="contactPhone"></mat-form-field>
                         </div>
                     </div>
 
                     <div class="mb-6">
                         <div class="flex items-center space-x-3 mb-4">
                             <div class="w-8 h-8 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center"><mat-icon class="text-amber-600 dark:text-amber-400 text-lg">place</mat-icon></div>
-                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Address</h3>
+                            <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.OUTLET.FORM.ADDRESS_SECTION' | transloco }}</h3>
                         </div>
                         <div class="grid grid-cols-1 gap-4">
-                            <mat-form-field class="w-full" appearance="outline"><mat-label>Address</mat-label><input matInput formControlName="addressLine"></mat-form-field>
+                            <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.ADDRESS_LABEL' | transloco }}</mat-label><input matInput formControlName="addressLine"></mat-form-field>
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                                <mat-form-field class="w-full" appearance="outline"><mat-label>City</mat-label><input matInput formControlName="city"></mat-form-field>
-                                <mat-form-field class="w-full" appearance="outline"><mat-label>State</mat-label><input matInput formControlName="state"></mat-form-field>
-                                <mat-form-field class="w-full" appearance="outline"><mat-label>Country</mat-label><input matInput formControlName="country" placeholder="BD / IN / US"></mat-form-field>
-                                <mat-form-field class="w-full" appearance="outline"><mat-label>Postal Code</mat-label><input matInput formControlName="postalCode"></mat-form-field>
+                                <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.CITY_LABEL' | transloco }}</mat-label><input matInput formControlName="city"></mat-form-field>
+                                <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.STATE_LABEL' | transloco }}</mat-label><input matInput formControlName="state"></mat-form-field>
+                                <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.COUNTRY_LABEL' | transloco }}</mat-label><input matInput formControlName="country" [placeholder]="'ADMIN.OUTLET.FORM.COUNTRY_PLACEHOLDER' | transloco"></mat-form-field>
+                                <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.POSTAL_CODE_LABEL' | transloco }}</mat-label><input matInput formControlName="postalCode"></mat-form-field>
                             </div>
                         </div>
                     </div>
@@ -92,22 +94,22 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
                         <div class="mb-6">
                             <div class="flex items-center space-x-3 mb-4">
                                 <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center"><mat-icon class="text-purple-600 dark:text-purple-400 text-lg">palette</mat-icon></div>
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Branding</h3>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.OUTLET.FORM.BRANDING_SECTION' | transloco }}</h3>
                             </div>
-                            <p class="text-xs text-gray-500 mb-3">The logo and tax ID print on every receipt and invoice from this outlet.</p>
+                            <p class="text-xs text-gray-500 mb-3">{{ 'ADMIN.OUTLET.FORM.BRANDING_HINT' | transloco }}</p>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                <mat-form-field class="w-full" appearance="outline"><mat-label>Tax / VAT / GST Number</mat-label><input matInput formControlName="taxId" placeholder="e.g. BIN 123-456-789"></mat-form-field>
-                                <mat-form-field class="w-full" appearance="outline"><mat-label>Brand Color (hex)</mat-label><input matInput formControlName="primaryColor" placeholder="#4F46E5"></mat-form-field>
+                                <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.TAX_ID_LABEL' | transloco }}</mat-label><input matInput formControlName="taxId" [placeholder]="'ADMIN.OUTLET.FORM.TAX_ID_PLACEHOLDER' | transloco"></mat-form-field>
+                                <mat-form-field class="w-full" appearance="outline"><mat-label>{{ 'ADMIN.OUTLET.FORM.PRIMARY_COLOR_LABEL' | transloco }}</mat-label><input matInput formControlName="primaryColor" placeholder="#4F46E5"></mat-form-field>
                             </div>
                             <mat-form-field class="w-full" appearance="outline">
-                                <mat-label>Default branding profile</mat-label>
+                                <mat-label>{{ 'ADMIN.OUTLET.FORM.DEFAULT_BRANDING_LABEL' | transloco }}</mat-label>
                                 <mat-select formControlName="defaultBrandingProfileId">
-                                    <mat-option [value]="null">— Use outlet branding fields above —</mat-option>
+                                    <mat-option [value]="null">{{ 'ADMIN.OUTLET.FORM.DEFAULT_BRANDING_NONE' | transloco }}</mat-option>
                                     @for (p of brandingProfiles(); track p.id) {
                                         <mat-option [value]="p.id">{{ p.name }} · {{ paperLabels[p.paperFormat] }}</mat-option>
                                     }
                                 </mat-select>
-                                <mat-hint>Drives the receipt look at this outlet. Per-sale override is still possible at POS.</mat-hint>
+                                <mat-hint>{{ 'ADMIN.OUTLET.FORM.DEFAULT_BRANDING_HINT' | transloco }}</mat-hint>
                             </mat-form-field>
                             <div class="mt-4 flex items-start gap-4">
                                 <div class="w-32 h-32 rounded-lg border-2 border-dashed flex items-center justify-center overflow-hidden"
@@ -129,29 +131,29 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
                                 <div class="flex flex-col gap-2 flex-1">
                                     <input #fileInput type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" hidden (change)="onLogoPicked($event)">
                                     @if (pendingFile()) {
-                                        <p class="text-xs text-emerald-700 dark:text-emerald-400 font-medium">Preview — not yet uploaded</p>
+                                        <p class="text-xs text-emerald-700 dark:text-emerald-400 font-medium">{{ 'ADMIN.OUTLET.FORM.LOGO_PREVIEW_NOT_UPLOADED' | transloco }}</p>
                                         <p class="text-xs text-gray-600 dark:text-gray-400 truncate" [title]="pendingFile()!.name">{{ pendingFile()!.name }} · {{ formatFileSize(pendingFile()!.size) }}</p>
                                         <div class="flex gap-2 mt-1">
                                             <button type="button" mat-flat-button color="primary" (click)="confirmUpload()" [disabled]="logoUploading()">
                                                 <mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon>
-                                                <span>{{ logoUploading() ? 'Uploading…' : 'Upload' }}</span>
+                                                <span>{{ (logoUploading() ? 'ADMIN.OUTLET.FORM.LOGO_UPLOADING' : 'ADMIN.OUTLET.FORM.LOGO_UPLOAD') | transloco }}</span>
                                             </button>
                                             <button type="button" mat-stroked-button (click)="cancelPendingUpload()" [disabled]="logoUploading()">
-                                                <mat-icon class="icon-size-5 mr-1">close</mat-icon><span>Cancel</span>
+                                                <mat-icon class="icon-size-5 mr-1">close</mat-icon><span>{{ 'COMMON.CANCEL' | transloco }}</span>
                                             </button>
                                         </div>
                                     } @else {
                                         <button type="button" mat-stroked-button color="primary" (click)="fileInput.click()" [disabled]="logoUploading()">
                                             <mat-icon class="icon-size-5 mr-1">upload</mat-icon>
-                                            <span>{{ hasLogo() ? 'Replace Logo' : 'Upload Logo' }}</span>
+                                            <span>{{ (hasLogo() ? 'ADMIN.OUTLET.FORM.LOGO_REPLACE' : 'ADMIN.OUTLET.FORM.LOGO_UPLOAD_NEW') | transloco }}</span>
                                         </button>
                                         @if (hasLogo()) {
                                             <button type="button" mat-stroked-button color="warn" (click)="removeLogo()" [disabled]="logoUploading()">
-                                                <mat-icon class="icon-size-5 mr-1">delete</mat-icon><span>Remove Logo</span>
+                                                <mat-icon class="icon-size-5 mr-1">delete</mat-icon><span>{{ 'ADMIN.OUTLET.FORM.LOGO_REMOVE' | transloco }}</span>
                                             </button>
                                         }
                                     }
-                                    <p class="text-xs text-gray-500 mt-1">PNG / JPG / WebP / SVG · max 1 MB · square works best</p>
+                                    <p class="text-xs text-gray-500 mt-1">{{ 'ADMIN.OUTLET.FORM.LOGO_HINT' | transloco }}</p>
                                     @if (logoError()) {
                                         <p class="text-xs text-rose-600">{{ logoError() }}</p>
                                     }
@@ -161,8 +163,8 @@ import { DomSanitizer, SafeUrl } from '@angular/platform-browser';
                     }
 
                     <div class="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <button mat-button type="button" routerLink="/outlet">Cancel</button>
-                        <button mat-flat-button color="primary" type="submit" class="h-12 px-6 rounded-lg shadow-lg" [disabled]="form.invalid || saving"><mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? 'Saving...' : 'Save' }}</span></button>
+                        <button mat-button type="button" routerLink="/outlet">{{ 'COMMON.CANCEL' | transloco }}</button>
+                        <button mat-flat-button color="primary" type="submit" class="h-12 px-6 rounded-lg shadow-lg" [disabled]="form.invalid || saving"><mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ (saving ? 'ADMIN.OUTLET.FORM.SAVING' : 'COMMON.SAVE') | transloco }}</span></button>
                     </div>
                 </form>
             </div>
@@ -179,6 +181,7 @@ export class OutletFormComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly snack = inject(MatSnackBar);
     private readonly sanitizer = inject(DomSanitizer);
+    private readonly _transloco = inject(TranslocoService);
 
     id: string | null = null;
     saving = false;
@@ -244,7 +247,7 @@ export class OutletFormComponent implements OnInit {
         input.value = '';
         if (!file || !this.id) return;
         if (file.size > 1_048_576) {
-            this.logoError.set('File too large. Max 1 MB.');
+            this.logoError.set(this._transloco.translate('ADMIN.OUTLET.FORM.LOGO_TOO_LARGE'));
             return;
         }
         this.logoError.set(null);
@@ -262,12 +265,13 @@ export class OutletFormComponent implements OnInit {
                 this.hasLogo.set(true);
                 this.clearPendingFile();
                 this.refreshLogoPreview();
-                this.snack.open('Logo uploaded', 'OK', { duration: 3000 });
+                this.snack.open(this._transloco.translate('ADMIN.OUTLET.FORM.LOGO_UPLOADED_TOAST'), this._transloco.translate('COMMON.YES'), { duration: 3000 });
             },
             error: err => {
                 this.logoUploading.set(false);
-                const msg = err?.error?.exception ?? err?.error ?? err?.message ?? 'Upload failed';
-                this.logoError.set(typeof msg === 'string' ? msg : 'Upload failed');
+                const fallback = this._transloco.translate('ADMIN.OUTLET.FORM.LOGO_UPLOAD_FAILED');
+                const msg = err?.error?.exception ?? err?.error ?? err?.message ?? fallback;
+                this.logoError.set(typeof msg === 'string' ? msg : fallback);
             },
         });
     }
@@ -306,11 +310,12 @@ export class OutletFormComponent implements OnInit {
                 this.hasLogo.set(false);
                 this.logoPreview.set(null);
                 this.logoError.set(null);
-                this.snack.open('Logo removed', 'OK', { duration: 3000 });
+                this.snack.open(this._transloco.translate('ADMIN.OUTLET.FORM.LOGO_REMOVED_TOAST'), this._transloco.translate('COMMON.YES'), { duration: 3000 });
             },
             error: err => {
-                const msg = err?.error?.exception ?? err?.error ?? err?.message ?? 'Delete failed';
-                this.logoError.set(typeof msg === 'string' ? msg : 'Delete failed');
+                const fallback = this._transloco.translate('ADMIN.OUTLET.FORM.LOGO_DELETE_FAILED');
+                const msg = err?.error?.exception ?? err?.error ?? err?.message ?? fallback;
+                this.logoError.set(typeof msg === 'string' ? msg : fallback);
             },
         });
     }

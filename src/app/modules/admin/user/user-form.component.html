@@ -16,7 +16,7 @@
                     {{ getPageTitle() }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {{ isEditMode ? 'Update user information' : 'Add a new user to the system' }}
+                    {{ (isEditMode ? 'ADMIN.USER.FORM.SUBTITLE_EDIT' : 'ADMIN.USER.FORM.SUBTITLE_NEW') | transloco }}
                 </p>
             </div>
         </div>
@@ -26,7 +26,7 @@
                 class="w-full sm:w-auto h-12 px-6 rounded-lg border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
                 (click)="cancel()">
                 <mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon>
-                <span>Cancel</span>
+                <span>{{ 'COMMON.CANCEL' | transloco }}</span>
             </button>
         </div>
     </div>
@@ -54,50 +54,50 @@
                                 <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center">
                                     <mat-icon class="text-blue-600 dark:text-blue-400 text-lg">person</mat-icon>
                                 </div>
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Basic Information</h3>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.USER.FORM.BASIC_SECTION' | transloco }}</h3>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>First Name</mat-label>
-                                    <input matInput formControlName="firstName" placeholder="Enter first name">
+                                    <mat-label>{{ 'ADMIN.USER.FORM.FIRST_NAME_LABEL' | transloco }}</mat-label>
+                                    <input matInput formControlName="firstName" [placeholder]="'ADMIN.USER.FORM.FIRST_NAME_PLACEHOLDER' | transloco">
                                     <mat-error *ngIf="userForm.get('firstName')?.hasError('required')">
-                                        First name is required
+                                        {{ 'ADMIN.USER.FORM.FIRST_NAME_REQUIRED' | transloco }}
                                     </mat-error>
                                     <mat-error *ngIf="userForm.get('firstName')?.hasError('minlength')">
-                                        First name must be at least 2 characters
+                                        {{ 'ADMIN.USER.FORM.FIRST_NAME_MIN' | transloco }}
                                     </mat-error>
                                 </mat-form-field>
 
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Last Name</mat-label>
-                                    <input matInput formControlName="lastName" placeholder="Enter last name">
+                                    <mat-label>{{ 'ADMIN.USER.FORM.LAST_NAME_LABEL' | transloco }}</mat-label>
+                                    <input matInput formControlName="lastName" [placeholder]="'ADMIN.USER.FORM.LAST_NAME_PLACEHOLDER' | transloco">
                                     <mat-error *ngIf="userForm.get('lastName')?.hasError('required')">
-                                        Last name is required
+                                        {{ 'ADMIN.USER.FORM.LAST_NAME_REQUIRED' | transloco }}
                                     </mat-error>
                                     <mat-error *ngIf="userForm.get('lastName')?.hasError('minlength')">
-                                        Last name must be at least 2 characters
+                                        {{ 'ADMIN.USER.FORM.LAST_NAME_MIN' | transloco }}
                                     </mat-error>
                                 </mat-form-field>
 
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Email</mat-label>
-                                    <input matInput formControlName="email" type="email" placeholder="Enter email address">
+                                    <mat-label>{{ 'ADMIN.USER.FORM.EMAIL_LABEL' | transloco }}</mat-label>
+                                    <input matInput formControlName="email" type="email" [placeholder]="'ADMIN.USER.FORM.EMAIL_PLACEHOLDER' | transloco">
                                     <mat-error *ngIf="userForm.get('email')?.hasError('required')">
-                                        Email is required
+                                        {{ 'ADMIN.USER.FORM.EMAIL_REQUIRED' | transloco }}
                                     </mat-error>
                                     <mat-error *ngIf="userForm.get('email')?.hasError('email')">
-                                        Please enter a valid email address
+                                        {{ 'ADMIN.USER.FORM.EMAIL_INVALID' | transloco }}
                                     </mat-error>
                                 </mat-form-field>
 
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Username</mat-label>
-                                    <input matInput formControlName="userName" placeholder="Enter username">
+                                    <mat-label>{{ 'ADMIN.USER.FORM.USERNAME_LABEL' | transloco }}</mat-label>
+                                    <input matInput formControlName="userName" [placeholder]="'ADMIN.USER.FORM.USERNAME_PLACEHOLDER' | transloco">
                                     <mat-error *ngIf="userForm.get('userName')?.hasError('required')">
-                                        Username is required
+                                        {{ 'ADMIN.USER.FORM.USERNAME_REQUIRED' | transloco }}
                                     </mat-error>
                                     <mat-error *ngIf="userForm.get('userName')?.hasError('minlength')">
-                                        Username must be at least 3 characters
+                                        {{ 'ADMIN.USER.FORM.USERNAME_MIN' | transloco }}
                                     </mat-error>
                                 </mat-form-field>
                             </div>
@@ -109,30 +109,30 @@
                                 <div class="w-8 h-8 bg-green-100 dark:bg-green-900 rounded-lg flex items-center justify-center">
                                     <mat-icon class="text-green-600 dark:text-green-400 text-lg">lock</mat-icon>
                                 </div>
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Password</h3>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.USER.FORM.PASSWORD_SECTION' | transloco }}</h3>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Password</mat-label>
-                                    <input matInput formControlName="password" type="password" placeholder="Enter password">
+                                    <mat-label>{{ 'ADMIN.USER.FORM.PASSWORD_LABEL' | transloco }}</mat-label>
+                                    <input matInput formControlName="password" type="password" [placeholder]="'ADMIN.USER.FORM.PASSWORD_PLACEHOLDER' | transloco">
                                     <mat-error *ngIf="userForm.get('password')?.hasError('required')">
-                                        Password is required
+                                        {{ 'ADMIN.USER.FORM.PASSWORD_REQUIRED' | transloco }}
                                     </mat-error>
                                     <mat-error *ngIf="userForm.get('password')?.hasError('minlength')">
-                                        Password must be at least 6 characters
+                                        {{ 'ADMIN.USER.FORM.PASSWORD_MIN' | transloco }}
                                     </mat-error>
                                 </mat-form-field>
 
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Confirm Password</mat-label>
-                                    <input matInput formControlName="confirmPassword" type="password" placeholder="Confirm password">
+                                    <mat-label>{{ 'ADMIN.USER.FORM.CONFIRM_PASSWORD_LABEL' | transloco }}</mat-label>
+                                    <input matInput formControlName="confirmPassword" type="password" [placeholder]="'ADMIN.USER.FORM.CONFIRM_PASSWORD_PLACEHOLDER' | transloco">
                                     <mat-error *ngIf="userForm.get('confirmPassword')?.hasError('required')">
-                                        Confirm password is required
+                                        {{ 'ADMIN.USER.FORM.CONFIRM_PASSWORD_REQUIRED' | transloco }}
                                     </mat-error>
                                 </mat-form-field>
                             </div>
                             <div *ngIf="userForm.hasError('passwordMismatch')" class="text-red-600 text-sm mt-2">
-                                Passwords do not match
+                                {{ 'ADMIN.USER.FORM.PASSWORD_MISMATCH' | transloco }}
                             </div>
                         </div>
 
@@ -142,14 +142,14 @@
                                 <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center">
                                     <mat-icon class="text-violet-600 dark:text-violet-400 text-lg">manage_accounts</mat-icon>
                                 </div>
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Initial Role</h3>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.USER.FORM.ROLE_SECTION' | transloco }}</h3>
                             </div>
                             <mat-form-field class="w-full sm:w-1/2" appearance="outline">
-                                <mat-label>Role</mat-label>
+                                <mat-label>{{ 'ADMIN.USER.FORM.ROLE_LABEL' | transloco }}</mat-label>
                                 <mat-select formControlName="role">
                                     <mat-option *ngFor="let r of availableRoles" [value]="r.name">{{ r.name }}<span class="text-xs text-gray-500" *ngIf="r.description"> — {{ r.description }}</span></mat-option>
                                 </mat-select>
-                                <mat-hint>You can change roles later via the Manage Roles dialog.</mat-hint>
+                                <mat-hint>{{ 'ADMIN.USER.FORM.ROLE_HINT' | transloco }}</mat-hint>
                             </mat-form-field>
                         </div>
 
@@ -159,32 +159,32 @@
                                 <div class="w-8 h-8 bg-purple-100 dark:bg-purple-900 rounded-lg flex items-center justify-center">
                                     <mat-icon class="text-purple-600 dark:text-purple-400 text-lg">info</mat-icon>
                                 </div>
-                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">Additional Information</h3>
+                                <h3 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.USER.FORM.ADDITIONAL_SECTION' | transloco }}</h3>
                             </div>
                             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Phone Number</mat-label>
-                                    <input matInput formControlName="phoneNumber" placeholder="Enter phone number">
+                                    <mat-label>{{ 'ADMIN.USER.FORM.PHONE_LABEL' | transloco }}</mat-label>
+                                    <input matInput formControlName="phoneNumber" [placeholder]="'ADMIN.USER.FORM.PHONE_PLACEHOLDER' | transloco">
                                 </mat-form-field>
 
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Gender</mat-label>
+                                    <mat-label>{{ 'ADMIN.USER.FORM.GENDER_LABEL' | transloco }}</mat-label>
                                     <mat-select formControlName="gender">
-                                        <mat-option value="">Select gender</mat-option>
-                                        <mat-option value="Male">Male</mat-option>
-                                        <mat-option value="Female">Female</mat-option>
-                                        <mat-option value="Other">Other</mat-option>
+                                        <mat-option value="">{{ 'ADMIN.USER.FORM.GENDER_SELECT' | transloco }}</mat-option>
+                                        <mat-option value="Male">{{ 'ADMIN.USER.FORM.GENDER_MALE' | transloco }}</mat-option>
+                                        <mat-option value="Female">{{ 'ADMIN.USER.FORM.GENDER_FEMALE' | transloco }}</mat-option>
+                                        <mat-option value="Other">{{ 'ADMIN.USER.FORM.GENDER_OTHER' | transloco }}</mat-option>
                                     </mat-select>
                                 </mat-form-field>
 
                                 <mat-form-field class="w-full sm:col-span-2" appearance="outline">
-                                    <mat-label>Address</mat-label>
-                                    <textarea matInput formControlName="address" rows="3" placeholder="Enter address"></textarea>
+                                    <mat-label>{{ 'ADMIN.USER.FORM.ADDRESS_LABEL' | transloco }}</mat-label>
+                                    <textarea matInput formControlName="address" rows="3" [placeholder]="'ADMIN.USER.FORM.ADDRESS_PLACEHOLDER' | transloco"></textarea>
                                 </mat-form-field>
 
                                 <mat-form-field class="w-full" appearance="outline">
-                                    <mat-label>Date of Birth</mat-label>
-                                    <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth" placeholder="Choose date of birth">
+                                    <mat-label>{{ 'ADMIN.USER.FORM.DOB_LABEL' | transloco }}</mat-label>
+                                    <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth" [placeholder]="'ADMIN.USER.FORM.DOB_PLACEHOLDER' | transloco">
                                     <mat-datepicker-toggle matSuffix [for]="dobPicker"></mat-datepicker-toggle>
                                     <mat-datepicker #dobPicker></mat-datepicker>
                                 </mat-form-field>
@@ -199,7 +199,7 @@
                                 class="w-full sm:w-auto h-12 px-6 rounded-lg border-gray-300 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200"
                                 (click)="cancel()">
                                 <mat-icon class="icon-size-5 mr-2">close</mat-icon>
-                                <span>Cancel</span>
+                                <span>{{ 'COMMON.CANCEL' | transloco }}</span>
                             </button>
                             <button
                                 type="submit"

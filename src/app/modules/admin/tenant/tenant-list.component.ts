@@ -21,7 +21,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { MatDialog } from '@angular/material/dialog';
 import { FuseNavigationService } from '@fuse/components/navigation';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
-import { TranslocoModule } from '@ngneat/transloco';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { TenantDto } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
@@ -96,6 +96,7 @@ export class TenantListComponent implements OnInit {
         private _router: Router,
         private _fuseConfirmationService: FuseConfirmationService,
         private _dialog: MatDialog,
+        private _transloco: TranslocoService,
     ) {}
 
     ngOnInit(): void {
@@ -109,7 +110,7 @@ export class TenantListComponent implements OnInit {
 
     /** Resolve a tenant's plan name via the cached PlansService dictionary. */
     planNameFor(tenant: TenantDto): string {
-        if (!tenant.planId) return 'Not set';
+        if (!tenant.planId) return this._transloco.translate('ADMIN.TENANT.LIST.PLAN_NOT_SET');
         return this.plansById.get(tenant.planId)?.name ?? '—';
     }
 
@@ -182,13 +183,9 @@ export class TenantListComponent implements OnInit {
                 console.error('Error loading tenants:', error);
                 this.loading = false;
                 this._fuseConfirmationService.open({
-                    title: 'Error',
-                    message: 'Failed to load tenants. Please refresh the page.',
-                    actions: {
-                        confirm: {
-                            label: 'OK'
-                        }
-                    }
+                    title: this._transloco.translate('COMMON.LOADING'),
+                    message: this._transloco.translate('ADMIN.TENANT.LIST.ERROR_LOAD'),
+                    actions: { confirm: { label: this._transloco.translate('COMMON.YES') } }
                 });
             }
         });
@@ -212,31 +209,21 @@ export class TenantListComponent implements OnInit {
 
     activateTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
-            title: 'Activate Tenant',
-            message: `Are you sure you want to activate tenant "${tenant.systemName}"?`,
-            actions: {
-                confirm: {
-                    label: 'Activate'
-                }
-            }
+            title: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_ACTIVATE_TITLE'),
+            message: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_ACTIVATE_MESSAGE', { name: tenant.systemName }),
+            actions: { confirm: { label: this._transloco.translate('ADMIN.TENANT.LIST.ACTIVATE_LABEL') } }
         });
 
         confirmation.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
                 this._tenantsService.activate(tenant.id).subscribe({
-                    next: () => {
-                        this.loadTenants();
-                    },
+                    next: () => { this.loadTenants(); },
                     error: (error) => {
                         console.error('Error activating tenant:', error);
                         this._fuseConfirmationService.open({
-                            title: 'Error',
-                            message: 'Failed to activate tenant. Please try again.',
-                            actions: {
-                                confirm: {
-                                    label: 'OK'
-                                }
-                            }
+                            title: this._transloco.translate('COMMON.LOADING'),
+                            message: this._transloco.translate('ADMIN.TENANT.LIST.ERROR_ACTIVATE'),
+                            actions: { confirm: { label: this._transloco.translate('COMMON.YES') } }
                         });
                     }
                 });
@@ -254,7 +241,7 @@ export class TenantListComponent implements OnInit {
     }
 
     getStatusText(isActive: boolean): string {
-        return isActive ? 'Active' : 'Inactive';
+        return this._transloco.translate(isActive ? 'ADMIN.TENANT.LIST.STATUS_ACTIVE' : 'ADMIN.TENANT.LIST.STATUS_INACTIVE');
     }
 
     formatDate(dateString: string): string {
@@ -263,40 +250,25 @@ export class TenantListComponent implements OnInit {
 
     suspendTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
-            title: 'Suspend Tenant',
-            message: `Are you sure you want to suspend tenant "${tenant.systemName}"? Users will not be able to access the system.`,
-            icon: {
-                show: true,
-                name: 'heroicons_outline:pause',
-                color: 'warn'
-            },
+            title: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_SUSPEND_TITLE'),
+            message: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_SUSPEND_MESSAGE', { name: tenant.systemName }),
+            icon: { show: true, name: 'heroicons_outline:pause', color: 'warn' },
             actions: {
-                confirm: {
-                    label: 'Suspend',
-                    color: 'warn'
-                },
-                cancel: {
-                    label: 'Cancel'
-                }
+                confirm: { label: this._transloco.translate('ADMIN.TENANT.LIST.SUSPEND_LABEL'), color: 'warn' },
+                cancel: { label: this._transloco.translate('COMMON.CANCEL') }
             }
         });
 
         confirmation.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
-                this._tenantsService.suspendTenant(tenant.id, 'Manual suspension by administrator').subscribe({
-                    next: () => {
-                        this.loadTenants();
-                    },
+                this._tenantsService.suspendTenant(tenant.id, this._transloco.translate('ADMIN.TENANT.LIST.DEFAULT_SUSPEND_REASON')).subscribe({
+                    next: () => { this.loadTenants(); },
                     error: (error) => {
                         console.error('Error suspending tenant:', error);
                         this._fuseConfirmationService.open({
-                            title: 'Error',
-                            message: 'Failed to suspend tenant. Please try again.',
-                            actions: {
-                                confirm: {
-                                    label: 'OK'
-                                }
-                            }
+                            title: this._transloco.translate('COMMON.LOADING'),
+                            message: this._transloco.translate('ADMIN.TENANT.LIST.ERROR_SUSPEND'),
+                            actions: { confirm: { label: this._transloco.translate('COMMON.YES') } }
                         });
                     }
                 });
@@ -306,14 +278,19 @@ export class TenantListComponent implements OnInit {
 
     /** Phase 2.55 — terminal cancel. Prompts for a reason, sends, refreshes the list. */
     cancelTenant(tenant: TenantDto): void {
-        const reason = (window.prompt(`Cancel tenant "${tenant.systemName}"? Type a brief reason (shown on their lockout page).`, 'Cancelled by tenant') ?? '').trim();
+        const reasonPrompt = this._transloco.translate('ADMIN.TENANT.LIST.CANCEL_PROMPT', { name: tenant.systemName });
+        const reasonDefault = this._transloco.translate('ADMIN.TENANT.LIST.CANCEL_REASON_DEFAULT');
+        const reason = (window.prompt(reasonPrompt, reasonDefault) ?? '').trim();
         if (!reason) return;
 
         const ref = this._fuseConfirmationService.open({
-            title: 'Cancel this tenant?',
-            message: `<b>${tenant.systemName}</b> will be flipped to read-only and marked Cancelled. Record Payment will NOT auto-reactivate them — re-onboarding is required to resume service. Continue?`,
+            title: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_CANCEL_TITLE'),
+            message: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_CANCEL_MESSAGE', { name: tenant.systemName }),
             icon: { show: true, name: 'heroicons_outline:no-symbol', color: 'warn' },
-            actions: { confirm: { show: true, label: 'Yes, cancel', color: 'warn' }, cancel: { show: true, label: 'Keep active' } },
+            actions: {
+                confirm: { show: true, label: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_CANCEL_YES'), color: 'warn' },
+                cancel: { show: true, label: this._transloco.translate('ADMIN.TENANT.LIST.KEEP_ACTIVE') }
+            },
         });
 
         ref.afterClosed().subscribe(result => {
@@ -323,9 +300,9 @@ export class TenantListComponent implements OnInit {
                 error: (err) => {
                     console.error('Error cancelling tenant:', err);
                     this._fuseConfirmationService.open({
-                        title: 'Error',
-                        message: err?.error?.exception ?? err?.message ?? 'Failed to cancel tenant. Please try again.',
-                        actions: { confirm: { label: 'OK' } },
+                        title: this._transloco.translate('COMMON.LOADING'),
+                        message: err?.error?.exception ?? err?.message ?? this._transloco.translate('ADMIN.TENANT.LIST.ERROR_CANCEL'),
+                        actions: { confirm: { label: this._transloco.translate('COMMON.YES') } },
                     });
                 },
             });
@@ -347,40 +324,25 @@ export class TenantListComponent implements OnInit {
 
     archiveTenant(tenant: TenantDto): void {
         const confirmation = this._fuseConfirmationService.open({
-            title: 'Archive Tenant',
-            message: `Are you sure you want to archive tenant "${tenant.systemName}"? The data will be preserved but become read-only. This action should only be taken for closed accounts.`,
-            icon: {
-                show: true,
-                name: 'heroicons_outline:archive',
-                color: 'warn'
-            },
+            title: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_ARCHIVE_TITLE'),
+            message: this._transloco.translate('ADMIN.TENANT.LIST.CONFIRM_ARCHIVE_MESSAGE', { name: tenant.systemName }),
+            icon: { show: true, name: 'heroicons_outline:archive', color: 'warn' },
             actions: {
-                confirm: {
-                    label: 'Archive',
-                    color: 'warn'
-                },
-                cancel: {
-                    label: 'Cancel'
-                }
+                confirm: { label: this._transloco.translate('ADMIN.TENANT.LIST.ARCHIVE_LABEL'), color: 'warn' },
+                cancel: { label: this._transloco.translate('COMMON.CANCEL') }
             }
         });
 
         confirmation.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
-                this._tenantsService.archiveTenant(tenant.id, 'Account closed - archived for record keeping').subscribe({
-                    next: () => {
-                        this.loadTenants();
-                    },
+                this._tenantsService.archiveTenant(tenant.id, this._transloco.translate('ADMIN.TENANT.LIST.ARCHIVE_REASON_DEFAULT')).subscribe({
+                    next: () => { this.loadTenants(); },
                     error: (error) => {
                         console.error('Error archiving tenant:', error);
                         this._fuseConfirmationService.open({
-                            title: 'Error',
-                            message: 'Failed to archive tenant. Please try again.',
-                            actions: {
-                                confirm: {
-                                    label: 'OK'
-                                }
-                            }
+                            title: this._transloco.translate('COMMON.LOADING'),
+                            message: this._transloco.translate('ADMIN.TENANT.LIST.ERROR_ARCHIVE'),
+                            actions: { confirm: { label: this._transloco.translate('COMMON.YES') } }
                         });
                     }
                 });

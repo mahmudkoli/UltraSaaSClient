@@ -11,6 +11,7 @@ import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
+import { TranslocoModule } from '@ngneat/transloco';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { SaleReturnsService, SearchSaleReturnsRequest } from 'app/core/sales/sales.service';
@@ -23,7 +24,7 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
     selector: 'app-returns-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
@@ -35,35 +36,35 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-rose-500 to-orange-600 rounded-xl shadow-lg"><mat-icon class="text-white">undo</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Sale Returns</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Refunds, restocked items, write-offs</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'RETURNS.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'RETURNS.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search returns</mat-label>
-                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Return # / invoice / customer">
+                    <mat-label>{{ 'RETURNS.LIST.SEARCH_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" [placeholder]="'RETURNS.LIST.SEARCH_PLACEHOLDER' | transloco">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Outlet</mat-label>
+                    <mat-label>{{ 'RETURNS.LIST.OUTLET_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="outletFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option [value]="''">All outlets</mat-option>
+                        <mat-option [value]="''">{{ 'RETURNS.LIST.OUTLET_ALL' | transloco }}</mat-option>
                         @for (o of outlets(); track o.id) {
                             <mat-option [value]="o.id">{{ o.name }}</mat-option>
                         }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'RETURNS.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All Status</mat-option>
-                        <mat-option value="Completed">Completed</mat-option>
-                        <mat-option value="Voided">Voided</mat-option>
-                        <mat-option value="Draft">Draft</mat-option>
+                        <mat-option value="all">{{ 'RETURNS.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="Completed">{{ 'RETURNS.LIST.STATUS_COMPLETED' | transloco }}</mat-option>
+                        <mat-option value="Voided">{{ 'RETURNS.LIST.STATUS_VOIDED' | transloco }}</mat-option>
+                        <mat-option value="Draft">{{ 'RETURNS.LIST.STATUS_DRAFT' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-fab color="primary" routerLink="/sales" matTooltip="Find a sale to refund"><mat-icon>search</mat-icon></button>
+                <button mat-fab color="primary" routerLink="/sales" [matTooltip]="'RETURNS.LIST.FIND_SALE_TOOLTIP' | transloco"><mat-icon>search</mat-icon></button>
             </div>
         </div>
 
@@ -71,21 +72,21 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
-                        <ng-container matColumnDef="returnNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Return #</span></th>
+                        <ng-container matColumnDef="returnNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_RETURN_NUMBER' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.returnNumber }}</td></ng-container>
-                        <ng-container matColumnDef="invoice"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</span></th>
+                        <ng-container matColumnDef="invoice"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_INVOICE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="font-mono text-xs text-gray-600 dark:text-gray-400">{{ r.originalInvoiceNumber }}</td></ng-container>
-                        <ng-container matColumnDef="returnDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</span></th>
+                        <ng-container matColumnDef="returnDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_DATE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.returnDate | date:'short' }}</td></ng-container>
-                        <ng-container matColumnDef="customer"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</span></th>
-                            <td mat-cell *matCellDef="let r">{{ r.customerName || 'Walk-in' }}</td></ng-container>
-                        <ng-container matColumnDef="reason"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Reason</span></th>
+                        <ng-container matColumnDef="customer"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_CUSTOMER' | transloco }}</span></th>
+                            <td mat-cell *matCellDef="let r">{{ r.customerName || ('RETURNS.LIST.WALK_IN' | transloco) }}</td></ng-container>
+                        <ng-container matColumnDef="reason"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_REASON' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.reason }}</td></ng-container>
-                        <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Items</span></th>
+                        <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_ITEMS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.items.length }}</td></ng-container>
-                        <ng-container matColumnDef="refundAmount"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</span></th>
+                        <ng-container matColumnDef="refundAmount"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_REFUND' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-semibold text-rose-600 dark:text-rose-400">{{ r.refundAmount | number:'1.2-2' }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="{
@@ -93,13 +94,13 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
                                         'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': r.status === 'Voided',
                                         'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': r.status === 'Draft'
                                       }">
-                                    <mat-icon class="icon-size-4 mr-1">{{ r.status === 'Completed' ? 'check_circle' : r.status === 'Voided' ? 'cancel' : 'schedule' }}</mat-icon>{{ r.status }}
+                                    <mat-icon class="icon-size-4 mr-1">{{ r.status === 'Completed' ? 'check_circle' : r.status === 'Voided' ? 'cancel' : 'schedule' }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                                 </span>
                             </td></ng-container>
-                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); view(r)" matTooltip="View"><mat-icon class="icon-size-5">visibility</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); view(r)" [matTooltip]="'RETURNS.LIST.VIEW_TOOLTIP' | transloco"><mat-icon class="icon-size-5">visibility</mat-icon></button>
                                 </div>
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
@@ -117,9 +118,9 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 
                 <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">undo</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No returns yet</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Returns are created from a finalized sale. Open a sale and click "Process Return".</p>
-                    <button mat-flat-button color="primary" routerLink="/sales"><mat-icon class="icon-size-5 mr-2">receipt_long</mat-icon><span>Browse Sales</span></button>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'RETURNS.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ 'RETURNS.LIST.EMPTY_SUBTITLE' | transloco }}</p>
+                    <button mat-flat-button color="primary" routerLink="/sales"><mat-icon class="icon-size-5 mr-2">receipt_long</mat-icon><span>{{ 'RETURNS.LIST.BROWSE_SALES' | transloco }}</span></button>
                 </div>
             </div>
         </div>
@@ -151,6 +152,13 @@ export class ReturnsListComponent implements OnInit {
 
     cols = ['returnNumber', 'invoice', 'returnDate', 'customer', 'reason', 'items', 'refundAmount', 'status', 'actions'];
     searchChanged = new Subject<string>();
+
+    /** Translation-key for the status badge. */
+    statusLabel(s: string): string {
+        if (s === 'Completed') return 'RETURNS.LIST.STATUS_COMPLETED';
+        if (s === 'Voided') return 'RETURNS.LIST.STATUS_VOIDED';
+        return 'RETURNS.LIST.STATUS_DRAFT';
+    }
 
     ngOnInit(): void {
         this.searchChanged.pipe(debounceTime(300)).subscribe(() => this.resetAndLoad());

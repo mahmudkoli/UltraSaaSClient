@@ -11,6 +11,7 @@ import { firstValueFrom } from 'rxjs';
 import { appRoutes } from 'app/app.routes';
 import { provideAuth } from 'app/core/auth/auth.provider';
 import { provideIcons } from 'app/core/icons/icons.provider';
+import { LanguageService } from 'app/core/i18n/language.service';
 import { mockApiServices } from 'app/mock-api';
 import { TranslocoHttpLoader } from './core/transloco/transloco.http-loader';
 import { dateInterceptor } from './core/interceptors/date.interceptor';
@@ -44,7 +45,9 @@ export const appConfig: ApplicationConfig = {
             },
         },
 
-        // Transloco Config
+        // Transloco Config — Phase 2.58: en + bn. Active lang picked by
+        // LanguageService.resolveBootLang() (localStorage) at boot and
+        // re-applied post-login via LanguageService.applyFromServer().
         provideTransloco({
             config: {
                 availableLangs      : [
@@ -53,8 +56,8 @@ export const appConfig: ApplicationConfig = {
                         label: 'English',
                     },
                     {
-                        id   : 'tr',
-                        label: 'Turkish',
+                        id   : 'bn',
+                        label: 'বাংলা',
                     },
                 ],
                 defaultLang         : 'en',
@@ -65,15 +68,18 @@ export const appConfig: ApplicationConfig = {
             loader: TranslocoHttpLoader,
         }),
         {
-            // Preload the default language before the app starts to prevent empty/jumping content
+            // Phase 2.58 — pre-load the boot language (last choice from
+            // localStorage, falling back to 'en') so the first paint has
+            // the correct strings.
             provide   : APP_INITIALIZER,
             useFactory: () =>
             {
                 const translocoService = inject(TranslocoService);
-                const defaultLang = translocoService.getDefaultLang();
-                translocoService.setActiveLang(defaultLang);
+                const languageService = inject(LanguageService);
+                const bootLang = languageService.resolveBootLang();
+                translocoService.setActiveLang(bootLang);
 
-                return () => firstValueFrom(translocoService.load(defaultLang));
+                return () => firstValueFrom(translocoService.load(bootLang));
             },
             multi     : true,
         },

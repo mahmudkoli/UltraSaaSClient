@@ -19,6 +19,7 @@ import { OutletDto } from 'app/core/outlets/outlets.types';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { StockAdjustmentsService } from 'app/core/inventory/inventory.service';
 import { ImportDialogComponent, ImportDialogConfig } from 'app/core/import/import-dialog.component';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 interface StockRow {
     productId: string;
@@ -37,6 +38,7 @@ interface StockRow {
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatSelectModule, MatTableModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -46,33 +48,33 @@ interface StockRow {
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl shadow-lg"><mat-icon class="text-white">inventory</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Stock On Hand</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Current quantity per product at the selected outlet</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'INVENTORY.STOCK.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'INVENTORY.STOCK.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search products</mat-label>
-                    <input matInput [(ngModel)]="search" placeholder="Name or SKU">
+                    <mat-label>{{ 'INVENTORY.STOCK.LIST.SEARCH_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="search" [placeholder]="'INVENTORY.STOCK.LIST.SEARCH_PLACEHOLDER' | transloco">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Outlet</mat-label>
+                    <mat-label>{{ 'INVENTORY.STOCK.LIST.OUTLET_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="outletId" (ngModelChange)="onOutletChange()">
                         @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Show</mat-label>
+                    <mat-label>{{ 'INVENTORY.STOCK.LIST.SHOW_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="showFilter">
-                        <mat-option value="all">All products</mat-option>
-                        <mat-option value="below">Below reorder</mat-option>
-                        <mat-option value="zero">Out of stock</mat-option>
-                        <mat-option value="positive">In stock</mat-option>
+                        <mat-option value="all">{{ 'INVENTORY.STOCK.LIST.SHOW_ALL' | transloco }}</mat-option>
+                        <mat-option value="below">{{ 'INVENTORY.STOCK.LIST.SHOW_BELOW' | transloco }}</mat-option>
+                        <mat-option value="zero">{{ 'INVENTORY.STOCK.LIST.SHOW_ZERO' | transloco }}</mat-option>
+                        <mat-option value="positive">{{ 'INVENTORY.STOCK.LIST.SHOW_POSITIVE' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-stroked-button class="!h-12 !px-4" (click)="openImport()" matTooltip="Bulk-import opening-balance stock">
-                    <mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon><span>Import</span>
+                <button mat-stroked-button class="!h-12 !px-4" (click)="openImport()" [matTooltip]="'INVENTORY.STOCK.LIST.IMPORT_TOOLTIP' | transloco">
+                    <mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon><span>{{ 'INVENTORY.STOCK.LIST.IMPORT_BUTTON' | transloco }}</span>
                 </button>
             </div>
         </div>
@@ -85,16 +87,20 @@ interface StockRow {
                         <mat-icon class="text-white">rocket_launch</mat-icon>
                     </div>
                     <div class="flex-1">
-                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">Looks like you haven't loaded stock yet</h3>
+                        <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ 'INVENTORY.STOCK.LIST.NUDGE_TITLE' | transloco }}</h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                            You have {{ products().length }} product{{ products().length === 1 ? '' : 's' }} in your catalog but no stock at <strong>{{ currentOutletName() }}</strong>. Bulk-import opening balances from an Excel file — one row per (outlet × SKU).
+                            @if (products().length === 1) {
+                                {{ 'INVENTORY.STOCK.LIST.NUDGE_BODY_ONE' | transloco:{ count: products().length, outlet: currentOutletName() } }}
+                            } @else {
+                                {{ 'INVENTORY.STOCK.LIST.NUDGE_BODY_MANY' | transloco:{ count: products().length, outlet: currentOutletName() } }}
+                            }
                         </p>
                         <div class="flex items-center gap-2 mt-3">
                             <button mat-flat-button color="primary" (click)="openImport()">
-                                <mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon><span>Import opening balances</span>
+                                <mat-icon class="icon-size-5 mr-1">cloud_upload</mat-icon><span>{{ 'INVENTORY.STOCK.LIST.NUDGE_IMPORT_BUTTON' | transloco }}</span>
                             </button>
                             <button mat-stroked-button routerLink="/stock-adjustments/create">
-                                <mat-icon class="icon-size-5 mr-1">edit</mat-icon><span>Add a single adjustment</span>
+                                <mat-icon class="icon-size-5 mr-1">edit</mat-icon><span>{{ 'INVENTORY.STOCK.LIST.NUDGE_ADJUSTMENT_BUTTON' | transloco }}</span>
                             </button>
                         </div>
                     </div>
@@ -103,27 +109,27 @@ interface StockRow {
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table [dataSource]="filtered()" class="w-full">
-                        <ng-container matColumnDef="sku"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</span></th>
+                        <ng-container matColumnDef="sku"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.STOCK.LIST.COL_SKU' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-xs">{{ r.sku }}</td></ng-container>
-                        <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
+                        <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.STOCK.LIST.COL_PRODUCT' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="font-medium">{{ r.productName }}</td></ng-container>
-                        <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">On Hand</span></th>
+                        <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.STOCK.LIST.COL_ON_HAND' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-semibold"
                                 [ngClass]="{ 'text-rose-600 dark:text-rose-400': r.quantity <= 0, 'text-amber-600 dark:text-amber-400': r.quantity > 0 && r.isBelow }">
                                 {{ r.quantity | number:'1.0-3' }}
                             </td></ng-container>
-                        <ng-container matColumnDef="reorder"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Reorder</span></th>
+                        <ng-container matColumnDef="reorder"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.STOCK.LIST.COL_REORDER' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right text-gray-500">{{ r.reorderLevel | number:'1.0-2' }}</td></ng-container>
-                        <ng-container matColumnDef="last"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Last movement</span></th>
+                        <ng-container matColumnDef="last"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.STOCK.LIST.COL_LAST_MOVEMENT' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="text-gray-600 dark:text-gray-400">{{ r.lastMovementOn ? (r.lastMovementOn | date:'short') : '—' }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.STOCK.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 @if (r.quantity <= 0) {
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"><mat-icon class="icon-size-4 mr-1">cancel</mat-icon>Out</span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200"><mat-icon class="icon-size-4 mr-1">cancel</mat-icon>{{ 'INVENTORY.STOCK.LIST.STATUS_OUT' | transloco }}</span>
                                 } @else if (r.isBelow) {
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"><mat-icon class="icon-size-4 mr-1">warning</mat-icon>Low</span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200"><mat-icon class="icon-size-4 mr-1">warning</mat-icon>{{ 'INVENTORY.STOCK.LIST.STATUS_LOW' | transloco }}</span>
                                 } @else {
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><mat-icon class="icon-size-4 mr-1">check_circle</mat-icon>OK</span>
+                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200"><mat-icon class="icon-size-4 mr-1">check_circle</mat-icon>{{ 'INVENTORY.STOCK.LIST.STATUS_OK' | transloco }}</span>
                                 }
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
@@ -132,8 +138,8 @@ interface StockRow {
                 </div>
                 <div *ngIf="!loading() && filtered().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">inventory</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No matching products</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Receive goods or run an opening-balance adjustment to seed stock.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'INVENTORY.STOCK.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'INVENTORY.STOCK.LIST.EMPTY_SUBTITLE' | transloco }}</p>
                 </div>
             </div>
         </div>
@@ -148,6 +154,7 @@ export class StockListComponent implements OnInit {
     private readonly outletsApi = inject(OutletsService);
     private readonly currentOutlet = inject(CurrentOutletService);
     private readonly dialog = inject(MatDialog);
+    private readonly _transloco = inject(TranslocoService);
 
     outlets = signal<OutletDto[]>([]);
     products = signal<ProductDto[]>([]);
@@ -221,13 +228,13 @@ export class StockListComponent implements OnInit {
     );
 
     currentOutletName = computed(() =>
-        this.outlets().find(o => o.id === this.outletId)?.name ?? 'this outlet'
+        this.outlets().find(o => o.id === this.outletId)?.name ?? this._transloco.translate('INVENTORY.STOCK.LIST.THIS_OUTLET_FALLBACK')
     );
 
     openImport(): void {
         const config: ImportDialogConfig = {
-            title: 'Import opening-balance stock',
-            subtitle: 'Bulk-load stock counts per outlet from an Excel file. Run the Product import first — SKUs and outlet codes must already exist.',
+            title: this._transloco.translate('INVENTORY.STOCK.LIST.IMPORT_DIALOG_TITLE'),
+            subtitle: this._transloco.translate('INVENTORY.STOCK.LIST.IMPORT_DIALOG_SUBTITLE'),
             templateUrl: this.stockAdjustmentsApi.importTemplateUrl(),
             showModeSelector: false,
             icon: 'archive_box',

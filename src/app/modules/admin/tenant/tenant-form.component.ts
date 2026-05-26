@@ -116,6 +116,9 @@ export class TenantFormComponent implements OnInit {
             // Label printing defaults
             showPriceOnLabel: [true],
             useOutletPriceOnLabel: [true],
+
+            // Phase 2.58 — default UI language for new users on this tenant
+            defaultLanguage: ['en'],
         });
     }
 
@@ -179,6 +182,8 @@ export class TenantFormComponent implements OnInit {
 
                     showPriceOnLabel: tenant.showPriceOnLabel ?? true,
                     useOutletPriceOnLabel: tenant.useOutletPriceOnLabel ?? true,
+
+                    defaultLanguage: tenant.defaultLanguage ?? 'en',
                 });
 
                 this.currentValidUpto = tenant.validUpto;
@@ -255,6 +260,8 @@ export class TenantFormComponent implements OnInit {
 
                 planId: formData.planId ?? undefined,
                 billingEmail: formData.billingEmail || undefined,
+
+                defaultLanguage: formData.defaultLanguage || 'en',
             };
 
             this._tenantsService.create(req).subscribe({
@@ -299,6 +306,8 @@ export class TenantFormComponent implements OnInit {
 
             showPriceOnLabel: formData.showPriceOnLabel,
             useOutletPriceOnLabel: formData.useOutletPriceOnLabel,
+
+            defaultLanguage: formData.defaultLanguage || 'en',
         };
 
         this.sendUpdate(req, businessType, outletLabel, verticalChanged);

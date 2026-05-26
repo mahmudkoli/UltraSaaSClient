@@ -27,6 +27,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { UserRolesDialogComponent } from './user-roles-dialog.component';
 import { UserOutletsDialogComponent } from './user-outlets-dialog.component';
 import { UserAdminResetPasswordDialogComponent } from './user-admin-reset-password-dialog.component';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 @Component({
     selector: 'user-list',
@@ -64,6 +65,7 @@ import { UserAdminResetPasswordDialogComponent } from './user-admin-reset-passwo
         MatTabsModule,
         MatTooltipModule,
         RouterModule,
+        TranslocoModule,
     ],
 })
 export class UserListComponent implements OnInit, OnDestroy {
@@ -92,6 +94,7 @@ export class UserListComponent implements OnInit, OnDestroy {
         private _router: Router,
         private _activatedRoute: ActivatedRoute,
         private _dialog: MatDialog,
+        private _transloco: TranslocoService,
     ) {}
 
     ngOnInit(): void {
@@ -193,13 +196,19 @@ export class UserListComponent implements OnInit, OnDestroy {
     }
 
     toggleUserStatus(user: UserDetailsDto): void {
-        const action = user.isActive ? 'deactivate' : 'activate';
+        const activating = !user.isActive;
+        const titleKey = activating ? 'ADMIN.USER.LIST.CONFIRM_ACTIVATE_TITLE' : 'ADMIN.USER.LIST.CONFIRM_DEACTIVATE_TITLE';
+        const messageKey = activating ? 'ADMIN.USER.LIST.CONFIRM_ACTIVATE_MESSAGE' : 'ADMIN.USER.LIST.CONFIRM_DEACTIVATE_MESSAGE';
+        const confirmKey = activating ? 'ADMIN.USER.LIST.MENU_ACTIVATE' : 'ADMIN.USER.LIST.MENU_DEACTIVATE';
+        const successKey = activating ? 'ADMIN.USER.LIST.TOAST_ACTIVATED' : 'ADMIN.USER.LIST.TOAST_DEACTIVATED';
+        const failKey = activating ? 'ADMIN.USER.LIST.TOAST_ACTIVATE_FAILED' : 'ADMIN.USER.LIST.TOAST_DEACTIVATE_FAILED';
+
         const confirmation = this._fuseConfirmationService.open({
-            title: `Confirm ${action}`,
-            message: `Are you sure you want to ${action} this user?`,
+            title: this._transloco.translate(titleKey),
+            message: this._transloco.translate(messageKey),
             actions: {
                 confirm: {
-                    label: `${action.charAt(0).toUpperCase() + action.slice(1)}`,
+                    label: this._transloco.translate(confirmKey),
                 },
             },
         });
@@ -210,14 +219,13 @@ export class UserListComponent implements OnInit, OnDestroy {
                     .pipe(takeUntil(this._unsubscribeAll))
                     .subscribe({
                         next: () => {
-                            // Update the user status locally
                             user.isActive = !user.isActive;
                             this._changeDetectorRef.markForCheck();
-                            this._notificationService.success(`User ${action}d successfully`);
+                            this._notificationService.success(this._transloco.translate(successKey));
                         },
                         error: (error) => {
-                            console.error(`Error ${action}ing user:`, error);
-                            this._notificationService.error(`Failed to ${action} user`);
+                            console.error(`Toggle user status error:`, error);
+                            this._notificationService.error(this._transloco.translate(failKey));
                         }
                     });
             }
@@ -233,7 +241,7 @@ export class UserListComponent implements OnInit, OnDestroy {
             width: '480px',
             data: { userId: user.id, userName: this.getFullName(user) || user.email || user.userName },
         }).afterClosed().subscribe(saved => {
-            if (saved) this._notificationService.success('Roles updated');
+            if (saved) this._notificationService.success(this._transloco.translate('ADMIN.USER.LIST.TOAST_ROLES_UPDATED'));
         });
     }
 
@@ -242,7 +250,7 @@ export class UserListComponent implements OnInit, OnDestroy {
             width: '480px',
             data: { userId: user.id, userName: this.getFullName(user) || user.email || user.userName },
         }).afterClosed().subscribe(saved => {
-            if (saved) this._notificationService.success('Outlet access updated');
+            if (saved) this._notificationService.success(this._transloco.translate('ADMIN.USER.LIST.TOAST_OUTLETS_UPDATED'));
         });
     }
 
@@ -251,7 +259,7 @@ export class UserListComponent implements OnInit, OnDestroy {
             width: '480px',
             data: { userId: user.id, userName: this.getFullName(user) || user.email || user.userName },
         }).afterClosed().subscribe(saved => {
-            if (saved) this._notificationService.success('Password reset. User must change it on next sign-in.');
+            if (saved) this._notificationService.success(this._transloco.translate('ADMIN.USER.LIST.TOAST_PASSWORD_RESET'));
         });
     }
 
@@ -263,11 +271,11 @@ export class UserListComponent implements OnInit, OnDestroy {
 
     getPaginationDisplayText(): string {
         if (!this.pagination) return '';
-        
+
         const start = (this.pagination.currentPage - 1) * this.pagination.pageSize + 1;
         const end = Math.min(this.pagination.currentPage * this.pagination.pageSize, this.pagination.totalCount);
-        
-        return `Showing ${start} to ${end} of ${this.pagination.totalCount} results`;
+
+        return this._transloco.translate('ADMIN.USER.LIST.PAGINATION_TEXT', { start, end, total: this.pagination.totalCount });
     }
 
 

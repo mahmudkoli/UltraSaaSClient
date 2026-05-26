@@ -12,6 +12,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { Router, RouterModule } from '@angular/router';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { ProductsService } from 'app/core/catalog/catalog.service';
 import { ProductDto } from 'app/core/catalog/catalog.types';
 import { OutletsService } from 'app/core/outlets/outlets.service';
@@ -31,7 +32,7 @@ interface POLineDraft {
     selector: 'app-purchase-order-form',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatAutocompleteModule, MatButtonModule, MatFormFieldModule, MatIconModule,
         MatInputModule, MatSelectModule, MatTableModule, MatTooltipModule,
         MatDatepickerModule, MatNativeDateModule,
@@ -44,12 +45,12 @@ interface POLineDraft {
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-indigo-500 to-blue-600 rounded-xl shadow-lg"><mat-icon class="text-white">request_quote</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">New Purchase Order</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Order stock from a supplier</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'PURCHASING.ORDERS.FORM.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'PURCHASING.ORDERS.FORM.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-                <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/purchase-orders"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Cancel</span></button>
+                <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/purchase-orders"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'PURCHASING.ORDERS.FORM.CANCEL_BUTTON' | transloco }}</span></button>
             </div>
         </div>
 
@@ -60,11 +61,11 @@ interface POLineDraft {
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
                         <div class="flex items-center space-x-3 mb-4">
                             <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center"><mat-icon class="text-blue-600 dark:text-blue-400 text-lg">info</mat-icon></div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Order Details</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'PURCHASING.ORDERS.FORM.ORDER_DETAILS_SECTION' | transloco }}</h3>
                         </div>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
-                                <mat-label>Outlet <span class="text-rose-600">*</span></mat-label>
+                                <mat-label>{{ 'PURCHASING.ORDERS.FORM.OUTLET_LABEL' | transloco }} <span class="text-rose-600">*</span></mat-label>
                                 <mat-select [(ngModel)]="outletId" required>
                                     @for (o of outlets(); track o.id) {
                                         <mat-option [value]="o.id">{{ o.name }}</mat-option>
@@ -72,12 +73,12 @@ interface POLineDraft {
                                 </mat-select>
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
-                                <mat-label>Supplier <span class="text-rose-600">*</span></mat-label>
+                                <mat-label>{{ 'PURCHASING.ORDERS.FORM.SUPPLIER_LABEL' | transloco }} <span class="text-rose-600">*</span></mat-label>
                                 <input matInput #supplierInput
                                        [(ngModel)]="supplierSearch"
                                        [matAutocomplete]="supplierAuto"
                                        (blur)="resetSupplierIfClearedOrUnselected()"
-                                       placeholder="Type to search by name or tax ID"
+                                       [placeholder]="'PURCHASING.ORDERS.FORM.SUPPLIER_PLACEHOLDER' | transloco"
                                        required>
                                 <mat-autocomplete #supplierAuto="matAutocomplete"
                                                   (optionSelected)="onSupplierPicked($event.option.value)"
@@ -94,29 +95,29 @@ interface POLineDraft {
                                     }
                                     @if (supplierOptions().length === 0 && supplierSearch && suppliers().length > 0) {
                                         <mat-option [disabled]="true" class="!opacity-100">
-                                            <span class="text-xs text-gray-500 italic">No supplier matches "{{ supplierSearch }}".</span>
+                                            <span class="text-xs text-gray-500 italic">{{ 'PURCHASING.ORDERS.FORM.SUPPLIER_NO_MATCH' | transloco:{ q: supplierSearch } }}</span>
                                         </mat-option>
                                     }
                                 </mat-autocomplete>
                                 @if (supplierId) {
-                                    <button matSuffix mat-icon-button type="button" aria-label="Clear supplier"
+                                    <button matSuffix mat-icon-button type="button" [attr.aria-label]="'PURCHASING.ORDERS.FORM.SUPPLIER_CLEAR_ARIA' | transloco"
                                             (click)="clearSupplier(supplierInput); $event.stopPropagation()">
                                         <mat-icon class="icon-size-4">close</mat-icon>
                                     </button>
                                 }
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-full">
-                                <mat-label>Expected delivery <span class="text-gray-400 text-xs">(optional)</span></mat-label>
+                                <mat-label>{{ 'PURCHASING.ORDERS.FORM.EXPECTED_DELIVERY_LABEL' | transloco }} <span class="text-gray-400 text-xs">{{ 'PURCHASING.ORDERS.FORM.OPTIONAL_HINT' | transloco }}</span></mat-label>
                                 <input matInput [matDatepicker]="picker" [(ngModel)]="expectedDate">
                                 <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
                                 <mat-datepicker #picker></mat-datepicker>
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-full">
-                                <mat-label>Notes <span class="text-gray-400 text-xs">(optional)</span></mat-label>
+                                <mat-label>{{ 'PURCHASING.ORDERS.FORM.NOTES_LABEL' | transloco }} <span class="text-gray-400 text-xs">{{ 'PURCHASING.ORDERS.FORM.OPTIONAL_HINT' | transloco }}</span></mat-label>
                                 <input matInput [(ngModel)]="notes">
                             </mat-form-field>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> Required</p>
+                        <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> {{ 'PURCHASING.ORDERS.FORM.REQUIRED_HINT' | transloco }}</p>
                     </div>
 
                     <!-- Lines -->
@@ -124,24 +125,24 @@ interface POLineDraft {
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                             <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center"><mat-icon class="text-violet-600 dark:text-violet-400 text-lg">inventory_2</mat-icon></div>
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                Line Items <span class="text-rose-600">*</span>
+                                {{ 'PURCHASING.ORDERS.FORM.LINE_ITEMS_SECTION' | transloco }} <span class="text-rose-600">*</span>
                                 @if (lines().length > 0) {
                                     <span class="ml-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 rounded-full px-2 py-0.5">
                                         <mat-icon class="icon-size-3.5">check_circle</mat-icon>
-                                        {{ lines().length }} added
+                                        {{ 'PURCHASING.ORDERS.FORM.ITEMS_ADDED_BADGE' | transloco:{ count: lines().length } }}
                                     </span>
                                 }
                             </h3>
-                            <span class="text-xs text-gray-500">At least one product required</span>
+                            <span class="text-xs text-gray-500">{{ 'PURCHASING.ORDERS.FORM.ITEMS_HELP' | transloco }}</span>
                         </div>
 
                         <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-gray-50 dark:bg-gray-900/40">
                             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="sm:col-span-7 w-full">
-                                <mat-label>Add product</mat-label>
+                                <mat-label>{{ 'PURCHASING.ORDERS.FORM.ADD_PRODUCT_LABEL' | transloco }}</mat-label>
                                 <input matInput #productInput
                                        [(ngModel)]="productSearch"
                                        [matAutocomplete]="productAuto"
-                                       placeholder="Search by name or SKU">
+                                       [placeholder]="'PURCHASING.ORDERS.FORM.ADD_PRODUCT_PLACEHOLDER' | transloco">
                                 <mat-autocomplete #productAuto="matAutocomplete"
                                                   (optionSelected)="onProductPicked($event.option.value, productInput)"
                                                   [displayWith]="displayProduct">
@@ -155,7 +156,7 @@ interface POLineDraft {
                                     }
                                     @if (productOptions().length === 0 && lines().length > 0) {
                                         <mat-option [disabled]="true" class="!opacity-100">
-                                            <span class="text-xs text-gray-500 italic">All matching products are already in this PO.</span>
+                                            <span class="text-xs text-gray-500 italic">{{ 'PURCHASING.ORDERS.FORM.ALREADY_ADDED_HINT' | transloco }}</span>
                                         </mat-option>
                                     }
                                 </mat-autocomplete>
@@ -163,45 +164,45 @@ interface POLineDraft {
                         </div>
 
                         <table mat-table [dataSource]="lines()" class="w-full">
-                            <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
+                            <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.FORM.COL_PRODUCT' | transloco }}</span></th>
                                 <td mat-cell *matCellDef="let l" class="pl-6">
                                     <div class="flex flex-col">
                                         <span class="text-sm font-medium text-gray-900 dark:text-white">{{ l.productName }}</span>
                                         <span class="text-xs text-gray-500 font-mono">{{ l.sku }}</span>
                                     </div>
                                 </td></ng-container>
-                            <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</span></th>
+                            <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.FORM.COL_QUANTITY' | transloco }}</span></th>
                                 <td mat-cell *matCellDef="let l" class="!text-right">
                                     <div class="flex items-center justify-end gap-1">
                                         <button type="button" (click)="nudgeQty(l, -1)" [disabled]="l.quantity <= 1"
                                                 class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                aria-label="Decrease quantity">
+                                                [attr.aria-label]="'PURCHASING.ORDERS.FORM.DECREASE_QTY' | transloco">
                                             <mat-icon class="icon-size-4">remove</mat-icon>
                                         </button>
                                         <input type="number" min="0" step="0.001" [(ngModel)]="l.quantity"
                                                class="w-16 border rounded px-1 py-0.5 text-right tabular-nums" />
                                         <button type="button" (click)="nudgeQty(l, 1)"
                                                 class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                aria-label="Increase quantity">
+                                                [attr.aria-label]="'PURCHASING.ORDERS.FORM.INCREASE_QTY' | transloco">
                                             <mat-icon class="icon-size-4">add</mat-icon>
                                         </button>
                                     </div>
                                 </td></ng-container>
-                            <ng-container matColumnDef="cost"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Unit Cost</span></th>
+                            <ng-container matColumnDef="cost"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.FORM.COL_UNIT_COST' | transloco }}</span></th>
                                 <td mat-cell *matCellDef="let l" class="!text-right">
                                     <input type="number" min="0" step="0.01" [(ngModel)]="l.unitCost"
                                            class="w-24 border rounded px-1 py-0.5 text-right tabular-nums" />
                                 </td></ng-container>
-                            <ng-container matColumnDef="lineTotal"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Line Total</span></th>
+                            <ng-container matColumnDef="lineTotal"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.ORDERS.FORM.COL_LINE_TOTAL' | transloco }}</span></th>
                                 <td mat-cell *matCellDef="let l" class="!text-right font-semibold tabular-nums">{{ (l.quantity * l.unitCost) | number:'1.2-2' }}</td></ng-container>
                             <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-6"></th>
                                 <td mat-cell *matCellDef="let l; let i = index" class="pr-6 !text-right">
-                                    <button mat-icon-button class="text-red-600" (click)="removeLine(i)" matTooltip="Remove"><mat-icon class="icon-size-5">delete</mat-icon></button>
+                                    <button mat-icon-button class="text-red-600" (click)="removeLine(i)" [matTooltip]="'PURCHASING.ORDERS.FORM.REMOVE_TOOLTIP' | transloco"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </td></ng-container>
                             <tr mat-header-row *matHeaderRowDef="['name','qty','cost','lineTotal','actions']" class="bg-gray-50 dark:bg-gray-700"></tr>
                             <tr mat-row *matRowDef="let row; columns: ['name','qty','cost','lineTotal','actions']"></tr>
                         </table>
-                        <div *ngIf="lines().length === 0" class="p-8 text-center text-sm text-gray-500">No lines yet — search for a product above.</div>
+                        <div *ngIf="lines().length === 0" class="p-8 text-center text-sm text-gray-500">{{ 'PURCHASING.ORDERS.FORM.NO_LINES' | transloco }}</div>
                     </div>
                 </div>
 
@@ -210,17 +211,17 @@ interface POLineDraft {
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
                         <div class="flex items-center space-x-3 mb-4">
                             <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center"><mat-icon class="text-emerald-600 dark:text-emerald-400 text-lg">summarize</mat-icon></div>
-                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Summary</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'PURCHASING.ORDERS.FORM.SUMMARY_SECTION' | transloco }}</h3>
                         </div>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Lines</span><span class="font-medium">{{ lines().length }}</span></div>
-                            <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Total quantity</span><span class="font-medium">{{ totalQty() | number:'1.0-3' }}</span></div>
-                            <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>Total</span><span>{{ total() | number:'1.2-2' }}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'PURCHASING.ORDERS.FORM.SUMMARY_LINES' | transloco }}</span><span class="font-medium">{{ lines().length }}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'PURCHASING.ORDERS.FORM.SUMMARY_TOTAL_QTY' | transloco }}</span><span class="font-medium">{{ totalQty() | number:'1.0-3' }}</span></div>
+                            <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>{{ 'PURCHASING.ORDERS.FORM.SUMMARY_TOTAL' | transloco }}</span><span>{{ total() | number:'1.2-2' }}</span></div>
                         </div>
                         <button mat-flat-button color="primary" class="w-full h-12 rounded-lg shadow-lg mt-4"
                                 [disabled]="!canSubmit() || saving"
                                 (click)="save()">
-                            <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? 'Saving…' : 'Save Draft' }}</span>
+                            <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ (saving ? 'PURCHASING.ORDERS.FORM.SAVING' : 'PURCHASING.ORDERS.FORM.SAVE_BUTTON') | transloco }}</span>
                         </button>
                         <p class="text-xs text-gray-500 mt-2" *ngIf="!canSubmit()">{{ disabledReason() }}</p>
                     </div>
@@ -237,6 +238,7 @@ export class PurchaseOrderFormComponent implements OnInit {
     private readonly outletsApi = inject(OutletsService);
     private readonly productsApi = inject(ProductsService);
     private readonly router = inject(Router);
+    private readonly _transloco = inject(TranslocoService);
 
     outlets = signal<OutletDto[]>([]);
     suppliers = signal<SupplierDto[]>([]);
@@ -323,10 +325,10 @@ export class PurchaseOrderFormComponent implements OnInit {
     }
 
     disabledReason(): string {
-        if (!this.outletId) return 'Pick an outlet.';
-        if (!this.supplierId) return 'Pick a supplier.';
-        if (this.lines().length === 0) return 'Add at least one line.';
-        if (this.lines().some(l => l.quantity <= 0)) return 'All line quantities must be greater than zero.';
+        if (!this.outletId) return this._transloco.translate('PURCHASING.ORDERS.FORM.DISABLED_PICK_OUTLET');
+        if (!this.supplierId) return this._transloco.translate('PURCHASING.ORDERS.FORM.DISABLED_PICK_SUPPLIER');
+        if (this.lines().length === 0) return this._transloco.translate('PURCHASING.ORDERS.FORM.DISABLED_ADD_LINE');
+        if (this.lines().some(l => l.quantity <= 0)) return this._transloco.translate('PURCHASING.ORDERS.FORM.DISABLED_QTY_POSITIVE');
         return '';
     }
 

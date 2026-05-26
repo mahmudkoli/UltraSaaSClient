@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { RolesService } from 'app/core/roles/roles.service';
+import { TranslocoModule } from '@ngneat/transloco';
 
 @Component({
     selector: 'app-role-form',
@@ -14,6 +15,7 @@ import { RolesService } from 'app/core/roles/roles.service';
     imports: [
         CommonModule, ReactiveFormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -23,30 +25,30 @@ import { RolesService } from 'app/core/roles/roles.service';
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-violet-500 to-fuchsia-600 rounded-xl shadow-lg"><mat-icon class="text-white">{{ id ? 'edit' : 'add' }}</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ id ? 'Edit Role' : 'New Role' }}</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Assign permissions on the next screen after saving.</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ (id ? 'ADMIN.ROLE.FORM.TITLE_EDIT' : 'ADMIN.ROLE.FORM.TITLE_NEW') | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'ADMIN.ROLE.FORM.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
-            <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/users/roles"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Cancel</span></button>
+            <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/users/roles"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'COMMON.CANCEL' | transloco }}</span></button>
         </div>
         <div class="flex-auto p-4 sm:p-6">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <form [formGroup]="form" (ngSubmit)="save()" class="p-6 sm:p-8">
                     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                         <mat-form-field class="w-full" appearance="outline">
-                            <mat-label>Role name</mat-label>
-                            <input matInput formControlName="name" placeholder="ShiftSupervisor">
-                            <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
+                            <mat-label>{{ 'ADMIN.ROLE.FORM.NAME_LABEL' | transloco }}</mat-label>
+                            <input matInput formControlName="name" [placeholder]="'ADMIN.ROLE.FORM.NAME_PLACEHOLDER' | transloco">
+                            <mat-error *ngIf="form.get('name')?.hasError('required')">{{ 'ADMIN.ROLE.FORM.NAME_REQUIRED' | transloco }}</mat-error>
                         </mat-form-field>
                         <mat-form-field class="w-full" appearance="outline">
-                            <mat-label>Description (optional)</mat-label>
+                            <mat-label>{{ 'ADMIN.ROLE.FORM.DESCRIPTION_LABEL' | transloco }}</mat-label>
                             <input matInput formControlName="description">
                         </mat-form-field>
                     </div>
                     <div class="flex items-center justify-end gap-2 pt-4 border-t border-gray-200 dark:border-gray-700">
-                        <button mat-button type="button" routerLink="/users/roles">Cancel</button>
+                        <button mat-button type="button" routerLink="/users/roles">{{ 'COMMON.CANCEL' | transloco }}</button>
                         <button mat-flat-button color="primary" type="submit" class="h-12 px-6 rounded-lg shadow-lg" [disabled]="form.invalid || saving">
-                            <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? 'Saving…' : 'Save' }}</span>
+                            <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ (saving ? 'ADMIN.ROLE.FORM.SAVING' : 'COMMON.SAVE') | transloco }}</span>
                         </button>
                     </div>
                 </form>

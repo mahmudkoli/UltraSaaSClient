@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -13,10 +13,13 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { fuseAnimations } from '@fuse/animations';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { PersonalService } from '../../../core/personal/personal.service';
 import { PersonalProfileDto, UpdatePersonalProfileRequest, ChangePasswordRequest } from '../../../core/personal/personal.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
+import { LanguageService } from '../../../core/i18n/language.service';
+import { TenantInfoService } from '../../../core/auth/tenant-info.service';
 
 @Component({
     selector: 'profile',
@@ -37,6 +40,7 @@ import { DateUtils } from '../../../core/utils/date.utils';
         MatProgressBarModule,
         MatSelectModule,
         MatTabsModule,
+        TranslocoModule,
     ],
 })
 export class ProfileComponent implements OnInit, OnDestroy {
@@ -50,6 +54,9 @@ export class ProfileComponent implements OnInit, OnDestroy {
     forcePasswordChange = false;
 
     private _unsubscribeAll: Subject<any> = new Subject<any>();
+    private readonly _transloco = inject(TranslocoService);
+    private readonly _languageService = inject(LanguageService);
+    private readonly _tenantInfo = inject(TenantInfoService);
 
     constructor(
         private _formBuilder: FormBuilder,
@@ -68,6 +75,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
             address: [''],
             gender: [''],
             dateOfBirth: [''],
+            // Phase 2.58 — null = inherit tenant default, else 'en' / 'bn'
+            preferredLanguage: [null as string | null],
         });
 
         this.passwordForm = this._formBuilder.group({
@@ -110,12 +119,13 @@ export class ProfileComponent implements OnInit, OnDestroy {
                         address: profile.address || '',
                         gender: profile.gender || '',
                         dateOfBirth: profile.dateOfBirth || '',
+                        preferredLanguage: profile.preferredLanguage ?? null,
                     });
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 },
                 error: () => {
-                    this._notificationService.error('Error loading profile');
+                    this._notificationService.error(this._transloco.translate('ADMIN.PROFILE.TOAST_LOAD_ERROR'));
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 },
@@ -134,6 +144,8 @@ export class ProfileComponent implements OnInit, OnDestroy {
             dateOfBirth = this._dateUtils.formatDateForAPI(formValue.dateOfBirth);
         }
 
+        const newPreferredLanguage: string | null = formValue.preferredLanguage ?? null;
+
         const request: UpdatePersonalProfileRequest = {
             id: this.profile.id,
             firstName: formValue.firstName,
@@ -143,6 +155,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
             address: formValue.address,
             gender: formValue.gender,
             dateOfBirth: dateOfBirth,
+            preferredLanguage: newPreferredLanguage,
         };
 
         this._personalService.updatePersonalProfile(request)
@@ -151,12 +164,20 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 next: () => {
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('Profile updated successfully');
+                    this._notificationService.success(this._transloco.translate('ADMIN.PROFILE.TOAST_UPDATED'));
+
+                    // Phase 2.58 — apply language change immediately
+                    if (newPreferredLanguage) {
+                        this._languageService.setActiveLang(newPreferredLanguage);
+                    } else {
+                        const tenantDefault = this._tenantInfo.info()?.defaultLanguage ?? null;
+                        this._languageService.applyFromServer(null, tenantDefault);
+                    }
                 },
                 error: () => {
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.error('Error updating profile');
+                    this._notificationService.error(this._transloco.translate('ADMIN.PROFILE.TOAST_UPDATE_FAILED'));
                 },
             });
     }
@@ -181,7 +202,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                     this.isChangingPassword = false;
                     this.passwordForm.reset();
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('Password changed successfully');
+                    this._notificationService.success(this._transloco.translate('ADMIN.PROFILE.TOAST_PASSWORD_CHANGED'));
 
                     // If we got here via the forced-change flow, drop the
                     // banner and route the user into the app proper. The next
@@ -195,7 +216,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
                 error: () => {
                     this.isChangingPassword = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.error('Error changing password');
+                    this._notificationService.error(this._transloco.translate('ADMIN.PROFILE.TOAST_PASSWORD_FAILED'));
                 },
             });
     }

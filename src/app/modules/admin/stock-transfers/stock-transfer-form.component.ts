@@ -16,6 +16,7 @@ import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
 import { StockTransfersService } from 'app/core/inventory/inventory.service';
 import { CreateStockTransferLine } from 'app/core/inventory/inventory.types';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 interface LineDraft {
     productId: string;
@@ -31,6 +32,7 @@ interface LineDraft {
         CommonModule, FormsModule, RouterModule,
         MatAutocompleteModule, MatButtonModule, MatFormFieldModule, MatIconModule,
         MatInputModule, MatSelectModule, MatTableModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -40,27 +42,27 @@ interface LineDraft {
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl shadow-lg"><mat-icon class="text-white">sync_alt</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">New Stock Transfer</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Move stock from one outlet to another. Saves as Draft — dispatch when ready.</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'INVENTORY.TRANSFERS.FORM.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'INVENTORY.TRANSFERS.FORM.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
-            <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/stock-transfers"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Cancel</span></button>
+            <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/stock-transfers"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'COMMON.CANCEL' | transloco }}</span></button>
         </div>
 
         <div class="flex-auto p-4 sm:p-6">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                 <div class="lg:col-span-2 flex flex-col gap-6">
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Outlets</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ 'INVENTORY.TRANSFERS.FORM.OUTLETS_SECTION' | transloco }}</h3>
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
-                                <mat-label>From outlet <span class="text-rose-600">*</span></mat-label>
+                                <mat-label>{{ 'INVENTORY.TRANSFERS.FORM.FROM_OUTLET_LABEL' | transloco }} <span class="text-rose-600">*</span></mat-label>
                                 <mat-select [(ngModel)]="fromOutletId" required>
                                     @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
                                 </mat-select>
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-full" hideRequiredMarker>
-                                <mat-label>To outlet <span class="text-rose-600">*</span></mat-label>
+                                <mat-label>{{ 'INVENTORY.TRANSFERS.FORM.TO_OUTLET_LABEL' | transloco }} <span class="text-rose-600">*</span></mat-label>
                                 <mat-select [(ngModel)]="toOutletId" required>
                                     @for (o of outlets(); track o.id) {
                                         <mat-option [value]="o.id" [disabled]="o.id === fromOutletId">{{ o.name }}</mat-option>
@@ -68,33 +70,33 @@ interface LineDraft {
                                 </mat-select>
                             </mat-form-field>
                             <mat-form-field appearance="outline" class="w-full sm:col-span-2">
-                                <mat-label>Notes <span class="text-gray-400 text-xs">(optional)</span></mat-label>
+                                <mat-label>{{ 'INVENTORY.TRANSFERS.FORM.NOTES_LABEL' | transloco }} <span class="text-gray-400 text-xs">{{ 'INVENTORY.TRANSFERS.FORM.OPTIONAL_HINT' | transloco }}</span></mat-label>
                                 <input matInput [(ngModel)]="notes">
                             </mat-form-field>
                         </div>
-                        <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> Required</p>
+                        <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> {{ 'INVENTORY.TRANSFERS.FORM.REQUIRED_HINT' | transloco }}</p>
                     </div>
 
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                         <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">
-                                Items <span class="text-rose-600">*</span>
+                                {{ 'INVENTORY.TRANSFERS.FORM.ITEMS_SECTION' | transloco }} <span class="text-rose-600">*</span>
                                 @if (lines().length > 0) {
                                     <span class="ml-2 inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-900/30 rounded-full px-2 py-0.5">
                                         <mat-icon class="icon-size-3.5">check_circle</mat-icon>
-                                        {{ lines().length }} added
+                                        {{ 'INVENTORY.TRANSFERS.FORM.ITEMS_ADDED_BADGE' | transloco:{ count: lines().length } }}
                                     </span>
                                 }
                             </h3>
-                            <span class="text-xs text-gray-500">At least one product required</span>
+                            <span class="text-xs text-gray-500">{{ 'INVENTORY.TRANSFERS.FORM.ITEMS_HELP' | transloco }}</span>
                         </div>
                         <div class="px-6 py-4 grid grid-cols-1 sm:grid-cols-12 gap-3 items-center bg-gray-50 dark:bg-gray-900/40">
                             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="sm:col-span-7 w-full">
-                                <mat-label>Add product</mat-label>
+                                <mat-label>{{ 'INVENTORY.TRANSFERS.FORM.ADD_PRODUCT_LABEL' | transloco }}</mat-label>
                                 <input matInput #productInput
                                        [(ngModel)]="productSearch"
                                        [matAutocomplete]="productAuto"
-                                       placeholder="Search by name or SKU">
+                                       [placeholder]="'INVENTORY.TRANSFERS.FORM.ADD_PRODUCT_PLACEHOLDER' | transloco">
                                 <mat-autocomplete #productAuto="matAutocomplete"
                                                   (optionSelected)="onProductPicked($event.option.value, productInput)"
                                                   [displayWith]="displayProduct">
@@ -108,59 +110,59 @@ interface LineDraft {
                                     }
                                     @if (productOptions().length === 0 && lines().length > 0) {
                                         <mat-option [disabled]="true" class="!opacity-100">
-                                            <span class="text-xs text-gray-500 italic">All matching products are already in this transfer.</span>
+                                            <span class="text-xs text-gray-500 italic">{{ 'INVENTORY.TRANSFERS.FORM.ALREADY_ADDED_HINT' | transloco }}</span>
                                         </mat-option>
                                     }
                                 </mat-autocomplete>
                             </mat-form-field>
                         </div>
                         <table mat-table [dataSource]="lines()" class="w-full">
-                            <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
+                            <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.FORM.COL_PRODUCT' | transloco }}</span></th>
                                 <td mat-cell *matCellDef="let l" class="pl-6">
                                     <div class="flex flex-col">
                                         <span class="text-sm font-medium">{{ l.productName }}</span>
                                         <span class="text-xs text-gray-500 font-mono">{{ l.sku }}</span>
                                     </div>
                                 </td></ng-container>
-                            <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</span></th>
+                            <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.FORM.COL_QUANTITY' | transloco }}</span></th>
                                 <td mat-cell *matCellDef="let l" class="!text-right">
                                     <div class="flex items-center justify-end gap-1">
                                         <button type="button" (click)="nudgeQty(l, -1)" [disabled]="l.quantity <= 0"
                                                 class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                aria-label="Decrease quantity">
+                                                [attr.aria-label]="'INVENTORY.TRANSFERS.FORM.DECREASE_QTY' | transloco">
                                             <mat-icon class="icon-size-4">remove</mat-icon>
                                         </button>
                                         <input type="number" min="0" step="0.001" [(ngModel)]="l.quantity"
                                                class="w-16 border rounded px-1 py-0.5 text-right tabular-nums" />
                                         <button type="button" (click)="nudgeQty(l, 1)"
                                                 class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                aria-label="Increase quantity">
+                                                [attr.aria-label]="'INVENTORY.TRANSFERS.FORM.INCREASE_QTY' | transloco">
                                             <mat-icon class="icon-size-4">add</mat-icon>
                                         </button>
                                     </div>
                                 </td></ng-container>
                             <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-6"></th>
                                 <td mat-cell *matCellDef="let l; let i = index" class="pr-6 !text-right">
-                                    <button mat-icon-button class="text-red-600" (click)="removeLine(i)" matTooltip="Remove"><mat-icon class="icon-size-5">delete</mat-icon></button>
+                                    <button mat-icon-button class="text-red-600" (click)="removeLine(i)" [matTooltip]="'INVENTORY.TRANSFERS.FORM.REMOVE_TOOLTIP' | transloco"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </td></ng-container>
                             <tr mat-header-row *matHeaderRowDef="['name','qty','actions']" class="bg-gray-50 dark:bg-gray-700"></tr>
                             <tr mat-row *matRowDef="let row; columns: ['name','qty','actions']"></tr>
                         </table>
-                        <div *ngIf="lines().length === 0" class="p-8 text-center text-sm text-gray-500">No lines yet — search for a product above.</div>
+                        <div *ngIf="lines().length === 0" class="p-8 text-center text-sm text-gray-500">{{ 'INVENTORY.TRANSFERS.FORM.NO_LINES' | transloco }}</div>
                     </div>
                 </div>
 
                 <div class="flex flex-col gap-6">
                     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">Summary</h3>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-3">{{ 'INVENTORY.TRANSFERS.FORM.SUMMARY_SECTION' | transloco }}</h3>
                         <div class="space-y-2 text-sm">
-                            <div class="flex justify-between"><span class="text-gray-600">Lines</span><span class="font-medium">{{ lines().length }}</span></div>
-                            <div class="flex justify-between"><span class="text-gray-600">Total quantity</span><span class="font-medium">{{ totalQty() | number:'1.0-3' }}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-600">{{ 'INVENTORY.TRANSFERS.FORM.SUMMARY_LINES' | transloco }}</span><span class="font-medium">{{ lines().length }}</span></div>
+                            <div class="flex justify-between"><span class="text-gray-600">{{ 'INVENTORY.TRANSFERS.FORM.SUMMARY_TOTAL_QTY' | transloco }}</span><span class="font-medium">{{ totalQty() | number:'1.0-3' }}</span></div>
                         </div>
                         <button mat-flat-button color="primary" class="w-full h-12 rounded-lg shadow-lg mt-4"
                                 [disabled]="!canSubmit() || saving"
                                 (click)="save()">
-                            <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? 'Saving…' : 'Save Draft' }}</span>
+                            <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving ? ('INVENTORY.TRANSFERS.FORM.SAVING' | transloco) : ('INVENTORY.TRANSFERS.FORM.SAVE_BUTTON' | transloco) }}</span>
                         </button>
                         <p class="text-xs text-gray-500 mt-2" *ngIf="!canSubmit()">{{ disabledReason() }}</p>
                     </div>
@@ -176,6 +178,7 @@ export class StockTransferFormComponent implements OnInit {
     private readonly outletsApi = inject(OutletsService);
     private readonly productsApi = inject(ProductsService);
     private readonly router = inject(Router);
+    private readonly _transloco = inject(TranslocoService);
 
     outlets = signal<OutletDto[]>([]);
     products = signal<ProductDto[]>([]);
@@ -206,10 +209,10 @@ export class StockTransferFormComponent implements OnInit {
     }
 
     disabledReason(): string {
-        if (!this.fromOutletId || !this.toOutletId) return 'Pick both outlets.';
-        if (this.fromOutletId === this.toOutletId) return 'From and To must differ.';
-        if (this.lines().length === 0) return 'Add at least one line.';
-        if (this.lines().some(l => l.quantity <= 0)) return 'All quantities must be greater than zero.';
+        if (!this.fromOutletId || !this.toOutletId) return this._transloco.translate('INVENTORY.TRANSFERS.FORM.DISABLED_PICK_BOTH');
+        if (this.fromOutletId === this.toOutletId) return this._transloco.translate('INVENTORY.TRANSFERS.FORM.DISABLED_SAME_OUTLET');
+        if (this.lines().length === 0) return this._transloco.translate('INVENTORY.TRANSFERS.FORM.DISABLED_ADD_LINE');
+        if (this.lines().some(l => l.quantity <= 0)) return this._transloco.translate('INVENTORY.TRANSFERS.FORM.DISABLED_QTY_POSITIVE');
         return '';
     }
 

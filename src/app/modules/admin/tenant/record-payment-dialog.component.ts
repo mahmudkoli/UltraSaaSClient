@@ -12,6 +12,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { TenantPaymentsService } from 'app/core/billing/billing.service';
 import { TenantPaymentMethod } from 'app/core/billing/billing.types';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 export interface RecordPaymentDialogData {
     tenantId: string;
@@ -35,6 +36,7 @@ const METHODS: TenantPaymentMethod[] = ['Bkash', 'Nagad', 'BankTransfer', 'Cash'
     imports: [
         CommonModule, FormsModule, MatButtonModule, MatDatepickerModule, MatDialogModule,
         MatFormFieldModule, MatIconModule, MatInputModule, MatNativeDateModule, MatSelectModule,
+        TranslocoModule,
     ],
     template: `
 <div class="p-6 min-w-[480px] max-w-[560px]">
@@ -43,18 +45,18 @@ const METHODS: TenantPaymentMethod[] = ['Bkash', 'Nagad', 'BankTransfer', 'Cash'
             <mat-icon class="text-emerald-600">payments</mat-icon>
         </div>
         <div>
-            <h2 class="text-lg font-semibold">Record payment</h2>
-            <p class="text-xs text-gray-500">{{ data.tenantName }} — extends ValidUpto + inserts notification</p>
+            <h2 class="text-lg font-semibold">{{ 'ADMIN.TENANT.RECORD_PAYMENT.TITLE' | transloco }}</h2>
+            <p class="text-xs text-gray-500">{{ 'ADMIN.TENANT.RECORD_PAYMENT.SUBTITLE' | transloco:{ name: data.tenantName } }}</p>
         </div>
     </div>
 
     <div class="grid grid-cols-2 gap-3">
         <mat-form-field appearance="outline">
-            <mat-label>Amount (BDT)</mat-label>
+            <mat-label>{{ 'ADMIN.TENANT.RECORD_PAYMENT.AMOUNT_LABEL' | transloco }}</mat-label>
             <input matInput type="number" min="0" step="0.01" [(ngModel)]="amount">
         </mat-form-field>
         <mat-form-field appearance="outline">
-            <mat-label>Method</mat-label>
+            <mat-label>{{ 'ADMIN.TENANT.RECORD_PAYMENT.METHOD_LABEL' | transloco }}</mat-label>
             <mat-select [(ngModel)]="method">
                 @for (m of methods; track m) {
                     <mat-option [value]="m">{{ m }}</mat-option>
@@ -62,30 +64,30 @@ const METHODS: TenantPaymentMethod[] = ['Bkash', 'Nagad', 'BankTransfer', 'Cash'
             </mat-select>
         </mat-form-field>
         <mat-form-field appearance="outline" class="col-span-2">
-            <mat-label>Reference (bKash trxID / cheque number)</mat-label>
-            <input matInput [(ngModel)]="reference" placeholder="e.g. BKA8X9Z1Q3">
+            <mat-label>{{ 'ADMIN.TENANT.RECORD_PAYMENT.REFERENCE_LABEL' | transloco }}</mat-label>
+            <input matInput [(ngModel)]="reference" [placeholder]="'ADMIN.TENANT.RECORD_PAYMENT.REFERENCE_PLACEHOLDER' | transloco">
         </mat-form-field>
         <mat-form-field appearance="outline">
-            <mat-label>Paid on</mat-label>
+            <mat-label>{{ 'ADMIN.TENANT.RECORD_PAYMENT.PAID_ON_LABEL' | transloco }}</mat-label>
             <input matInput [matDatepicker]="paidPicker" [(ngModel)]="paidOn">
             <mat-datepicker-toggle matIconSuffix [for]="paidPicker"></mat-datepicker-toggle>
             <mat-datepicker #paidPicker></mat-datepicker>
         </mat-form-field>
         <div></div>
         <mat-form-field appearance="outline">
-            <mat-label>Period start</mat-label>
+            <mat-label>{{ 'ADMIN.TENANT.RECORD_PAYMENT.PERIOD_START_LABEL' | transloco }}</mat-label>
             <input matInput [matDatepicker]="startPicker" [(ngModel)]="periodStart">
             <mat-datepicker-toggle matIconSuffix [for]="startPicker"></mat-datepicker-toggle>
             <mat-datepicker #startPicker></mat-datepicker>
         </mat-form-field>
         <mat-form-field appearance="outline">
-            <mat-label>Period end</mat-label>
+            <mat-label>{{ 'ADMIN.TENANT.RECORD_PAYMENT.PERIOD_END_LABEL' | transloco }}</mat-label>
             <input matInput [matDatepicker]="endPicker" [(ngModel)]="periodEnd">
             <mat-datepicker-toggle matIconSuffix [for]="endPicker"></mat-datepicker-toggle>
             <mat-datepicker #endPicker></mat-datepicker>
         </mat-form-field>
         <mat-form-field appearance="outline" class="col-span-2">
-            <mat-label>Notes (internal)</mat-label>
+            <mat-label>{{ 'ADMIN.TENANT.RECORD_PAYMENT.NOTES_LABEL' | transloco }}</mat-label>
             <textarea matInput rows="2" [(ngModel)]="notes"></textarea>
         </mat-form-field>
     </div>
@@ -95,10 +97,10 @@ const METHODS: TenantPaymentMethod[] = ['Bkash', 'Nagad', 'BankTransfer', 'Cash'
     }
 
     <div class="flex justify-end gap-2 mt-4">
-        <button mat-button (click)="ref.close()" [disabled]="busy()">Cancel</button>
+        <button mat-button (click)="ref.close()" [disabled]="busy()">{{ 'COMMON.CANCEL' | transloco }}</button>
         <button mat-flat-button color="primary" (click)="submit()" [disabled]="busy() || !valid()">
             <mat-icon class="icon-size-5 mr-1">check</mat-icon>
-            <span>{{ busy() ? 'Recording…' : 'Record payment' }}</span>
+            <span>{{ (busy() ? 'ADMIN.TENANT.RECORD_PAYMENT.RECORDING' : 'ADMIN.TENANT.RECORD_PAYMENT.RECORD_BUTTON') | transloco }}</span>
         </button>
     </div>
 </div>
@@ -107,6 +109,7 @@ const METHODS: TenantPaymentMethod[] = ['Bkash', 'Nagad', 'BankTransfer', 'Cash'
 export class RecordPaymentDialogComponent implements OnInit {
     private readonly api = inject(TenantPaymentsService);
     private readonly snack = inject(MatSnackBar);
+    private readonly _transloco = inject(TranslocoService);
 
     readonly methods = METHODS;
     amount: number | null = null;
@@ -164,12 +167,12 @@ export class RecordPaymentDialogComponent implements OnInit {
             next: () => {
                 this.busy.set(false);
                 const upto = this.periodEnd.toLocaleDateString();
-                this.snack.open(`Payment recorded — subscription extended to ${upto}.`, 'OK', { duration: 4000 });
+                this.snack.open(this._transloco.translate('ADMIN.TENANT.RECORD_PAYMENT.SUCCESS_TOAST', { date: upto }), this._transloco.translate('COMMON.YES'), { duration: 4000 });
                 this.ref.close(true);
             },
             error: err => {
                 this.busy.set(false);
-                this.errorMsg.set(err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Failed to record payment.');
+                this.errorMsg.set(err?.error?.exception ?? err?.error?.title ?? err?.message ?? this._transloco.translate('ADMIN.TENANT.RECORD_PAYMENT.ERROR_DEFAULT'));
             },
         });
     }

@@ -10,6 +10,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { GoodsReceiptsService, PurchaseOrdersService } from 'app/core/purchasing/purchasing.service';
 import { CreateGoodsReceiptLine, PurchaseOrderDto } from 'app/core/purchasing/purchasing.types';
 import { ProductsService } from 'app/core/catalog/catalog.service';
@@ -37,7 +38,7 @@ interface GRLineDraft {
     selector: 'app-goods-receipt-form',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatTableModule, MatTooltipModule, MatDatepickerModule, MatNativeDateModule,
     ],
@@ -49,13 +50,13 @@ interface GRLineDraft {
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-teal-500 to-emerald-600 rounded-xl shadow-lg"><mat-icon class="text-white">local_shipping</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Receive Goods</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" *ngIf="po(); else hdrLoading">Against PO <span class="font-mono">{{ po()?.poNumber }}</span></p>
-                    <ng-template #hdrLoading><p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Loading PO…</p></ng-template>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'PURCHASING.RECEIPTS.FORM.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" *ngIf="po(); else hdrLoading">{{ 'PURCHASING.RECEIPTS.FORM.AGAINST_PO_PREFIX' | transloco }} <span class="font-mono">{{ po()?.poNumber }}</span></p>
+                    <ng-template #hdrLoading><p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'PURCHASING.RECEIPTS.FORM.LOADING_PO' | transloco }}</p></ng-template>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-                <button mat-stroked-button class="h-12 px-6 rounded-lg" [routerLink]="['/purchase-orders', poId]"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Back to PO</span></button>
+                <button mat-stroked-button class="h-12 px-6 rounded-lg" [routerLink]="['/purchase-orders', poId]"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'PURCHASING.RECEIPTS.FORM.BACK_TO_PO' | transloco }}</span></button>
             </div>
         </div>
 
@@ -66,17 +67,17 @@ interface GRLineDraft {
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center"><mat-icon class="text-violet-600 dark:text-violet-400 text-lg">inventory_2</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Items to Receive</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'PURCHASING.RECEIPTS.FORM.ITEMS_SECTION' | transloco }}</h3>
                                 <div class="ml-auto flex items-center gap-2">
                                     <button type="button" (click)="receiveAllLines()"
                                             class="text-xs px-3 py-1.5 rounded-lg border text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
-                                            matTooltip="Set every line's received qty to its outstanding qty">
-                                        Receive all
+                                            [matTooltip]="'PURCHASING.RECEIPTS.FORM.RECEIVE_ALL_TOOLTIP' | transloco">
+                                        {{ 'PURCHASING.RECEIPTS.FORM.RECEIVE_ALL' | transloco }}
                                     </button>
                                     <button type="button" (click)="clearAllReceived()"
                                             class="text-xs px-3 py-1.5 rounded-lg border text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700"
-                                            matTooltip="Reset every line's received qty to zero">
-                                        Clear
+                                            [matTooltip]="'PURCHASING.RECEIPTS.FORM.CLEAR_TOOLTIP' | transloco">
+                                        {{ 'PURCHASING.RECEIPTS.FORM.CLEAR' | transloco }}
                                     </button>
                                     <span class="text-xs text-gray-500 ml-2">{{ optionalHint() }}</span>
                                 </div>
@@ -87,16 +88,16 @@ interface GRLineDraft {
                                     <div class="flex items-center justify-between mb-3">
                                         <div class="flex flex-col">
                                             <span class="text-sm font-semibold text-gray-900 dark:text-white">{{ l.productName }}</span>
-                                            <span class="text-xs text-gray-500 font-mono">{{ l.sku }} · outstanding {{ l.outstanding | number:'1.0-3' }} &#64; {{ l.unitCost | number:'1.2-2' }}</span>
+                                            <span class="text-xs text-gray-500 font-mono">{{ l.sku }} · {{ 'PURCHASING.RECEIPTS.FORM.OUTSTANDING_LABEL' | transloco }} {{ l.outstanding | number:'1.0-3' }} &#64; {{ l.unitCost | number:'1.2-2' }}</span>
                                         </div>
                                     </div>
                                     <div class="flex flex-wrap items-start gap-x-6 gap-y-3">
                                         <!-- Received qty stepper -->
                                         <div class="flex items-center gap-2">
-                                            <span class="text-xs text-gray-500 w-20">Received</span>
+                                            <span class="text-xs text-gray-500 w-20">{{ 'PURCHASING.RECEIPTS.FORM.RECEIVED_LABEL' | transloco }}</span>
                                             <button type="button" (click)="nudgeReceived(l, -1)" [disabled]="l.quantityReceived <= 0"
                                                     class="w-7 h-7 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                    aria-label="Decrease quantity">
+                                                    [attr.aria-label]="'PURCHASING.RECEIPTS.FORM.DECREASE_QTY' | transloco">
                                                 <mat-icon class="icon-size-4">remove</mat-icon>
                                             </button>
                                             <input type="number" min="0" step="0.001" [max]="l.outstanding"
@@ -104,39 +105,39 @@ interface GRLineDraft {
                                                    class="w-20 h-7 border rounded px-1 text-right tabular-nums"
                                                    [class.!border-rose-400]="l.quantityReceived > l.outstanding"
                                                    [class.!text-rose-600]="l.quantityReceived > l.outstanding"
-                                                   [matTooltip]="l.quantityReceived > l.outstanding ? ('Exceeds outstanding ' + l.outstanding) : ''" />
+                                                   [matTooltip]="l.quantityReceived > l.outstanding ? exceedsTip(l.outstanding) : ''" />
                                             <button type="button" (click)="nudgeReceived(l, 1)" [disabled]="l.quantityReceived >= l.outstanding"
                                                     class="w-7 h-7 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                    aria-label="Increase quantity">
+                                                    [attr.aria-label]="'PURCHASING.RECEIPTS.FORM.INCREASE_QTY' | transloco">
                                                 <mat-icon class="icon-size-4">add</mat-icon>
                                             </button>
                                             <button type="button" (click)="receiveAll(l)" [disabled]="l.quantityReceived === l.outstanding"
                                                     class="text-xs h-7 px-2 rounded border text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30 disabled:opacity-40"
-                                                    matTooltip="Receive full outstanding">
-                                                All
+                                                    [matTooltip]="'PURCHASING.RECEIPTS.FORM.RECEIVE_FULL_TOOLTIP' | transloco">
+                                                {{ 'PURCHASING.RECEIPTS.FORM.RECEIVE_FULL_BUTTON' | transloco }}
                                             </button>
                                         </div>
 
                                         <!-- Override unit cost — inline to match the stepper height -->
                                         <div class="flex items-center gap-2">
-                                            <span class="text-xs text-gray-500">Cost</span>
+                                            <span class="text-xs text-gray-500">{{ 'PURCHASING.RECEIPTS.FORM.COST_LABEL' | transloco }}</span>
                                             <input type="number" min="0" step="0.01" [(ngModel)]="l.overrideUnitCost"
                                                    [placeholder]="(l.unitCost | number:'1.2-2') ?? ''"
                                                    class="w-24 h-7 border rounded px-2 text-right tabular-nums"
-                                                   [matTooltip]="'PO unit cost ' + (l.unitCost | number:'1.2-2') + ' — leave blank to use PO price'" />
-                                            <span class="text-[11px] text-gray-400" *ngIf="l.overrideUnitCost == null">(PO {{ l.unitCost | number:'1.2-2' }})</span>
+                                                   [matTooltip]="poCostTip(l.unitCost)" />
+                                            <span class="text-[11px] text-gray-400" *ngIf="l.overrideUnitCost == null">{{ 'PURCHASING.RECEIPTS.FORM.PO_COST_HINT' | transloco:{ cost: (l.unitCost | number:'1.2-2') } }}</span>
                                         </div>
 
                                         @if (l.requiresBatch) {
                                             <div class="flex items-center gap-2">
-                                                <span class="text-xs text-gray-500">Batch <span class="text-rose-600">*</span></span>
+                                                <span class="text-xs text-gray-500">{{ 'PURCHASING.RECEIPTS.FORM.BATCH_LABEL' | transloco }} <span class="text-rose-600">*</span></span>
                                                 <input type="text" [(ngModel)]="l.batchNumber"
-                                                       placeholder="Batch #"
+                                                       [placeholder]="'PURCHASING.RECEIPTS.FORM.BATCH_PLACEHOLDER' | transloco"
                                                        class="w-32 h-7 border rounded px-2 tabular-nums"
                                                        [class.!border-rose-400]="!l.batchNumber.trim()" />
                                             </div>
                                             <div class="flex items-center gap-2">
-                                                <span class="text-xs text-gray-500">Expiry</span>
+                                                <span class="text-xs text-gray-500">{{ 'PURCHASING.RECEIPTS.FORM.EXPIRY_LABEL' | transloco }}</span>
                                                 <!-- Native date input — same h-7 as the rest of the inline row so heights match. -->
                                                 <input type="date"
                                                        [ngModel]="expiryDateIso(l)"
@@ -152,13 +153,13 @@ interface GRLineDraft {
                                                      Each input is one slot of the serials array. -->
                                                 <div class="flex items-center gap-2 flex-wrap">
                                                     <span class="text-xs text-gray-500">
-                                                        Serials <span class="text-rose-600">*</span>
+                                                        {{ 'PURCHASING.RECEIPTS.FORM.SERIALS_LABEL' | transloco }} <span class="text-rose-600">*</span>
                                                     </span>
                                                     @for (slot of serialSlots(l); track $index) {
                                                         <input type="text"
                                                                [value]="slot"
                                                                (input)="setSerialSlot(l, $index, $any($event.target).value)"
-                                                               placeholder="SN / IMEI…"
+                                                               [placeholder]="'PURCHASING.RECEIPTS.FORM.SERIALS_PLACEHOLDER' | transloco"
                                                                class="w-44 h-7 border rounded px-2 text-sm font-mono"
                                                                [class.!border-rose-400]="!slot.trim()" />
                                                     }
@@ -175,8 +176,8 @@ interface GRLineDraft {
                                                      No mat-form-field wrapper to keep it tight; one line per serial. -->
                                                 <div class="basis-full">
                                                     <label class="text-xs text-gray-500 block mb-1">
-                                                        Serials <span class="text-rose-600">*</span>
-                                                        <span class="text-gray-400">(one per line — paste {{ l.quantityReceived | number:'1.0-0' }} scanned values)</span>
+                                                        {{ 'PURCHASING.RECEIPTS.FORM.SERIALS_LABEL' | transloco }} <span class="text-rose-600">*</span>
+                                                        <span class="text-gray-400">{{ 'PURCHASING.RECEIPTS.FORM.SERIALS_HELP_LARGE' | transloco:{ count: (l.quantityReceived | number:'1.0-0') } }}</span>
                                                     </label>
                                                     <div class="flex items-start gap-2">
                                                         <textarea [rows]="serialRows(l)"
@@ -197,7 +198,7 @@ interface GRLineDraft {
                                     </div>
                                 </div>
                             </div>
-                            <div *ngIf="lines().length === 0" class="p-8 text-center text-sm text-gray-500">All lines on this PO have been fully received.</div>
+                            <div *ngIf="lines().length === 0" class="p-8 text-center text-sm text-gray-500">{{ 'PURCHASING.RECEIPTS.FORM.ALL_RECEIVED' | transloco }}</div>
                         </div>
                     </div>
 
@@ -205,21 +206,21 @@ interface GRLineDraft {
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
                             <div class="flex items-center space-x-3 mb-4">
                                 <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center"><mat-icon class="text-emerald-600 dark:text-emerald-400 text-lg">summarize</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Receipt Summary</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'PURCHASING.RECEIPTS.FORM.SUMMARY_SECTION' | transloco }}</h3>
                             </div>
                             <div class="space-y-2 text-sm">
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Lines being received</span><span class="font-medium tabular-nums">{{ activeLineCount() }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Total quantity</span><span class="font-medium tabular-nums">{{ totalQty() | number:'1.0-3' }}</span></div>
-                                <div class="flex justify-between text-base font-semibold pt-2 border-t border-gray-200 dark:border-gray-700"><span>Receipt cost</span><span class="tabular-nums">{{ totalCost() | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'PURCHASING.RECEIPTS.FORM.SUMMARY_LINES' | transloco }}</span><span class="font-medium tabular-nums">{{ activeLineCount() }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'PURCHASING.RECEIPTS.FORM.SUMMARY_TOTAL_QTY' | transloco }}</span><span class="font-medium tabular-nums">{{ totalQty() | number:'1.0-3' }}</span></div>
+                                <div class="flex justify-between text-base font-semibold pt-2 border-t border-gray-200 dark:border-gray-700"><span>{{ 'PURCHASING.RECEIPTS.FORM.SUMMARY_TOTAL_COST' | transloco }}</span><span class="tabular-nums">{{ totalCost() | number:'1.2-2' }}</span></div>
                             </div>
                             <mat-form-field appearance="outline" class="w-full mt-4">
-                                <mat-label>Notes</mat-label>
+                                <mat-label>{{ 'PURCHASING.RECEIPTS.FORM.NOTES_LABEL' | transloco }}</mat-label>
                                 <textarea matInput rows="3" [(ngModel)]="notes"></textarea>
                             </mat-form-field>
                             <button mat-flat-button color="primary" class="w-full h-12 rounded-lg shadow-lg mt-2"
                                     [disabled]="!canSubmit() || saving"
                                     (click)="save()">
-                                <mat-icon class="icon-size-5 mr-2">check_circle</mat-icon><span>{{ saving ? 'Saving…' : 'Receive Goods' }}</span>
+                                <mat-icon class="icon-size-5 mr-2">check_circle</mat-icon><span>{{ (saving ? 'PURCHASING.RECEIPTS.FORM.SAVING' : 'PURCHASING.RECEIPTS.FORM.SAVE_BUTTON') | transloco }}</span>
                             </button>
                             <p class="text-xs text-gray-500 mt-2" *ngIf="!canSubmit()">{{ disabledReason() }}</p>
                         </div>
@@ -237,6 +238,7 @@ export class GoodsReceiptFormComponent implements OnInit {
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
     private readonly productsApi = inject(ProductsService);
+    private readonly _transloco = inject(TranslocoService);
 
     poId!: string;
     po = signal<PurchaseOrderDto | null>(null);
@@ -255,9 +257,17 @@ export class GoodsReceiptFormComponent implements OnInit {
     optionalHint(): string {
         const lines = this.lines();
         const bits: string[] = [];
-        if (lines.some(l => l.requiresBatch)) bits.push('batch / expiry required on batch-tracked lines');
-        if (lines.some(l => l.requiresSerial)) bits.push('serials required on serial-tracked lines (one per unit)');
+        if (lines.some(l => l.requiresBatch)) bits.push(this._transloco.translate('PURCHASING.RECEIPTS.FORM.HINT_BATCH'));
+        if (lines.some(l => l.requiresSerial)) bits.push(this._transloco.translate('PURCHASING.RECEIPTS.FORM.HINT_SERIAL'));
         return bits.length ? ' ' + bits.join('; ') + '.' : '';
+    }
+
+    exceedsTip(max: number): string {
+        return this._transloco.translate('PURCHASING.RECEIPTS.FORM.EXCEEDS_OUTSTANDING', { max });
+    }
+
+    poCostTip(cost: number): string {
+        return this._transloco.translate('PURCHASING.RECEIPTS.FORM.PO_COST_TOOLTIP', { cost: cost.toFixed(2) });
     }
 
     activeLineCount(): number { return this.lines().filter(l => l.quantityReceived > 0).length; }
@@ -332,14 +342,14 @@ export class GoodsReceiptFormComponent implements OnInit {
     }
 
     disabledReason(): string {
-        if (this.activeLineCount() === 0) return 'Set received quantity on at least one line.';
+        if (this.activeLineCount() === 0) return this._transloco.translate('PURCHASING.RECEIPTS.FORM.DISABLED_NO_LINES');
         const active = this.lines().filter(l => l.quantityReceived > 0);
         if (active.some(l => l.quantityReceived > l.outstanding))
-            return 'Some lines exceed outstanding quantity.';
+            return this._transloco.translate('PURCHASING.RECEIPTS.FORM.DISABLED_EXCEEDS');
         if (active.some(l => l.requiresBatch && !l.batchNumber.trim()))
-            return 'Batch number required on batch-tracked lines.';
+            return this._transloco.translate('PURCHASING.RECEIPTS.FORM.DISABLED_BATCH_MISSING');
         if (active.some(l => l.requiresSerial && !this.serialMatches(l)))
-            return 'Serial-tracked lines need exactly one serial number per received unit.';
+            return this._transloco.translate('PURCHASING.RECEIPTS.FORM.DISABLED_SERIAL_COUNT');
         return '';
     }
 

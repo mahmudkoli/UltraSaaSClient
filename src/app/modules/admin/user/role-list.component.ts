@@ -8,13 +8,14 @@ import { Router, RouterModule } from '@angular/router';
 import { RolesService } from 'app/core/roles/roles.service';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { RoleDto } from 'app/core/roles/roles.types';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 const BUILT_IN_ROLES = ['Admin', 'Manager', 'InventoryClerk', 'Cashier', 'Basic'];
 
 @Component({
     selector: 'app-role-list',
     standalone: true,
-    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatTableModule, MatTooltipModule, TranslocoModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -23,13 +24,13 @@ const BUILT_IN_ROLES = ['Admin', 'Manager', 'InventoryClerk', 'Cashier', 'Basic'
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-violet-500 to-fuchsia-600 rounded-xl shadow-lg"><mat-icon class="text-white">manage_accounts</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Roles</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Built-in operational roles and any custom roles your tenant defines</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'ADMIN.ROLE.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'ADMIN.ROLE.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/users"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Back to Users</span></button>
-                <button mat-fab color="primary" routerLink="create" matTooltip="New role"><mat-icon>add</mat-icon></button>
+                <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/users"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'ADMIN.ROLE.LIST.BACK_TO_USERS' | transloco }}</span></button>
+                <button mat-fab color="primary" routerLink="create" [matTooltip]="'ADMIN.ROLE.LIST.ADD_TOOLTIP' | transloco"><mat-icon>add</mat-icon></button>
             </div>
         </div>
 
@@ -37,21 +38,21 @@ const BUILT_IN_ROLES = ['Admin', 'Manager', 'InventoryClerk', 'Cashier', 'Basic'
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table [dataSource]="rows()" class="w-full">
-                        <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span></th>
+                        <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.ROLE.LIST.COL_NAME' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">
                                 <div class="flex items-center space-x-2">
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.name }}</span>
-                                    <span *ngIf="isBuiltIn(r.name)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200">built-in</span>
+                                    <span *ngIf="isBuiltIn(r.name)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200">{{ 'ADMIN.ROLE.LIST.BUILT_IN_BADGE' | transloco }}</span>
                                 </div>
                             </td></ng-container>
-                        <ng-container matColumnDef="description"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Description</span></th>
+                        <ng-container matColumnDef="description"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.ROLE.LIST.COL_DESCRIPTION' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="text-sm text-gray-600 dark:text-gray-400">{{ r.description || '—' }}</td></ng-container>
-                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.ROLE.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" [routerLink]="[r.id, 'permissions']" matTooltip="Edit permissions"><mat-icon class="icon-size-5">tune</mat-icon></button>
-                                    <button mat-icon-button class="text-violet-600" [routerLink]="[r.id, 'edit']" [disabled]="r.name === 'Admin'" matTooltip="Rename / describe"><mat-icon class="icon-size-5">edit</mat-icon></button>
-                                    <button mat-icon-button class="text-red-600" (click)="remove(r)" [disabled]="isBuiltIn(r.name)" matTooltip="Delete (custom roles only)"><mat-icon class="icon-size-5">delete</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" [routerLink]="[r.id, 'permissions']" [matTooltip]="'ADMIN.ROLE.LIST.EDIT_PERMS_TOOLTIP' | transloco"><mat-icon class="icon-size-5">tune</mat-icon></button>
+                                    <button mat-icon-button class="text-violet-600" [routerLink]="[r.id, 'edit']" [disabled]="r.name === 'Admin'" [matTooltip]="'ADMIN.ROLE.LIST.EDIT_TOOLTIP' | transloco"><mat-icon class="icon-size-5">edit</mat-icon></button>
+                                    <button mat-icon-button class="text-red-600" (click)="remove(r)" [disabled]="isBuiltIn(r.name)" [matTooltip]="'ADMIN.ROLE.LIST.DELETE_TOOLTIP' | transloco"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </div>
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
@@ -61,8 +62,8 @@ const BUILT_IN_ROLES = ['Admin', 'Manager', 'InventoryClerk', 'Cashier', 'Basic'
 
                 <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">manage_accounts</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No roles yet</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Built-in roles are seeded automatically; create custom roles to refine access.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'ADMIN.ROLE.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'ADMIN.ROLE.LIST.EMPTY_SUBTITLE' | transloco }}</p>
                 </div>
             </div>
         </div>
@@ -74,6 +75,7 @@ export class RoleListComponent implements OnInit {
     private readonly api = inject(RolesService);
     private readonly router = inject(Router);
     private readonly _confirm = inject(FuseConfirmationService);
+    private readonly _transloco = inject(TranslocoService);
     rows = signal<RoleDto[]>([]);
     loading = signal(true);
     cols = ['name', 'description', 'actions'];
@@ -91,10 +93,13 @@ export class RoleListComponent implements OnInit {
     remove(r: RoleDto): void {
         if (this.isBuiltIn(r.name)) return;
         this._confirm.open({
-            title: 'Delete role',
-            message: `Delete role "${r.name}"? Users assigned this role lose its permissions.`,
+            title: this._transloco.translate('ADMIN.ROLE.DELETE_TITLE'),
+            message: this._transloco.translate('ADMIN.ROLE.DELETE_CONFIRM', { name: r.name }),
             icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
-            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+            actions: {
+                confirm: { label: this._transloco.translate('COMMON.DELETE'), color: 'warn' },
+                cancel: { label: this._transloco.translate('COMMON.CANCEL') },
+            },
         }).afterClosed().subscribe(result => {
             if (result !== 'confirmed') return;
             this.api.delete(r.id).subscribe(() => this.load());

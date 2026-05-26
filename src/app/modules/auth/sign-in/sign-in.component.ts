@@ -11,6 +11,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertComponent, FuseAlertType } from '@fuse/components/alert';
+import { TranslocoModule } from '@ngneat/transloco';
 import { AuthService } from 'app/core/auth/auth.service';
 import { TenantService } from 'app/core/tenant/tenant.service';
 import { TenantThemeService } from 'app/core/tenant/tenant-theme.service';
@@ -37,7 +38,7 @@ const DEMO_LOGINS: DemoLogin[] = [
     encapsulation: ViewEncapsulation.None,
     animations   : fuseAnimations,
     standalone   : true,
-    imports      : [RouterLink, FuseAlertComponent, NgIf, NgFor, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCheckboxModule, MatProgressSpinnerModule, MatSelectModule],
+    imports      : [RouterLink, FuseAlertComponent, NgIf, NgFor, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCheckboxModule, MatProgressSpinnerModule, MatSelectModule, TranslocoModule],
 })
 export class AuthSignInComponent implements OnInit
 {

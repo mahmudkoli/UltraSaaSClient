@@ -12,6 +12,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { StockCountsService } from 'app/core/inventory/inventory.service';
 import { StockCountDto } from 'app/core/inventory/inventory.types';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 @Component({
     selector: 'app-stock-count-detail',
@@ -20,6 +21,7 @@ import { StockCountDto } from 'app/core/inventory/inventory.types';
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule,
         MatInputModule, MatSnackBarModule, MatTableModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -31,26 +33,26 @@ import { StockCountDto } from 'app/core/inventory/inventory.types';
                 <div *ngIf="count() as c">
                     <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate font-mono">{{ c.countNumber }}</h2>
                     <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                        {{ c.scope }} · started {{ c.startedAt | date:'short' }}
+                        {{ scopeLabel(c.scope) | transloco }} · {{ 'INVENTORY.COUNTS.DETAIL.STARTED_PREFIX' | transloco }} {{ c.startedAt | date:'short' }}
                         <span class="ml-2 inline-flex px-2 py-0.5 rounded-full text-xs font-medium"
                               [class.bg-amber-100]="c.status === 'InProgress'" [class.text-amber-800]="c.status === 'InProgress'"
                               [class.bg-emerald-100]="c.status === 'Completed'" [class.text-emerald-800]="c.status === 'Completed'"
                               [class.bg-rose-100]="c.status === 'Cancelled'" [class.text-rose-800]="c.status === 'Cancelled'">
-                            {{ c.status }}
+                            {{ statusLabel(c.status) | transloco }}
                         </span>
                     </p>
                 </div>
             </div>
             <div class="flex items-center gap-2">
                 <button mat-stroked-button class="h-12 px-4 rounded-lg" routerLink="/stock-counts">
-                    <mat-icon class="icon-size-5 mr-1">arrow_back</mat-icon><span>Back</span>
+                    <mat-icon class="icon-size-5 mr-1">arrow_back</mat-icon><span>{{ 'INVENTORY.COUNTS.DETAIL.BACK_BUTTON' | transloco }}</span>
                 </button>
                 @if (count()?.status === 'InProgress') {
                     <button mat-stroked-button color="warn" class="h-12 px-4 rounded-lg" (click)="cancel()" [disabled]="busy">
-                        <mat-icon class="icon-size-5 mr-1">cancel</mat-icon><span>Cancel</span>
+                        <mat-icon class="icon-size-5 mr-1">cancel</mat-icon><span>{{ 'INVENTORY.COUNTS.DETAIL.CANCEL_BUTTON' | transloco }}</span>
                     </button>
                     <button mat-flat-button color="primary" class="h-12 px-4 rounded-lg shadow-lg" (click)="complete()" [disabled]="busy">
-                        <mat-icon class="icon-size-5 mr-1">check_circle</mat-icon><span>{{ busy ? 'Posting…' : 'Complete & Post Variances' }}</span>
+                        <mat-icon class="icon-size-5 mr-1">check_circle</mat-icon><span>{{ busy ? ('INVENTORY.COUNTS.DETAIL.POSTING' | transloco) : ('INVENTORY.COUNTS.DETAIL.COMPLETE_BUTTON' | transloco) }}</span>
                     </button>
                 }
             </div>
@@ -60,19 +62,19 @@ import { StockCountDto } from 'app/core/inventory/inventory.types';
             <!-- summary cards -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
                 <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs text-gray-500 uppercase tracking-wider">Lines</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.SUMMARY_LINES' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1">{{ c.lineCount }}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs text-gray-500 uppercase tracking-wider">Counted</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.SUMMARY_COUNTED' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1">{{ c.countedLines }} / {{ c.lineCount }}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs text-gray-500 uppercase tracking-wider">|Total Variance|</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.SUMMARY_VARIANCE' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1">{{ c.totalAbsVariance | number:'1.0-3' }}</div>
                 </div>
                 <div class="bg-white dark:bg-gray-800 rounded-xl p-4 border border-gray-200 dark:border-gray-700">
-                    <div class="text-xs text-gray-500 uppercase tracking-wider">Lines w/ Variance</div>
+                    <div class="text-xs text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.SUMMARY_VARIANCE_LINES' | transloco }}</div>
                     <div class="text-2xl font-bold mt-1">{{ varianceLines() }}</div>
                 </div>
             </div>
@@ -80,12 +82,12 @@ import { StockCountDto } from 'app/core/inventory/inventory.types';
             <!-- filter bar -->
             <div class="bg-white dark:bg-gray-800 rounded-xl p-3 border border-gray-200 dark:border-gray-700 flex items-center gap-3">
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1">
-                    <mat-label>Search SKU or product</mat-label>
+                    <mat-label>{{ 'INVENTORY.COUNTS.DETAIL.SEARCH_LABEL' | transloco }}</mat-label>
                     <input matInput [ngModel]="search()" (ngModelChange)="search.set($event)">
                 </mat-form-field>
                 <button mat-stroked-button (click)="hideCounted.set(!hideCounted())" [class.!bg-emerald-50]="hideCounted()">
                     <mat-icon class="icon-size-5 mr-1">{{ hideCounted() ? 'visibility_off' : 'visibility' }}</mat-icon>
-                    {{ hideCounted() ? 'Showing uncounted only' : 'Show all' }}
+                    {{ hideCounted() ? ('INVENTORY.COUNTS.DETAIL.SHOWING_UNCOUNTED' | transloco) : ('INVENTORY.COUNTS.DETAIL.SHOW_ALL' | transloco) }}
                 </button>
             </div>
 
@@ -93,13 +95,13 @@ import { StockCountDto } from 'app/core/inventory/inventory.types';
             <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="overflow-x-auto">
                     <table mat-table [dataSource]="visibleLines()" class="w-full">
-                        <ng-container matColumnDef="sku"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</span></th>
+                        <ng-container matColumnDef="sku"><th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.COL_SKU' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let l" class="pl-4 sm:pl-6 font-mono">{{ l.sku }}</td></ng-container>
-                        <ng-container matColumnDef="product"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
+                        <ng-container matColumnDef="product"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.COL_PRODUCT' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let l">{{ l.productName }}</td></ng-container>
-                        <ng-container matColumnDef="expected"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">System</span></th>
+                        <ng-container matColumnDef="expected"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.COL_SYSTEM' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let l" class="!text-right">{{ l.expectedQty | number:'1.0-3' }}</td></ng-container>
-                        <ng-container matColumnDef="counted"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Counted</span></th>
+                        <ng-container matColumnDef="counted"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.COL_COUNTED' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let l" class="!text-right">
                                 @if (count()?.status === 'InProgress') {
                                     <input type="number" min="0" step="0.001"
@@ -111,7 +113,7 @@ import { StockCountDto } from 'app/core/inventory/inventory.types';
                                     {{ l.countedQty != null ? (l.countedQty | number:'1.0-3') : '—' }}
                                 }
                             </td></ng-container>
-                        <ng-container matColumnDef="variance"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Δ</span></th>
+                        <ng-container matColumnDef="variance"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.COUNTS.DETAIL.COL_VARIANCE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let l" class="!text-right font-semibold"
                                 [class.text-emerald-700]="l.hasCount && l.variance > 0"
                                 [class.text-rose-700]="l.hasCount && l.variance < 0"
@@ -124,10 +126,10 @@ import { StockCountDto } from 'app/core/inventory/inventory.types';
                         <tr mat-row *matRowDef="let row; columns: cols"></tr>
                     </table>
                 </div>
-                <div *ngIf="visibleLines().length === 0" class="p-8 text-center text-sm text-gray-500">No lines match your filter.</div>
+                <div *ngIf="visibleLines().length === 0" class="p-8 text-center text-sm text-gray-500">{{ 'INVENTORY.COUNTS.DETAIL.NO_LINES_MATCH' | transloco }}</div>
             </div>
 
-            <p *ngIf="c.notes" class="text-sm text-gray-600 dark:text-gray-400">Notes: {{ c.notes }}</p>
+            <p *ngIf="c.notes" class="text-sm text-gray-600 dark:text-gray-400">{{ 'INVENTORY.COUNTS.DETAIL.NOTES_PREFIX' | transloco }}: {{ c.notes }}</p>
         </div>
     </div>
 </div>
@@ -139,6 +141,7 @@ export class StockCountDetailComponent implements OnInit {
     private readonly router = inject(Router);
     private readonly snack = inject(MatSnackBar);
     private readonly confirm = inject(FuseConfirmationService);
+    private readonly _transloco = inject(TranslocoService);
 
     count = signal<StockCountDto | null>(null);
     draft: Record<string, number> = {};
@@ -161,6 +164,24 @@ export class StockCountDetailComponent implements OnInit {
 
     varianceLines = computed(() => this.count()?.lines.filter(l => l.hasCount && l.variance !== 0).length ?? 0);
 
+    statusLabel(s: string): string {
+        switch (s) {
+            case 'InProgress': return 'INVENTORY.COUNTS.LIST.STATUS_IN_PROGRESS';
+            case 'Completed': return 'INVENTORY.COUNTS.LIST.STATUS_COMPLETED';
+            case 'Cancelled': return 'INVENTORY.COUNTS.LIST.STATUS_CANCELLED';
+            default: return 'INVENTORY.COUNTS.LIST.STATUS_ALL';
+        }
+    }
+
+    scopeLabel(s: string): string {
+        switch (s) {
+            case 'AllProducts': return 'INVENTORY.COUNTS.FORM.SCOPE_ALL';
+            case 'ByCategory': return 'INVENTORY.COUNTS.FORM.SCOPE_BY_CATEGORY';
+            case 'ByBrand': return 'INVENTORY.COUNTS.FORM.SCOPE_BY_BRAND';
+            default: return 'INVENTORY.COUNTS.FORM.SCOPE_ALL';
+        }
+    }
+
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id');
         if (id) this.reload(id);
@@ -179,8 +200,8 @@ export class StockCountDetailComponent implements OnInit {
         this.api.recordLine(c.id, { countId: c.id, lineId: line.id, countedQty: Number(next) }).subscribe({
             next: () => this.reload(c.id),
             error: err => {
-                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Could not record count';
-                this.snack.open(msg, 'OK', { duration: 5000 });
+                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? this._transloco.translate('INVENTORY.COUNTS.TOAST.RECORD_FAILED');
+                this.snack.open(msg, this._transloco.translate('INVENTORY.COUNTS.TOAST.OK'), { duration: 5000 });
             },
         });
     }
@@ -191,19 +212,19 @@ export class StockCountDetailComponent implements OnInit {
         const variance = c.lines.filter(l => l.hasCount && l.variance !== 0).length;
         const uncounted = c.lineCount - c.countedLines;
         const ref = this.confirm.open({
-            title: 'Complete count?',
-            message: `${variance} line(s) will post adjustments. ${uncounted} uncounted line(s) keep their system qty (no adjustment).`,
-            actions: { confirm: { label: 'Complete' } },
+            title: this._transloco.translate('INVENTORY.COUNTS.DETAIL.COMPLETE_TITLE'),
+            message: this._transloco.translate('INVENTORY.COUNTS.DETAIL.COMPLETE_MESSAGE', { variance, uncounted }),
+            actions: { confirm: { label: this._transloco.translate('INVENTORY.COUNTS.DETAIL.COMPLETE_CONFIRM_LABEL') } },
         });
         ref.afterClosed().subscribe(result => {
             if (result !== 'confirmed') return;
             this.busy = true;
             this.api.complete(c.id).subscribe({
-                next: () => { this.busy = false; this.reload(c.id); this.snack.open('Count completed and variances posted.', 'OK', { duration: 4000 }); },
+                next: () => { this.busy = false; this.reload(c.id); this.snack.open(this._transloco.translate('INVENTORY.COUNTS.TOAST.COMPLETED'), this._transloco.translate('INVENTORY.COUNTS.TOAST.OK'), { duration: 4000 }); },
                 error: err => {
                     this.busy = false;
-                    const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Could not complete count';
-                    this.snack.open(msg, 'OK', { duration: 6000 });
+                    const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? this._transloco.translate('INVENTORY.COUNTS.TOAST.COMPLETE_FAILED');
+                    this.snack.open(msg, this._transloco.translate('INVENTORY.COUNTS.TOAST.OK'), { duration: 6000 });
                 },
             });
         });
@@ -213,9 +234,9 @@ export class StockCountDetailComponent implements OnInit {
         const c = this.count();
         if (!c) return;
         const ref = this.confirm.open({
-            title: 'Cancel count?',
-            message: 'No adjustments will be posted. The count will be marked Cancelled.',
-            actions: { confirm: { label: 'Cancel count', color: 'warn' } },
+            title: this._transloco.translate('INVENTORY.COUNTS.DETAIL.CANCEL_TITLE'),
+            message: this._transloco.translate('INVENTORY.COUNTS.DETAIL.CANCEL_MESSAGE'),
+            actions: { confirm: { label: this._transloco.translate('INVENTORY.COUNTS.DETAIL.CANCEL_CONFIRM_LABEL'), color: 'warn' } },
         });
         ref.afterClosed().subscribe(result => {
             if (result !== 'confirmed') return;
@@ -224,8 +245,8 @@ export class StockCountDetailComponent implements OnInit {
                 next: () => { this.busy = false; this.router.navigate(['/stock-counts']); },
                 error: err => {
                     this.busy = false;
-                    const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Could not cancel count';
-                    this.snack.open(msg, 'OK', { duration: 6000 });
+                    const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? this._transloco.translate('INVENTORY.COUNTS.TOAST.CANCEL_FAILED');
+                    this.snack.open(msg, this._transloco.translate('INVENTORY.COUNTS.TOAST.OK'), { duration: 6000 });
                 },
             });
         });

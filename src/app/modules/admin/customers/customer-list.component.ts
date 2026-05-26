@@ -12,6 +12,7 @@ import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { RouterModule } from '@angular/router';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { CustomersService, SearchCustomersRequest } from 'app/core/sales/sales.service';
@@ -23,7 +24,7 @@ import { LoyaltyAdjustDialogComponent } from './loyalty-adjust-dialog.component'
     selector: 'app-customer-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
@@ -40,26 +41,26 @@ import { LoyaltyAdjustDialogComponent } from './loyalty-adjust-dialog.component'
                     <mat-icon class="text-white">groups</mat-icon>
                 </div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Customers</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Walk-in, retail, wholesale and corporate customers</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'CUSTOMERS.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'CUSTOMERS.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search customers</mat-label>
-                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Search by name, phone, email">
+                    <mat-label>{{ 'CUSTOMERS.LIST.SEARCH_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" [placeholder]="'CUSTOMERS.LIST.SEARCH_PLACEHOLDER' | transloco">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Type</mat-label>
+                    <mat-label>{{ 'CUSTOMERS.LIST.TYPE_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="typeFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All Types</mat-option>
-                        <mat-option value="Retail">Retail</mat-option>
-                        <mat-option value="Wholesale">Wholesale</mat-option>
-                        <mat-option value="Corporate">Corporate</mat-option>
+                        <mat-option value="all">{{ 'CUSTOMERS.LIST.TYPE_ALL' | transloco }}</mat-option>
+                        <mat-option value="Retail">{{ 'CUSTOMERS.LIST.TYPE_RETAIL' | transloco }}</mat-option>
+                        <mat-option value="Wholesale">{{ 'CUSTOMERS.LIST.TYPE_WHOLESALE' | transloco }}</mat-option>
+                        <mat-option value="Corporate">{{ 'CUSTOMERS.LIST.TYPE_CORPORATE' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-fab color="primary" routerLink="create" matTooltip="Add new customer">
+                <button mat-fab color="primary" routerLink="create" [matTooltip]="'CUSTOMERS.LIST.ADD_TOOLTIP' | transloco">
                     <mat-icon>add</mat-icon>
                 </button>
             </div>
@@ -70,7 +71,7 @@ import { LoyaltyAdjustDialogComponent } from './loyalty-adjust-dialog.component'
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
                         <ng-container matColumnDef="name">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span></th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'CUSTOMERS.LIST.COL_NAME' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.name }}</span>
@@ -79,35 +80,35 @@ import { LoyaltyAdjustDialogComponent } from './loyalty-adjust-dialog.component'
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="email">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'CUSTOMERS.LIST.COL_EMAIL' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.email || '—' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="type">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Type</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'CUSTOMERS.LIST.COL_TYPE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="{
                                         'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': r.customerType === 'Retail',
                                         'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200': r.customerType === 'Wholesale',
                                         'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200': r.customerType === 'Corporate'
-                                      }">{{ r.customerType }}</span>
+                                      }">{{ customerTypeLabel(r.customerType) | transloco }}</span>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="loyalty">
-                            <th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Points</span></th>
+                            <th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'CUSTOMERS.LIST.COL_POINTS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-medium">{{ r.loyaltyPoints | number:'1.0-2' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="balance">
-                            <th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Balance</span></th>
+                            <th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'CUSTOMERS.LIST.COL_BALANCE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-medium">{{ r.currentBalance | number:'1.2-2' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="actions">
-                            <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                            <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'CUSTOMERS.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" [routerLink]="[r.id]" matTooltip="Edit"><mat-icon class="icon-size-5">edit</mat-icon></button>
-                                    <button mat-icon-button class="text-rose-600" (click)="adjustLoyalty(r)" matTooltip="Adjust loyalty points"><mat-icon class="icon-size-5">redeem</mat-icon></button>
-                                    <button mat-icon-button class="text-red-600" (click)="remove(r)" matTooltip="Delete"><mat-icon class="icon-size-5">delete</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" [routerLink]="[r.id]" [matTooltip]="'CUSTOMERS.LIST.EDIT_TOOLTIP' | transloco"><mat-icon class="icon-size-5">edit</mat-icon></button>
+                                    <button mat-icon-button class="text-rose-600" (click)="adjustLoyalty(r)" [matTooltip]="'CUSTOMERS.LIST.ADJUST_LOYALTY_TOOLTIP' | transloco"><mat-icon class="icon-size-5">redeem</mat-icon></button>
+                                    <button mat-icon-button class="text-red-600" (click)="remove(r)" [matTooltip]="'CUSTOMERS.LIST.DELETE_TOOLTIP' | transloco"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </div>
                             </td>
                         </ng-container>
@@ -128,9 +129,9 @@ import { LoyaltyAdjustDialogComponent } from './loyalty-adjust-dialog.component'
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg">
                         <mat-icon class="icon-size-16 text-gray-400">groups</mat-icon>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No customers found</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ search || typeFilter !== 'all' ? 'Try adjusting your filters.' : 'Add your first customer to get started.' }}</p>
-                    <button *ngIf="!search && typeFilter === 'all'" mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Customer</span></button>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'CUSTOMERS.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ (search || typeFilter !== 'all' ? 'CUSTOMERS.LIST.EMPTY_SUBTITLE_FILTERED' : 'CUSTOMERS.LIST.EMPTY_SUBTITLE_DEFAULT') | transloco }}</p>
+                    <button *ngIf="!search && typeFilter === 'all'" mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>{{ 'CUSTOMERS.LIST.ADD_BUTTON' | transloco }}</span></button>
                 </div>
             </div>
         </div>
@@ -142,6 +143,7 @@ export class CustomerListComponent implements OnInit {
     private readonly api = inject(CustomersService);
     private readonly dialog = inject(MatDialog);
     private readonly _confirm = inject(FuseConfirmationService);
+    private readonly _transloco = inject(TranslocoService);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -159,6 +161,15 @@ export class CustomerListComponent implements OnInit {
 
     cols = ['name', 'email', 'type', 'loyalty', 'balance', 'actions'];
     searchChanged = new Subject<string>();
+
+    customerTypeLabel(t: string): string {
+        switch (t) {
+            case 'Retail': return 'CUSTOMERS.LIST.TYPE_RETAIL';
+            case 'Wholesale': return 'CUSTOMERS.LIST.TYPE_WHOLESALE';
+            case 'Corporate': return 'CUSTOMERS.LIST.TYPE_CORPORATE';
+            default: return '';
+        }
+    }
 
     ngOnInit(): void {
         this.searchChanged.pipe(debounceTime(300)).subscribe(() => this.resetAndLoad());
@@ -189,10 +200,13 @@ export class CustomerListComponent implements OnInit {
 
     remove(r: CustomerDto): void {
         this._confirm.open({
-            title: 'Delete customer',
-            message: `Delete customer "${r.name}"?`,
+            title: this._transloco.translate('CUSTOMERS.DELETE_TITLE'),
+            message: this._transloco.translate('CUSTOMERS.DELETE_CONFIRM', { name: r.name }),
             icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
-            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+            actions: {
+                confirm: { label: this._transloco.translate('CUSTOMERS.DELETE_LABEL'), color: 'warn' },
+                cancel: { label: this._transloco.translate('CUSTOMERS.CANCEL_LABEL') },
+            },
         }).afterClosed().subscribe(result => {
             if (result !== 'confirmed') return;
             this.api.delete(r.id).subscribe(() => this.load());

@@ -12,6 +12,8 @@ export interface PersonalProfileDto {
     address?: string;
     gender?: string;
     dateOfBirth?: string;
+    /** Phase 2.58 — user's preferred UI language ("en" / "bn"). Null = inherit from tenant default. */
+    preferredLanguage?: string | null;
 }
 
 export interface UpdatePersonalProfileRequest {
@@ -23,6 +25,8 @@ export interface UpdatePersonalProfileRequest {
     address?: string;
     gender?: string;
     dateOfBirth?: string;
+    /** Phase 2.58 — user's preferred UI language ("en" / "bn"). Null = inherit from tenant default. */
+    preferredLanguage?: string | null;
 }
 
 export interface ChangePasswordRequest {

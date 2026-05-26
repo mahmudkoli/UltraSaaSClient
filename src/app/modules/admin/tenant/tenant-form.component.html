@@ -12,17 +12,17 @@
             </div>
             <div>
                 <h2 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                    {{ isEditMode ? 'Edit Tenant' : 'Create Tenant' }}
+                    {{ (isEditMode ? 'ADMIN.TENANT.FORM.TITLE_EDIT' : 'ADMIN.TENANT.FORM.TITLE_NEW') | transloco }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {{ isEditMode ? 'Identity, plan, and POS configuration' : 'Identity, plan, and POS configuration for a new tenant' }}
+                    {{ (isEditMode ? 'ADMIN.TENANT.FORM.SUBTITLE_EDIT' : 'ADMIN.TENANT.FORM.SUBTITLE_NEW') | transloco }}
                 </p>
             </div>
         </div>
         <div class="flex items-center space-x-3">
             <button mat-stroked-button (click)="cancel()" class="px-6">
                 <mat-icon class="mr-2">arrow_back</mat-icon>
-                Cancel
+                {{ 'COMMON.CANCEL' | transloco }}
             </button>
         </div>
     </div>
@@ -39,7 +39,7 @@
                 <mat-tab-group animationDuration="300ms">
 
                     <!-- ============= TAB 1: BASIC ============= -->
-                    <mat-tab label="Basic">
+                    <mat-tab [label]="'ADMIN.TENANT.FORM.TAB_BASIC' | transloco">
                         <div class="p-6 space-y-6">
                             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
@@ -96,6 +96,17 @@
                                     <input matInput formControlName="outletLabel" placeholder="Outlet">
                                     <mat-icon matSuffix class="text-secondary">label</mat-icon>
                                     <mat-hint>Display name for branches.</mat-hint>
+                                </mat-form-field>
+
+                                <!-- Phase 2.58 — tenant default UI language -->
+                                <mat-form-field appearance="outline" class="w-full">
+                                    <mat-label>{{ 'ADMIN.TENANT.FORM.DEFAULT_LANGUAGE_LABEL' | transloco }}</mat-label>
+                                    <mat-select formControlName="defaultLanguage">
+                                        <mat-option value="en">English</mat-option>
+                                        <mat-option value="bn">বাংলা</mat-option>
+                                    </mat-select>
+                                    <mat-icon matSuffix class="text-secondary">translate</mat-icon>
+                                    <mat-hint>{{ 'ADMIN.TENANT.FORM.DEFAULT_LANGUAGE_HINT' | transloco }}</mat-hint>
                                 </mat-form-field>
 
                                 <!-- POS Layout -->
@@ -163,7 +174,7 @@
                     </mat-tab>
 
                     <!-- ============= TAB 2: SUBSCRIPTION ============= -->
-                    <mat-tab label="Subscription">
+                    <mat-tab [label]="'ADMIN.TENANT.FORM.TAB_SUBSCRIPTION' | transloco">
                         <div class="p-6 space-y-6">
                             <!-- Plan-derived read-only chips (edit mode) -->
                             <div *ngIf="isEditMode" class="flex flex-wrap items-center gap-3 p-4 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/30">
@@ -229,7 +240,7 @@
                     </mat-tab>
 
                     <!-- ============= TAB 3: CONNECTION ============= -->
-                    <mat-tab label="Connection">
+                    <mat-tab [label]="'ADMIN.TENANT.FORM.TAB_CONNECTION' | transloco">
                         <div class="p-6 space-y-6">
                             <div class="flex items-center space-x-4 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg">
                                 <mat-slide-toggle formControlName="isShared">
@@ -249,7 +260,7 @@
                     </mat-tab>
 
                     <!-- ============= TAB 4: REVIEW ============= -->
-                    <mat-tab label="Review">
+                    <mat-tab [label]="'ADMIN.TENANT.FORM.TAB_REVIEW' | transloco">
                         <div class="p-6 space-y-6">
                             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                                 <mat-card class="p-4">
@@ -327,13 +338,13 @@
                 <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end p-6 border-t border-gray-200 dark:border-gray-700">
                     <button type="button" mat-stroked-button class="w-full sm:w-auto h-12 px-6 rounded-lg" (click)="cancel()">
                         <mat-icon class="icon-size-5 mr-2">close</mat-icon>
-                        Cancel
+                        {{ 'COMMON.CANCEL' | transloco }}
                     </button>
                     <button type="submit" mat-flat-button color="primary" class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
                             [disabled]="tenantForm.invalid || saving">
                         <mat-icon *ngIf="!saving" class="icon-size-5 mr-2">check</mat-icon>
                         <mat-spinner *ngIf="saving" diameter="20" class="mr-2"></mat-spinner>
-                        <span>{{ saving ? 'Saving…' : (isEditMode ? 'Update' : 'Create') }}</span>
+                        <span>{{ (saving ? 'ADMIN.TENANT.FORM.SAVING' : (isEditMode ? 'ADMIN.TENANT.FORM.UPDATE_BUTTON' : 'ADMIN.TENANT.FORM.CREATE_BUTTON')) | transloco }}</span>
                     </button>
                 </div>
             </form>

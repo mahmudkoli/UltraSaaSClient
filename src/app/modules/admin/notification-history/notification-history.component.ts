@@ -7,6 +7,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterLink } from '@angular/router';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { MyBillingService } from 'app/core/billing/billing.service';
 import {
     NotificationCategory,
@@ -33,6 +34,7 @@ type ReadFilter = 'all' | 'unread';
     imports: [
         CommonModule, FormsModule, DatePipe, RouterLink,
         MatButtonModule, MatChipsModule, MatIconModule, MatSnackBarModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0">
@@ -43,21 +45,21 @@ type ReadFilter = 'all' | 'unread';
                 <mat-icon class="text-white" [svgIcon]="'heroicons_outline:bell'"></mat-icon>
             </div>
             <div>
-                <h1 class="text-2xl font-bold tracking-tight">Notifications</h1>
+                <h1 class="text-2xl font-bold tracking-tight">{{ 'NOTIFICATIONS.HEADER.TITLE' | transloco }}</h1>
                 <p class="text-sm text-secondary">
-                    All system notifications, announcements, and subscription updates for this tenant.
-                    <span *ngIf="unreadCount() > 0" class="ml-1 font-medium text-primary">{{ unreadCount() }} unread</span>
+                    {{ 'NOTIFICATIONS.HEADER.SUBTITLE' | transloco }}
+                    <span *ngIf="unreadCount() > 0" class="ml-1 font-medium text-primary">{{ 'NOTIFICATIONS.HEADER.UNREAD_COUNT' | transloco:{ count: unreadCount() } }}</span>
                 </p>
             </div>
         </div>
         <div class="flex items-center gap-2">
             <button mat-stroked-button (click)="reload()" [disabled]="loading()">
                 <mat-icon [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
-                <span class="ml-1">Refresh</span>
+                <span class="ml-1">{{ 'NOTIFICATIONS.HEADER.REFRESH_BUTTON' | transloco }}</span>
             </button>
             <button mat-flat-button color="primary" (click)="markAllRead()" [disabled]="unreadCount() === 0 || markingAll()">
                 <mat-icon [svgIcon]="'heroicons_outline:envelope-open'"></mat-icon>
-                <span class="ml-1">{{ markingAll() ? 'Marking…' : 'Mark all read' }}</span>
+                <span class="ml-1">{{ (markingAll() ? 'NOTIFICATIONS.HEADER.MARKING' : 'NOTIFICATIONS.HEADER.MARK_ALL_READ') | transloco }}</span>
             </button>
         </div>
     </div>
@@ -65,19 +67,19 @@ type ReadFilter = 'all' | 'unread';
     <!-- Filters -->
     <div class="flex flex-wrap items-center gap-3 px-6 py-3 border-b bg-gray-50 dark:bg-gray-900/40 text-sm">
         <div class="flex items-center gap-2">
-            <span class="text-secondary">Status:</span>
+            <span class="text-secondary">{{ 'NOTIFICATIONS.FILTERS.STATUS_LABEL' | transloco }}</span>
             <mat-chip-listbox [(ngModel)]="readFilter" (change)="onFilterChange()" hideSingleSelectionIndicator>
-                <mat-chip-option value="all">All ({{ all().length }})</mat-chip-option>
-                <mat-chip-option value="unread">Unread ({{ unreadCount() }})</mat-chip-option>
+                <mat-chip-option value="all">{{ 'NOTIFICATIONS.FILTERS.STATUS_ALL' | transloco:{ count: all().length } }}</mat-chip-option>
+                <mat-chip-option value="unread">{{ 'NOTIFICATIONS.FILTERS.STATUS_UNREAD' | transloco:{ count: unreadCount() } }}</mat-chip-option>
             </mat-chip-listbox>
         </div>
         <div class="flex items-center gap-2">
-            <span class="text-secondary">Severity:</span>
+            <span class="text-secondary">{{ 'NOTIFICATIONS.FILTERS.SEVERITY_LABEL' | transloco }}</span>
             <mat-chip-listbox [(ngModel)]="severityFilter" (change)="onFilterChange()" hideSingleSelectionIndicator>
-                <mat-chip-option value="All">All</mat-chip-option>
-                <mat-chip-option value="Info">Info</mat-chip-option>
-                <mat-chip-option value="Warning">Warning</mat-chip-option>
-                <mat-chip-option value="Urgent">Urgent</mat-chip-option>
+                <mat-chip-option value="All">{{ 'NOTIFICATIONS.FILTERS.SEVERITY_ALL' | transloco }}</mat-chip-option>
+                <mat-chip-option value="Info">{{ 'NOTIFICATIONS.FILTERS.SEVERITY_INFO' | transloco }}</mat-chip-option>
+                <mat-chip-option value="Warning">{{ 'NOTIFICATIONS.FILTERS.SEVERITY_WARNING' | transloco }}</mat-chip-option>
+                <mat-chip-option value="Urgent">{{ 'NOTIFICATIONS.FILTERS.SEVERITY_URGENT' | transloco }}</mat-chip-option>
             </mat-chip-listbox>
         </div>
     </div>
@@ -88,21 +90,21 @@ type ReadFilter = 'all' | 'unread';
         @if (loading()) {
             <div class="flex items-center justify-center py-20 text-secondary">
                 <mat-icon class="animate-spin mr-2" [svgIcon]="'heroicons_outline:arrow-path'"></mat-icon>
-                Loading notifications…
+                {{ 'NOTIFICATIONS.STATES.LOADING' | transloco }}
             </div>
         } @else if (filtered().length === 0) {
             <div class="flex flex-col items-center justify-center py-20 text-center">
                 <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
                     <mat-icon class="text-gray-400 icon-size-8" [svgIcon]="'heroicons_outline:bell-slash'"></mat-icon>
                 </div>
-                <div class="text-lg font-semibold">No notifications</div>
+                <div class="text-lg font-semibold">{{ 'NOTIFICATIONS.STATES.EMPTY_TITLE' | transloco }}</div>
                 <div class="text-sm text-secondary mt-1">
                     @if (readFilter === 'unread') {
-                        You're all caught up. New notifications will appear here.
+                        {{ 'NOTIFICATIONS.STATES.EMPTY_UNREAD' | transloco }}
                     } @else if (severityFilter !== 'All') {
-                        No notifications match the current filter.
+                        {{ 'NOTIFICATIONS.STATES.EMPTY_FILTERED' | transloco }}
                     } @else {
-                        When you have notifications, they'll appear here.
+                        {{ 'NOTIFICATIONS.STATES.EMPTY_DEFAULT' | transloco }}
                     }
                 </div>
             </div>
@@ -127,10 +129,10 @@ type ReadFilter = 'all' | 'unread';
                             <div class="flex items-center gap-2 flex-wrap">
                                 <span class="font-semibold" [class.text-primary]="!n.readOn">{{ n.title }}</span>
                                 <span class="text-xs px-2 py-0.5 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
-                                    {{ categoryLabel(n.category) }}
+                                    {{ categoryLabel(n.category) | transloco }}
                                 </span>
                                 @if (!n.readOn) {
-                                    <span class="text-xs px-2 py-0.5 rounded-full bg-primary text-on-primary">New</span>
+                                    <span class="text-xs px-2 py-0.5 rounded-full bg-primary text-on-primary">{{ 'NOTIFICATIONS.ITEM.NEW_BADGE' | transloco }}</span>
                                 }
                             </div>
                             <p class="text-sm text-secondary mt-1 whitespace-pre-line">{{ n.body }}</p>
@@ -139,8 +141,8 @@ type ReadFilter = 'all' | 'unread';
                                     {{ n.createdOn | date:'MMM d, y, h:mm a' }}
                                 </span>
                                 @if (n.readOn) {
-                                    <span class="text-emerald-700 dark:text-emerald-400" [matTooltip]="'Read on ' + (n.readOn | date:'medium')">
-                                        · Read {{ n.readOn | date:'MMM d, h:mm a' }}
+                                    <span class="text-emerald-700 dark:text-emerald-400" [matTooltip]="('NOTIFICATIONS.ITEM.READ_ON_PREFIX' | transloco) + ' ' + (n.readOn | date:'medium')">
+                                        · {{ 'NOTIFICATIONS.ITEM.READ_PREFIX' | transloco }} {{ n.readOn | date:'MMM d, h:mm a' }}
                                     </span>
                                 }
                                 @if (n.linkUrl) {
@@ -151,13 +153,13 @@ type ReadFilter = 'all' | 'unread';
                                         <a [href]="n.linkUrl" target="_blank" rel="noopener"
                                            (click)="markRead(n)"
                                            class="text-primary hover:underline ml-auto">
-                                            Open <mat-icon class="icon-size-3 align-middle" [svgIcon]="'heroicons_outline:arrow-top-right-on-square'"></mat-icon>
+                                            {{ 'NOTIFICATIONS.ITEM.OPEN_LINK' | transloco }} <mat-icon class="icon-size-3 align-middle" [svgIcon]="'heroicons_outline:arrow-top-right-on-square'"></mat-icon>
                                         </a>
                                     } @else {
                                         <a [routerLink]="n.linkUrl"
                                            (click)="markRead(n)"
                                            class="text-primary hover:underline ml-auto">
-                                            Open <mat-icon class="icon-size-3 align-middle" [svgIcon]="'heroicons_outline:arrow-top-right-on-square'"></mat-icon>
+                                            {{ 'NOTIFICATIONS.ITEM.OPEN_LINK' | transloco }} <mat-icon class="icon-size-3 align-middle" [svgIcon]="'heroicons_outline:arrow-top-right-on-square'"></mat-icon>
                                         </a>
                                     }
                                 }
@@ -166,7 +168,7 @@ type ReadFilter = 'all' | 'unread';
 
                         <!-- Mark read button -->
                         @if (!n.readOn) {
-                            <button mat-icon-button matTooltip="Mark as read" (click)="markRead(n)" [disabled]="markingId() === n.id">
+                            <button mat-icon-button [matTooltip]="'NOTIFICATIONS.ITEM.MARK_AS_READ' | transloco" (click)="markRead(n)" [disabled]="markingId() === n.id">
                                 <mat-icon [svgIcon]="'heroicons_outline:check-circle'"></mat-icon>
                             </button>
                         }
@@ -181,6 +183,7 @@ type ReadFilter = 'all' | 'unread';
 export class NotificationHistoryComponent implements OnInit {
     private readonly billing = inject(MyBillingService);
     private readonly snack = inject(MatSnackBar);
+    private readonly _transloco = inject(TranslocoService);
 
     private readonly _all = signal<TenantNotificationDto[]>([]);
     readonly all = this._all.asReadonly();
@@ -227,7 +230,11 @@ export class NotificationHistoryComponent implements OnInit {
             },
             error: () => {
                 this.loading.set(false);
-                this.snack.open('Failed to load notifications', 'OK', { duration: 3500 });
+                this.snack.open(
+                    this._transloco.translate('NOTIFICATIONS.TOAST.LOAD_FAILED'),
+                    this._transloco.translate('NOTIFICATIONS.TOAST.OK'),
+                    { duration: 3500 },
+                );
             },
         });
     }
@@ -246,7 +253,11 @@ export class NotificationHistoryComponent implements OnInit {
             },
             error: () => {
                 this.markingId.set(null);
-                this.snack.open('Could not mark as read', 'OK', { duration: 3000 });
+                this.snack.open(
+                    this._transloco.translate('NOTIFICATIONS.TOAST.MARK_READ_FAILED'),
+                    this._transloco.translate('NOTIFICATIONS.TOAST.OK'),
+                    { duration: 3000 },
+                );
             },
         });
     }
@@ -281,7 +292,11 @@ export class NotificationHistoryComponent implements OnInit {
                     remaining--;
                     if (remaining === 0) {
                         this.markingAll.set(false);
-                        this.snack.open('All notifications marked as read', 'OK', { duration: 2500 });
+                        this.snack.open(
+                            this._transloco.translate('NOTIFICATIONS.TOAST.ALL_MARKED_READ'),
+                            this._transloco.translate('NOTIFICATIONS.TOAST.OK'),
+                            { duration: 2500 },
+                        );
                     }
                 },
             });
@@ -296,11 +311,16 @@ export class NotificationHistoryComponent implements OnInit {
         }
     }
 
+    /**
+     * Maps the server-side notification category enum to a transloco key so the
+     * category chip renders in the active language. The template pipes the
+     * returned key through `| transloco`, so don't double-translate here.
+     */
     categoryLabel(c: NotificationCategory): string {
         switch (c) {
-            case 'Subscription': return 'Subscription';
-            case 'Announcement': return 'Announcement';
-            case 'Other': return 'System';
+            case 'Subscription': return 'NOTIFICATIONS.CATEGORY.SUBSCRIPTION';
+            case 'Announcement': return 'NOTIFICATIONS.CATEGORY.ANNOUNCEMENT';
+            case 'Other': return 'NOTIFICATIONS.CATEGORY.SYSTEM';
         }
     }
 }

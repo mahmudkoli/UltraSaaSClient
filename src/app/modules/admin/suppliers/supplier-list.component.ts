@@ -11,6 +11,7 @@ import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { SearchSuppliersRequest, SuppliersService } from 'app/core/purchasing/purchasing.service';
@@ -21,7 +22,7 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
     selector: 'app-supplier-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
@@ -37,25 +38,25 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
                     <mat-icon class="text-white">local_shipping</mat-icon>
                 </div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Suppliers</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Vendors and wholesalers feeding your inventory</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'PURCHASING.SUPPLIERS.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'PURCHASING.SUPPLIERS.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search suppliers</mat-label>
-                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Search by name, contact, phone, email">
+                    <mat-label>{{ 'PURCHASING.SUPPLIERS.LIST.SEARCH_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" [placeholder]="'PURCHASING.SUPPLIERS.LIST.SEARCH_PLACEHOLDER' | transloco">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'PURCHASING.SUPPLIERS.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All</mat-option>
-                        <mat-option value="active">Active only</mat-option>
-                        <mat-option value="inactive">Inactive only</mat-option>
+                        <mat-option value="all">{{ 'PURCHASING.SUPPLIERS.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="active">{{ 'PURCHASING.SUPPLIERS.LIST.STATUS_ACTIVE' | transloco }}</mat-option>
+                        <mat-option value="inactive">{{ 'PURCHASING.SUPPLIERS.LIST.STATUS_INACTIVE' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-fab color="primary" routerLink="create" matTooltip="Add new supplier">
+                <button mat-fab color="primary" routerLink="create" [matTooltip]="'PURCHASING.SUPPLIERS.LIST.ADD_TOOLTIP' | transloco">
                     <mat-icon>add</mat-icon>
                 </button>
             </div>
@@ -66,7 +67,7 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
                         <ng-container matColumnDef="name">
-                            <th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span></th>
+                            <th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.SUPPLIERS.LIST.COL_NAME' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">
                                 <div class="flex flex-col">
                                     <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.name }}</span>
@@ -75,29 +76,29 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="phone">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.SUPPLIERS.LIST.COL_PHONE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.phone || '—' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="email">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.SUPPLIERS.LIST.COL_EMAIL' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.email || '—' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="active">
-                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                            <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.SUPPLIERS.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="r.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
                                     <mat-icon class="icon-size-4 mr-1">{{ r.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
-                                    {{ r.isActive ? 'Active' : 'Inactive' }}
+                                    {{ (r.isActive ? 'COMMON.ACTIVE' : 'COMMON.INACTIVE') | transloco }}
                                 </span>
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="actions">
-                            <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                            <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'PURCHASING.SUPPLIERS.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" [routerLink]="[r.id]" matTooltip="Edit"><mat-icon class="icon-size-5">edit</mat-icon></button>
-                                    <button mat-icon-button class="text-red-600" (click)="remove(r)" matTooltip="Delete"><mat-icon class="icon-size-5">delete</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" [routerLink]="[r.id]" [matTooltip]="'PURCHASING.SUPPLIERS.LIST.ACTION_EDIT' | transloco"><mat-icon class="icon-size-5">edit</mat-icon></button>
+                                    <button mat-icon-button class="text-red-600" (click)="remove(r)" [matTooltip]="'PURCHASING.SUPPLIERS.LIST.ACTION_DELETE' | transloco"><mat-icon class="icon-size-5">delete</mat-icon></button>
                                 </div>
                             </td>
                         </ng-container>
@@ -118,8 +119,8 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg">
                         <mat-icon class="icon-size-16 text-gray-400">local_shipping</mat-icon>
                     </div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No suppliers found</h3>
-                    <button *ngIf="!search" mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Supplier</span></button>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'PURCHASING.SUPPLIERS.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <button *ngIf="!search" mat-flat-button color="primary" routerLink="create"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>{{ 'PURCHASING.SUPPLIERS.LIST.ADD_BUTTON' | transloco }}</span></button>
                 </div>
             </div>
         </div>
@@ -130,6 +131,7 @@ import { SupplierDto } from 'app/core/purchasing/purchasing.types';
 export class SupplierListComponent implements OnInit {
     private readonly api = inject(SuppliersService);
     private readonly _confirm = inject(FuseConfirmationService);
+    private readonly _transloco = inject(TranslocoService);
 
     @ViewChild(MatPaginator) paginator?: MatPaginator;
     @ViewChild(MatSort) sort?: MatSort;
@@ -177,10 +179,13 @@ export class SupplierListComponent implements OnInit {
 
     remove(r: SupplierDto): void {
         this._confirm.open({
-            title: 'Delete supplier',
-            message: `Delete supplier "${r.name}"?`,
+            title: this._transloco.translate('PURCHASING.SUPPLIERS.DELETE_TITLE'),
+            message: this._transloco.translate('PURCHASING.SUPPLIERS.DELETE_CONFIRM', { name: r.name }),
             icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
-            actions: { confirm: { label: 'Delete', color: 'warn' }, cancel: { label: 'Cancel' } },
+            actions: {
+                confirm: { label: this._transloco.translate('COMMON.DELETE'), color: 'warn' },
+                cancel: { label: this._transloco.translate('COMMON.CANCEL') },
+            },
         }).afterClosed().subscribe(result => {
             if (result !== 'confirmed') return;
             this.api.delete(r.id).subscribe(() => this.load());

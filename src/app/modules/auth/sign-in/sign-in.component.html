@@ -7,9 +7,9 @@
             </div>
 
             <!-- Title -->
-            <div class="mt-8 text-4xl font-extrabold tracking-tight leading-tight">Sign in</div>
+            <div class="mt-8 text-4xl font-extrabold tracking-tight leading-tight">{{ 'AUTH.SIGN_IN.TITLE' | transloco }}</div>
             <div class="mt-0.5 font-medium text-secondary">
-                Access your point-of-sale dashboard
+                {{ 'AUTH.SIGN_IN.SUBTITLE' | transloco }}
             </div>
 
             <!-- Alert -->
@@ -31,24 +31,24 @@
 
                 <!-- Demo quick-fill (dev only — gated by environment.demoLogins) -->
                 <mat-form-field class="w-full" *ngIf="demoLoginsEnabled">
-                    <mat-label>Demo login</mat-label>
+                    <mat-label>{{ 'AUTH.SIGN_IN.DEMO_LOGIN_LABEL' | transloco }}</mat-label>
                     <mat-select [value]="selectedDemo" (selectionChange)="applyDemoLogin($event.value)">
                         <mat-option *ngFor="let d of demoLogins" [value]="d.tenant">{{ d.label }}</mat-option>
                     </mat-select>
-                    <mat-hint>Auto-fills tenant, email, and password</mat-hint>
+                    <mat-hint>{{ 'AUTH.SIGN_IN.DEMO_LOGIN_HINT' | transloco }}</mat-hint>
                 </mat-form-field>
 
                 <!-- Tenant field (visible) -->
                 <mat-form-field class="w-full" *ngIf="showTenantField">
-                    <mat-label>Organization ID</mat-label>
+                    <mat-label>{{ 'AUTH.SIGN_IN.ORG_ID_LABEL' | transloco }}</mat-label>
                     <input
                         id="tenant"
                         matInput
                         [formControlName]="'tenant'"
-                        placeholder="e.g., greenwood">
-                    <mat-hint>Your organization's unique identifier</mat-hint>
+                        [placeholder]="'AUTH.SIGN_IN.ORG_ID_PLACEHOLDER' | transloco">
+                    <mat-hint>{{ 'AUTH.SIGN_IN.ORG_ID_HINT' | transloco }}</mat-hint>
                     <mat-error *ngIf="signInForm.get('tenant').hasError('required')">
-                        Organization ID is required
+                        {{ 'AUTH.SIGN_IN.ORG_ID_REQUIRED' | transloco }}
                     </mat-error>
                 </mat-form-field>
 
@@ -58,27 +58,27 @@
                         <mat-icon class="text-primary-500 icon-size-5" [svgIcon]="'heroicons_outline:building-office'"></mat-icon>
                         <span class="text-sm font-medium text-primary-700 dark:text-primary-300">{{ resolvedTenantName }}</span>
                     </div>
-                    <a class="text-xs text-primary-500 hover:underline cursor-pointer" (click)="switchTenant()">Switch</a>
+                    <a class="text-xs text-primary-500 hover:underline cursor-pointer" (click)="switchTenant()">{{ 'AUTH.SIGN_IN.ORG_SWITCH' | transloco }}</a>
                 </div>
 
                 <!-- Email field -->
                 <mat-form-field class="w-full">
-                    <mat-label>Email address</mat-label>
+                    <mat-label>{{ 'AUTH.SIGN_IN.EMAIL_LABEL' | transloco }}</mat-label>
                     <input
                         id="email"
                         matInput
                         [formControlName]="'email'">
                     <mat-error *ngIf="signInForm.get('email').hasError('required')">
-                        Email address is required
+                        {{ 'AUTH.SIGN_IN.EMAIL_REQUIRED' | transloco }}
                     </mat-error>
                     <mat-error *ngIf="signInForm.get('email').hasError('email')">
-                        Please enter a valid email address
+                        {{ 'AUTH.SIGN_IN.EMAIL_INVALID' | transloco }}
                     </mat-error>
                 </mat-form-field>
 
                 <!-- Password field -->
                 <mat-form-field class="w-full">
-                    <mat-label>Password</mat-label>
+                    <mat-label>{{ 'AUTH.SIGN_IN.PASSWORD_LABEL' | transloco }}</mat-label>
                     <input
                         id="password"
                         matInput
@@ -100,7 +100,7 @@
                             [svgIcon]="'heroicons_solid:eye-slash'"></mat-icon>
                     </button>
                     <mat-error>
-                        Password is required
+                        {{ 'AUTH.SIGN_IN.PASSWORD_REQUIRED' | transloco }}
                     </mat-error>
                 </mat-form-field>
 
@@ -110,11 +110,11 @@
                         class="-ml-2"
                         [color]="'primary'"
                         [formControlName]="'rememberMe'">
-                        Remember me
+                        {{ 'AUTH.SIGN_IN.REMEMBER_ME' | transloco }}
                     </mat-checkbox>
                     <a
                         class="text-md font-medium text-primary-500 hover:underline"
-                        [routerLink]="['/forgot-password']">Forgot password?
+                        [routerLink]="['/forgot-password']">{{ 'AUTH.SIGN_IN.FORGOT_PASSWORD' | transloco }}
                     </a>
                 </div>
 
@@ -126,7 +126,7 @@
                     [disabled]="signInForm.disabled"
                     (click)="signIn()">
                     <span *ngIf="!signInForm.disabled">
-                        Sign in
+                        {{ 'AUTH.SIGN_IN.SUBMIT' | transloco }}
                     </span>
                     <mat-progress-spinner
                         *ngIf="signInForm.disabled"
@@ -161,28 +161,28 @@
         <!-- Content -->
         <div class="z-10 relative w-full max-w-2xl">
             <div class="text-7xl font-bold leading-none text-gray-100">
-                <div>Ultra</div>
-                <div class="text-primary-400">POS</div>
+                <div>{{ 'AUTH.MARKETING.PRODUCT_NAME_LINE_1' | transloco }}</div>
+                <div class="text-primary-400">{{ 'AUTH.MARKETING.PRODUCT_NAME_LINE_2' | transloco }}</div>
             </div>
             <div class="mt-6 text-lg tracking-tight leading-6 text-gray-400">
-                Multi-vertical point-of-sale platform — electronics, pharmacy, supermarket. Catalog, inventory, sales, returns, purchasing, and reports in one place.
+                {{ 'AUTH.MARKETING.TAGLINE' | transloco }}
             </div>
             <div class="flex flex-col mt-8 space-y-4">
                 <div class="flex items-center space-x-3">
                     <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:shopping-cart'"></mat-icon>
-                    <span class="text-gray-300">POS sale flow with promo codes &amp; loyalty</span>
+                    <span class="text-gray-300">{{ 'AUTH.MARKETING.FEATURE_POS' | transloco }}</span>
                 </div>
                 <div class="flex items-center space-x-3">
                     <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:cube'"></mat-icon>
-                    <span class="text-gray-300">Catalog, inventory, batches &amp; serials</span>
+                    <span class="text-gray-300">{{ 'AUTH.MARKETING.FEATURE_CATALOG' | transloco }}</span>
                 </div>
                 <div class="flex items-center space-x-3">
                     <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:truck'"></mat-icon>
-                    <span class="text-gray-300">Purchasing, goods receipts &amp; suppliers</span>
+                    <span class="text-gray-300">{{ 'AUTH.MARKETING.FEATURE_PURCHASING' | transloco }}</span>
                 </div>
                 <div class="flex items-center space-x-3">
                     <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
-                    <span class="text-gray-300">Returns, refunds &amp; reports</span>
+                    <span class="text-gray-300">{{ 'AUTH.MARKETING.FEATURE_REPORTS' | transloco }}</span>
                 </div>
             </div>
         </div>

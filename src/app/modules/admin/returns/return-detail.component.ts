@@ -4,13 +4,14 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute, RouterModule } from '@angular/router';
+import { TranslocoModule } from '@ngneat/transloco';
 import { SaleReturnsService } from 'app/core/sales/sales.service';
 import { SaleReturnDto } from 'app/core/sales/sales.types';
 
 @Component({
     selector: 'app-return-detail',
     standalone: true,
-    imports: [CommonModule, RouterModule, MatButtonModule, MatIconModule, MatTableModule],
+    imports: [CommonModule, RouterModule, TranslocoModule, MatButtonModule, MatIconModule, MatTableModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -21,7 +22,7 @@ import { SaleReturnDto } from 'app/core/sales/sales.types';
                     <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-rose-500 to-orange-600 rounded-xl shadow-lg"><mat-icon class="text-white">undo</mat-icon></div>
                     <div>
                         <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ r.returnNumber }}</h2>
-                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ r.returnDate | date:'medium' }} · invoice <a class="text-blue-600 hover:underline font-mono" [routerLink]="['/sales', r.saleId]">{{ r.originalInvoiceNumber }}</a> · {{ r.customerName || 'Walk-in' }}</p>
+                        <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ r.returnDate | date:'medium' }} · {{ 'RETURNS.DETAIL.INVOICE_PREFIX' | transloco }} <a class="text-blue-600 hover:underline font-mono" [routerLink]="['/sales', r.saleId]">{{ r.originalInvoiceNumber }}</a> · {{ r.customerName || ('RETURNS.DETAIL.WALK_IN' | transloco) }}</p>
                     </div>
                 </div>
                 <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
@@ -31,9 +32,9 @@ import { SaleReturnDto } from 'app/core/sales/sales.types';
                             'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': r.status === 'Voided',
                             'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': r.status === 'Draft'
                           }">
-                        <mat-icon class="icon-size-4 mr-1">{{ r.status === 'Completed' ? 'check_circle' : r.status === 'Voided' ? 'cancel' : 'schedule' }}</mat-icon>{{ r.status }}
+                        <mat-icon class="icon-size-4 mr-1">{{ r.status === 'Completed' ? 'check_circle' : r.status === 'Voided' ? 'cancel' : 'schedule' }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                     </span>
-                    <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/returns"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Back</span></button>
+                    <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/returns"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'RETURNS.DETAIL.BACK' | transloco }}</span></button>
                 </div>
             </div>
 
@@ -43,33 +44,33 @@ import { SaleReturnDto } from 'app/core/sales/sales.types';
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center"><mat-icon class="text-violet-600 dark:text-violet-400 text-lg">inventory_2</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Returned Items</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'RETURNS.DETAIL.RETURNED_ITEMS' | transloco }}</h3>
                             </div>
                             <table mat-table [dataSource]="r.items" class="w-full">
-                                <ng-container matColumnDef="sku"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</span></th>
+                                <ng-container matColumnDef="sku"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_SKU' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let i" class="pl-6 font-mono text-xs">{{ i.sku }}</td></ng-container>
-                                <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
+                                <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_PRODUCT' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let i">
                                         <div class="flex flex-col">
                                             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ i.productName }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="i.serialNumber">SN: {{ i.serialNumber }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="i.batchNumber">Batch: {{ i.batchNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="i.serialNumber">{{ 'RETURNS.DETAIL.SN_PREFIX' | transloco }}: {{ i.serialNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="i.batchNumber">{{ 'RETURNS.DETAIL.BATCH_PREFIX' | transloco }}: {{ i.batchNumber }}</span>
                                         </div>
                                     </td></ng-container>
-                                <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Qty</span></th>
+                                <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_QTY' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let i" class="!text-right">{{ i.quantity | number:'1.0-3' }}</td></ng-container>
-                                <ng-container matColumnDef="condition"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</span></th>
+                                <ng-container matColumnDef="condition"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_CONDITION' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let i">
                                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
                                               [ngClass]="i.condition === 'Resellable'
                                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200'
                                                 : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
-                                            {{ i.condition }}
+                                            {{ (i.condition === 'Resellable' ? 'RETURNS.DETAIL.CONDITION_RESELLABLE' : 'RETURNS.DETAIL.CONDITION_DAMAGED') | transloco }}
                                         </span>
                                     </td></ng-container>
-                                <ng-container matColumnDef="unit"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</span></th>
+                                <ng-container matColumnDef="unit"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_UNIT' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let i" class="!text-right">{{ i.unitPrice | number:'1.2-2' }}</td></ng-container>
-                                <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef class="pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</span></th>
+                                <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef class="pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_TOTAL' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let i" class="pr-6 !text-right font-semibold">{{ i.lineTotal | number:'1.2-2' }}</td></ng-container>
                                 <tr mat-header-row *matHeaderRowDef="['sku','name','qty','condition','unit','total']" class="bg-gray-50 dark:bg-gray-700"></tr>
                                 <tr mat-row *matRowDef="let row; columns: ['sku','name','qty','condition','unit','total']"></tr>
@@ -79,16 +80,16 @@ import { SaleReturnDto } from 'app/core/sales/sales.types';
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center"><mat-icon class="text-blue-600 dark:text-blue-400 text-lg">payments</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Refunds</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'RETURNS.DETAIL.REFUNDS' | transloco }}</h3>
                             </div>
                             <table mat-table [dataSource]="r.refunds" class="w-full">
-                                <ng-container matColumnDef="method"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Method</span></th>
+                                <ng-container matColumnDef="method"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_METHOD' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let p" class="pl-6">{{ p.method }}</td></ng-container>
-                                <ng-container matColumnDef="amount"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</span></th>
+                                <ng-container matColumnDef="amount"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_AMOUNT' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let p" class="!text-right font-medium">{{ p.amount | number:'1.2-2' }}</td></ng-container>
-                                <ng-container matColumnDef="ref"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Reference</span></th>
+                                <ng-container matColumnDef="ref"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_REFERENCE' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let p">{{ p.reference || '—' }}</td></ng-container>
-                                <ng-container matColumnDef="paid"><th mat-header-cell *matHeaderCellDef class="pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Refunded On</span></th>
+                                <ng-container matColumnDef="paid"><th mat-header-cell *matHeaderCellDef class="pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.DETAIL.COL_REFUNDED_ON' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let p" class="pr-6">{{ p.refundedOn | date:'short' }}</td></ng-container>
                                 <tr mat-header-row *matHeaderRowDef="['method','amount','ref','paid']" class="bg-gray-50 dark:bg-gray-700"></tr>
                                 <tr mat-row *matRowDef="let row; columns: ['method','amount','ref','paid']"></tr>
@@ -100,18 +101,18 @@ import { SaleReturnDto } from 'app/core/sales/sales.types';
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
                             <div class="flex items-center space-x-3 mb-4">
                                 <div class="w-8 h-8 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center"><mat-icon class="text-amber-600 dark:text-amber-400 text-lg">summarize</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Summary</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'RETURNS.DETAIL.SUMMARY' | transloco }}</h3>
                             </div>
                             <div class="space-y-2 text-sm">
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Reason</span><span class="font-medium">{{ r.reason }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Subtotal</span><span class="font-medium">{{ r.subTotal | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Discount</span><span class="font-medium">−{{ r.discountAmount | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Tax</span><span class="font-medium">{{ r.taxAmount | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>Refunded</span><span class="text-rose-600">{{ r.refundAmount | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between text-sm pt-2"><span class="text-gray-600 dark:text-gray-400">Balance</span><span class="font-medium">{{ r.balance | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'RETURNS.DETAIL.REASON' | transloco }}</span><span class="font-medium">{{ r.reason }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'RETURNS.DETAIL.SUBTOTAL' | transloco }}</span><span class="font-medium">{{ r.subTotal | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'RETURNS.DETAIL.DISCOUNT' | transloco }}</span><span class="font-medium">−{{ r.discountAmount | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'RETURNS.DETAIL.TAX' | transloco }}</span><span class="font-medium">{{ r.taxAmount | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>{{ 'RETURNS.DETAIL.REFUNDED' | transloco }}</span><span class="text-rose-600">{{ r.refundAmount | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between text-sm pt-2"><span class="text-gray-600 dark:text-gray-400">{{ 'RETURNS.DETAIL.BALANCE' | transloco }}</span><span class="font-medium">{{ r.balance | number:'1.2-2' }}</span></div>
                             </div>
                             <div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700" *ngIf="r.notes">
-                                <p class="text-xs text-gray-500 mb-1">Notes</p>
+                                <p class="text-xs text-gray-500 mb-1">{{ 'RETURNS.DETAIL.NOTES' | transloco }}</p>
                                 <p class="text-sm text-gray-700 dark:text-gray-300">{{ r.notes }}</p>
                             </div>
                         </div>
@@ -131,5 +132,12 @@ export class ReturnDetailComponent implements OnInit {
     ngOnInit(): void {
         const id = this.route.snapshot.paramMap.get('id')!;
         this.api.get(id).subscribe(r => this.ret.set(r));
+    }
+
+    /** Translation-key for the status badge. */
+    statusLabel(s: string): string {
+        if (s === 'Completed') return 'RETURNS.DETAIL.STATUS_COMPLETED';
+        if (s === 'Voided') return 'RETURNS.DETAIL.STATUS_VOIDED';
+        return 'RETURNS.DETAIL.STATUS_DRAFT';
     }
 }

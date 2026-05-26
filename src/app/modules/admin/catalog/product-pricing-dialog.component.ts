@@ -8,6 +8,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { TranslocoModule } from '@ngneat/transloco';
 import { forkJoin } from 'rxjs';
 import { ProductsService } from 'app/core/catalog/catalog.service';
 import { ProductDto } from 'app/core/catalog/catalog.types';
@@ -34,6 +35,7 @@ interface OutletPriceRow {
         CommonModule, FormsModule,
         MatButtonModule, MatCheckboxModule, MatDialogModule, MatFormFieldModule,
         MatIconModule, MatInputModule, MatProgressSpinnerModule,
+        TranslocoModule,
     ],
     template: `
 <div class="p-1">
@@ -42,15 +44,15 @@ interface OutletPriceRow {
             <mat-icon class="text-white">price_change</mat-icon>
         </div>
         <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Outlet Pricing</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ data.product.name }} · base price {{ data.product.sellingPrice | number:'1.2-2' }}</p>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'CATALOG.PRODUCTS.PRICING.TITLE' | transloco }}</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'CATALOG.PRODUCTS.PRICING.SUBTITLE' | transloco:{ name: data.product.name, price: (data.product.sellingPrice | number:'1.2-2') } }}</p>
         </div>
     </div>
     <mat-dialog-content class="!p-4">
         @if (loading()) {
             <div class="flex items-center justify-center py-8"><mat-spinner [diameter]="32"></mat-spinner></div>
         } @else {
-            <p class="text-xs text-gray-500 mb-3">Leave the override blank to use the base price. Set an active override to charge a different price at that outlet.</p>
+            <p class="text-xs text-gray-500 mb-3">{{ 'CATALOG.PRODUCTS.PRICING.INTRO' | transloco }}</p>
             <div class="space-y-2">
                 <div *ngFor="let r of rows()" class="grid grid-cols-12 items-center gap-2 p-2 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div class="col-span-5 flex flex-col">
@@ -58,22 +60,22 @@ interface OutletPriceRow {
                         <span class="text-xs text-gray-500 font-mono">{{ r.outletCode }}</span>
                     </div>
                     <mat-form-field class="col-span-4" appearance="outline" subscriptSizing="dynamic">
-                        <mat-label>Override price</mat-label>
+                        <mat-label>{{ 'CATALOG.PRODUCTS.PRICING.OVERRIDE_LABEL' | transloco }}</mat-label>
                         <input matInput type="number" min="0" step="0.01" [(ngModel)]="r.overridePrice" (ngModelChange)="r.dirty = true">
                     </mat-form-field>
-                    <mat-checkbox class="col-span-2" [(ngModel)]="r.isActive" (ngModelChange)="r.dirty = true">Active</mat-checkbox>
-                    <button class="col-span-1" mat-icon-button (click)="clear(r)" matTooltip="Clear override" *ngIf="r.overridePrice !== null">
+                    <mat-checkbox class="col-span-2" [(ngModel)]="r.isActive" (ngModelChange)="r.dirty = true">{{ 'CATALOG.PRODUCTS.PRICING.ACTIVE_LABEL' | transloco }}</mat-checkbox>
+                    <button class="col-span-1" mat-icon-button (click)="clear(r)" [matTooltip]="'CATALOG.PRODUCTS.PRICING.CLEAR_TOOLTIP' | transloco" *ngIf="r.overridePrice !== null">
                         <mat-icon class="icon-size-5 text-red-600">delete</mat-icon>
                     </button>
                 </div>
-                <p *ngIf="rows().length === 0" class="text-sm text-gray-500 py-4 text-center">No outlets in this tenant.</p>
+                <p *ngIf="rows().length === 0" class="text-sm text-gray-500 py-4 text-center">{{ 'CATALOG.PRODUCTS.PRICING.NO_OUTLETS' | transloco }}</p>
             </div>
         }
     </mat-dialog-content>
     <mat-dialog-actions align="end" class="!px-4 !pb-4">
-        <button mat-button (click)="close()" [disabled]="saving()">Cancel</button>
+        <button mat-button (click)="close()" [disabled]="saving()">{{ 'COMMON.CANCEL' | transloco }}</button>
         <button mat-flat-button color="primary" (click)="save()" [disabled]="loading() || saving()">
-            <mat-icon class="icon-size-5 mr-2">save</mat-icon>{{ saving() ? 'Saving…' : 'Save' }}
+            <mat-icon class="icon-size-5 mr-2">save</mat-icon>{{ (saving() ? 'CATALOG.PRODUCTS.PRICING.SAVING' : 'COMMON.SAVE') | transloco }}
         </button>
     </mat-dialog-actions>
 </div>

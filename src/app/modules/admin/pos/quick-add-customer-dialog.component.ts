@@ -7,6 +7,7 @@ import { MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { CustomersService } from 'app/core/sales/sales.service';
 import { CustomerDto } from 'app/core/sales/sales.types';
 
@@ -25,7 +26,7 @@ import { CustomerDto } from 'app/core/sales/sales.types';
     standalone: true,
     imports: [
         CommonModule, FormsModule, MatButtonModule, MatDialogModule,
-        MatFormFieldModule, MatIconModule, MatInputModule,
+        MatFormFieldModule, MatIconModule, MatInputModule, TranslocoModule,
     ],
     template: `
         <div class="flex items-center gap-3 px-6 pt-5 pb-3 border-b border-gray-200 dark:border-gray-700">
@@ -33,20 +34,20 @@ import { CustomerDto } from 'app/core/sales/sales.types';
                 <mat-icon class="text-white">person_add</mat-icon>
             </div>
             <div>
-                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Quick add customer</h2>
-                <p class="text-xs text-gray-500">Add a customer mid-checkout. Use the full Customers form for credit limits, addresses, etc.</p>
+                <h2 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'POS.QUICK_ADD_CUSTOMER.TITLE' | transloco }}</h2>
+                <p class="text-xs text-gray-500">{{ 'POS.QUICK_ADD_CUSTOMER.SUBTITLE' | transloco }}</p>
             </div>
         </div>
 
         <div class="px-6 py-4 space-y-3 min-w-[420px]">
             <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Name</mat-label>
+                <mat-label>{{ 'POS.QUICK_ADD_CUSTOMER.NAME_LABEL' | transloco }}</mat-label>
                 <input matInput [(ngModel)]="name" autofocus maxlength="150">
             </mat-form-field>
             <mat-form-field class="w-full" appearance="outline">
-                <mat-label>Phone</mat-label>
-                <input matInput [(ngModel)]="phone" placeholder="01XXXXXXXXX" inputmode="tel" maxlength="32">
-                <mat-hint>Used for loyalty lookup + receipt re-print search.</mat-hint>
+                <mat-label>{{ 'POS.QUICK_ADD_CUSTOMER.PHONE_LABEL' | transloco }}</mat-label>
+                <input matInput [(ngModel)]="phone" [placeholder]="'POS.QUICK_ADD_CUSTOMER.PHONE_PLACEHOLDER' | transloco" inputmode="tel" maxlength="32">
+                <mat-hint>{{ 'POS.QUICK_ADD_CUSTOMER.PHONE_HINT' | transloco }}</mat-hint>
             </mat-form-field>
             @if (error()) {
                 <p class="text-sm text-rose-600 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg p-2">
@@ -57,10 +58,10 @@ import { CustomerDto } from 'app/core/sales/sales.types';
         </div>
 
         <div class="flex items-center justify-end gap-2 px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
-            <button mat-button mat-dialog-close [disabled]="saving()">Cancel</button>
+            <button mat-button mat-dialog-close [disabled]="saving()">{{ 'COMMON.CANCEL' | transloco }}</button>
             <button mat-flat-button color="primary" (click)="save()" [disabled]="!canSave() || saving()">
                 <mat-icon class="icon-size-5 mr-1">person_add</mat-icon>
-                <span>{{ saving() ? 'Adding…' : 'Add &amp; select' }}</span>
+                <span>{{ saving() ? ('POS.QUICK_ADD_CUSTOMER.ADDING' | transloco) : ('POS.QUICK_ADD_CUSTOMER.ADD_AND_SELECT' | transloco) }}</span>
             </button>
         </div>
     `,
@@ -68,6 +69,7 @@ import { CustomerDto } from 'app/core/sales/sales.types';
 export class QuickAddCustomerDialogComponent {
     private readonly api = inject(CustomersService);
     private readonly ref = inject(MatDialogRef<QuickAddCustomerDialogComponent>);
+    private readonly _transloco = inject(TranslocoService);
 
     name = '';
     phone = '';
@@ -104,8 +106,9 @@ export class QuickAddCustomerDialogComponent {
             },
             error: (err: HttpErrorResponse) => {
                 this.saving.set(false);
-                const msg = err?.error?.exception ?? err?.error?.messages?.[0] ?? err?.message ?? 'Could not save customer';
-                this.error.set(typeof msg === 'string' ? msg : 'Could not save customer');
+                const fallback = this._transloco.translate('POS.QUICK_ADD_CUSTOMER.SAVE_FAILED');
+                const msg = err?.error?.exception ?? err?.error?.messages?.[0] ?? err?.message ?? fallback;
+                this.error.set(typeof msg === 'string' ? msg : fallback);
             },
         });
     }

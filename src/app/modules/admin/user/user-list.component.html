@@ -13,41 +13,41 @@
             </div>
             <div>
                 <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                    Users
+                    {{ 'ADMIN.USER.LIST.TITLE' | transloco }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    Manage your application users
+                    {{ 'ADMIN.USER.LIST.SUBTITLE' | transloco }}
                 </p>
             </div>
         </div>
         <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
             <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                <mat-label>{{ isSearching ? 'Searching...' : 'Search users' }}</mat-label>
-                <input matInput [ngModel]="searchTerm" (ngModelChange)="onSearchChange($event)" placeholder="Search by name, email, or username">
+                <mat-label>{{ (isSearching ? 'ADMIN.USER.LIST.SEARCHING' : 'ADMIN.USER.LIST.SEARCH_LABEL') | transloco }}</mat-label>
+                <input matInput [ngModel]="searchTerm" (ngModelChange)="onSearchChange($event)" [placeholder]="'ADMIN.USER.LIST.SEARCH_PLACEHOLDER' | transloco">
                 <mat-icon matSuffix class="text-gray-400" *ngIf="!isSearching">search</mat-icon>
                 <mat-spinner matSuffix diameter="18" *ngIf="isSearching"></mat-spinner>
             </mat-form-field>
             <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Status</mat-label>
+                <mat-label>{{ 'ADMIN.USER.LIST.STATUS_LABEL' | transloco }}</mat-label>
                 <mat-select [(ngModel)]="selectedStatus" (selectionChange)="onStatusChange()">
-                    <mat-option value="all">All Status</mat-option>
-                    <mat-option value="active">Active</mat-option>
-                    <mat-option value="inactive">Inactive</mat-option>
+                    <mat-option value="all">{{ 'ADMIN.USER.LIST.STATUS_ALL' | transloco }}</mat-option>
+                    <mat-option value="active">{{ 'ADMIN.USER.LIST.STATUS_ACTIVE' | transloco }}</mat-option>
+                    <mat-option value="inactive">{{ 'ADMIN.USER.LIST.STATUS_INACTIVE' | transloco }}</mat-option>
                 </mat-select>
             </mat-form-field>
             <button
                 mat-stroked-button
                 class="h-12 px-6"
                 [routerLink]="['roles']"
-                matTooltip="Manage roles and permissions">
+                [matTooltip]="'ADMIN.USER.LIST.ROLES_TOOLTIP' | transloco">
                 <mat-icon class="mr-2">manage_accounts</mat-icon>
-                <span>Roles</span>
+                <span>{{ 'ADMIN.USER.LIST.ROLES_BUTTON' | transloco }}</span>
             </button>
             <button
                 mat-fab
                 color="primary"
                 [routerLink]="['create']"
-                matTooltip="Add New User">
+                [matTooltip]="'ADMIN.USER.LIST.ADD_TOOLTIP' | transloco">
                 <mat-icon>add</mat-icon>
             </button>
         </div>
@@ -68,7 +68,7 @@
                             <ng-container matColumnDef="avatar">
                                 <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6">
                                     <div class="flex items-center">
-                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Avatar</span>
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.USER.LIST.COL_AVATAR' | transloco }}</span>
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let user" class="pl-4 sm:pl-6">
@@ -94,7 +94,7 @@
                             <ng-container matColumnDef="name">
                                 <th mat-header-cell *matHeaderCellDef>
                                     <div class="flex items-center">
-                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Name</span>
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.USER.LIST.COL_NAME' | transloco }}</span>
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let user">
@@ -109,14 +109,14 @@
                             <ng-container matColumnDef="email">
                                 <th mat-header-cell *matHeaderCellDef>
                                     <div class="flex items-center">
-                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Email</span>
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.USER.LIST.COL_EMAIL' | transloco }}</span>
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let user">
                                     <div class="flex flex-col">
                                         <span class="text-sm text-gray-900">{{ user.email || 'N/A' }}</span>
                                         <span class="text-xs text-gray-500" [class]="user.emailConfirmed ? 'text-green-600' : 'text-red-600'">
-                                            {{ user.emailConfirmed ? 'Email Confirmed' : 'Email Not Confirmed' }}
+                                            {{ (user.emailConfirmed ? 'ADMIN.USER.LIST.EMAIL_CONFIRMED' : 'ADMIN.USER.LIST.EMAIL_NOT_CONFIRMED') | transloco }}
                                         </span>
                                     </div>
                                 </td>
@@ -126,14 +126,14 @@
                             <ng-container matColumnDef="phone">
                                 <th mat-header-cell *matHeaderCellDef>
                                     <div class="flex items-center">
-                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Phone</span>
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.USER.LIST.COL_PHONE' | transloco }}</span>
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let user">
                                     <div class="flex flex-col">
                                         <span class="text-sm text-gray-900">{{ user.phoneNumber || 'N/A' }}</span>
                                         <span class="text-xs text-gray-500" [class]="user.phoneNumberConfirmed ? 'text-green-600' : 'text-red-600'">
-                                            {{ user.phoneNumberConfirmed ? 'Phone Confirmed' : 'Phone Not Confirmed' }}
+                                            {{ (user.phoneNumberConfirmed ? 'ADMIN.USER.LIST.PHONE_CONFIRMED' : 'ADMIN.USER.LIST.PHONE_NOT_CONFIRMED') | transloco }}
                                         </span>
                                     </div>
                                 </td>
@@ -143,7 +143,7 @@
                             <ng-container matColumnDef="status">
                                 <th mat-header-cell *matHeaderCellDef>
                                     <div class="flex items-center">
-                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span>
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.USER.LIST.COL_STATUS' | transloco }}</span>
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let user">
@@ -153,7 +153,7 @@
                                             <mat-icon class="icon-size-4 mr-1.5">
                                                 {{ user.isActive ? 'check_circle' : 'cancel' }}
                                             </mat-icon>
-                                            {{ user.isActive ? 'Active' : 'Inactive' }}
+                                            {{ (user.isActive ? 'ADMIN.USER.LIST.STATUS_ACTIVE' : 'ADMIN.USER.LIST.STATUS_INACTIVE') | transloco }}
                                         </span>
                                     </div>
                                 </td>
@@ -163,7 +163,7 @@
                             <ng-container matColumnDef="actions">
                                 <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6">
                                     <div class="flex items-center justify-end">
-                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span>
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'ADMIN.USER.LIST.COL_ACTIONS' | transloco }}</span>
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let user" class="pr-4 sm:pr-6">
@@ -173,28 +173,28 @@
                                             mat-icon-button
                                             [routerLink]="[user.id, 'edit']"
                                             class="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all duration-200 rounded-full"
-                                            matTooltip="Edit User">
+                                            [matTooltip]="'ADMIN.USER.LIST.EDIT_TOOLTIP' | transloco">
                                             <mat-icon class="icon-size-5">edit</mat-icon>
                                         </button>
-                                        
+
                                         <!-- Status Toggle Button -->
                                         <button
                                             mat-icon-button
                                             (click)="toggleUserStatus(user)"
                                             [class]="user.isActive ? 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20' : 'text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20'"
                                             class="transition-all duration-200 rounded-full"
-                                            [matTooltip]="user.isActive ? 'Deactivate User' : 'Activate User'">
+                                            [matTooltip]="(user.isActive ? 'ADMIN.USER.LIST.DEACTIVATE_TOOLTIP' : 'ADMIN.USER.LIST.ACTIVATE_TOOLTIP') | transloco">
                                             <mat-icon class="icon-size-5">
                                                 {{ user.isActive ? 'block' : 'check_circle' }}
                                             </mat-icon>
                                         </button>
-                                        
+
                                         <!-- Manage Roles Button -->
                                         <button
                                             mat-icon-button
                                             (click)="manageRoles(user)"
                                             class="text-violet-600 dark:text-violet-400 hover:text-violet-700 dark:hover:text-violet-300 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-all duration-200 rounded-full"
-                                            matTooltip="Manage Roles">
+                                            [matTooltip]="'ADMIN.USER.LIST.MANAGE_ROLES_TOOLTIP' | transloco">
                                             <mat-icon class="icon-size-5">manage_accounts</mat-icon>
                                         </button>
 
@@ -203,7 +203,7 @@
                                             mat-icon-button
                                             (click)="manageOutlets(user)"
                                             class="text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-all duration-200 rounded-full"
-                                            matTooltip="Manage Outlet Access">
+                                            [matTooltip]="'ADMIN.USER.LIST.MANAGE_OUTLETS_TOOLTIP' | transloco">
                                             <mat-icon class="icon-size-5">store</mat-icon>
                                         </button>
 
@@ -212,7 +212,7 @@
                                             mat-icon-button
                                             (click)="resetPassword(user)"
                                             class="text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all duration-200 rounded-full"
-                                            matTooltip="Reset Password">
+                                            [matTooltip]="'ADMIN.USER.LIST.RESET_PASSWORD_TOOLTIP' | transloco">
                                             <mat-icon class="icon-size-5">lock_reset</mat-icon>
                                         </button>
 
@@ -221,31 +221,31 @@
                                             mat-icon-button
                                             [matMenuTriggerFor]="menu"
                                             class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-full"
-                                            matTooltip="More Options">
+                                            [matTooltip]="'ADMIN.USER.LIST.MORE_OPTIONS' | transloco">
                                             <mat-icon class="icon-size-5">more_vert</mat-icon>
                                         </button>
                                         <mat-menu #menu="matMenu" class="shadow-xl border border-gray-200 dark:border-gray-700">
                                             <button mat-menu-item [routerLink]="[user.id, 'edit']" class="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-blue-600 dark:text-blue-400">edit</mat-icon>
-                                                <span class="ml-2">Edit User</span>
+                                                <span class="ml-2">{{ 'ADMIN.USER.LIST.MENU_EDIT' | transloco }}</span>
                                             </button>
                                             <button mat-menu-item (click)="manageRoles(user)" class="hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-violet-600 dark:text-violet-400">manage_accounts</mat-icon>
-                                                <span class="ml-2">Manage Roles</span>
+                                                <span class="ml-2">{{ 'ADMIN.USER.LIST.MENU_MANAGE_ROLES' | transloco }}</span>
                                             </button>
                                             <button mat-menu-item (click)="manageOutlets(user)" class="hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-emerald-600 dark:text-emerald-400">store</mat-icon>
-                                                <span class="ml-2">Manage Outlet Access</span>
+                                                <span class="ml-2">{{ 'ADMIN.USER.LIST.MENU_MANAGE_OUTLETS' | transloco }}</span>
                                             </button>
                                             <button mat-menu-item (click)="resetPassword(user)" class="hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-rose-600 dark:text-rose-400">lock_reset</mat-icon>
-                                                <span class="ml-2">Reset Password</span>
+                                                <span class="ml-2">{{ 'ADMIN.USER.LIST.MENU_RESET_PASSWORD' | transloco }}</span>
                                             </button>
                                             <button mat-menu-item (click)="toggleUserStatus(user)" class="hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5" [class]="user.isActive ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
                                                     {{ user.isActive ? 'block' : 'check_circle' }}
                                                 </mat-icon>
-                                                <span class="ml-2">{{ user.isActive ? 'Deactivate' : 'Activate' }} User</span>
+                                                <span class="ml-2">{{ (user.isActive ? 'ADMIN.USER.LIST.MENU_DEACTIVATE' : 'ADMIN.USER.LIST.MENU_ACTIVATE') | transloco }}</span>
                                             </button>
                                         </mat-menu>
                                     </div>
@@ -280,9 +280,9 @@
                         <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg">
                             <mat-icon class="icon-size-16 text-gray-400 dark:text-gray-500">group</mat-icon>
                         </div>
-                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No users found</h3>
+                        <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'ADMIN.USER.LIST.EMPTY_TITLE' | transloco }}</h3>
                         <p class="text-sm text-gray-600 dark:text-gray-400 text-center mb-6 max-w-md">
-                            {{ searchTerm || selectedStatus !== 'all' ? 'Try adjusting your search or filter criteria.' : 'Get started by creating your first user.' }}
+                            {{ (searchTerm || selectedStatus !== 'all' ? 'ADMIN.USER.LIST.EMPTY_FILTERED' : 'ADMIN.USER.LIST.EMPTY_DEFAULT') | transloco }}
                         </p>
                         <button
                             *ngIf="!searchTerm && selectedStatus === 'all'"
@@ -291,7 +291,7 @@
                             class="h-12 px-6 rounded-xl shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-105"
                             [routerLink]="['create']">
                             <mat-icon class="icon-size-5 mr-2">add_circle</mat-icon>
-                            <span>Add User</span>
+                            <span>{{ 'ADMIN.USER.LIST.ADD_BUTTON' | transloco }}</span>
                         </button>
                     </div>
 

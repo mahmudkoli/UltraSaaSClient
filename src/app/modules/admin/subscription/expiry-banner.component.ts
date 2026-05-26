@@ -4,6 +4,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { RouterModule } from '@angular/router';
 import { PermissionsService } from 'app/core/auth/permissions.service';
 import { MyBillingService } from 'app/core/billing/billing.service';
+import { TranslocoModule } from '@ngneat/transloco';
 
 /**
  * App-shell banner shown above the main content when the tenant's
@@ -15,7 +16,7 @@ import { MyBillingService } from 'app/core/billing/billing.service';
 @Component({
     selector: 'app-expiry-banner',
     standalone: true,
-    imports: [CommonModule, MatIconModule, RouterModule],
+    imports: [CommonModule, MatIconModule, RouterModule, TranslocoModule],
     template: `
 @if (visible()) {
     <div class="px-4 py-2 border-b text-sm flex items-center justify-between gap-3"
@@ -25,17 +26,9 @@ import { MyBillingService } from 'app/core/billing/billing.service';
          [class.text-rose-900]="severity() === 'urgent' || !active()">
         <div class="flex items-center gap-2">
             <mat-icon class="icon-size-5">{{ active() ? 'warning' : 'block' }}</mat-icon>
-            <span>
-                @if (!active()) {
-                    <strong>Subscription expired.</strong> Service is read-only — contact your platform admin to record a payment and restore access.
-                } @else if (severity() === 'urgent') {
-                    <strong>Renew today.</strong> Your subscription expires in {{ days() }} day(s).
-                } @else {
-                    Your subscription expires in {{ days() }} day(s). Contact your platform admin to renew.
-                }
-            </span>
+            <span [innerHTML]="bannerKey() | transloco:{ days: days() }"></span>
         </div>
-        <a routerLink="/subscription" class="text-xs font-semibold underline hover:no-underline whitespace-nowrap">View subscription →</a>
+        <a routerLink="/subscription" class="text-xs font-semibold underline hover:no-underline whitespace-nowrap">{{ 'ADMIN.SUBSCRIPTION.EXPIRY_BANNER.VIEW_LINK' | transloco }}</a>
     </div>
 }
     `,
@@ -48,6 +41,12 @@ export class ExpiryBannerComponent implements OnInit {
     severity = signal<'warning' | 'urgent' | 'none'>('none');
     days = signal<number>(0);
     active = signal<boolean>(true);
+
+    bannerKey(): string {
+        if (!this.active()) return 'ADMIN.SUBSCRIPTION.EXPIRY_BANNER.EXPIRED';
+        if (this.severity() === 'urgent') return 'ADMIN.SUBSCRIPTION.EXPIRY_BANNER.URGENT';
+        return 'ADMIN.SUBSCRIPTION.EXPIRY_BANNER.WARNING';
+    }
 
     ngOnInit(): void {
         // Skip the request entirely if user can't see subscription info — keeps

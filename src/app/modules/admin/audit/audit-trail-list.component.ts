@@ -12,6 +12,7 @@ import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { RouterModule } from '@angular/router';
+import { TranslocoModule } from '@ngneat/transloco';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { AuditTrailDto, AuditTrailService, SearchAuditTrailsRequest } from 'app/core/audit/audit.service';
 
@@ -23,6 +24,7 @@ import { AuditTrailDto, AuditTrailService, SearchAuditTrailsRequest } from 'app/
         MatButtonModule, MatExpansionModule, MatFormFieldModule, MatIconModule,
         MatInputModule, MatPaginatorModule, MatSelectModule, MatSortModule,
         MatTableModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -32,27 +34,27 @@ import { AuditTrailDto, AuditTrailService, SearchAuditTrailsRequest } from 'app/
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-slate-500 to-gray-700 rounded-xl shadow-lg"><mat-icon class="text-white">history</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Audit Trail</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Append-only ledger of every Create / Update / Delete in the per-tenant DB</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'AUDIT.HEADER.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'AUDIT.HEADER.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Table</mat-label>
+                    <mat-label>{{ 'AUDIT.HEADER.TABLE_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="tableFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option [value]="''">All tables</mat-option>
+                        <mat-option [value]="''">{{ 'AUDIT.HEADER.TABLE_ALL' | transloco }}</mat-option>
                         @for (t of tables(); track t) {
                             <mat-option [value]="t">{{ t }}</mat-option>
                         }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Type</mat-label>
+                    <mat-label>{{ 'AUDIT.HEADER.TYPE_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="typeFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All</mat-option>
-                        <mat-option value="Create">Create</mat-option>
-                        <mat-option value="Update">Update</mat-option>
-                        <mat-option value="Delete">Delete</mat-option>
+                        <mat-option value="all">{{ 'AUDIT.HEADER.TYPE_ALL' | transloco }}</mat-option>
+                        <mat-option value="Create">{{ 'AUDIT.HEADER.TYPE_CREATE' | transloco }}</mat-option>
+                        <mat-option value="Update">{{ 'AUDIT.HEADER.TYPE_UPDATE' | transloco }}</mat-option>
+                        <mat-option value="Delete">{{ 'AUDIT.HEADER.TYPE_DELETE' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
             </div>
@@ -62,44 +64,44 @@ import { AuditTrailDto, AuditTrailService, SearchAuditTrailsRequest } from 'app/
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" multiTemplateDataRows class="w-full">
-                        <ng-container matColumnDef="dateTime"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">When</span></th>
+                        <ng-container matColumnDef="dateTime"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'AUDIT.LIST.COL_WHEN' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 text-xs">{{ r.dateTime | date:'short' }}</td></ng-container>
-                        <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Action</span></th>
+                        <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'AUDIT.LIST.COL_ACTION' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium"
                                       [ngClass]="{
                                         'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200': r.type === 'Create',
                                         'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200': r.type === 'Update',
                                         'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': r.type === 'Delete'
-                                      }">{{ r.type }}</span>
+                                      }">{{ actionLabel(r.type) | transloco }}</span>
                             </td></ng-container>
-                        <ng-container matColumnDef="table"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Table</span></th>
+                        <ng-container matColumnDef="table"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'AUDIT.LIST.COL_TABLE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="font-mono text-xs">{{ r.tableName }}</td></ng-container>
-                        <ng-container matColumnDef="user"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">User</span></th>
+                        <ng-container matColumnDef="user"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'AUDIT.LIST.COL_USER' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="font-mono text-[10px] text-gray-500">{{ shortGuid(r.userId) }}</td></ng-container>
-                        <ng-container matColumnDef="key"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Key</span></th>
+                        <ng-container matColumnDef="key"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'AUDIT.LIST.COL_KEY' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="font-mono text-[10px] text-gray-500">{{ r.primaryKey | slice:0:60 }}</td></ng-container>
-                        <ng-container matColumnDef="changed"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Changes</span></th>
+                        <ng-container matColumnDef="changed"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'AUDIT.LIST.COL_CHANGES' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 @if (expanded() === r.id) {
                                     <button mat-icon-button (click)="expanded.set(null)"><mat-icon>expand_less</mat-icon></button>
                                 } @else {
-                                    <button mat-icon-button (click)="expanded.set(r.id)" matTooltip="Show old / new values"><mat-icon>expand_more</mat-icon></button>
+                                    <button mat-icon-button (click)="expanded.set(r.id)" [matTooltip]="'AUDIT.LIST.EXPAND_TOOLTIP' | transloco"><mat-icon>expand_more</mat-icon></button>
                                 }
                             </td></ng-container>
                         <ng-container matColumnDef="diff">
                             <td mat-cell *matCellDef="let r" [attr.colspan]="cols.length" class="!p-0 !border-b-0">
                                 <div class="p-4 bg-slate-50 dark:bg-slate-900 grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
                                     <div>
-                                        <div class="font-semibold text-gray-500 mb-1">Affected columns</div>
-                                        <pre class="whitespace-pre-wrap break-all bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700">{{ r.affectedColumns || '—' }}</pre>
+                                        <div class="font-semibold text-gray-500 mb-1">{{ 'AUDIT.DIFF.AFFECTED_COLUMNS' | transloco }}</div>
+                                        <pre class="whitespace-pre-wrap break-all bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700">{{ r.affectedColumns || ('AUDIT.DIFF.NONE' | transloco) }}</pre>
                                     </div>
                                     <div>
-                                        <div class="font-semibold text-gray-500 mb-1">Old values</div>
+                                        <div class="font-semibold text-gray-500 mb-1">{{ 'AUDIT.DIFF.OLD_VALUES' | transloco }}</div>
                                         <pre class="whitespace-pre-wrap break-all bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700">{{ pretty(r.oldValues) }}</pre>
                                     </div>
                                     <div>
-                                        <div class="font-semibold text-gray-500 mb-1">New values</div>
+                                        <div class="font-semibold text-gray-500 mb-1">{{ 'AUDIT.DIFF.NEW_VALUES' | transloco }}</div>
                                         <pre class="whitespace-pre-wrap break-all bg-white dark:bg-gray-800 p-2 rounded border border-gray-200 dark:border-gray-700">{{ pretty(r.newValues) }}</pre>
                                     </div>
                                 </div>
@@ -122,8 +124,8 @@ import { AuditTrailDto, AuditTrailService, SearchAuditTrailsRequest } from 'app/
 
                 <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">history</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No audit entries</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Per-tenant changes are recorded automatically by the EF interceptor.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'AUDIT.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'AUDIT.LIST.EMPTY_SUBTITLE' | transloco }}</p>
                 </div>
             </div>
         </div>
@@ -180,6 +182,20 @@ export class AuditTrailListComponent implements OnInit {
     onSort(s: Sort): void { this.orderBy = toOrderBy(s.active, s.direction); this.resetAndLoad(); }
 
     shortGuid(g: string): string { return g ? g.slice(0, 8) : ''; }
+
+    /**
+     * Maps the server-returned audit action enum to a transloco key so the
+     * Create/Update/Delete chips render in the chosen language. Falls back to
+     * the raw value if the enum is unknown.
+     */
+    actionLabel(type: string): string {
+        switch (type) {
+            case 'Create': return 'AUDIT.HEADER.TYPE_CREATE';
+            case 'Update': return 'AUDIT.HEADER.TYPE_UPDATE';
+            case 'Delete': return 'AUDIT.HEADER.TYPE_DELETE';
+            default: return type;
+        }
+    }
 
     pretty(json?: string): string {
         if (!json) return '—';

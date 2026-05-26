@@ -7,6 +7,7 @@ import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/materia
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { TranslocoModule } from '@ngneat/transloco';
 
 export interface SerialPickerDialogData {
     productName: string;
@@ -24,7 +25,7 @@ export interface SerialPickerDialogData {
     selector: 'app-serial-picker-dialog',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, MatButtonModule, MatCheckboxModule,
+        CommonModule, FormsModule, TranslocoModule, MatButtonModule, MatCheckboxModule,
         MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
     ],
     template: `
@@ -37,27 +38,27 @@ export interface SerialPickerDialogData {
         <p class="text-xs font-mono text-gray-500 truncate">{{ data.sku }}</p>
     </div>
     <span class="text-xs font-medium px-2 py-1 rounded-full bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300 flex-shrink-0">
-        {{ selected().length }} / {{ data.availableSerials.length }} picked
+        {{ 'PURCHASING.SERIAL_PICKER.PICKED_BADGE' | transloco:{ picked: selected().length, total: data.availableSerials.length } }}
     </span>
 </div>
 
 <div class="px-6 py-3 border-b border-gray-200 dark:border-gray-700 flex flex-wrap items-center gap-2">
     <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 min-w-[200px]">
         <mat-icon matPrefix class="icon-size-5 mr-1 text-gray-400">search</mat-icon>
-        <input matInput [(ngModel)]="search" placeholder="Search / scan serial…"
+        <input matInput [(ngModel)]="search" [placeholder]="'PURCHASING.SERIAL_PICKER.SEARCH_PLACEHOLDER' | transloco"
                (keyup.enter)="tickOnExactMatch()" cdkFocusInitial>
     </mat-form-field>
     <button type="button" mat-stroked-button (click)="selectAllVisible()" [disabled]="filtered().length === 0">
-        Tick all{{ search ? ' filtered' : '' }}
+        {{ (search ? 'PURCHASING.SERIAL_PICKER.TICK_ALL_FILTERED' : 'PURCHASING.SERIAL_PICKER.TICK_ALL') | transloco }}
     </button>
     <button type="button" mat-stroked-button (click)="clearAll()" [disabled]="selected().length === 0">
-        Clear all
+        {{ 'PURCHASING.SERIAL_PICKER.CLEAR_ALL' | transloco }}
     </button>
 </div>
 
 <div class="max-h-[60vh] overflow-y-auto px-6 py-3">
     @if (filtered().length === 0) {
-        <p class="text-sm text-gray-500 text-center py-8">No serials match "{{ search }}".</p>
+        <p class="text-sm text-gray-500 text-center py-8">{{ 'PURCHASING.SERIAL_PICKER.NO_MATCH' | transloco:{ q: search } }}</p>
     } @else {
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-1">
             @for (s of filtered(); track s) {
@@ -71,9 +72,9 @@ export interface SerialPickerDialogData {
 </div>
 
 <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
-    <button type="button" mat-stroked-button (click)="cancel()">Cancel</button>
+    <button type="button" mat-stroked-button (click)="cancel()">{{ 'PURCHASING.SERIAL_PICKER.CANCEL' | transloco }}</button>
     <button type="button" mat-flat-button color="primary" (click)="apply()">
-        Apply ({{ selected().length }})
+        {{ 'PURCHASING.SERIAL_PICKER.APPLY' | transloco:{ count: selected().length } }}
     </button>
 </div>
     `,

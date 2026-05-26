@@ -10,6 +10,7 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { RolesService } from 'app/core/roles/roles.service';
 import { PermissionDto, RoleDto } from 'app/core/roles/roles.types';
+import { TranslocoModule } from '@ngneat/transloco';
 
 interface PermissionGroup {
     resource: string;
@@ -23,6 +24,7 @@ interface PermissionGroup {
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatCheckboxModule, MatExpansionModule, MatIconModule,
         MatProgressSpinnerModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -32,17 +34,17 @@ interface PermissionGroup {
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-violet-500 to-fuchsia-600 rounded-xl shadow-lg"><mat-icon class="text-white">tune</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Permissions</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" *ngIf="role(); else hdrLoading">Editing role <strong>{{ role()?.name }}</strong></p>
-                    <ng-template #hdrLoading><p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Loading…</p></ng-template>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'ADMIN.ROLE.PERMISSIONS.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" *ngIf="role(); else hdrLoading">{{ 'ADMIN.ROLE.PERMISSIONS.EDITING' | transloco }} <strong>{{ role()?.name }}</strong></p>
+                    <ng-template #hdrLoading><p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'ADMIN.ROLE.PERMISSIONS.LOADING' | transloco }}</p></ng-template>
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/users/roles"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Back</span></button>
+                <button mat-stroked-button class="h-12 px-6 rounded-lg" routerLink="/users/roles"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'COMMON.BACK' | transloco }}</span></button>
                 <button mat-flat-button color="primary" class="h-12 px-6 rounded-lg shadow-lg"
                         [disabled]="loading() || saving() || isAdminRole()"
                         (click)="save()">
-                    <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ saving() ? 'Saving…' : 'Save' }}</span>
+                    <mat-icon class="icon-size-5 mr-2">save</mat-icon><span>{{ (saving() ? 'ADMIN.ROLE.PERMISSIONS.SAVING' : 'COMMON.SAVE') | transloco }}</span>
                 </button>
             </div>
         </div>
@@ -52,14 +54,14 @@ interface PermissionGroup {
                 <div class="flex items-center justify-center py-16"><mat-spinner [diameter]="48"></mat-spinner></div>
             } @else if (isAdminRole()) {
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
-                    <p class="text-sm text-gray-700 dark:text-gray-300">The Admin role inherits the entire tenant pool and cannot be edited individually. Adjust the tenant pool from the root admin to change Admin's effective permissions.</p>
+                    <p class="text-sm text-gray-700 dark:text-gray-300">{{ 'ADMIN.ROLE.PERMISSIONS.ADMIN_NOTE' | transloco }}</p>
                 </div>
             } @else {
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                         <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center"><mat-icon class="text-violet-600 dark:text-violet-400 text-lg">lock</mat-icon></div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Available permissions</h3>
-                        <span class="ml-auto text-xs text-gray-500">{{ checkedCount() }} of {{ available().length }} selected</span>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.ROLE.PERMISSIONS.SECTION_AVAILABLE' | transloco }}</h3>
+                        <span class="ml-auto text-xs text-gray-500">{{ 'ADMIN.ROLE.PERMISSIONS.SELECTED_OF' | transloco:{ checked: checkedCount(), total: available().length } }}</span>
                     </div>
                     <div class="p-2 sm:p-4">
                         <mat-accordion multi>
@@ -74,7 +76,7 @@ interface PermissionGroup {
                                     <mat-panel-description>
                                         <button mat-stroked-button type="button" class="ml-auto !min-h-0 !h-8 !px-2 !text-xs"
                                                 (click)="toggleGroup(g, $event)">
-                                            {{ groupCheckedCount(g) === g.permissions.length ? 'Deselect all' : 'Select all' }}
+                                            {{ (groupCheckedCount(g) === g.permissions.length ? 'ADMIN.ROLE.PERMISSIONS.DESELECT_ALL' : 'ADMIN.ROLE.PERMISSIONS.SELECT_ALL') | transloco }}
                                         </button>
                                     </mat-panel-description>
                                 </mat-expansion-panel-header>
@@ -91,7 +93,7 @@ interface PermissionGroup {
                                 </div>
                             </mat-expansion-panel>
                         </mat-accordion>
-                        <p *ngIf="available().length === 0" class="text-sm text-gray-500 p-6 text-center">No permissions available for this tenant.</p>
+                        <p *ngIf="available().length === 0" class="text-sm text-gray-500 p-6 text-center">{{ 'ADMIN.ROLE.PERMISSIONS.EMPTY' | transloco }}</p>
                     </div>
                 </div>
             }

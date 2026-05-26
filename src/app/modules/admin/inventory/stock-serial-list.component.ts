@@ -20,6 +20,7 @@ import { StockSerialDto } from 'app/core/inventory/inventory.types';
 import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
+import { TranslocoModule } from '@ngneat/transloco';
 
 type SerialStatus = StockSerialDto['status'];
 
@@ -30,6 +31,7 @@ type SerialStatus = StockSerialDto['status'];
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
@@ -39,34 +41,34 @@ type SerialStatus = StockSerialDto['status'];
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-indigo-500 to-purple-600 rounded-xl shadow-lg"><mat-icon class="text-white">qr_code_2</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Stock Serials</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">IMEI / serial number tracking for serial-required products</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'INVENTORY.SERIALS.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'INVENTORY.SERIALS.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search</mat-label>
-                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" placeholder="Serial / IMEI">
+                    <mat-label>{{ 'INVENTORY.SERIALS.LIST.SEARCH_LABEL' | transloco }}</mat-label>
+                    <input matInput [(ngModel)]="search" (ngModelChange)="searchChanged.next($event)" [placeholder]="'INVENTORY.SERIALS.LIST.SEARCH_PLACEHOLDER' | transloco">
                     <mat-icon matSuffix class="text-gray-400">search</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Outlet</mat-label>
+                    <mat-label>{{ 'INVENTORY.SERIALS.LIST.OUTLET_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="outletFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option [value]="''">All outlets</mat-option>
+                        <mat-option [value]="''">{{ 'INVENTORY.SERIALS.LIST.OUTLET_ALL' | transloco }}</mat-option>
                         @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'INVENTORY.SERIALS.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="">All</mat-option>
-                        <mat-option value="InStock">In stock</mat-option>
-                        <mat-option value="Reserved">Reserved</mat-option>
-                        <mat-option value="Sold">Sold</mat-option>
-                        <mat-option value="Returned">Returned</mat-option>
-                        <mat-option value="UnderRepair">Under repair</mat-option>
-                        <mat-option value="WrittenOff">Written off</mat-option>
-                        <mat-option value="Transferred">Transferred</mat-option>
+                        <mat-option value="">{{ 'INVENTORY.SERIALS.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="InStock">{{ 'INVENTORY.SERIALS.LIST.STATUS_IN_STOCK' | transloco }}</mat-option>
+                        <mat-option value="Reserved">{{ 'INVENTORY.SERIALS.LIST.STATUS_RESERVED' | transloco }}</mat-option>
+                        <mat-option value="Sold">{{ 'INVENTORY.SERIALS.LIST.STATUS_SOLD' | transloco }}</mat-option>
+                        <mat-option value="Returned">{{ 'INVENTORY.SERIALS.LIST.STATUS_RETURNED' | transloco }}</mat-option>
+                        <mat-option value="UnderRepair">{{ 'INVENTORY.SERIALS.LIST.STATUS_UNDER_REPAIR' | transloco }}</mat-option>
+                        <mat-option value="WrittenOff">{{ 'INVENTORY.SERIALS.LIST.STATUS_WRITTEN_OFF' | transloco }}</mat-option>
+                        <mat-option value="Transferred">{{ 'INVENTORY.SERIALS.LIST.STATUS_TRANSFERRED' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
             </div>
@@ -75,24 +77,24 @@ type SerialStatus = StockSerialDto['status'];
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
-                        <ng-container matColumnDef="serialNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Serial</span></th>
+                        <ng-container matColumnDef="serialNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.SERIALS.LIST.COL_SERIAL' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.serialNumber }}</td></ng-container>
-                        <ng-container matColumnDef="imei"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">IMEI</span></th>
+                        <ng-container matColumnDef="imei"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.SERIALS.LIST.COL_IMEI' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="font-mono text-xs text-gray-600 dark:text-gray-400">{{ r.imei || '—' }}</td></ng-container>
-                        <ng-container matColumnDef="product"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
+                        <ng-container matColumnDef="product"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.SERIALS.LIST.COL_PRODUCT' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ productName(r.productId) }}</td></ng-container>
-                        <ng-container matColumnDef="outlet"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Outlet</span></th>
+                        <ng-container matColumnDef="outlet"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.SERIALS.LIST.COL_OUTLET' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ outletName(r.outletId) }}</td></ng-container>
-                        <ng-container matColumnDef="purchaseCost"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Cost</span></th>
+                        <ng-container matColumnDef="purchaseCost"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.SERIALS.LIST.COL_COST' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.purchaseCost | number:'1.2-2' }}</td></ng-container>
-                        <ng-container matColumnDef="receivedOn"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Received</span></th>
+                        <ng-container matColumnDef="receivedOn"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.SERIALS.LIST.COL_RECEIVED' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="text-gray-600 dark:text-gray-400">{{ r.receivedOn | date:'shortDate' }}</td></ng-container>
-                        <ng-container matColumnDef="soldOn"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Sold</span></th>
+                        <ng-container matColumnDef="soldOn"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.SERIALS.LIST.COL_SOLD' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="text-gray-600 dark:text-gray-400">{{ r.soldOn ? (r.soldOn | date:'shortDate') : '—' }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pr-4 sm:pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pr-4 sm:pr-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.SERIALS.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" [ngClass]="badgeClass(r.status)">
-                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ r.status }}
+                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                                 </span>
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
@@ -109,8 +111,8 @@ type SerialStatus = StockSerialDto['status'];
                 </div>
                 <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">qr_code_2</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No serials</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Serials are auto-created when goods receipts include serial-tracked products.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'INVENTORY.SERIALS.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'INVENTORY.SERIALS.LIST.EMPTY_SUBTITLE' | transloco }}</p>
                 </div>
             </div>
         </div>
@@ -156,6 +158,19 @@ export class StockSerialListComponent implements OnInit {
             case 'WrittenOff': return 'block';
             case 'Transferred': return 'swap_horiz';
             default: return 'help';
+        }
+    }
+
+    statusLabel(s: SerialStatus): string {
+        switch (s) {
+            case 'InStock': return 'INVENTORY.SERIALS.LIST.STATUS_IN_STOCK';
+            case 'Reserved': return 'INVENTORY.SERIALS.LIST.STATUS_RESERVED';
+            case 'Sold': return 'INVENTORY.SERIALS.LIST.STATUS_SOLD';
+            case 'Returned': return 'INVENTORY.SERIALS.LIST.STATUS_RETURNED';
+            case 'UnderRepair': return 'INVENTORY.SERIALS.LIST.STATUS_UNDER_REPAIR';
+            case 'WrittenOff': return 'INVENTORY.SERIALS.LIST.STATUS_WRITTEN_OFF';
+            case 'Transferred': return 'INVENTORY.SERIALS.LIST.STATUS_TRANSFERRED';
+            default: return 'INVENTORY.SERIALS.LIST.STATUS_ALL';
         }
     }
 

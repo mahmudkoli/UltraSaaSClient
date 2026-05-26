@@ -6,6 +6,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
+import { TranslocoModule } from '@ngneat/transloco';
 import { ShiftsService } from 'app/core/sales/shifts.service';
 import { ShiftDto } from 'app/core/sales/shifts.types';
 
@@ -19,7 +20,7 @@ export interface OpenShiftDialogData {
 @Component({
     selector: 'app-open-shift-dialog',
     standalone: true,
-    imports: [CommonModule, FormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule],
+    imports: [CommonModule, FormsModule, TranslocoModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule],
     template: `
 <div class="p-1">
     <div class="flex items-center space-x-3 px-4 pt-4 pb-2">
@@ -27,26 +28,26 @@ export interface OpenShiftDialogData {
             <mat-icon class="text-white">point_of_sale</mat-icon>
         </div>
         <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Open Shift</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'SHIFTS.OPEN_DIALOG.TITLE' | transloco }}</h2>
             <p class="text-sm text-gray-600 dark:text-gray-400">{{ data.outletName }}</p>
         </div>
     </div>
     <mat-dialog-content class="!p-4">
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Enter the cash float you're starting the register with.</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">{{ 'SHIFTS.OPEN_DIALOG.INTRO' | transloco }}</p>
         <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Opening cash float</mat-label>
+            <mat-label>{{ 'SHIFTS.OPEN_DIALOG.OPENING_FLOAT_LABEL' | transloco }}</mat-label>
             <input matInput type="number" min="0" step="0.01" [(ngModel)]="openingFloat" autofocus>
             <mat-icon matSuffix>payments</mat-icon>
         </mat-form-field>
         <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Notes (optional)</mat-label>
+            <mat-label>{{ 'SHIFTS.OPEN_DIALOG.NOTES_LABEL' | transloco }}</mat-label>
             <input matInput [(ngModel)]="notes">
         </mat-form-field>
     </mat-dialog-content>
     <mat-dialog-actions align="end" class="!px-4 !pb-4">
-        <button mat-button (click)="close()" [disabled]="saving()">Cancel</button>
+        <button mat-button (click)="close()" [disabled]="saving()">{{ 'SHIFTS.OPEN_DIALOG.CANCEL_BUTTON' | transloco }}</button>
         <button mat-flat-button color="primary" (click)="submit()" [disabled]="saving()">
-            <mat-icon class="icon-size-5 mr-2">play_arrow</mat-icon>{{ saving() ? 'Opening…' : 'Open Shift' }}
+            <mat-icon class="icon-size-5 mr-2">play_arrow</mat-icon>{{ (saving() ? 'SHIFTS.OPEN_DIALOG.OPENING' : 'SHIFTS.OPEN_DIALOG.OPEN_BUTTON') | transloco }}
         </button>
     </mat-dialog-actions>
 </div>
@@ -87,7 +88,7 @@ export interface CloseShiftDialogData {
 @Component({
     selector: 'app-close-shift-dialog',
     standalone: true,
-    imports: [CommonModule, FormsModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule],
+    imports: [CommonModule, FormsModule, TranslocoModule, MatButtonModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule],
     template: `
 <div class="p-1">
     <div class="flex items-center space-x-3 px-4 pt-4 pb-2">
@@ -95,36 +96,36 @@ export interface CloseShiftDialogData {
             <mat-icon class="text-white">stop_circle</mat-icon>
         </div>
         <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Close Shift</h2>
-            <p class="text-sm text-gray-600 dark:text-gray-400">{{ data.outletName }} · opened {{ data.shift.openedAt | date:'short' }}</p>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'SHIFTS.CLOSE_DIALOG.TITLE' | transloco }}</h2>
+            <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'SHIFTS.CLOSE_DIALOG.SUBTITLE' | transloco:{ outlet: data.outletName, when: (data.shift.openedAt | date:'short') } }}</p>
         </div>
     </div>
     <mat-dialog-content class="!p-4">
         <div class="text-sm space-y-1 mb-4 p-3 rounded-lg bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-700">
-            <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Opening float</span><span class="font-medium">{{ data.shift.openingFloat | number:'1.2-2' }}</span></div>
+            <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'SHIFTS.CLOSE_DIALOG.OPENING_FLOAT' | transloco }}</span><span class="font-medium">{{ data.shift.openingFloat | number:'1.2-2' }}</span></div>
         </div>
-        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">Count the drawer and enter the closing cash. Variance = closing − opening − expected cash sales.</p>
+        <p class="text-sm text-gray-600 dark:text-gray-400 mb-3">{{ 'SHIFTS.CLOSE_DIALOG.INTRO' | transloco }}</p>
         <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Closing cash float</mat-label>
+            <mat-label>{{ 'SHIFTS.CLOSE_DIALOG.CLOSING_FLOAT_LABEL' | transloco }}</mat-label>
             <input matInput type="number" min="0" step="0.01" [(ngModel)]="closingFloat" autofocus>
             <mat-icon matSuffix>payments</mat-icon>
         </mat-form-field>
         <mat-form-field class="w-full" appearance="outline">
-            <mat-label>Notes (optional)</mat-label>
+            <mat-label>{{ 'SHIFTS.CLOSE_DIALOG.NOTES_LABEL' | transloco }}</mat-label>
             <input matInput [(ngModel)]="notes">
         </mat-form-field>
         @if (closedShift(); as c) {
             <div class="text-sm space-y-1 mt-2 p-3 rounded-lg" [class.bg-emerald-50]="(c.variance ?? 0) === 0" [class.bg-amber-50]="(c.variance ?? 0) !== 0">
-                <div class="flex justify-between"><span class="text-gray-600">Expected cash</span><span class="font-medium">{{ c.expectedCash | number:'1.2-2' }}</span></div>
-                <div class="flex justify-between"><span class="text-gray-600">Counted</span><span class="font-medium">{{ c.closingFloat | number:'1.2-2' }}</span></div>
-                <div class="flex justify-between font-semibold"><span>Variance</span><span [class.text-rose-700]="(c.variance ?? 0) < 0" [class.text-emerald-700]="(c.variance ?? 0) >= 0">{{ c.variance | number:'1.2-2' }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-600">{{ 'SHIFTS.CLOSE_DIALOG.EXPECTED_CASH' | transloco }}</span><span class="font-medium">{{ c.expectedCash | number:'1.2-2' }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-600">{{ 'SHIFTS.CLOSE_DIALOG.COUNTED' | transloco }}</span><span class="font-medium">{{ c.closingFloat | number:'1.2-2' }}</span></div>
+                <div class="flex justify-between font-semibold"><span>{{ 'SHIFTS.CLOSE_DIALOG.VARIANCE' | transloco }}</span><span [class.text-rose-700]="(c.variance ?? 0) < 0" [class.text-emerald-700]="(c.variance ?? 0) >= 0">{{ c.variance | number:'1.2-2' }}</span></div>
             </div>
         }
     </mat-dialog-content>
     <mat-dialog-actions align="end" class="!px-4 !pb-4">
-        <button mat-button (click)="close()" [disabled]="saving()">{{ closedShift() ? 'Done' : 'Cancel' }}</button>
+        <button mat-button (click)="close()" [disabled]="saving()">{{ (closedShift() ? 'SHIFTS.CLOSE_DIALOG.DONE_BUTTON' : 'SHIFTS.CLOSE_DIALOG.CANCEL_BUTTON') | transloco }}</button>
         <button mat-flat-button color="warn" (click)="submit()" [disabled]="saving() || !!closedShift()">
-            <mat-icon class="icon-size-5 mr-2">stop_circle</mat-icon>{{ saving() ? 'Closing…' : 'Close Shift' }}
+            <mat-icon class="icon-size-5 mr-2">stop_circle</mat-icon>{{ (saving() ? 'SHIFTS.CLOSE_DIALOG.CLOSING' : 'SHIFTS.CLOSE_DIALOG.CLOSE_BUTTON') | transloco }}
         </button>
     </mat-dialog-actions>
 </div>

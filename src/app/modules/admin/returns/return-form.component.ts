@@ -9,6 +9,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { SaleReturnsService, SalesService } from 'app/core/sales/sales.service';
 import {
     CreateSaleReturnLine, CreateSaleReturnRefund, PaymentMethod,
@@ -43,7 +44,7 @@ interface ReturnLineDraft {
     selector: 'app-return-form',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatSelectModule, MatTableModule, MatTooltipModule,
     ],
@@ -55,13 +56,13 @@ interface ReturnLineDraft {
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-rose-500 to-orange-600 rounded-xl shadow-lg"><mat-icon class="text-white">undo</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Process Return</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" *ngIf="sale(); else loadingHdr">Refund items from invoice <span class="font-mono">{{ sale()?.invoiceNumber }}</span></p>
-                    <ng-template #loadingHdr><p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Loading sale…</p></ng-template>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'RETURNS.FORM.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400" *ngIf="sale(); else loadingHdr">{{ 'RETURNS.FORM.SUBTITLE_PREFIX' | transloco }} <span class="font-mono">{{ sale()?.invoiceNumber }}</span></p>
+                    <ng-template #loadingHdr><p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'RETURNS.FORM.LOADING_SALE' | transloco }}</p></ng-template>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
-                <button mat-stroked-button class="h-12 px-6 rounded-lg" [routerLink]="['/sales', saleId]"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>Back to Sale</span></button>
+                <button mat-stroked-button class="h-12 px-6 rounded-lg" [routerLink]="['/sales', saleId]"><mat-icon class="icon-size-5 mr-2">arrow_back</mat-icon><span>{{ 'RETURNS.FORM.BACK_TO_SALE' | transloco }}</span></button>
             </div>
         </div>
 
@@ -74,48 +75,48 @@ interface ReturnLineDraft {
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-violet-100 dark:bg-violet-900 rounded-lg flex items-center justify-center"><mat-icon class="text-violet-600 dark:text-violet-400 text-lg">inventory_2</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Items</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'RETURNS.FORM.ITEMS' | transloco }}</h3>
                                 <div class="ml-auto flex items-center gap-2">
                                     <button type="button" (click)="returnAll()" [disabled]="!anyReturnable()"
                                             class="text-xs px-3 py-1.5 rounded-lg border text-emerald-700 dark:text-emerald-300 hover:bg-emerald-50 dark:hover:bg-emerald-900/30 disabled:opacity-40"
-                                            matTooltip="Set every line's qty to its remaining returnable amount — for full-refund cases">
-                                        Return all
+                                            [matTooltip]="'RETURNS.FORM.RETURN_ALL_TOOLTIP' | transloco">
+                                        {{ 'RETURNS.FORM.RETURN_ALL' | transloco }}
                                     </button>
                                     <button type="button" (click)="clearAllQty()" [disabled]="selectedItemCount() === 0"
                                             class="text-xs px-3 py-1.5 rounded-lg border text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-40"
-                                            matTooltip="Reset every line's return qty to zero">
-                                        Clear
+                                            [matTooltip]="'RETURNS.FORM.CLEAR_TOOLTIP' | transloco">
+                                        {{ 'RETURNS.FORM.CLEAR' | transloco }}
                                     </button>
                                     <span class="text-xs text-gray-500 ml-1">{{ priorReturnsHint() }}</span>
                                 </div>
                             </div>
                             <table mat-table [dataSource]="lines()" class="w-full">
-                                <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Product</span></th>
+                                <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef class="pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.FORM.COL_PRODUCT' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let l" class="pl-6">
                                         <div class="flex flex-col">
                                             <span class="text-sm font-medium text-gray-900 dark:text-white">{{ l.productName }}</span>
                                             <span class="text-xs text-gray-500 font-mono">{{ l.sku }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="l.serialNumber">SN: {{ l.serialNumber }}</span>
-                                            <span class="text-xs text-gray-500" *ngIf="l.batchNumber">Batch: {{ l.batchNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="l.serialNumber">{{ 'RETURNS.FORM.SN_PREFIX' | transloco }}: {{ l.serialNumber }}</span>
+                                            <span class="text-xs text-gray-500" *ngIf="l.batchNumber">{{ 'RETURNS.FORM.BATCH_PREFIX' | transloco }}: {{ l.batchNumber }}</span>
                                         </div>
                                     </td></ng-container>
-                                <ng-container matColumnDef="orig"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Sold</span></th>
+                                <ng-container matColumnDef="orig"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.FORM.COL_SOLD' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let l" class="!text-right tabular-nums">{{ l.originalQuantity | number:'1.0-3' }}</td></ng-container>
-                                <ng-container matColumnDef="returnable"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Returnable</span></th>
+                                <ng-container matColumnDef="returnable"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.FORM.COL_RETURNABLE' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let l" class="!text-right tabular-nums"
                                         [class.text-rose-700]="l.maxReturnable <= 0"
                                         [class.text-emerald-700]="l.alreadyReturned > 0 && l.maxReturnable > 0"
-                                        [matTooltip]="l.alreadyReturned > 0 ? ('Already returned ' + l.alreadyReturned) : ''">
+                                        [matTooltip]="l.alreadyReturned > 0 ? ('RETURNS.FORM.ALREADY_RETURNED_TOOLTIP' | transloco:{ count: l.alreadyReturned }) : ''">
                                         {{ l.maxReturnable | number:'1.0-3' }}
                                     </td></ng-container>
-                                <ng-container matColumnDef="unit"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Unit</span></th>
+                                <ng-container matColumnDef="unit"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.FORM.COL_UNIT' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let l" class="!text-right">{{ l.unitPrice | number:'1.2-2' }}</td></ng-container>
-                                <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Return Qty</span></th>
+                                <ng-container matColumnDef="qty"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.FORM.COL_RETURN_QTY' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let l" class="!text-right">
                                         <div class="flex items-center justify-end gap-1">
                                             <button type="button" (click)="nudgeQty(l, -1)" [disabled]="l.quantity <= 0 || l.maxReturnable <= 0"
                                                     class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                    aria-label="Decrease quantity">
+                                                    [attr.aria-label]="'RETURNS.FORM.DECREASE_QTY' | transloco">
                                                 <mat-icon class="icon-size-4">remove</mat-icon>
                                             </button>
                                             <input type="number" min="0" [max]="l.maxReturnable" step="0.01"
@@ -124,15 +125,15 @@ interface ReturnLineDraft {
                                                    class="w-16 border rounded px-1 py-0.5 text-right tabular-nums"
                                                    [class.!border-rose-400]="l.quantity > l.maxReturnable"
                                                    [class.!text-rose-600]="l.quantity > l.maxReturnable"
-                                                   [matTooltip]="l.maxReturnable <= 0 ? 'Already fully refunded' : (l.quantity > l.maxReturnable ? ('Max returnable: ' + l.maxReturnable) : '')" />
+                                                   [matTooltip]="l.maxReturnable <= 0 ? ('RETURNS.FORM.FULLY_REFUNDED_TOOLTIP' | transloco) : (l.quantity > l.maxReturnable ? ('RETURNS.FORM.MAX_RETURNABLE_TOOLTIP' | transloco:{ max: l.maxReturnable }) : '')" />
                                             <button type="button" (click)="nudgeQty(l, 1)" [disabled]="l.quantity >= l.maxReturnable || l.maxReturnable <= 0"
                                                     class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                    aria-label="Increase quantity">
+                                                    [attr.aria-label]="'RETURNS.FORM.INCREASE_QTY' | transloco">
                                                 <mat-icon class="icon-size-4">add</mat-icon>
                                             </button>
                                         </div>
                                     </td></ng-container>
-                                <ng-container matColumnDef="condition"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Condition</span></th>
+                                <ng-container matColumnDef="condition"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.FORM.COL_CONDITION' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let l">
                                         <!-- Side-by-side toggle. Resellable goes back on the shelf;
                                              Damaged writes off the unit. Color-coded so the
@@ -146,9 +147,9 @@ interface ReturnLineDraft {
                                                     [ngClass]="l.condition === 'Resellable'
                                                         ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/40 dark:text-emerald-200'
                                                         : 'bg-white dark:bg-gray-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'"
-                                                    matTooltip="Resellable — goes back on the shelf">
+                                                    [matTooltip]="'RETURNS.FORM.RESELLABLE_TOOLTIP' | transloco">
                                                 <mat-icon class="icon-size-3.5">check_circle</mat-icon>
-                                                <span>Resellable</span>
+                                                <span>{{ 'RETURNS.FORM.RESELLABLE' | transloco }}</span>
                                             </button>
                                             <button type="button" [disabled]="!l.quantity"
                                                     (click)="setCondition(l, 'Damaged')"
@@ -156,13 +157,13 @@ interface ReturnLineDraft {
                                                     [ngClass]="l.condition === 'Damaged'
                                                         ? 'bg-rose-100 text-rose-800 dark:bg-rose-900/40 dark:text-rose-200'
                                                         : 'bg-white dark:bg-gray-800 text-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700'"
-                                                    matTooltip="Damaged — written off, does NOT go back on the shelf">
+                                                    [matTooltip]="'RETURNS.FORM.DAMAGED_TOOLTIP' | transloco">
                                                 <mat-icon class="icon-size-3.5">block</mat-icon>
-                                                <span>Damaged</span>
+                                                <span>{{ 'RETURNS.FORM.DAMAGED' | transloco }}</span>
                                             </button>
                                         </div>
                                     </td></ng-container>
-                                <ng-container matColumnDef="lineTotal"><th mat-header-cell *matHeaderCellDef class="pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Refund</span></th>
+                                <ng-container matColumnDef="lineTotal"><th mat-header-cell *matHeaderCellDef class="pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'RETURNS.FORM.COL_REFUND' | transloco }}</span></th>
                                     <td mat-cell *matCellDef="let l" class="pr-6 !text-right font-semibold tabular-nums">{{ (l.quantity * l.unitPrice) | number:'1.2-2' }}</td></ng-container>
                                 <tr mat-header-row *matHeaderRowDef="['name','orig','returnable','unit','qty','condition','lineTotal']" class="bg-gray-50 dark:bg-gray-700"></tr>
                                 <tr mat-row *matRowDef="let row; columns: ['name','orig','returnable','unit','qty','condition','lineTotal']"></tr>
@@ -173,44 +174,44 @@ interface ReturnLineDraft {
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                             <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center space-x-3">
                                 <div class="w-8 h-8 bg-blue-100 dark:bg-blue-900 rounded-lg flex items-center justify-center"><mat-icon class="text-blue-600 dark:text-blue-400 text-lg">payments</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Refund</h3>
-                                <button class="ml-auto" mat-stroked-button (click)="addRefund()"><mat-icon class="icon-size-5 mr-1">add</mat-icon>Add method</button>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'RETURNS.FORM.REFUND_SECTION' | transloco }}</h3>
+                                <button class="ml-auto" mat-stroked-button (click)="addRefund()"><mat-icon class="icon-size-5 mr-1">add</mat-icon>{{ 'RETURNS.FORM.ADD_METHOD' | transloco }}</button>
                             </div>
                             <div class="p-6 space-y-3">
                                 @for (r of refunds(); track $index) {
                                     <div class="grid grid-cols-1 sm:grid-cols-12 gap-3 items-center">
                                         <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic" hideRequiredMarker>
-                                            <mat-label>Method <span class="text-rose-600">*</span></mat-label>
+                                            <mat-label>{{ 'RETURNS.FORM.METHOD_LABEL' | transloco }} <span class="text-rose-600">*</span></mat-label>
                                             <mat-select [(ngModel)]="r.method" required>
-                                                <mat-option value="Cash">Cash</mat-option>
-                                                <mat-option value="Card">Card</mat-option>
-                                                <mat-option value="MobileBanking">Mobile Banking</mat-option>
-                                                <mat-option value="BankTransfer">Bank Transfer</mat-option>
-                                                <mat-option value="Voucher">Voucher</mat-option>
-                                                <mat-option value="Credit">Store Credit</mat-option>
+                                                <mat-option value="Cash">{{ 'RETURNS.FORM.METHOD_CASH' | transloco }}</mat-option>
+                                                <mat-option value="Card">{{ 'RETURNS.FORM.METHOD_CARD' | transloco }}</mat-option>
+                                                <mat-option value="MobileBanking">{{ 'RETURNS.FORM.METHOD_MOBILE_BANKING' | transloco }}</mat-option>
+                                                <mat-option value="BankTransfer">{{ 'RETURNS.FORM.METHOD_BANK_TRANSFER' | transloco }}</mat-option>
+                                                <mat-option value="Voucher">{{ 'RETURNS.FORM.METHOD_VOUCHER' | transloco }}</mat-option>
+                                                <mat-option value="Credit">{{ 'RETURNS.FORM.METHOD_STORE_CREDIT' | transloco }}</mat-option>
                                             </mat-select>
                                         </mat-form-field>
                                         <mat-form-field class="sm:col-span-3 w-full" appearance="outline" subscriptSizing="dynamic" hideRequiredMarker>
-                                            <mat-label>Amount <span class="text-rose-600">*</span></mat-label>
+                                            <mat-label>{{ 'RETURNS.FORM.AMOUNT_LABEL' | transloco }} <span class="text-rose-600">*</span></mat-label>
                                             <input matInput type="number" min="0" step="0.01" [(ngModel)]="r.amount" required>
                                         </mat-form-field>
                                         <mat-form-field class="sm:col-span-5 w-full" appearance="outline" subscriptSizing="dynamic">
-                                            <mat-label>Reference <span class="text-gray-400 text-xs">(optional)</span></mat-label>
+                                            <mat-label>{{ 'RETURNS.FORM.REFERENCE_LABEL' | transloco }} <span class="text-gray-400 text-xs">{{ 'RETURNS.FORM.OPTIONAL' | transloco }}</span></mat-label>
                                             <input matInput [(ngModel)]="r.reference">
                                         </mat-form-field>
-                                        <button mat-icon-button class="sm:col-span-1 text-red-600" (click)="removeRefund($index)" matTooltip="Remove refund method">
+                                        <button mat-icon-button class="sm:col-span-1 text-red-600" (click)="removeRefund($index)" [matTooltip]="'RETURNS.FORM.REMOVE_REFUND_TOOLTIP' | transloco">
                                             <mat-icon class="icon-size-5">delete</mat-icon>
                                         </button>
                                     </div>
                                 }
                                 @if (refunds().length === 0) {
-                                    <p class="text-sm text-rose-700 dark:text-rose-300">No refund methods. Add at least one before submitting.</p>
+                                    <p class="text-sm text-rose-700 dark:text-rose-300">{{ 'RETURNS.FORM.NO_REFUND_METHODS' | transloco }}</p>
                                 }
                                 @if (refunds().length > 0 && refundDue() > 0 && refundEntered() !== refundDue()) {
                                     <button type="button" mat-stroked-button (click)="autoFillRemainder()"
-                                            matTooltip="Set the first row's amount to cover the remaining refund difference">
+                                            [matTooltip]="'RETURNS.FORM.AUTO_BALANCE_TOOLTIP' | transloco">
                                         <mat-icon class="icon-size-4 mr-1">auto_fix_high</mat-icon>
-                                        Auto-balance to refund due
+                                        {{ 'RETURNS.FORM.AUTO_BALANCE' | transloco }}
                                     </button>
                                 }
                             </div>
@@ -222,20 +223,20 @@ interface ReturnLineDraft {
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
                             <div class="flex items-center space-x-3 mb-4">
                                 <div class="w-8 h-8 bg-amber-100 dark:bg-amber-900 rounded-lg flex items-center justify-center"><mat-icon class="text-amber-600 dark:text-amber-400 text-lg">help_center</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Reason</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'RETURNS.FORM.REASON_SECTION' | transloco }}</h3>
                             </div>
                             <mat-form-field class="w-full" appearance="outline" hideRequiredMarker>
-                                <mat-label>Return reason <span class="text-rose-600">*</span></mat-label>
+                                <mat-label>{{ 'RETURNS.FORM.RETURN_REASON_LABEL' | transloco }} <span class="text-rose-600">*</span></mat-label>
                                 <mat-select [(ngModel)]="reason" required>
-                                    <mat-option value="DefectiveProduct">Defective product</mat-option>
-                                    <mat-option value="WrongItem">Wrong item</mat-option>
-                                    <mat-option value="BuyersRemorse">Buyer's remorse</mat-option>
-                                    <mat-option value="ExpiredOrDamaged">Expired or damaged</mat-option>
-                                    <mat-option value="Other">Other</mat-option>
+                                    <mat-option value="DefectiveProduct">{{ 'RETURNS.FORM.REASON_DEFECTIVE' | transloco }}</mat-option>
+                                    <mat-option value="WrongItem">{{ 'RETURNS.FORM.REASON_WRONG_ITEM' | transloco }}</mat-option>
+                                    <mat-option value="BuyersRemorse">{{ 'RETURNS.FORM.REASON_BUYERS_REMORSE' | transloco }}</mat-option>
+                                    <mat-option value="ExpiredOrDamaged">{{ 'RETURNS.FORM.REASON_EXPIRED_OR_DAMAGED' | transloco }}</mat-option>
+                                    <mat-option value="Other">{{ 'RETURNS.FORM.REASON_OTHER' | transloco }}</mat-option>
                                 </mat-select>
                             </mat-form-field>
                             <mat-form-field class="w-full" appearance="outline">
-                                <mat-label>Notes <span class="text-gray-400 text-xs">(optional)</span></mat-label>
+                                <mat-label>{{ 'RETURNS.FORM.NOTES_LABEL' | transloco }} <span class="text-gray-400 text-xs">{{ 'RETURNS.FORM.OPTIONAL' | transloco }}</span></mat-label>
                                 <textarea matInput rows="3" [(ngModel)]="notes"></textarea>
                             </mat-form-field>
                         </div>
@@ -243,23 +244,23 @@ interface ReturnLineDraft {
                         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden p-6">
                             <div class="flex items-center space-x-3 mb-4">
                                 <div class="w-8 h-8 bg-emerald-100 dark:bg-emerald-900 rounded-lg flex items-center justify-center"><mat-icon class="text-emerald-600 dark:text-emerald-400 text-lg">summarize</mat-icon></div>
-                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Summary</h3>
+                                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'RETURNS.FORM.SUMMARY' | transloco }}</h3>
                             </div>
                             <div class="space-y-2 text-sm">
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Original total</span><span class="font-medium tabular-nums">{{ s.total | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Items selected</span><span class="font-medium tabular-nums">{{ selectedItemCount() }}</span></div>
-                                <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>Refund due</span><span class="text-rose-600 tabular-nums">{{ refundDue() | number:'1.2-2' }}</span></div>
-                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Refund entered</span><span class="font-medium tabular-nums">{{ refundEntered() | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'RETURNS.FORM.ORIGINAL_TOTAL' | transloco }}</span><span class="font-medium tabular-nums">{{ s.total | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'RETURNS.FORM.ITEMS_SELECTED' | transloco }}</span><span class="font-medium tabular-nums">{{ selectedItemCount() }}</span></div>
+                                <div class="flex justify-between text-xl font-bold pt-2 border-t border-gray-200 dark:border-gray-700"><span>{{ 'RETURNS.FORM.REFUND_DUE' | transloco }}</span><span class="text-rose-600 tabular-nums">{{ refundDue() | number:'1.2-2' }}</span></div>
+                                <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">{{ 'RETURNS.FORM.REFUND_ENTERED' | transloco }}</span><span class="font-medium tabular-nums">{{ refundEntered() | number:'1.2-2' }}</span></div>
                                 <div class="flex justify-between" [ngClass]="{ 'text-red-600': !amountsBalanced(), 'text-emerald-700 dark:text-emerald-400': amountsBalanced() && refundDue() > 0 }">
-                                    <span>Difference</span>
+                                    <span>{{ 'RETURNS.FORM.DIFFERENCE' | transloco }}</span>
                                     <span class="font-medium tabular-nums">{{ (refundEntered() - refundDue()) | number:'1.2-2' }}</span>
                                 </div>
                             </div>
-                            <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> Required</p>
+                            <p class="text-xs text-gray-500 mt-2"><span class="text-rose-600">*</span> {{ 'RETURNS.FORM.REQUIRED' | transloco }}</p>
                             <button mat-flat-button color="warn" class="w-full h-12 rounded-lg shadow-lg mt-4"
                                     [disabled]="!canSubmit() || submitting"
                                     (click)="submit()">
-                                <mat-icon class="icon-size-5 mr-2">undo</mat-icon><span>{{ submitting ? 'Processing…' : 'Process Return' }}</span>
+                                <mat-icon class="icon-size-5 mr-2">undo</mat-icon><span>{{ (submitting ? 'RETURNS.FORM.PROCESSING' : 'RETURNS.FORM.PROCESS_RETURN') | transloco }}</span>
                             </button>
                             @if (!canSubmit()) {
                                 <p class="text-xs text-rose-700 dark:text-rose-300 mt-2">{{ disabledReason() }}</p>
@@ -278,6 +279,7 @@ export class ReturnFormComponent implements OnInit {
     private readonly returnsApi = inject(SaleReturnsService);
     private readonly route = inject(ActivatedRoute);
     private readonly router = inject(Router);
+    private readonly _transloco = inject(TranslocoService);
     saleId!: string;
     sale = signal<SaleDto | null>(null);
     lines = signal<ReturnLineDraft[]>([]);
@@ -312,10 +314,13 @@ export class ReturnFormComponent implements OnInit {
     }
 
     disabledReason(): string {
-        if (this.selectedItemCount() === 0) return 'Set return quantity on at least one item.';
-        if (this.refunds().length === 0) return 'Add at least one refund method.';
+        if (this.selectedItemCount() === 0) return this._transloco.translate('RETURNS.FORM.DISABLED_NO_ITEMS');
+        if (this.refunds().length === 0) return this._transloco.translate('RETURNS.FORM.DISABLED_NO_REFUND');
         if (!this.amountsBalanced())
-            return `Refund total (${this.refundEntered().toFixed(2)}) must equal refund due (${this.refundDue().toFixed(2)}). Click "Auto-balance" to fix.`;
+            return this._transloco.translate('RETURNS.FORM.DISABLED_NOT_BALANCED', {
+                entered: this.refundEntered().toFixed(2),
+                due: this.refundDue().toFixed(2),
+            });
         return '';
     }
 
@@ -398,8 +403,9 @@ export class ReturnFormComponent implements OnInit {
         const alreadyHit = lines.filter(l => l.alreadyReturned > 0).length;
         if (alreadyHit === 0) return '';
         const fullyConsumed = lines.filter(l => l.maxReturnable === 0 && l.alreadyReturned > 0).length;
-        if (fullyConsumed > 0) return `${alreadyHit} line(s) already partially returned · ${fullyConsumed} fully refunded`;
-        return `${alreadyHit} line(s) already partially returned`;
+        if (fullyConsumed > 0)
+            return this._transloco.translate('RETURNS.FORM.HINT_PARTIAL_AND_FULL', { partial: alreadyHit, full: fullyConsumed });
+        return this._transloco.translate('RETURNS.FORM.HINT_PARTIAL', { count: alreadyHit });
     }
 
     anyReturnable(): boolean {

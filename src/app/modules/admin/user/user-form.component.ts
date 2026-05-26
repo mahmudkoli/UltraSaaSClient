@@ -22,6 +22,7 @@ import { NotificationService } from '../../../core/services/notification.service
 import { DateUtils } from '../../../core/utils/date.utils';
 import { RolesService } from '../../../core/roles/roles.service';
 import { RoleDto } from '../../../core/roles/roles.types';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 @Component({
     selector: 'user-form',
@@ -44,6 +45,7 @@ import { RoleDto } from '../../../core/roles/roles.types';
         MatSlideToggleModule,
         MatTabsModule,
         MatTooltipModule,
+        TranslocoModule,
     ],
 })
 export class UserFormComponent implements OnInit, OnDestroy {
@@ -67,6 +69,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
         private _notificationService: NotificationService,
         private _dateUtils: DateUtils,
         private _rolesService: RolesService,
+        private _transloco: TranslocoService,
     ) {
         this.userForm = this._formBuilder.group({
             firstName: ['', [Validators.required, Validators.minLength(2)]],
@@ -227,7 +230,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
 
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.error('Error creating user');
+                    this._notificationService.error(this._transloco.translate('ADMIN.USER.FORM.TOAST_CREATE_FAILED'));
                 }
             });
     }
@@ -241,7 +244,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
                 next: response => {
                     const created = (response?.data ?? []).find(u => u.email === email);
                     if (!created) {
-                        this.finishCreateSuccess('Created — assign role manually from the list.');
+                        this.finishCreateSuccess(this._transloco.translate('ADMIN.USER.FORM.TOAST_CREATED_NEEDS_ROLE'));
                         return;
                     }
                     const userRoles: UserRoleDto[] = [
@@ -251,15 +254,16 @@ export class UserFormComponent implements OnInit, OnDestroy {
                     this._userService.assignUserRoles(created.id, { userRoles })
                         .pipe(takeUntil(this._unsubscribeAll))
                         .subscribe({
-                            next: () => this.finishCreateSuccess(`Created and assigned ${roleName}`),
-                            error: () => this.finishCreateSuccess('Created — role assignment failed, set it manually.'),
+                            next: () => this.finishCreateSuccess(this._transloco.translate('ADMIN.USER.FORM.TOAST_CREATED_ASSIGNED', { role: roleName })),
+                            error: () => this.finishCreateSuccess(this._transloco.translate('ADMIN.USER.FORM.TOAST_CREATED_ROLE_FAILED')),
                         });
                 },
-                error: () => this.finishCreateSuccess('Created — assign role manually from the list.'),
+                error: () => this.finishCreateSuccess(this._transloco.translate('ADMIN.USER.FORM.TOAST_CREATED_NEEDS_ROLE')),
             });
     }
 
-    private finishCreateSuccess(message: string = 'User created successfully'): void {
+    private finishCreateSuccess(message?: string): void {
+        message = message ?? this._transloco.translate('ADMIN.USER.FORM.TOAST_CREATED');
         this.isSaving = false;
         this._changeDetectorRef.markForCheck();
         this._notificationService.success(message);
@@ -294,14 +298,14 @@ export class UserFormComponent implements OnInit, OnDestroy {
                 next: (response) => {
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('User updated successfully');
+                    this._notificationService.success(this._transloco.translate('ADMIN.USER.FORM.TOAST_UPDATED'));
                     this._router.navigate(['/users']);
                 },
                 error: (error) => {
                     console.error('Update user error details:', error);
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.error('Error updating user');
+                    this._notificationService.error(this._transloco.translate('ADMIN.USER.FORM.TOAST_UPDATE_FAILED'));
                 }
             });
     }
@@ -313,10 +317,11 @@ export class UserFormComponent implements OnInit, OnDestroy {
 
 
     getPageTitle(): string {
-        return this.isEditMode ? 'Edit User' : 'Create User';
+        return this._transloco.translate(this.isEditMode ? 'ADMIN.USER.FORM.TITLE_EDIT' : 'ADMIN.USER.FORM.TITLE_NEW');
     }
 
     getSaveButtonText(): string {
-        return this.isSaving ? 'Saving...' : (this.isEditMode ? 'Update User' : 'Create User');
+        if (this.isSaving) return this._transloco.translate('ADMIN.USER.FORM.SAVING');
+        return this._transloco.translate(this.isEditMode ? 'ADMIN.USER.FORM.UPDATE_BUTTON' : 'ADMIN.USER.FORM.CREATE_BUTTON');
     }
 }

@@ -10,6 +10,7 @@ import { forkJoin } from 'rxjs';
 import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
 import { UserService } from 'app/core/user/user.service';
+import { TranslocoModule } from '@ngneat/transloco';
 
 export interface UserOutletsDialogData {
     userId: string;
@@ -27,6 +28,7 @@ interface OutletPick extends OutletDto {
         CommonModule, FormsModule,
         MatButtonModule, MatCheckboxModule, MatDialogModule, MatIconModule,
         MatProgressSpinnerModule,
+        TranslocoModule,
     ],
     template: `
 <div class="p-1">
@@ -35,7 +37,7 @@ interface OutletPick extends OutletDto {
             <mat-icon class="text-white">store</mat-icon>
         </div>
         <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Manage Outlets</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.USER.OUTLETS_DIALOG.TITLE' | transloco }}</h2>
             <p class="text-sm text-gray-600 dark:text-gray-400">{{ data.userName }}</p>
         </div>
     </div>
@@ -46,7 +48,7 @@ interface OutletPick extends OutletDto {
             </div>
         } @else {
             <p class="text-xs text-gray-500 mb-3">
-                Pick the outlets this user can access. Leave empty (or check all) for tenant-wide access — Admins always have full access regardless of selection.
+                {{ 'ADMIN.USER.OUTLETS_DIALOG.HINT' | transloco }}
             </p>
             <div class="space-y-1">
                 <div *ngFor="let o of outlets(); let i = index"
@@ -57,16 +59,16 @@ interface OutletPick extends OutletDto {
                         <span class="text-xs text-gray-500 font-mono">{{ o.code }}</span>
                     </div>
                 </div>
-                <p *ngIf="outlets().length === 0" class="text-sm text-gray-500 py-4 text-center">No outlets in this tenant.</p>
+                <p *ngIf="outlets().length === 0" class="text-sm text-gray-500 py-4 text-center">{{ 'ADMIN.USER.OUTLETS_DIALOG.EMPTY' | transloco }}</p>
             </div>
         }
     </mat-dialog-content>
     <mat-dialog-actions align="end" class="!px-4 !pb-4">
-        <button mat-button (click)="close()" [disabled]="saving()">Cancel</button>
+        <button mat-button (click)="close()" [disabled]="saving()">{{ 'COMMON.CANCEL' | transloco }}</button>
         <button mat-flat-button color="primary"
                 (click)="save()"
                 [disabled]="loading() || saving()">
-            <mat-icon class="icon-size-5 mr-2">save</mat-icon>{{ saving() ? 'Saving…' : 'Save' }}
+            <mat-icon class="icon-size-5 mr-2">save</mat-icon>{{ (saving() ? 'ADMIN.USER.ROLES_DIALOG.SAVING' : 'COMMON.SAVE') | transloco }}
         </button>
     </mat-dialog-actions>
 </div>

@@ -11,6 +11,7 @@ import { MatSort, MatSortModule, Sort } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { Router, RouterModule } from '@angular/router';
+import { TranslocoModule } from '@ngneat/transloco';
 import { debounceTime, Subject } from 'rxjs';
 import { toOrderBy } from 'app/core/common/pagination.types';
 import { SalesService, SearchSalesRequest } from 'app/core/sales/sales.service';
@@ -23,7 +24,7 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
     selector: 'app-sales-list',
     standalone: true,
     imports: [
-        CommonModule, FormsModule, RouterModule,
+        CommonModule, FormsModule, RouterModule, TranslocoModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule,
     ],
@@ -35,39 +36,39 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-emerald-500 to-green-600 rounded-xl shadow-lg"><mat-icon class="text-white">receipt_long</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Sales</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Finalized invoices, refunds, and voided sales</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'SALES.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'SALES.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex flex-col w-full sm:w-auto sm:flex-row space-y-16 sm:space-y-0 flex-1 sm:flex-none sm:items-center sm:justify-end gap-4">
                 <mat-form-field class="w-full sm:w-auto sm:min-w-72" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Search invoices</mat-label>
+                    <mat-label>{{ 'SALES.LIST.SEARCH_LABEL' | transloco }}</mat-label>
                     <input #searchInput matInput
                            [(ngModel)]="search"
                            (ngModelChange)="searchChanged.next($event)"
                            (keyup.enter)="onSearchEnter()"
-                           placeholder="Invoice / customer · scan barcode">
-                    <mat-icon matSuffix class="text-gray-400" matTooltip="Tip: scan a receipt's barcode here — exact invoice match jumps straight to the sale detail.">qr_code_scanner</mat-icon>
+                           [placeholder]="'SALES.LIST.SEARCH_PLACEHOLDER' | transloco">
+                    <mat-icon matSuffix class="text-gray-400" [matTooltip]="'SALES.LIST.SCAN_TOOLTIP' | transloco">qr_code_scanner</mat-icon>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Outlet</mat-label>
+                    <mat-label>{{ 'SALES.LIST.OUTLET_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="outletFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option [value]="''">All outlets</mat-option>
+                        <mat-option [value]="''">{{ 'SALES.LIST.OUTLET_ALL' | transloco }}</mat-option>
                         @for (o of outlets(); track o.id) {
                             <mat-option [value]="o.id">{{ o.name }}</mat-option>
                         }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field class="w-full sm:w-auto sm:min-w-44" appearance="outline" subscriptSizing="dynamic">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'SALES.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All Status</mat-option>
-                        <mat-option value="Finalized">Finalized</mat-option>
-                        <mat-option value="Voided">Voided</mat-option>
-                        <mat-option value="Draft">Draft</mat-option>
+                        <mat-option value="all">{{ 'SALES.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="Finalized">{{ 'SALES.LIST.STATUS_FINALIZED' | transloco }}</mat-option>
+                        <mat-option value="Voided">{{ 'SALES.LIST.STATUS_VOIDED' | transloco }}</mat-option>
+                        <mat-option value="Draft">{{ 'SALES.LIST.STATUS_DRAFT' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-fab color="primary" routerLink="/pos" matTooltip="Open POS"><mat-icon>point_of_sale</mat-icon></button>
+                <button mat-fab color="primary" routerLink="/pos" [matTooltip]="'SALES.LIST.OPEN_POS_TOOLTIP' | transloco"><mat-icon>point_of_sale</mat-icon></button>
             </div>
         </div>
 
@@ -75,22 +76,22 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
-                        <ng-container matColumnDef="invoiceNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</span></th>
+                        <ng-container matColumnDef="invoiceNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SALES.LIST.COL_INVOICE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.invoiceNumber }}</td></ng-container>
-                        <ng-container matColumnDef="saleDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Date</span></th>
+                        <ng-container matColumnDef="saleDate"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SALES.LIST.COL_DATE' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.saleDate | date:'short' }}</td></ng-container>
-                        <ng-container matColumnDef="customerName"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</span></th>
+                        <ng-container matColumnDef="customerName"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SALES.LIST.COL_CUSTOMER' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <div class="flex flex-col">
-                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.customerName || 'Walk-in' }}</span>
+                                    <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.customerName || ('SALES.LIST.WALK_IN' | transloco) }}</span>
                                     <span class="text-xs text-gray-500">{{ r.customerPhone || '—' }}</span>
                                 </div>
                             </td></ng-container>
-                        <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Items</span></th>
+                        <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SALES.LIST.COL_ITEMS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.items.length }}</td></ng-container>
-                        <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Total</span></th>
+                        <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef mat-sort-header class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SALES.LIST.COL_TOTAL' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-semibold">{{ r.total | number:'1.2-2' }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SALES.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium"
                                       [ngClass]="{
@@ -98,13 +99,13 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
                                         'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200': r.status === 'Voided',
                                         'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200': r.status === 'Draft'
                                       }">
-                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ r.status }}
+                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                                 </span>
                             </td></ng-container>
-                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'SALES.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); view(r)" matTooltip="View"><mat-icon class="icon-size-5">visibility</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); view(r)" [matTooltip]="'SALES.LIST.VIEW_TOOLTIP' | transloco"><mat-icon class="icon-size-5">visibility</mat-icon></button>
                                 </div>
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
@@ -122,9 +123,9 @@ import { CurrentOutletService } from 'app/core/outlets/current-outlet.service';
 
                 <div *ngIf="!loading() && rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">receipt_long</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No sales yet</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">Open the POS to ring up your first sale.</p>
-                    <button mat-flat-button color="primary" routerLink="/pos"><mat-icon class="icon-size-5 mr-2">point_of_sale</mat-icon><span>Open POS</span></button>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'SALES.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400 mb-6">{{ 'SALES.LIST.EMPTY_SUBTITLE' | transloco }}</p>
+                    <button mat-flat-button color="primary" routerLink="/pos"><mat-icon class="icon-size-5 mr-2">point_of_sale</mat-icon><span>{{ 'SALES.LIST.OPEN_POS' | transloco }}</span></button>
                 </div>
             </div>
         </div>
@@ -165,6 +166,13 @@ export class SalesListComponent implements OnInit, AfterViewInit {
 
     statusIcon(s: string): string {
         return s === 'Finalized' ? 'check_circle' : s === 'Voided' ? 'cancel' : 'schedule';
+    }
+
+    /** Translation-key for a sale status badge. Falls back to Draft if unknown. */
+    statusLabel(s: string): string {
+        if (s === 'Finalized') return 'SALES.LIST.STATUS_FINALIZED';
+        if (s === 'Voided') return 'SALES.LIST.STATUS_VOIDED';
+        return 'SALES.LIST.STATUS_DRAFT';
     }
 
     ngOnInit(): void {

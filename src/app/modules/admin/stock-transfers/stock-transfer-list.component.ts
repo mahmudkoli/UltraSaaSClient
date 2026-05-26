@@ -15,11 +15,12 @@ import { OutletsService } from 'app/core/outlets/outlets.service';
 import { OutletDto } from 'app/core/outlets/outlets.types';
 import { SearchStockTransfersRequest, StockTransfersService } from 'app/core/inventory/inventory.service';
 import { StockTransferDto, StockTransferStatus } from 'app/core/inventory/inventory.types';
+import { TranslocoModule } from '@ngneat/transloco';
 
 @Component({
     selector: 'app-stock-transfer-list',
     standalone: true,
-    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule],
+    imports: [CommonModule, FormsModule, RouterModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatPaginatorModule, MatSelectModule, MatSortModule, MatTableModule, MatTooltipModule, TranslocoModule],
     template: `
 <div class="flex flex-col flex-auto min-w-0 bg-gradient-to-br from-gray-50 via-blue-50/30 to-purple-50/30 dark:from-gray-900 dark:via-blue-900/20 dark:to-purple-900/20 relative">
     <div class="absolute inset-0 opacity-5 dark:opacity-10"><div class="absolute inset-0" style="background-image: radial-gradient(circle at 1px 1px, rgba(0,0,0,0.1) 1px, transparent 0); background-size: 20px 20px;"></div></div>
@@ -28,29 +29,29 @@ import { StockTransferDto, StockTransferStatus } from 'app/core/inventory/invent
             <div class="flex items-center space-x-4">
                 <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-600 rounded-xl shadow-lg"><mat-icon class="text-white">sync_alt</mat-icon></div>
                 <div>
-                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">Stock Transfers</h2>
-                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">Inter-outlet stock moves: dispatch, receive, reconcile</p>
+                    <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">{{ 'INVENTORY.TRANSFERS.LIST.TITLE' | transloco }}</h2>
+                    <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">{{ 'INVENTORY.TRANSFERS.LIST.SUBTITLE' | transloco }}</p>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
-                    <mat-label>From outlet</mat-label>
+                    <mat-label>{{ 'INVENTORY.TRANSFERS.LIST.FROM_OUTLET_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="filterFromId" (ngModelChange)="resetAndLoad()">
-                        <mat-option [value]="''">All</mat-option>
+                        <mat-option [value]="''">{{ 'INVENTORY.TRANSFERS.LIST.OUTLET_ALL' | transloco }}</mat-option>
                         @for (o of outlets(); track o.id) { <mat-option [value]="o.id">{{ o.name }}</mat-option> }
                     </mat-select>
                 </mat-form-field>
                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-44">
-                    <mat-label>Status</mat-label>
+                    <mat-label>{{ 'INVENTORY.TRANSFERS.LIST.STATUS_LABEL' | transloco }}</mat-label>
                     <mat-select [(ngModel)]="statusFilter" (ngModelChange)="resetAndLoad()">
-                        <mat-option value="all">All</mat-option>
-                        <mat-option value="Draft">Draft</mat-option>
-                        <mat-option value="InTransit">In Transit</mat-option>
-                        <mat-option value="Received">Received</mat-option>
-                        <mat-option value="Cancelled">Cancelled</mat-option>
+                        <mat-option value="all">{{ 'INVENTORY.TRANSFERS.LIST.STATUS_ALL' | transloco }}</mat-option>
+                        <mat-option value="Draft">{{ 'INVENTORY.TRANSFERS.LIST.STATUS_DRAFT' | transloco }}</mat-option>
+                        <mat-option value="InTransit">{{ 'INVENTORY.TRANSFERS.LIST.STATUS_IN_TRANSIT' | transloco }}</mat-option>
+                        <mat-option value="Received">{{ 'INVENTORY.TRANSFERS.LIST.STATUS_RECEIVED' | transloco }}</mat-option>
+                        <mat-option value="Cancelled">{{ 'INVENTORY.TRANSFERS.LIST.STATUS_CANCELLED' | transloco }}</mat-option>
                     </mat-select>
                 </mat-form-field>
-                <button mat-fab color="primary" routerLink="create" matTooltip="New transfer"><mat-icon>add</mat-icon></button>
+                <button mat-fab color="primary" routerLink="create" [matTooltip]="'INVENTORY.TRANSFERS.LIST.ADD_TOOLTIP' | transloco"><mat-icon>add</mat-icon></button>
             </div>
         </div>
 
@@ -58,26 +59,26 @@ import { StockTransferDto, StockTransferStatus } from 'app/core/inventory/invent
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="relative overflow-x-auto">
                     <table mat-table matSort [dataSource]="rows()" (matSortChange)="onSort($event)" class="w-full">
-                        <ng-container matColumnDef="transferNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Transfer #</span></th>
+                        <ng-container matColumnDef="transferNumber"><th mat-header-cell *matHeaderCellDef mat-sort-header class="pl-4 sm:pl-6"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.LIST.COL_TRANSFER_NUMBER' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6 font-mono text-sm">{{ r.transferNumber }}</td></ng-container>
-                        <ng-container matColumnDef="from"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">From</span></th>
+                        <ng-container matColumnDef="from"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.LIST.COL_FROM' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ outletName(r.fromOutletId) }}</td></ng-container>
-                        <ng-container matColumnDef="to"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">To</span></th>
+                        <ng-container matColumnDef="to"><th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.LIST.COL_TO' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ outletName(r.toOutletId) }}</td></ng-container>
-                        <ng-container matColumnDef="createdOnUtc"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Created</span></th>
+                        <ng-container matColumnDef="createdOnUtc"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.LIST.COL_CREATED' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">{{ r.createdOnUtc | date:'short' }}</td></ng-container>
-                        <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Items</span></th>
+                        <ng-container matColumnDef="items"><th mat-header-cell *matHeaderCellDef class="!text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.LIST.COL_ITEMS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="!text-right">{{ r.items.length }}</td></ng-container>
-                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Status</span></th>
+                        <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef mat-sort-header><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.LIST.COL_STATUS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" [ngClass]="statusClass(r.status)">
-                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ r.status }}
+                                    <mat-icon class="icon-size-4 mr-1">{{ statusIcon(r.status) }}</mat-icon>{{ statusLabel(r.status) | transloco }}
                                 </span>
                             </td></ng-container>
-                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</span></th>
+                        <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right"><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">{{ 'INVENTORY.TRANSFERS.LIST.COL_ACTIONS' | transloco }}</span></th>
                             <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                                 <div class="flex items-center justify-end space-x-2">
-                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); open(r)" matTooltip="View"><mat-icon class="icon-size-5">visibility</mat-icon></button>
+                                    <button mat-icon-button class="text-blue-600" (click)="$event.stopPropagation(); open(r)" [matTooltip]="'INVENTORY.TRANSFERS.LIST.VIEW_TOOLTIP' | transloco"><mat-icon class="icon-size-5">visibility</mat-icon></button>
                                 </div>
                             </td></ng-container>
                         <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700"></tr>
@@ -94,8 +95,8 @@ import { StockTransferDto, StockTransferStatus } from 'app/core/inventory/invent
                 </div>
                 <div *ngIf="rows().length === 0" class="flex flex-col items-center justify-center p-12">
                     <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">sync_alt</mat-icon></div>
-                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No transfers yet</h3>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">Create a transfer to move stock between outlets.</p>
+                    <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">{{ 'INVENTORY.TRANSFERS.LIST.EMPTY_TITLE' | transloco }}</h3>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'INVENTORY.TRANSFERS.LIST.EMPTY_SUBTITLE' | transloco }}</p>
                 </div>
             </div>
         </div>
@@ -138,6 +139,15 @@ export class StockTransferListComponent implements OnInit {
              : s === 'Cancelled' ? 'cancel'
              : s === 'InTransit' ? 'local_shipping'
              : 'edit';
+    }
+    statusLabel(s: StockTransferStatus): string {
+        switch (s) {
+            case 'Draft': return 'INVENTORY.TRANSFERS.LIST.STATUS_DRAFT';
+            case 'InTransit': return 'INVENTORY.TRANSFERS.LIST.STATUS_IN_TRANSIT';
+            case 'Received': return 'INVENTORY.TRANSFERS.LIST.STATUS_RECEIVED';
+            case 'Cancelled': return 'INVENTORY.TRANSFERS.LIST.STATUS_CANCELLED';
+            default: return 'INVENTORY.TRANSFERS.LIST.STATUS_ALL';
+        }
     }
 
     ngOnInit(): void {

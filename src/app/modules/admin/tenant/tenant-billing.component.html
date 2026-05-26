@@ -12,17 +12,17 @@
             </div>
             <div>
                 <h2 class="text-3xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                    Tenant Billing
+                    {{ 'ADMIN.TENANT.BILLING.TITLE' | transloco }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {{ tenant?.systemName || tenant?.systemName || tenantId }} — current plan, validity, and payment history
+                    {{ 'ADMIN.TENANT.BILLING.SUBTITLE' | transloco:{ name: tenant?.systemName || tenantId } }}
                 </p>
             </div>
         </div>
         <div class="flex items-center space-x-3">
             <button mat-stroked-button (click)="goBack()" class="px-6">
                 <mat-icon class="mr-2">arrow_back</mat-icon>
-                Back to Tenants
+                {{ 'ADMIN.TENANT.BILLING.BACK_BUTTON' | transloco }}
             </button>
         </div>
     </div>
@@ -43,7 +43,7 @@
                         <!-- Plan chip -->
                         <div class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-200">
                             <mat-icon class="icon-size-4">workspace_premium</mat-icon>
-                            <span class="text-sm font-semibold">{{ plan?.name || 'Plan not set' }}</span>
+                            <span class="text-sm font-semibold">{{ plan?.name || ('ADMIN.TENANT.BILLING.PLAN_NOT_SET' | transloco) }}</span>
                             <span *ngIf="plan" class="text-xs opacity-70">— BDT {{ plan.monthlyFeeBDT }}/mo</span>
                         </div>
                         <!-- ValidUpto chip with traffic-light -->
@@ -56,7 +56,7 @@
                              }">
                             <mat-icon class="icon-size-4">event</mat-icon>
                             <span class="text-sm font-semibold">
-                                Valid until {{ tenant?.validUpto ? (tenant?.validUpto | date:'mediumDate') : '—' }}
+                                {{ 'ADMIN.TENANT.BILLING.VALID_UNTIL_PREFIX' | transloco }} {{ tenant?.validUpto ? (tenant?.validUpto | date:'mediumDate') : '—' }}
                             </span>
                         </div>
                         <!-- Payment status chip -->
@@ -67,13 +67,13 @@
                     </div>
                     <div class="flex items-center gap-2">
                         <button mat-stroked-button color="primary" (click)="editTenantPlan()"
-                                matTooltip="Change plan on the tenant form (cascades limits + features; triggers quota pre-flight)">
+                                [matTooltip]="'ADMIN.TENANT.BILLING.CHANGE_PLAN_TOOLTIP' | transloco">
                             <mat-icon class="mr-2">swap_horiz</mat-icon>
-                            Change Plan
+                            {{ 'ADMIN.TENANT.BILLING.CHANGE_PLAN' | transloco }}
                         </button>
                         <button mat-flat-button color="primary" (click)="openRecordPayment()">
                             <mat-icon class="mr-2">payments</mat-icon>
-                            Record Payment
+                            {{ 'ADMIN.TENANT.BILLING.RECORD_PAYMENT' | transloco }}
                         </button>
                     </div>
                 </div>
@@ -83,46 +83,46 @@
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                     <div>
-                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Tax Invoices</h3>
-                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">VAT-compliant PDFs issued automatically on every recorded payment.</p>
+                        <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.TENANT.BILLING.INVOICES_TITLE' | transloco }}</h3>
+                        <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ 'ADMIN.TENANT.BILLING.INVOICES_HINT' | transloco }}</p>
                     </div>
                 </div>
                 <div *ngIf="invoices.length === 0" class="px-6 py-10 text-center">
                     <mat-icon class="text-gray-400 icon-size-12 mb-2">receipt</mat-icon>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">No invoices yet. Record a payment to issue the first invoice.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'ADMIN.TENANT.BILLING.INVOICES_EMPTY' | transloco }}</p>
                 </div>
                 <div *ngIf="invoices.length > 0" class="overflow-x-auto">
                     <table mat-table [dataSource]="invoices" class="w-full">
                         <ng-container matColumnDef="serialNumber">
-                            <th mat-header-cell *matHeaderCellDef class="pl-6">Invoice #</th>
+                            <th mat-header-cell *matHeaderCellDef class="pl-6">{{ 'ADMIN.TENANT.BILLING.COL_INVOICE_NUMBER' | transloco }}</th>
                             <td mat-cell *matCellDef="let i" class="pl-6 font-mono text-xs">{{ i.serialNumber }}</td>
                         </ng-container>
                         <ng-container matColumnDef="issuedOn">
-                            <th mat-header-cell *matHeaderCellDef>Issued</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_ISSUED' | transloco }}</th>
                             <td mat-cell *matCellDef="let i">{{ i.issuedOn | date:'mediumDate' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="period">
-                            <th mat-header-cell *matHeaderCellDef>Service period</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_PERIOD' | transloco }}</th>
                             <td mat-cell *matCellDef="let i" class="text-xs text-gray-600 dark:text-gray-400">
                                 {{ i.periodStart | date:'mediumDate' }} – {{ i.periodEnd | date:'mediumDate' }}
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="subtotal">
-                            <th mat-header-cell *matHeaderCellDef>Subtotal</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_SUBTOTAL' | transloco }}</th>
                             <td mat-cell *matCellDef="let i">BDT {{ i.subtotal | number:'1.2-2' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="vat">
-                            <th mat-header-cell *matHeaderCellDef>VAT ({{ invoices[0]?.vatPercent || 15 }}%)</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_VAT' | transloco:{ pct: invoices[0]?.vatPercent || 15 } }}</th>
                             <td mat-cell *matCellDef="let i">BDT {{ i.vatAmount | number:'1.2-2' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="total">
-                            <th mat-header-cell *matHeaderCellDef>Total</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_TOTAL' | transloco }}</th>
                             <td mat-cell *matCellDef="let i" class="font-semibold">BDT {{ i.total | number:'1.2-2' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="pdf">
-                            <th mat-header-cell *matHeaderCellDef class="pr-6 text-right">PDF</th>
+                            <th mat-header-cell *matHeaderCellDef class="pr-6 text-right">{{ 'ADMIN.TENANT.BILLING.COL_PDF' | transloco }}</th>
                             <td mat-cell *matCellDef="let i" class="pr-6 text-right">
-                                <a mat-icon-button [href]="invoicePdfUrl(i.id)" target="_blank" matTooltip="Download PDF" class="text-blue-600">
+                                <a mat-icon-button [href]="invoicePdfUrl(i.id)" target="_blank" [matTooltip]="'ADMIN.TENANT.BILLING.DOWNLOAD_PDF' | transloco" class="text-blue-600">
                                     <mat-icon class="icon-size-5">download</mat-icon>
                                 </a>
                             </td>
@@ -136,37 +136,37 @@
             <!-- Payment history -->
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 dark:border-gray-700">
-                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Payment History</h3>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">All recorded payments against this tenant — newest first.</p>
+                    <h3 class="text-lg font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.TENANT.BILLING.PAYMENTS_TITLE' | transloco }}</h3>
+                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">{{ 'ADMIN.TENANT.BILLING.PAYMENTS_HINT' | transloco }}</p>
                 </div>
                 <div *ngIf="payments.length === 0" class="px-6 py-10 text-center">
                     <mat-icon class="text-gray-400 icon-size-12 mb-2">receipt_long</mat-icon>
-                    <p class="text-sm text-gray-600 dark:text-gray-400">No payments recorded yet.</p>
+                    <p class="text-sm text-gray-600 dark:text-gray-400">{{ 'ADMIN.TENANT.BILLING.PAYMENTS_EMPTY' | transloco }}</p>
                 </div>
                 <div *ngIf="payments.length > 0" class="overflow-x-auto">
                     <table mat-table [dataSource]="payments" class="w-full">
                         <ng-container matColumnDef="paidOn">
-                            <th mat-header-cell *matHeaderCellDef class="pl-6">Paid on</th>
+                            <th mat-header-cell *matHeaderCellDef class="pl-6">{{ 'ADMIN.TENANT.BILLING.COL_PAID_ON' | transloco }}</th>
                             <td mat-cell *matCellDef="let p" class="pl-6">{{ p.paidOn | date:'mediumDate' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="amount">
-                            <th mat-header-cell *matHeaderCellDef>Amount</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_AMOUNT' | transloco }}</th>
                             <td mat-cell *matCellDef="let p" class="font-semibold">BDT {{ p.amount | number:'1.2-2' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="method">
-                            <th mat-header-cell *matHeaderCellDef>Method</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_METHOD' | transloco }}</th>
                             <td mat-cell *matCellDef="let p">{{ p.method }}</td>
                         </ng-container>
                         <ng-container matColumnDef="reference">
-                            <th mat-header-cell *matHeaderCellDef>Reference</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_REFERENCE' | transloco }}</th>
                             <td mat-cell *matCellDef="let p" class="text-gray-600 dark:text-gray-400">{{ p.reference || '—' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="periodStart">
-                            <th mat-header-cell *matHeaderCellDef>Period start</th>
+                            <th mat-header-cell *matHeaderCellDef>{{ 'ADMIN.TENANT.BILLING.COL_PERIOD_START' | transloco }}</th>
                             <td mat-cell *matCellDef="let p">{{ p.periodStart | date:'mediumDate' }}</td>
                         </ng-container>
                         <ng-container matColumnDef="periodEnd">
-                            <th mat-header-cell *matHeaderCellDef class="pr-6">Period end</th>
+                            <th mat-header-cell *matHeaderCellDef class="pr-6">{{ 'ADMIN.TENANT.BILLING.COL_PERIOD_END' | transloco }}</th>
                             <td mat-cell *matCellDef="let p" class="pr-6">{{ p.periodEnd | date:'mediumDate' }}</td>
                         </ng-container>
                         <tr mat-header-row *matHeaderRowDef="paymentColumns" class="bg-gray-50 dark:bg-gray-700"></tr>

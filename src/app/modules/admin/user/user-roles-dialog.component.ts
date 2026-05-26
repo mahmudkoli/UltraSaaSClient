@@ -11,6 +11,7 @@ import { PermissionsService } from 'app/core/auth/permissions.service';
 import { NavigationService } from 'app/core/navigation/navigation.service';
 import { UserService } from 'app/core/user/user.service';
 import { UserRoleDto } from 'app/core/user/user.types';
+import { TranslocoModule } from '@ngneat/transloco';
 
 export interface UserRolesDialogData {
     userId: string;
@@ -24,6 +25,7 @@ export interface UserRolesDialogData {
         CommonModule, FormsModule,
         MatButtonModule, MatCheckboxModule, MatDialogModule, MatIconModule,
         MatProgressSpinnerModule,
+        TranslocoModule,
     ],
     template: `
 <div class="p-1">
@@ -32,7 +34,7 @@ export interface UserRolesDialogData {
             <mat-icon class="text-white">manage_accounts</mat-icon>
         </div>
         <div>
-            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">Manage Roles</h2>
+            <h2 class="text-xl font-semibold text-gray-900 dark:text-white">{{ 'ADMIN.USER.ROLES_DIALOG.TITLE' | transloco }}</h2>
             <p class="text-sm text-gray-600 dark:text-gray-400">{{ data.userName }}</p>
         </div>
     </div>
@@ -42,7 +44,7 @@ export interface UserRolesDialogData {
                 <mat-spinner [diameter]="32"></mat-spinner>
             </div>
         } @else {
-            <p class="text-xs text-gray-500 mb-3">Toggle the roles for this user. Permissions outside the tenant's pool are stripped automatically on save.</p>
+            <p class="text-xs text-gray-500 mb-3">{{ 'ADMIN.USER.ROLES_DIALOG.HINT' | transloco }}</p>
             <div class="space-y-2">
                 <div *ngFor="let r of roles(); let i = index"
                      class="flex items-start p-3 rounded-lg border border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/40 transition-colors">
@@ -53,15 +55,15 @@ export interface UserRolesDialogData {
                     </div>
                 </div>
             </div>
-            <p *ngIf="roles().length === 0" class="text-sm text-gray-500 py-4 text-center">No roles available.</p>
+            <p *ngIf="roles().length === 0" class="text-sm text-gray-500 py-4 text-center">{{ 'ADMIN.USER.ROLES_DIALOG.EMPTY' | transloco }}</p>
         }
     </mat-dialog-content>
     <mat-dialog-actions align="end" class="!px-4 !pb-4">
-        <button mat-button (click)="close()" [disabled]="saving()">Cancel</button>
+        <button mat-button (click)="close()" [disabled]="saving()">{{ 'COMMON.CANCEL' | transloco }}</button>
         <button mat-flat-button color="primary"
                 (click)="save()"
                 [disabled]="loading() || saving()">
-            <mat-icon class="icon-size-5 mr-2">save</mat-icon>{{ saving() ? 'Saving…' : 'Save Roles' }}
+            <mat-icon class="icon-size-5 mr-2">save</mat-icon>{{ (saving() ? 'ADMIN.USER.ROLES_DIALOG.SAVING' : 'ADMIN.USER.ROLES_DIALOG.SAVE_BUTTON') | transloco }}
         </button>
     </mat-dialog-actions>
 </div>

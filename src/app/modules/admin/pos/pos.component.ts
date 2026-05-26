@@ -39,6 +39,7 @@ import { PrescriptionsService } from 'app/core/pharmacy/pharmacy.service';
 import { ManagerOverrideDialogComponent, ManagerOverrideResult } from './manager-override-dialog.component';
 import { QuickAddCustomerDialogComponent } from './quick-add-customer-dialog.component';
 import { ShareInvoiceDialogComponent } from '../sales/share-invoice-dialog.component';
+import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 
 interface CartLine extends CreateSaleLine {
     productName: string;
@@ -67,6 +68,7 @@ interface CartLine extends CreateSaleLine {
         CommonModule, FormsModule, RouterModule,
         MatButtonModule, MatCardModule, MatDialogModule, MatFormFieldModule, MatIconModule, MatInputModule,
         MatSelectModule, MatSnackBarModule, MatTableModule, MatChipsModule, MatTooltipModule,
+        TranslocoModule,
     ],
     template: `
         <div class="flex flex-col lg:flex-row gap-4 p-4 h-full">
@@ -75,7 +77,7 @@ interface CartLine extends CreateSaleLine {
                 <mat-card class="!p-3">
                     <div class="flex items-center gap-3">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
-                            <mat-label>Outlet</mat-label>
+                            <mat-label>{{ 'POS.SCREEN.OUTLET_LABEL' | transloco }}</mat-label>
                             <mat-select [(ngModel)]="outletId" (ngModelChange)="onOutletChange()">
                                 @for (o of outlets(); track o.id) {
                                     <mat-option [value]="o.id">{{ o.code }} — {{ o.name }}</mat-option>
@@ -83,31 +85,31 @@ interface CartLine extends CreateSaleLine {
                             </mat-select>
                         </mat-form-field>
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
-                            <mat-label>Search SKU / name / scan barcode</mat-label>
+                            <mat-label>{{ 'POS.SCREEN.SEARCH_LABEL' | transloco }}</mat-label>
                             <input matInput #searchInput
                                    [ngModel]="search()" (ngModelChange)="search.set($event)"
                                    (keyup.enter)="onSearchEnter()"
-                                   placeholder="Type or scan to add..." />
+                                   [placeholder]="'POS.SCREEN.SEARCH_PLACEHOLDER' | transloco" />
                             @if (search()) {
-                                <button matSuffix mat-icon-button type="button" aria-label="Clear search"
+                                <button matSuffix mat-icon-button type="button" [attr.aria-label]="'POS.SCREEN.CLEAR_SEARCH' | transloco"
                                         (click)="clearSearch()">
                                     <mat-icon class="icon-size-5">close</mat-icon>
                                 </button>
                             } @else {
-                                <mat-icon matSuffix class="text-gray-400" matTooltip="Tip: scan a barcode to auto-add. Or type and press Enter to add the matching SKU.">qr_code_scanner</mat-icon>
+                                <mat-icon matSuffix class="text-gray-400" [matTooltip]="'POS.SCREEN.SCAN_HINT' | transloco">qr_code_scanner</mat-icon>
                             }
                         </mat-form-field>
                         <button mat-stroked-button class="!min-w-0 !px-3 !h-14"
                                 (click)="openSaleLookup()"
-                                matTooltip="Find a previous sale and re-print the receipt">
+                                [matTooltip]="'POS.SCREEN.FIND_SALE_TOOLTIP' | transloco">
                             <mat-icon class="icon-size-5">receipt_long</mat-icon>
-                            <span class="hidden lg:inline ml-1">Find sale</span>
+                            <span class="hidden lg:inline ml-1">{{ 'POS.SCREEN.FIND_SALE' | transloco }}</span>
                         </button>
                         <button mat-stroked-button class="!min-w-0 !px-3 !h-14 relative"
                                 (click)="openParkedCarts()"
-                                [matTooltip]="parkedCount() > 0 ? parkedCount() + ' parked cart(s)' : 'No parked carts'">
+                                [matTooltip]="parkedCartTooltip()">
                             <mat-icon class="icon-size-5">pause_circle</mat-icon>
-                            <span class="hidden lg:inline ml-1">Recall</span>
+                            <span class="hidden lg:inline ml-1">{{ 'POS.SCREEN.RECALL' | transloco }}</span>
                             @if (parkedCount() > 0) {
                                 <span class="absolute -top-1 -right-1 bg-amber-500 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{{ parkedCount() }}</span>
                             }
@@ -115,13 +117,13 @@ interface CartLine extends CreateSaleLine {
                         @if (isPharmacyVertical()) {
                             <button mat-stroked-button class="!min-w-0 !px-3 !h-14"
                                     (click)="openLinkPrescription()"
-                                    matTooltip="Link a doctor prescription — the sale will mark it Dispensed on finalize">
+                                    [matTooltip]="'POS.SCREEN.RX_TOOLTIP' | transloco">
                                 <!-- 'medication' is in the standard Material Icons font and renders at all sizes.
                                      'prescriptions' is a newer Material Symbols ligature that doesn't ship
                                      with the older Material Icons font this app loads — at icon-size-5 it
                                      fell back to blank, which is what you saw. -->
                                 <mat-icon class="icon-size-5">medication</mat-icon>
-                                <span class="hidden lg:inline ml-1">Rx</span>
+                                <span class="hidden lg:inline ml-1">{{ 'POS.SCREEN.RX' | transloco }}</span>
                             </button>
                         }
                     </div>
@@ -129,9 +131,9 @@ interface CartLine extends CreateSaleLine {
                         <div class="mt-2 flex items-center gap-2 p-2 rounded-lg bg-teal-50 dark:bg-teal-900/20 border border-teal-200 dark:border-teal-800 text-xs">
                             <mat-icon class="icon-size-4 text-teal-700 dark:text-teal-300">medication</mat-icon>
                             <span class="text-teal-800 dark:text-teal-200">
-                                Dispensing <span class="font-mono font-semibold">{{ rx.prescriptionNumber }}</span> · {{ rx.patientName }}
+                                {{ 'POS.SCREEN.DISPENSING' | transloco }} <span class="font-mono font-semibold">{{ rx.prescriptionNumber }}</span> · {{ rx.patientName }}
                             </span>
-                            <button mat-icon-button class="!w-6 !h-6 ml-auto" (click)="clearPrescription()" matTooltip="Unlink prescription">
+                            <button mat-icon-button class="!w-6 !h-6 ml-auto" (click)="clearPrescription()" [matTooltip]="'POS.SCREEN.UNLINK_RX' | transloco">
                                 <mat-icon class="icon-size-4">close</mat-icon>
                             </button>
                         </div>
@@ -139,14 +141,14 @@ interface CartLine extends CreateSaleLine {
                     @if (currentShift(); as cs) {
                         <div class="mt-2 flex items-center gap-2 p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 text-xs">
                             <mat-icon class="icon-size-4 text-emerald-700 dark:text-emerald-300">play_circle</mat-icon>
-                            <span class="text-emerald-700 dark:text-emerald-300">Shift open since {{ cs.openedAt | date:'shortTime' }} · float {{ cs.openingFloat | number:'1.2-2' }}</span>
-                            <a class="ml-auto text-blue-600 hover:underline cursor-pointer" routerLink="/shifts">Manage</a>
+                            <span class="text-emerald-700 dark:text-emerald-300">{{ 'POS.SCREEN.SHIFT_OPEN' | transloco:{ time: (cs.openedAt | date:'shortTime'), float: (cs.openingFloat | number:'1.2-2') } }}</span>
+                            <a class="ml-auto text-blue-600 hover:underline cursor-pointer" routerLink="/shifts">{{ 'POS.SCREEN.SHIFT_MANAGE' | transloco }}</a>
                         </div>
                     } @else {
                         <div class="mt-2 flex items-center gap-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-xs">
                             <mat-icon class="icon-size-4 text-amber-700 dark:text-amber-300">info</mat-icon>
-                            <span class="text-amber-700 dark:text-amber-300">No shift open. Sales will record without shift attribution.</span>
-                            <a class="ml-auto text-blue-600 hover:underline cursor-pointer" routerLink="/shifts">Open one</a>
+                            <span class="text-amber-700 dark:text-amber-300">{{ 'POS.SCREEN.NO_SHIFT_OPEN' | transloco }}</span>
+                            <a class="ml-auto text-blue-600 hover:underline cursor-pointer" routerLink="/shifts">{{ 'POS.SCREEN.OPEN_SHIFT' | transloco }}</a>
                         </div>
                     }
                 </mat-card>
@@ -154,10 +156,10 @@ interface CartLine extends CreateSaleLine {
                 <mat-card class="flex-1 overflow-auto !p-2">
                     <!-- Stock filter toggle: hides products with 0 at the current outlet. -->
                     <div class="flex items-center justify-between gap-2 px-1 py-1 mb-1.5 text-xs">
-                        <span class="text-gray-500">{{ filteredProducts().length }} product{{ filteredProducts().length === 1 ? '' : 's' }}</span>
+                        <span class="text-gray-500">{{ (filteredProducts().length === 1 ? 'POS.SCREEN.PRODUCT_COUNT_ONE' : 'POS.SCREEN.PRODUCT_COUNT_MANY') | transloco:{ count: filteredProducts().length } }}</span>
                         <label class="inline-flex items-center gap-1.5 cursor-pointer select-none">
                             <input type="checkbox" [checked]="inStockOnly()" (change)="inStockOnly.set($any($event.target).checked)" class="accent-indigo-600">
-                            <span class="text-gray-600 dark:text-gray-300">In stock only</span>
+                            <span class="text-gray-600 dark:text-gray-300">{{ 'POS.SCREEN.IN_STOCK_ONLY' | transloco }}</span>
                         </label>
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
@@ -186,7 +188,7 @@ interface CartLine extends CreateSaleLine {
                                     }
                                     <span class="text-[10px] font-semibold px-1.5 py-0.5 rounded-full whitespace-nowrap"
                                           [class]="stockChipClass(p)"
-                                          [matTooltip]="stockFor(p.id) <= 0 ? 'Out of stock at this outlet' : (p.reorderLevel > 0 && stockFor(p.id) <= p.reorderLevel ? 'At or below reorder level (' + p.reorderLevel + ')' : 'In stock')">
+                                          [matTooltip]="stockChipTooltip(p)">
                                         {{ stockLabel(p) }}
                                     </span>
                                 </div>
@@ -196,10 +198,10 @@ interface CartLine extends CreateSaleLine {
                     @if (filteredProducts().length === 0) {
                         <div class="text-center py-10 text-gray-500">
                             @if (inStockOnly() && products().length > 0) {
-                                <span>Nothing in stock at this outlet matches.</span>
-                                <button class="text-blue-600 underline ml-1" (click)="inStockOnly.set(false)">Show all anyway</button>
+                                <span>{{ 'POS.SCREEN.EMPTY_NO_STOCK_MATCH' | transloco }}</span>
+                                <button class="text-blue-600 underline ml-1" (click)="inStockOnly.set(false)">{{ 'POS.SCREEN.EMPTY_SHOW_ALL' | transloco }}</button>
                             } @else {
-                                <span>No products. Create some in /catalog/products.</span>
+                                <span>{{ 'POS.SCREEN.EMPTY_NO_PRODUCTS' | transloco }}</span>
                             }
                         </div>
                     }
@@ -211,12 +213,12 @@ interface CartLine extends CreateSaleLine {
                 <mat-card class="!p-2">
                     <div class="flex items-center gap-2">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
-                            <mat-label>Customer (optional)</mat-label>
+                            <mat-label>{{ 'POS.SCREEN.CUSTOMER_LABEL' | transloco }}</mat-label>
                             <mat-select [(ngModel)]="customerId" (ngModelChange)="onCustomerChange($event)">
-                                <mat-option [value]="null">— Walk-in —</mat-option>
+                                <mat-option [value]="null">{{ 'POS.SCREEN.WALK_IN' | transloco }}</mat-option>
                                 <mat-option [value]="ADD_CUSTOMER_SENTINEL" class="!text-emerald-700 dark:!text-emerald-300">
                                     <mat-icon class="icon-size-4 align-middle mr-1">person_add</mat-icon>
-                                    <span class="align-middle">Add new customer…</span>
+                                    <span class="align-middle">{{ 'POS.SCREEN.ADD_NEW_CUSTOMER' | transloco }}</span>
                                 </mat-option>
                                 @for (c of customers(); track c.id) {
                                     <mat-option [value]="c.id">{{ c.name }}{{ c.phone ? ' (' + c.phone + ')' : '' }}</mat-option>
@@ -225,10 +227,10 @@ interface CartLine extends CreateSaleLine {
                         </mat-form-field>
                         @if (brandingProfiles().length > 0) {
                             <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!my-0 w-48"
-                                            matTooltip="Receipt template — falls back to outlet default if unset">
-                                <mat-label>Receipt</mat-label>
+                                            [matTooltip]="'POS.SCREEN.RECEIPT_TOOLTIP' | transloco">
+                                <mat-label>{{ 'POS.SCREEN.RECEIPT_LABEL' | transloco }}</mat-label>
                                 <mat-select [(ngModel)]="brandingProfileId">
-                                    <mat-option [value]="null">— Outlet default —</mat-option>
+                                    <mat-option [value]="null">{{ 'POS.SCREEN.RECEIPT_OUTLET_DEFAULT' | transloco }}</mat-option>
                                     @for (p of brandingProfiles(); track p.id) {
                                         <mat-option [value]="p.id">{{ p.name }}</mat-option>
                                     }
@@ -241,10 +243,10 @@ interface CartLine extends CreateSaleLine {
                             <div class="flex items-center gap-2 mt-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
                                 <mat-icon class="icon-size-5 text-amber-600">stars</mat-icon>
                                 <div class="flex flex-col flex-1">
-                                    <span class="text-xs text-amber-700 dark:text-amber-300">Loyalty balance: <strong>{{ c.loyaltyPoints | number:'1.0-2' }}</strong> pts</span>
+                                    <span class="text-xs text-amber-700 dark:text-amber-300">{{ 'POS.SCREEN.LOYALTY_BALANCE' | transloco:{ points: (c.loyaltyPoints | number:'1.0-2') } }}</span>
                                 </div>
                                 <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!my-0 w-32">
-                                    <mat-label>Redeem</mat-label>
+                                    <mat-label>{{ 'POS.SCREEN.LOYALTY_REDEEM' | transloco }}</mat-label>
                                     <input matInput type="number" min="0" [max]="maxRedeemable()" step="1" [(ngModel)]="redeemPoints">
                                 </mat-form-field>
                             </div>
@@ -253,38 +255,38 @@ interface CartLine extends CreateSaleLine {
                 </mat-card>
 
                 <mat-card class="flex-1 overflow-auto !p-2">
-                    <h3 class="font-semibold px-1 mb-2">Cart ({{ cart().length }} items)</h3>
+                    <h3 class="font-semibold px-1 mb-2">{{ 'POS.SCREEN.CART_TITLE' | transloco:{ count: cart().length } }}</h3>
                     @if (cartHasStockIssue()) {
                         <div class="mb-2 p-2 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-sm text-rose-700 dark:text-rose-300 flex items-center gap-2">
                             <mat-icon class="icon-size-5">error</mat-icon>
-                            <span>One or more lines exceed available stock at this outlet. Adjust the qty before finalizing.</span>
+                            <span>{{ 'POS.SCREEN.WARN_STOCK_ISSUE' | transloco }}</span>
                         </div>
                     }
                     @if (cartHasSerialIssue()) {
                         <div class="mb-2 p-2 rounded-lg bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 text-sm text-rose-700 dark:text-rose-300 flex items-center gap-2">
                             <mat-icon class="icon-size-5">error</mat-icon>
-                            <span>One or more serial numbers are not valid for this outlet / product. Hover the red icon for details.</span>
+                            <span>{{ 'POS.SCREEN.WARN_SERIAL_ISSUE' | transloco }}</span>
                         </div>
                     }
                     @if (cartHasMissingRequiredSerial()) {
                         <div class="mb-2 p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 text-sm text-amber-700 dark:text-amber-300 flex items-center gap-2">
                             <mat-icon class="icon-size-5">info</mat-icon>
-                            <span>Serial number required on serialized product lines before finalize.</span>
+                            <span>{{ 'POS.SCREEN.WARN_SERIAL_MISSING' | transloco }}</span>
                         </div>
                     }
                     @if (cart().length === 0) {
                         <div class="flex flex-col items-center justify-center text-center py-10 text-gray-500 min-h-32">
                             <mat-icon class="icon-size-12 text-gray-300 dark:text-gray-600 mb-2">shopping_cart</mat-icon>
-                            <div>Add a product to start.</div>
+                            <div>{{ 'POS.SCREEN.EMPTY_CART' | transloco }}</div>
                         </div>
                     } @else {
                         <table class="w-full text-sm">
                             <thead class="border-b">
                                 <tr>
-                                    <th class="text-left px-1">Product</th>
-                                    <th class="px-1 w-28">Qty</th>
-                                    <th class="text-right px-1 w-20">Price</th>
-                                    <th class="text-right px-1 w-24">Total</th>
+                                    <th class="text-left px-1">{{ 'POS.SCREEN.COL_PRODUCT' | transloco }}</th>
+                                    <th class="px-1 w-28">{{ 'POS.SCREEN.COL_QTY' | transloco }}</th>
+                                    <th class="text-right px-1 w-20">{{ 'POS.SCREEN.COL_PRICE' | transloco }}</th>
+                                    <th class="text-right px-1 w-24">{{ 'POS.SCREEN.COL_TOTAL' | transloco }}</th>
                                     <th class="w-8"></th>
                                 </tr>
                             </thead>
@@ -299,16 +301,16 @@ interface CartLine extends CreateSaleLine {
                                                 <input type="text"
                                                        [(ngModel)]="line.serialNumber"
                                                        (blur)="validateLineSerial(line)"
-                                                       [placeholder]="(line.isImeiRequired ? 'Serial / IMEI' : 'Serial number') + ' (required)'"
+                                                       [placeholder]="(line.isImeiRequired ? ('POS.SCREEN.SERIAL_IMEI_PLACEHOLDER' | transloco) : ('POS.SCREEN.SERIAL_PLACEHOLDER' | transloco))"
                                                        class="text-[11px] font-mono w-40 border rounded px-1 py-0.5"
                                                        [class.!border-rose-400]="line.serialValidation === 'invalid' || (line.requiresSerial && !(line.serialNumber ?? '').trim())"
                                                        [class.!border-emerald-400]="line.serialValidation === 'valid'" />
                                                 @if (line.serialValidation === 'pending') {
-                                                    <mat-icon class="icon-size-4 text-gray-400 animate-pulse">hourglass_empty</mat-icon>
+                                                    <mat-icon class="icon-size-4 text-gray-400 animate-pulse" [matTooltip]="'POS.SCREEN.SERIAL_PENDING' | transloco">hourglass_empty</mat-icon>
                                                 } @else if (line.serialValidation === 'valid') {
-                                                    <mat-icon class="icon-size-4 text-emerald-600" matTooltip="Serial is in stock at this outlet">check_circle</mat-icon>
+                                                    <mat-icon class="icon-size-4 text-emerald-600" [matTooltip]="'POS.SCREEN.SERIAL_VALID' | transloco">check_circle</mat-icon>
                                                 } @else if (line.serialValidation === 'invalid') {
-                                                    <mat-icon class="icon-size-4 text-rose-600" [matTooltip]="line.serialError ?? 'Invalid serial'">error</mat-icon>
+                                                    <mat-icon class="icon-size-4 text-rose-600" [matTooltip]="line.serialError ?? ('POS.SCREEN.SERIAL_INVALID' | transloco)">error</mat-icon>
                                                 }
                                             </div>
                                             }
@@ -319,7 +321,7 @@ interface CartLine extends CreateSaleLine {
                                                         (click)="nudgeQty(line, -1)"
                                                         [disabled]="line.quantity <= 1"
                                                         class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 disabled:opacity-40 disabled:cursor-not-allowed"
-                                                        aria-label="Decrease quantity">
+                                                        [attr.aria-label]="'POS.SCREEN.DECREASE_QTY' | transloco">
                                                     <mat-icon class="icon-size-4">remove</mat-icon>
                                                 </button>
                                                 <input type="number" min="1" step="0.01"
@@ -328,11 +330,11 @@ interface CartLine extends CreateSaleLine {
                                                        class="w-12 border rounded px-1 py-0.5 text-right"
                                                        [class.!border-rose-400]="lineExceedsStock(line)"
                                                        [class.!text-rose-600]="lineExceedsStock(line)"
-                                                       [matTooltip]="lineExceedsStock(line) ? ('Only ' + stockFor(line.productId) + ' in stock at this outlet') : ''" />
+                                                       [matTooltip]="lineExceedsStock(line) ? ('POS.SCREEN.QTY_TOOLTIP_ONLY' | transloco:{ available: stockFor(line.productId) }) : ''" />
                                                 <button type="button"
                                                         (click)="nudgeQty(line, 1)"
                                                         class="w-6 h-6 flex items-center justify-center rounded border text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
-                                                        aria-label="Increase quantity">
+                                                        [attr.aria-label]="'POS.SCREEN.INCREASE_QTY' | transloco">
                                                     <mat-icon class="icon-size-4">add</mat-icon>
                                                 </button>
                                             </div>
@@ -360,14 +362,14 @@ interface CartLine extends CreateSaleLine {
                 <mat-card class="!p-2">
                     <div class="flex items-center gap-1 mb-1">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
-                            <mat-label>Promo code</mat-label>
+                            <mat-label>{{ 'POS.SCREEN.PROMO_CODE_LABEL' | transloco }}</mat-label>
                             <input matInput [(ngModel)]="promoCode" />
                         </mat-form-field>
                         <button mat-stroked-button class="!h-10 !min-w-0 !px-3" (click)="applyPromo()" [disabled]="!promoCode || cart().length === 0">
-                            Apply
+                            {{ 'POS.SCREEN.PROMO_APPLY' | transloco }}
                         </button>
                         @if (promo()) {
-                            <button mat-icon-button class="!w-8 !h-8" (click)="clearPromo()" title="Clear promo">
+                            <button mat-icon-button class="!w-8 !h-8" (click)="clearPromo()" [title]="'POS.SCREEN.PROMO_CLEAR' | transloco">
                                 <mat-icon class="icon-size-4">close</mat-icon>
                             </button>
                         }
@@ -385,13 +387,13 @@ interface CartLine extends CreateSaleLine {
                     }
 
                     <div class="border-t pt-2 mt-1.5 space-y-1">
-                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">Subtotal</span><span class="font-medium tabular-nums">{{ subTotal() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">Discount</span><span class="font-medium tabular-nums">−{{ totalDiscount() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">Tax</span><span class="font-medium tabular-nums">{{ totalTax() | number:'1.2-2' }}</span></div>
-                        <div class="flex justify-between text-lg font-bold border-t pt-1 mt-0.5"><span>Total</span><span class="tabular-nums">{{ grandTotal() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">{{ 'POS.SCREEN.SUBTOTAL' | transloco }}</span><span class="font-medium tabular-nums">{{ subTotal() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">{{ 'POS.SCREEN.DISCOUNT' | transloco }}</span><span class="font-medium tabular-nums">−{{ totalDiscount() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-sm"><span class="text-gray-600 dark:text-gray-400">{{ 'POS.SCREEN.TAX' | transloco }}</span><span class="font-medium tabular-nums">{{ totalTax() | number:'1.2-2' }}</span></div>
+                        <div class="flex justify-between text-lg font-bold border-t pt-1 mt-0.5"><span>{{ 'POS.SCREEN.TOTAL' | transloco }}</span><span class="tabular-nums">{{ grandTotal() | number:'1.2-2' }}</span></div>
                         @if (effectiveRedeem() > 0) {
-                            <div class="flex justify-between text-sm text-amber-700 dark:text-amber-300"><span>Loyalty redeemed</span><span class="font-medium tabular-nums">−{{ effectiveRedeem() | number:'1.2-2' }}</span></div>
-                            <div class="flex justify-between text-base font-semibold"><span>Amount due</span><span class="tabular-nums">{{ amountDue() | number:'1.2-2' }}</span></div>
+                            <div class="flex justify-between text-sm text-amber-700 dark:text-amber-300"><span>{{ 'POS.SCREEN.LOYALTY_REDEEMED' | transloco }}</span><span class="font-medium tabular-nums">−{{ effectiveRedeem() | number:'1.2-2' }}</span></div>
+                            <div class="flex justify-between text-base font-semibold"><span>{{ 'POS.SCREEN.AMOUNT_DUE' | transloco }}</span><span class="tabular-nums">{{ amountDue() | number:'1.2-2' }}</span></div>
                         }
                     </div>
                 </mat-card>
@@ -400,18 +402,18 @@ interface CartLine extends CreateSaleLine {
                 <mat-card class="!p-2">
                     <div class="flex items-center gap-1 mb-1">
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="!my-0 w-44">
-                            <mat-label>Method</mat-label>
+                            <mat-label>{{ 'POS.FINALIZE.METHOD_LABEL' | transloco }}</mat-label>
                             <mat-select [(ngModel)]="payMethod">
-                                <mat-option value="Cash">Cash</mat-option>
-                                <mat-option value="Card">Card</mat-option>
-                                <mat-option value="MobileBanking">Mobile Banking</mat-option>
-                                <mat-option value="BankTransfer">Bank Transfer</mat-option>
-                                <mat-option value="Voucher">Voucher</mat-option>
-                                <mat-option value="Credit">Credit (account)</mat-option>
+                                <mat-option value="Cash">{{ 'POS.FINALIZE.METHOD_CASH' | transloco }}</mat-option>
+                                <mat-option value="Card">{{ 'POS.FINALIZE.METHOD_CARD' | transloco }}</mat-option>
+                                <mat-option value="MobileBanking">{{ 'POS.FINALIZE.METHOD_MOBILE_BANKING' | transloco }}</mat-option>
+                                <mat-option value="BankTransfer">{{ 'POS.FINALIZE.METHOD_BANK_TRANSFER' | transloco }}</mat-option>
+                                <mat-option value="Voucher">{{ 'POS.FINALIZE.METHOD_VOUCHER' | transloco }}</mat-option>
+                                <mat-option value="Credit">{{ 'POS.FINALIZE.METHOD_CREDIT' | transloco }}</mat-option>
                             </mat-select>
                         </mat-form-field>
                         <mat-form-field appearance="outline" subscriptSizing="dynamic" class="flex-1 !my-0">
-                            <mat-label>Amount tendered</mat-label>
+                            <mat-label>{{ 'POS.FINALIZE.AMOUNT_TENDERED' | transloco }}</mat-label>
                             <input matInput type="number" [(ngModel)]="payAmount" [placeholder]="amountDue().toFixed(2)" />
                         </mat-form-field>
                     </div>
@@ -421,17 +423,17 @@ interface CartLine extends CreateSaleLine {
                                 [disabled]="!canFinalize() || finalizing()"
                                 (click)="finalize()">
                             @if (finalizing()) {
-                                Processing…
+                                {{ 'POS.SCREEN.PROCESSING' | transloco }}
                             } @else {
-                                Finalize ({{ grandTotal() | number:'1.2-2' }})
+                                {{ 'POS.SCREEN.FINALIZE' | transloco:{ total: (grandTotal() | number:'1.2-2') } }}
                             }
                         </button>
                         <button mat-stroked-button color="accent" class="!text-base !py-2 !px-3"
                                 [disabled]="!canFinalize() || parking()"
                                 (click)="park()"
-                                matTooltip="Save this cart for later — customer stepping away?">
+                                [matTooltip]="'POS.SCREEN.PARK_TOOLTIP' | transloco">
                             <mat-icon class="icon-size-5 mr-1">pause_circle</mat-icon>
-                            <span>Park</span>
+                            <span>{{ 'POS.SCREEN.PARK' | transloco }}</span>
                         </button>
                     </div>
                 </mat-card>
@@ -462,6 +464,7 @@ export class PosComponent implements OnInit, AfterViewInit {
     private readonly tenantInfo = inject(TenantInfoService);
     private readonly route = inject(ActivatedRoute);
     private readonly prescriptionsApi = inject(PrescriptionsService);
+    private readonly _transloco = inject(TranslocoService);
 
     showElectronics = (): boolean => this.tenantInfo.isVertical('Electronics');
     private readonly parkedApi = inject(ParkedCartsService);
@@ -561,6 +564,25 @@ export class PosComponent implements OnInit, AfterViewInit {
         return 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300';
     }
 
+    /** Translated tooltip for the stock chip (centralizes the 3 states so the
+     *  template stays clean). */
+    stockChipTooltip(p: ProductDto): string {
+        const qty = this.stockFor(p.id);
+        if (qty <= 0) return this._transloco.translate('POS.SCREEN.STOCK_OUT_AT_OUTLET');
+        if (p.reorderLevel > 0 && qty <= p.reorderLevel) {
+            return this._transloco.translate('POS.SCREEN.STOCK_AT_REORDER', { level: p.reorderLevel });
+        }
+        return this._transloco.translate('POS.SCREEN.STOCK_IN_STOCK');
+    }
+
+    /** Tooltip for the Recall toolbar button — switches based on parked count. */
+    parkedCartTooltip(): string {
+        const count = this.parkedCount();
+        if (count <= 0) return this._transloco.translate('POS.SCREEN.NO_PARKED_TOOLTIP');
+        if (count === 1) return this._transloco.translate('POS.SCREEN.PARKED_TOOLTIP_ONE', { count });
+        return this._transloco.translate('POS.SCREEN.PARKED_TOOLTIP_MANY', { count });
+    }
+
     subTotal = computed(() =>
         this.cart().reduce((s, l) => s + Math.max(0, l.unitPrice * l.quantity - l.discountAmount), 0));
     totalDiscount = computed(() =>
@@ -648,13 +670,13 @@ export class PosComponent implements OnInit, AfterViewInit {
             next: (s) => {
                 if (s.status !== 'InStock') {
                     line.serialValidation = 'invalid';
-                    line.serialError = `Serial is ${s.status}, not InStock.`;
+                    line.serialError = this._transloco.translate('POS.TOAST.SERIAL_ERR_NOT_INSTOCK', { status: s.status });
                 } else if (s.outletId !== this.outletId) {
                     line.serialValidation = 'invalid';
-                    line.serialError = 'Serial belongs to a different outlet.';
+                    line.serialError = this._transloco.translate('POS.TOAST.SERIAL_ERR_WRONG_OUTLET');
                 } else if (s.productId !== line.productId) {
                     line.serialValidation = 'invalid';
-                    line.serialError = `Serial belongs to a different product.`;
+                    line.serialError = this._transloco.translate('POS.TOAST.SERIAL_ERR_WRONG_PRODUCT');
                 } else {
                     line.serialValidation = 'valid';
                     line.serialError = undefined;
@@ -665,7 +687,7 @@ export class PosComponent implements OnInit, AfterViewInit {
             },
             error: () => {
                 line.serialValidation = 'invalid';
-                line.serialError = 'Serial not found.';
+                line.serialError = this._transloco.translate('POS.TOAST.SERIAL_ERR_NOT_FOUND');
                 this.cart.set([...this.cart()]);
             },
         });
@@ -769,10 +791,16 @@ export class PosComponent implements OnInit, AfterViewInit {
             // outlet's data even if they cancel.
             this.outletId = previous;
             this._confirm.open({
-                title: 'Discard cart?',
-                message: `Switching outlets will discard your cart of ${n} item${n === 1 ? '' : 's'}.`,
+                title: this._transloco.translate('POS.TOAST.DISCARD_CART_TITLE'),
+                message: this._transloco.translate(
+                    n === 1 ? 'POS.TOAST.DISCARD_CART_MESSAGE_ONE' : 'POS.TOAST.DISCARD_CART_MESSAGE_MANY',
+                    { count: n },
+                ),
                 icon: { show: true, name: 'heroicons_outline:exclamation-triangle', color: 'warn' },
-                actions: { confirm: { label: 'Discard & switch', color: 'warn' }, cancel: { label: 'Stay here' } },
+                actions: {
+                    confirm: { label: this._transloco.translate('POS.TOAST.DISCARD_AND_SWITCH'), color: 'warn' },
+                    cancel: { label: this._transloco.translate('POS.TOAST.STAY_HERE') },
+                },
             }).afterClosed().subscribe(result => {
                 if (result !== 'confirmed') return;
                 this.outletId = target;
@@ -1048,7 +1076,11 @@ export class PosComponent implements OnInit, AfterViewInit {
         const lines = this.cart().map(l => ({ productId: l.productId, quantity: l.quantity, unitPrice: l.unitPrice }));
         this.promosApi.previewDiscount(code, lines).subscribe({
             next: (p) => this.promo.set(p),
-            error: () => this.snack.open('Promo lookup failed', 'OK', { duration: 3000 }),
+            error: () => this.snack.open(
+                this._transloco.translate('POS.TOAST.PROMO_LOOKUP_FAILED'),
+                this._transloco.translate('POS.TOAST.OK'),
+                { duration: 3000 },
+            ),
         });
     }
 
@@ -1062,7 +1094,11 @@ export class PosComponent implements OnInit, AfterViewInit {
         const due = this.amountDue();
         const payAmt = this.payAmount ?? due;
         if (payAmt + 0.01 < due) {
-            this.snack.open(`Insufficient payment (${payAmt.toFixed(2)} < ${due.toFixed(2)})`, 'OK', { duration: 3000 });
+            this.snack.open(
+                this._transloco.translate('POS.TOAST.INSUFFICIENT_PAYMENT', { paid: payAmt.toFixed(2), due: due.toFixed(2) }),
+                this._transloco.translate('POS.TOAST.OK'),
+                { duration: 3000 },
+            );
             return;
         }
 
@@ -1115,8 +1151,11 @@ export class PosComponent implements OnInit, AfterViewInit {
                 // so the next customer can start ringing up.
                 this.salesApi.get(id).subscribe(sale => this.printReceipt(sale));
                 const outletName = this.outlets().find(o => o.id === this.outletId)?.name ?? '';
-                this.snack.open(`Sale finalized — invoice in print queue.`, 'Share', { duration: 6000 })
-                    .onAction().subscribe(() => {
+                this.snack.open(
+                    this._transloco.translate('POS.TOAST.SALE_FINALIZED'),
+                    this._transloco.translate('POS.TOAST.SHARE'),
+                    { duration: 6000 },
+                ).onAction().subscribe(() => {
                         this.salesApi.get(id).subscribe(sale => {
                             this.dialog.open(ShareInvoiceDialogComponent, {
                                 width: '520px',
@@ -1147,7 +1186,8 @@ export class PosComponent implements OnInit, AfterViewInit {
             },
             error: (err) => {
                 this.finalizing.set(false);
-                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Sale failed';
+                const fallback = this._transloco.translate('POS.TOAST.SALE_FAILED');
+                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? fallback;
                 // Strict-pricing rejection: server says price doesn't match resolved price.
                 // If the cashier hasn't already obtained a manager override, prompt for one.
                 const looksLikePriceOverride = err?.status === 403
@@ -1159,17 +1199,21 @@ export class PosComponent implements OnInit, AfterViewInit {
                         width: '460px',
                         data: {
                             requiredPermission: 'Permissions.Sales.Discount',
-                            reason: 'A unit price on this sale differs from the resolved price. A manager with discount permission must authorize.',
+                            reason: this._transloco.translate('POS.MANAGER_OVERRIDE.PRICE_REASON'),
                         },
                     });
                     ref.afterClosed().subscribe((result: ManagerOverrideResult | null) => {
                         if (!result) return;
-                        this.snack.open(`Approved by ${result.authorizedUserName} — finalizing…`, 'OK', { duration: 3000 });
+                        this.snack.open(
+                            this._transloco.translate('POS.TOAST.APPROVED_BY', { name: result.authorizedUserName }),
+                            this._transloco.translate('POS.TOAST.OK'),
+                            { duration: 3000 },
+                        );
                         this.submitSale(apiLines, payments, customer, result.authorizedUserId);
                     });
                     return;
                 }
-                this.snack.open(msg, 'OK', { duration: 6000 });
+                this.snack.open(msg, this._transloco.translate('POS.TOAST.OK'), { duration: 6000 });
             },
         });
     }
@@ -1207,7 +1251,7 @@ export class PosComponent implements OnInit, AfterViewInit {
         if (!this.outletId || this.cart().length === 0) return;
         const customer = this.selectedCustomer();
         const label = prompt(
-            `Park this cart? Optional label (e.g. "Mr. Karim — blue shirt"):`,
+            this._transloco.translate('POS.TOAST.PARK_PROMPT'),
             customer?.name ?? '');
         if (label === null) return;  // cancelled
 
@@ -1234,7 +1278,11 @@ export class PosComponent implements OnInit, AfterViewInit {
         }).subscribe({
             next: () => {
                 this.parking.set(false);
-                this.snack.open('Cart parked. Recall from the toolbar when the customer returns.', 'OK', { duration: 4000 });
+                this.snack.open(
+                    this._transloco.translate('POS.TOAST.CART_PARKED'),
+                    this._transloco.translate('POS.TOAST.OK'),
+                    { duration: 4000 },
+                );
                 this.cart.set([]);
                 this.promo.set(null);
                 this.promoCode = '';
@@ -1247,8 +1295,8 @@ export class PosComponent implements OnInit, AfterViewInit {
             },
             error: err => {
                 this.parking.set(false);
-                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? 'Park failed';
-                this.snack.open(msg, 'OK', { duration: 6000 });
+                const msg = err?.error?.exception ?? err?.error?.title ?? err?.message ?? this._transloco.translate('POS.TOAST.PARK_FAILED');
+                this.snack.open(msg, this._transloco.translate('POS.TOAST.OK'), { duration: 6000 });
             },
         });
     }
@@ -1267,7 +1315,7 @@ export class PosComponent implements OnInit, AfterViewInit {
             // Restore cart state. Cart lines already carry productName/sku snapshots.
             this.cart.set(recalled.lines.map(l => ({
                 productId: l.productId,
-                productName: l.productName ?? '(recalled item)',
+                productName: l.productName ?? this._transloco.translate('POS.TOAST.RECALLED_ITEM_FALLBACK'),
                 sku: l.sku ?? '',
                 taxRate: 0,  // best-effort; the active product list will re-resolve when re-touched
                 quantity: l.quantity,
@@ -1281,7 +1329,12 @@ export class PosComponent implements OnInit, AfterViewInit {
             this.promoCode = recalled.promoCode ?? '';
             this.redeemPoints = recalled.loyaltyPointsRedeemed ?? 0;
             this.recalc();
-            this.snack.open(`Recalled ${recalled.label || recalled.customerName || 'parked cart'}`, 'OK', { duration: 3000 });
+            const label = recalled.label || recalled.customerName || this._transloco.translate('POS.TOAST.RECALLED_FALLBACK');
+            this.snack.open(
+                this._transloco.translate('POS.TOAST.RECALLED', { label }),
+                this._transloco.translate('POS.TOAST.OK'),
+                { duration: 3000 },
+            );
         });
     }
 }
