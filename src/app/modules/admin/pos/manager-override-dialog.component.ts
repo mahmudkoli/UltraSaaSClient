@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Component, Inject, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,6 +9,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { TranslocoModule, TranslocoService } from '@ngneat/transloco';
 import { environment } from 'environments/environment';
+import { SKIP_ERROR_TOAST } from 'app/core/interceptors/error.interceptor';
 
 export interface ManagerOverrideResult {
     authorizedUserId: string;
@@ -71,7 +72,7 @@ export class ManagerOverrideDialogComponent {
             email: this.email,
             password: this.password,
             requiredPermission: this.data.requiredPermission,
-        }).subscribe({
+        }, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) }).subscribe({
             next: r => { this.busy.set(false); this.ref.close(r); },
             error: err => {
                 this.busy.set(false);

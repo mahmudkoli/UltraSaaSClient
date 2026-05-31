@@ -1,5 +1,6 @@
 {
     "COMMON": {
+        "UNEXPECTED_ERROR": "Something went wrong. Please try again.",
         "SAVE": "Save",
         "CANCEL": "Cancel",
         "DELETE": "Delete",

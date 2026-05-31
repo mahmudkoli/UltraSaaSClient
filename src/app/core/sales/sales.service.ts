@@ -1,4 +1,4 @@
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpContext } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from 'environments/environment';
@@ -7,6 +7,7 @@ import {
     CreateSaleRequest, CreateSaleReturnRequest, CustomerDto, PublicSaleDto, SaleDto,
     SaleReturnDto, SaleShareTokenResponse, WarrantyDto,
 } from './sales.types';
+import { SKIP_ERROR_TOAST } from 'app/core/interceptors/error.interceptor';
 
 export interface SearchSalesRequest extends PaginationFilter {
     outletId?: string;
@@ -66,7 +67,9 @@ export class SalesService {
         return this.http.get<SaleDto[]>(qs.toString() ? `${this.base}?${qs}` : this.base);
     };
     get = (id: string): Observable<SaleDto> => this.http.get<SaleDto>(`${this.base}/${id}`);
-    create = (req: CreateSaleRequest): Observable<string> => this.http.post<string>(this.base, req);
+    // Opt out of the global error toast — the POS screen surfaces sale errors inline.
+    create = (req: CreateSaleRequest): Observable<string> =>
+        this.http.post<string>(this.base, req, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) });
     /** Server-side paginated / sortable / filterable search. */
     search = (req: SearchSalesRequest): Observable<PaginationResponse<SaleDto>> =>
         this.http.post<PaginationResponse<SaleDto>>(`${this.base}/search`, req);
@@ -94,7 +97,9 @@ export class SaleReturnsService {
     get = (id: string): Observable<SaleReturnDto> => this.http.get<SaleReturnDto>(`${this.base}/${id}`);
     getBySale = (saleId: string): Observable<SaleReturnDto[]> =>
         this.http.get<SaleReturnDto[]>(`${this.base}/by-sale/${saleId}`);
-    create = (req: CreateSaleReturnRequest): Observable<string> => this.http.post<string>(this.base, req);
+    // Opt out of the global error toast — the returns form surfaces errors inline.
+    create = (req: CreateSaleReturnRequest): Observable<string> =>
+        this.http.post<string>(this.base, req, { context: new HttpContext().set(SKIP_ERROR_TOAST, true) });
     search = (req: SearchSaleReturnsRequest): Observable<PaginationResponse<SaleReturnDto>> =>
         this.http.post<PaginationResponse<SaleReturnDto>>(`${this.base}/search`, req);
 }
