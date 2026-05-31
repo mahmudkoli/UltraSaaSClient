@@ -295,7 +295,13 @@ export class ReturnFormComponent implements OnInit {
     // would stay stale. Plain methods re-run every change-detection tick.
 
     refundDue(): number {
-        return this.lines().reduce((sum, l) => sum + l.quantity * l.unitPrice, 0);
+        const gross = this.lines().reduce((sum, l) => sum + l.quantity * l.unitPrice, 0);
+        const s = this.sale();
+        // Cash refund is capped at the fraction the customer actually PAID on the original
+        // sale; the unpaid (credit) portion is settled against their balance, not refunded in
+        // cash. Fully-paid sales: paidFraction == 1 (unchanged). Mirrors the backend cap.
+        const paidFraction = s && s.total > 0 ? s.paidAmount / s.total : 1;
+        return Math.round(gross * paidFraction * 100) / 100;
     }
     refundEntered(): number {
         return this.refunds().reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
