@@ -3,7 +3,7 @@ import { ELECTRO_EMAIL, ELECTRO_TENANT, login } from './auth.setup';
 
 test.setTimeout(60000);
 
-test.describe('UltraPOS — go-live phases (2.10–2.14)', () => {
+test.describe('MK Corex POS — go-live phases (2.10–2.14)', () => {
 
     // ════════════════════════════════════════════════════════════
     // Phase 2.12 — health probes (anonymous; no login)

@@ -244,7 +244,7 @@ export class PublicInvoiceViewerComponent implements OnInit {
 
     <div class="footer">
         <div>Thank you for your business!</div>
-        <div style="margin-top:2px;font-size:9px">Powered by UltraPOS</div>
+        <div style="margin-top:2px;font-size:9px">Powered by MK Corex POS</div>
     </div>
 </div>`;
     }

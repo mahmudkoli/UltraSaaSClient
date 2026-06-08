@@ -86,7 +86,7 @@ export class AuthSignInComponent implements OnInit
         });
 
         // Pre-fill the demo-login dropdown from the resolved subdomain so
-        // visiting pos-electroplus.mahmudkoli.com lands on the Electroplus
+        // visiting pos-electroplus.mkcorex.com lands on the Electroplus
         // demo with email + password ready. Fall back to root when the
         // subdomain doesn't map to a seeded demo (or there's no subdomain).
         if (this.demoLoginsEnabled) {

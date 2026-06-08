@@ -2308,7 +2308,7 @@
                 "ADMIN_EMAIL_LABEL": "Technical Admin Email",
                 "ADMIN_EMAIL_PLACEHOLDER": "Tenant admin's email",
                 "SUBDOMAIN_LABEL": "Subdomain",
-                "SUBDOMAIN_PLACEHOLDER": "abc.ultrapos.com / shop-1.local",
+                "SUBDOMAIN_PLACEHOLDER": "abc.mkcorex.com / shop-1.local",
                 "BUSINESS_TYPE_LABEL": "Business Type",
                 "BT_GENERIC": "Generic — every vertical",
                 "BT_ELECTRONICS": "Electronics — serial / warranty",

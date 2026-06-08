@@ -26,7 +26,7 @@ async function loginAndWaitForNav(page: Page, tenant: string, email: string) {
     await page.waitForLoadState('networkidle');
 }
 
-test.describe('UltraPOS — vertical gating ([RequireBusinessType] + nav meta)', () => {
+test.describe('MK Corex POS — vertical gating ([RequireBusinessType] + nav meta)', () => {
 
     // ════════════════════════════════════════════════════════════
     // Pharmacy nav group is the canary for vertical gating.
@@ -77,7 +77,7 @@ test.describe('UltraPOS — vertical gating ([RequireBusinessType] + nav meta)',
     });
 });
 
-test.describe('UltraPOS — Change Vertical (root admin)', () => {
+test.describe('MK Corex POS — Change Vertical (root admin)', () => {
 
     test('06 — Tenant create form shows Business Type and Outlet Label fields', async ({ page }) => {
         await loginAndWaitForNav(page, ROOT_TENANT, ROOT_EMAIL);

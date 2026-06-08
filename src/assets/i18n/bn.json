@@ -2308,7 +2308,7 @@
                 "ADMIN_EMAIL_LABEL": "টেকনিক্যাল অ্যাডমিন ইমেইল",
                 "ADMIN_EMAIL_PLACEHOLDER": "টেন্যান্ট অ্যাডমিনের ইমেইল",
                 "SUBDOMAIN_LABEL": "সাবডোমেইন",
-                "SUBDOMAIN_PLACEHOLDER": "abc.ultrapos.com / shop-1.local",
+                "SUBDOMAIN_PLACEHOLDER": "abc.mkcorex.com / shop-1.local",
                 "BUSINESS_TYPE_LABEL": "ব্যবসার ধরন",
                 "BT_GENERIC": "জেনেরিক — সব ভার্টিকাল",
                 "BT_ELECTRONICS": "ইলেকট্রনিক্স — সিরিয়াল / ওয়ারেন্টি",

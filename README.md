@@ -1,8 +1,8 @@
-# UltraPOS — Frontend
+# MK Corex POS — Frontend
 
-Angular 17 SPA backing **UltraPOS**, a multi-vertical Point-of-Sale SaaS for electronics, pharmacy, supermarket, and generic retail.
+Angular 17 SPA backing **MK Corex POS**, a multi-vertical Point-of-Sale SaaS for electronics, pharmacy, supermarket, and generic retail.
 
-> **Two products on one repo.** This repo's `develop-v2` branch ships UltraPOS. The `develop-v1` branch ships **UltraEdu** (educational institution management — frozen). Cross-branch fixes are cherry-picked, not merged. Backend lives at [UltraSaaS](https://github.com/mahmudkoli/UltraSaaS).
+> **Two products on one repo.** This repo's `develop-v2` branch ships MK Corex POS. The `develop-v1` branch ships **UltraEdu** (educational institution management — frozen). Cross-branch fixes are cherry-picked, not merged. Backend lives at [UltraSaaS](https://github.com/mahmudkoli/UltraSaaS).
 
 ---
 
@@ -19,7 +19,7 @@ The full product / ops / customer documentation lives in the [UltraSaaS backend 
 | Operations / on-call | [`RUNBOOK.md`](../UltraSaaS/docs/RUNBOOK.md) — 12 incident playbooks |
 | Support staff | [`Support-Response-Templates.md`](../UltraSaaS/docs/Support-Response-Templates.md) · [`Manual-Onboarding-Playbook.md`](../UltraSaaS/docs/Manual-Onboarding-Playbook.md) |
 | End users | [`customer-docs/`](../UltraSaaS/docs/customer-docs/) — getting started · POS cashier · returns |
-| Sales | [`UltraPOS_Sales_Brochure.md`](../UltraSaaS/docs/UltraPOS_Sales_Brochure.md) |
+| Sales | [`MK-Corex-POS-Sales-Brochure.md`](../UltraSaaS/docs/MK-Corex-POS-Sales-Brochure.md) |
 | DB schema | [`ERD.md`](../UltraSaaS/docs/ERD.md) |
 | Marketing playbook | [`MARKETING.md`](../UltraSaaS/docs/MARKETING.md) · [`BRAND-KIT.md`](../UltraSaaS/docs/BRAND-KIT.md) |
 | In-flight plans | [`plans/`](../UltraSaaS/docs/plans/) |

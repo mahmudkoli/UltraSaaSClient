@@ -271,7 +271,7 @@ ${sale.customerName ? `<div class="customer">Customer: ${e(sale.customerName)}${
 ${sale.balance && sale.balance > 0 ? `<div style="text-align:right;font-size:11px;color:#b91c1c;margin-top:4px">Balance due: ${fmt(sale.balance)}</div>` : ''}
 <div class="footer">
     ${ctx.footerText ? `<div>${e(ctx.footerText)}</div>` : '<div>Thank you for your business!</div>'}
-    <div style="margin-top:2px;font-size:9px">Powered by UltraPOS</div>
+    <div style="margin-top:2px;font-size:9px">Powered by MK Corex POS</div>
 </div>
 </body></html>`;
     }
@@ -423,7 +423,7 @@ ${ctx.headerText ? `<div class="header-text">${e(ctx.headerText)}</div>` : ''}
 
 <div class="footer">
     <div>Thank you for your business!</div>
-    <div style="margin-top:2px;font-size:9px">Powered by UltraPOS</div>
+    <div style="margin-top:2px;font-size:9px">Powered by MK Corex POS</div>
 </div>
 </body></html>`;
     }

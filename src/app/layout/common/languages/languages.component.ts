@@ -7,7 +7,7 @@ import { AvailableLangs, TranslocoService } from '@ngneat/transloco';
 import { LanguageService } from 'app/core/i18n/language.service';
 
 /**
- * Phase 2.58 — top-toolbar language picker (UltraPOS: en + bn).
+ * Phase 2.58 — top-toolbar language picker (MK Corex POS: en + bn).
  *
  * Lang state is owned by `LanguageService` — this component just
  * renders the flag for the active lang and proxies clicks. The

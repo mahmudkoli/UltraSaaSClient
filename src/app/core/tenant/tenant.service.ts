@@ -23,7 +23,7 @@ export class TenantService {
      * Returns null if on the base domain or localhost without subdomain.
      */
     fromSubdomain(): string | null {
-        const hostname = window.location.hostname; // e.g., pos-electroplus.mahmudkoli.com
+        const hostname = window.location.hostname; // e.g., pos-electroplus.mkcorex.com
         const baseDomain = environment.baseDomain;
 
         if (!hostname.endsWith(baseDomain) || hostname === baseDomain) {

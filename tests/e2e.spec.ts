@@ -4,7 +4,7 @@ import { ELECTRO_EMAIL, ELECTRO_TENANT, login } from './auth.setup';
 // Login + nav clicks can be slow under headed mode; keep timeouts generous.
 test.setTimeout(60000);
 
-test.describe('UltraPOS — admin happy paths', () => {
+test.describe('MK Corex POS — admin happy paths', () => {
 
     // ════════════════════════════════════════════════════════════
     // 01 — Auth
