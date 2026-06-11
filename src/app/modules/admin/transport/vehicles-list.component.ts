@@ -27,7 +27,7 @@ export class VehiclesListComponent implements OnInit, OnDestroy {
     rows: VehicleDto[] = [];
     total = 0; pageIndex = 0; pageSize = 25; loading = false;
     search = new FormControl('');
-    cols = ['vehicleNumber', 'type', 'makeModel', 'capacity', 'driver', 'expiry', 'actions'];
+    cols = ['icon', 'vehicleNumber', 'type', 'capacity', 'driver', 'expiry', 'status', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(private _svc: VehiclesService, private _cdr: ChangeDetectorRef, private _router: Router, private _notify: NotificationService) {}

@@ -24,7 +24,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class PayrollListComponent implements OnInit, OnDestroy {
     slips: PayrollSlipDto[] = [];
     loading = false;
-    cols = ['serialNumber', 'teacherName', 'period', 'gross', 'deductions', 'net', 'actions'];
+    cols = ['icon', 'teacherName', 'period', 'gross', 'deductions', 'net', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(

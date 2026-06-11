@@ -28,7 +28,7 @@ export class RoutesListComponent implements OnInit, OnDestroy {
     rows: RouteDto[] = [];
     total = 0; pageIndex = 0; pageSize = 25; loading = false;
     search = new FormControl('');
-    cols = ['name', 'code', 'start', 'end', 'distance', 'fare', 'actions'];
+    cols = ['icon', 'name', 'code', 'distance', 'fare', 'status', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(private _svc: RoutesService, private _cdr: ChangeDetectorRef, private _router: Router, private _notify: NotificationService) {}

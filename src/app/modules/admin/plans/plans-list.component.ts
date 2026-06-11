@@ -43,7 +43,7 @@ export class PlansListComponent implements OnInit, OnDestroy {
             next: (currencies) => {
                 this.currencies = currencies;
                 const priceCols = currencies.map(c => `price_${c.code}`);
-                this.displayedColumns = ['code', 'name', ...priceCols, 'trialDays', 'maxInstitutes', 'maxUsers', 'isActive', 'actions'];
+                this.displayedColumns = ['icon', 'name', ...priceCols, 'trialDays', 'maxInstitutes', 'maxUsers', 'isActive', 'actions'];
                 this._cdr.markForCheck();
                 this.load();
             },

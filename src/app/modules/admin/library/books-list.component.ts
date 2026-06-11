@@ -30,7 +30,7 @@ export class BooksListComponent implements OnInit, OnDestroy {
     pageSize = 25;
     loading = false;
     search = new FormControl('');
-    cols = ['title', 'author', 'isbn', 'availability', 'location', 'actions'];
+    cols = ['icon', 'title', 'isbn', 'availability', 'location', 'status', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(private _svc: BooksService, private _cdr: ChangeDetectorRef, private _router: Router, private _notify: NotificationService) {}

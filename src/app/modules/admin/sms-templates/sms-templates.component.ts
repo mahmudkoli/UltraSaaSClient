@@ -25,7 +25,7 @@ export class SmsTemplatesComponent implements OnInit, OnDestroy {
     rows: SMSTemplateDto[] = [];
     loading = false;
     saving = false;
-    cols = ['title', 'message', 'actions'];
+    cols = ['icon', 'title', 'actions'];
     form: FormGroup;
     editingId?: string;
     private _destroyed$ = new Subject<void>();

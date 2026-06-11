@@ -17,24 +17,102 @@
 
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+        <div class="relative overflow-x-auto">
         <table mat-table [dataSource]="rows" class="w-full">
-            <ng-container matColumnDef="vehicleNumber"><th mat-header-cell *matHeaderCellDef>Number</th><td mat-cell *matCellDef="let v" class="font-mono text-sm">{{ v.vehicleNumber }}</td></ng-container>
-            <ng-container matColumnDef="type"><th mat-header-cell *matHeaderCellDef>Type</th><td mat-cell *matCellDef="let v" class="text-sm">{{ v.vehicleType }}</td></ng-container>
-            <ng-container matColumnDef="makeModel"><th mat-header-cell *matHeaderCellDef>Make / Model</th><td mat-cell *matCellDef="let v" class="text-sm">{{ v.make }} {{ v.model }} <span class="text-gray-500">({{ v.year }})</span></td></ng-container>
-            <ng-container matColumnDef="capacity"><th mat-header-cell *matHeaderCellDef class="!text-right">Capacity</th><td mat-cell *matCellDef="let v" class="!text-right">{{ v.capacity }}</td></ng-container>
-            <ng-container matColumnDef="driver"><th mat-header-cell *matHeaderCellDef>Driver</th><td mat-cell *matCellDef="let v" class="text-sm">{{ v.driverName || '—' }}</td></ng-container>
-            <ng-container matColumnDef="expiry"><th mat-header-cell *matHeaderCellDef>Expiry</th><td mat-cell *matCellDef="let v" class="text-xs">
-                <div *ngIf="v.insuranceExpiryDate"><span class="text-gray-500">Insurance:</span> {{ v.insuranceExpiryDate | date:'mediumDate' }}</div>
-                <div *ngIf="v.fitnessExpiryDate"><span class="text-gray-500">Fitness:</span> {{ v.fitnessExpiryDate | date:'mediumDate' }}</div>
-                <span *ngIf="expiresSoon(v)" class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800 mt-1">Renew soon</span>
-            </td></ng-container>
-            <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="!text-right">Actions</th><td mat-cell *matCellDef="let v" class="!text-right">
-                <button mat-icon-button (click)="edit(v)" matTooltip="Edit"><mat-icon class="!w-5 !h-5 !text-base">edit</mat-icon></button>
-                <button mat-icon-button color="warn" (click)="remove(v)" matTooltip="Delete"><mat-icon class="!w-5 !h-5 !text-base">delete</mat-icon></button>
-            </td></ng-container>
-            <tr mat-header-row *matHeaderRowDef="cols"></tr>
-            <tr mat-row *matRowDef="let row; columns: cols"></tr>
+
+            <!-- Icon -->
+            <ng-container matColumnDef="icon">
+                <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"></th>
+                <td mat-cell *matCellDef="let v" class="pl-4 sm:pl-6">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-sky-100 to-cyan-200 dark:from-sky-900 dark:to-cyan-800 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-600 shadow-md">
+                        <mat-icon class="icon-size-5 text-sky-600 dark:text-sky-300">directions_bus</mat-icon>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Vehicle number + make/model -->
+            <ng-container matColumnDef="vehicleNumber">
+                <th mat-header-cell *matHeaderCellDef>Vehicle</th>
+                <td mat-cell *matCellDef="let v">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white font-mono">{{ v.vehicleNumber }}</span>
+                        <span class="text-xs text-gray-500">{{ v.make }} {{ v.model }} ({{ v.year }})</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Type -->
+            <ng-container matColumnDef="type">
+                <th mat-header-cell *matHeaderCellDef>Type</th>
+                <td mat-cell *matCellDef="let v" class="text-sm text-gray-900 dark:text-white">{{ v.vehicleType }}</td>
+            </ng-container>
+
+            <!-- Capacity -->
+            <ng-container matColumnDef="capacity">
+                <th mat-header-cell *matHeaderCellDef class="!text-right">Capacity</th>
+                <td mat-cell *matCellDef="let v" class="!text-right text-sm font-medium text-gray-900 dark:text-white">{{ v.capacity }}</td>
+            </ng-container>
+
+            <!-- Driver -->
+            <ng-container matColumnDef="driver">
+                <th mat-header-cell *matHeaderCellDef>Driver</th>
+                <td mat-cell *matCellDef="let v">
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-900 dark:text-white">{{ v.driverName || '—' }}</span>
+                        <span class="text-xs text-gray-500">{{ v.driverPhone || '' }}</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Expiry -->
+            <ng-container matColumnDef="expiry">
+                <th mat-header-cell *matHeaderCellDef>Expiry</th>
+                <td mat-cell *matCellDef="let v">
+                    <div class="flex flex-col gap-1">
+                        <span class="text-xs text-gray-600 dark:text-gray-300" *ngIf="v.insuranceExpiryDate"><span class="text-gray-500">Insurance:</span> {{ v.insuranceExpiryDate | date:'mediumDate' }}</span>
+                        <span class="text-xs text-gray-600 dark:text-gray-300" *ngIf="v.fitnessExpiryDate"><span class="text-gray-500">Fitness:</span> {{ v.fitnessExpiryDate | date:'mediumDate' }}</span>
+                        <span *ngIf="expiresSoon(v)" class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200 self-start">
+                            <mat-icon class="icon-size-4 mr-1.5">warning</mat-icon>
+                            Renew soon
+                        </span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Status pill -->
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let v">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm"
+                          [class]="v.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
+                        <mat-icon class="icon-size-4 mr-1.5">{{ v.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+                        {{ v.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right">Actions</th>
+                <td mat-cell *matCellDef="let v" class="pr-4 sm:pr-6">
+                    <div class="flex items-center justify-end space-x-2">
+                        <button mat-icon-button (click)="edit(v)" matTooltip="Edit"
+                                class="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all duration-200">
+                            <mat-icon class="icon-size-5">edit</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="remove(v)" matTooltip="Delete"
+                                class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-200">
+                            <mat-icon class="icon-size-5">delete</mat-icon>
+                        </button>
+                    </div>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10"></tr>
+            <tr mat-row *matRowDef="let row; columns: cols"
+                class="hover:bg-sky-50 dark:hover:bg-sky-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700"></tr>
         </table>
+        </div>
         <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No vehicles in the fleet yet.</div>
         <mat-paginator [length]="total" [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)"></mat-paginator>
     </div>

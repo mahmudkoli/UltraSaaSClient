@@ -30,7 +30,7 @@ export class IssuesListComponent implements OnInit, OnDestroy {
     pageSize = 25;
     loading = false;
     search = new FormControl('');
-    cols = ['issueDate', 'bookTitle', 'studentName', 'dueDate', 'status', 'fine', 'actions'];
+    cols = ['icon', 'bookTitle', 'studentName', 'dueDate', 'status', 'fine', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(private _svc: BookIssuesService, private _cdr: ChangeDetectorRef, private _router: Router, private _notify: NotificationService) {}

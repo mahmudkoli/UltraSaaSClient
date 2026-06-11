@@ -25,7 +25,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class LeaveListComponent implements OnInit, OnDestroy {
     leaves: LeaveDto[] = [];
     loading = false;
-    cols = ['teacherName', 'type', 'dates', 'days', 'reason', 'status', 'decision', 'actions'];
+    cols = ['icon', 'teacherName', 'dates', 'reason', 'status', 'decision', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(
@@ -61,6 +61,24 @@ export class LeaveListComponent implements OnInit, OnDestroy {
             case 'Rejected': return 'bg-red-100 text-red-800';
             case 'Cancelled': return 'bg-gray-200 text-gray-700';
             default: return 'bg-amber-100 text-amber-800';
+        }
+    }
+
+    statusPill(s: LeaveStatus): string {
+        switch (s) {
+            case 'Approved': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+            case 'Rejected': return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+            case 'Cancelled': return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+            default: return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
+        }
+    }
+
+    statusIcon(s: LeaveStatus): string {
+        switch (s) {
+            case 'Approved': return 'check_circle';
+            case 'Rejected': return 'cancel';
+            case 'Cancelled': return 'block';
+            default: return 'hourglass_empty';
         }
     }
 

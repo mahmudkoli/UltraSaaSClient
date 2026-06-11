@@ -8,41 +8,62 @@
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
 
+        <div class="relative overflow-x-auto">
         <table mat-table [dataSource]="rows" class="w-full">
-            <ng-container matColumnDef="sentOn">
-                <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap">Sent</th>
-                <td mat-cell *matCellDef="let r" class="whitespace-nowrap text-xs">{{ r.sentOn | date:'medium' }}</td>
-            </ng-container>
+            <!-- Title + sent on -->
             <ng-container matColumnDef="title">
-                <th mat-header-cell *matHeaderCellDef>Title</th>
-                <td mat-cell *matCellDef="let r" class="font-medium">{{ r.title }}</td>
-            </ng-container>
-            <ng-container matColumnDef="severity">
-                <th mat-header-cell *matHeaderCellDef>Severity</th>
-                <td mat-cell *matCellDef="let r"><span class="inline-block px-2 py-0.5 rounded text-xs font-medium" [ngClass]="severityClass(r.severity)">{{ r.severity }}</span></td>
-            </ng-container>
-            <ng-container matColumnDef="audience">
-                <th mat-header-cell *matHeaderCellDef>Audience</th>
-                <td mat-cell *matCellDef="let r" class="text-sm">{{ r.audience }}</td>
-            </ng-container>
-            <ng-container matColumnDef="delivery">
-                <th mat-header-cell *matHeaderCellDef>Read / Delivered</th>
-                <td mat-cell *matCellDef="let r" class="text-sm whitespace-nowrap">
-                    {{ r.readCount }} / {{ r.deliveredTo }}
-                    <span class="text-xs text-gray-500 ml-1">({{ readPercent(r) }}%)</span>
+                <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6">Announcement</th>
+                <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.title }}</span>
+                        <span class="text-xs text-gray-500 whitespace-nowrap">{{ r.sentOn | date:'medium' }}</span>
+                    </div>
                 </td>
             </ng-container>
-            <ng-container matColumnDef="actions">
-                <th mat-header-cell *matHeaderCellDef class="!text-right">Body</th>
+
+            <!-- Severity pill -->
+            <ng-container matColumnDef="severity">
+                <th mat-header-cell *matHeaderCellDef>Severity</th>
+                <td mat-cell *matCellDef="let r">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm" [ngClass]="severityClass(r.severity)">{{ r.severity }}</span>
+                </td>
+            </ng-container>
+
+            <!-- Audience -->
+            <ng-container matColumnDef="audience">
+                <th mat-header-cell *matHeaderCellDef>Audience</th>
+                <td mat-cell *matCellDef="let r" class="text-sm text-gray-900 dark:text-white">{{ r.audience }}</td>
+            </ng-container>
+
+            <!-- Read / delivered + read-% pill -->
+            <ng-container matColumnDef="delivery">
+                <th mat-header-cell *matHeaderCellDef class="!text-right">Read / Delivered</th>
                 <td mat-cell *matCellDef="let r" class="!text-right">
-                    <button mat-icon-button (click)="toggleExpand(r.batchId)" matTooltip="Show body">
-                        <mat-icon class="!w-5 !h-5 !text-base">{{ expandedId === r.batchId ? 'expand_less' : 'expand_more' }}</mat-icon>
+                    <div class="flex items-center justify-end gap-2">
+                        <div class="flex flex-col items-end">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.readCount }} / {{ r.deliveredTo }}</span>
+                            <span class="text-xs text-gray-500">delivered</span>
+                        </div>
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200">{{ readPercent(r) }}%</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Expand body -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right">Body</th>
+                <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6 !text-right">
+                    <button mat-icon-button (click)="toggleExpand(r.batchId)" matTooltip="Show body"
+                            class="text-rose-600 dark:text-rose-400 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-full transition-all duration-200">
+                        <mat-icon class="icon-size-5">{{ expandedId === r.batchId ? 'expand_less' : 'expand_more' }}</mat-icon>
                     </button>
                 </td>
             </ng-container>
-            <tr mat-header-row *matHeaderRowDef="cols"></tr>
-            <tr mat-row *matRowDef="let row; columns: cols"></tr>
+            <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10"></tr>
+            <tr mat-row *matRowDef="let row; columns: cols"
+                class="hover:bg-rose-50 dark:hover:bg-rose-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700"></tr>
         </table>
+        </div>
 
         <ng-container *ngFor="let r of rows">
             <div *ngIf="expandedId === r.batchId" class="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900 text-sm space-y-2">

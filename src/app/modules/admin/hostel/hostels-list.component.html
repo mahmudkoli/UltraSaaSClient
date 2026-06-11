@@ -17,19 +17,92 @@
 
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+        <div class="relative overflow-x-auto">
         <table mat-table [dataSource]="rows" class="w-full">
-            <ng-container matColumnDef="name"><th mat-header-cell *matHeaderCellDef>Name</th><td mat-cell *matCellDef="let h" class="font-medium">{{ h.name }}</td></ng-container>
-            <ng-container matColumnDef="code"><th mat-header-cell *matHeaderCellDef>Code</th><td mat-cell *matCellDef="let h" class="text-xs font-mono">{{ h.code }}</td></ng-container>
-            <ng-container matColumnDef="occupancy"><th mat-header-cell *matHeaderCellDef class="!text-right">Rooms</th><td mat-cell *matCellDef="let h" class="!text-right text-sm">{{ h.occupiedRooms }} / {{ h.totalRooms }}</td></ng-container>
-            <ng-container matColumnDef="monthlyFee"><th mat-header-cell *matHeaderCellDef class="!text-right">Monthly fee</th><td mat-cell *matCellDef="let h" class="!text-right">{{ h.monthlyFee | tenantCurrency:undefined:0 }}</td></ng-container>
-            <ng-container matColumnDef="warden"><th mat-header-cell *matHeaderCellDef>Warden</th><td mat-cell *matCellDef="let h" class="text-sm">{{ h.wardenName || '—' }}</td></ng-container>
-            <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="!text-right">Actions</th><td mat-cell *matCellDef="let h" class="!text-right">
-                <button mat-icon-button (click)="edit(h)" matTooltip="Edit"><mat-icon class="!w-5 !h-5 !text-base">edit</mat-icon></button>
-                <button mat-icon-button color="warn" (click)="remove(h)" matTooltip="Delete"><mat-icon class="!w-5 !h-5 !text-base">delete</mat-icon></button>
-            </td></ng-container>
-            <tr mat-header-row *matHeaderRowDef="cols"></tr>
-            <tr mat-row *matRowDef="let row; columns: cols"></tr>
+
+            <!-- Icon -->
+            <ng-container matColumnDef="icon">
+                <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"></th>
+                <td mat-cell *matCellDef="let h" class="pl-4 sm:pl-6">
+                    <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-amber-100 to-orange-200 dark:from-amber-900 dark:to-orange-800 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-600 shadow-md">
+                        <mat-icon class="icon-size-5 text-amber-600 dark:text-amber-300">apartment</mat-icon>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Name + code -->
+            <ng-container matColumnDef="name">
+                <th mat-header-cell *matHeaderCellDef>Name</th>
+                <td mat-cell *matCellDef="let h">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ h.name }}</span>
+                        <span class="text-xs text-gray-500 font-mono">{{ h.code }}</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Occupancy + available -->
+            <ng-container matColumnDef="occupancy">
+                <th mat-header-cell *matHeaderCellDef class="!text-right">Rooms</th>
+                <td mat-cell *matCellDef="let h" class="!text-right">
+                    <div class="flex flex-col items-end">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ h.occupiedRooms }} / {{ h.totalRooms }}</span>
+                        <span class="text-xs text-gray-500">{{ h.availableRooms }} available</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Monthly fee -->
+            <ng-container matColumnDef="monthlyFee">
+                <th mat-header-cell *matHeaderCellDef class="!text-right">Monthly fee</th>
+                <td mat-cell *matCellDef="let h" class="!text-right text-sm font-medium text-gray-900 dark:text-white">{{ h.monthlyFee | tenantCurrency:undefined:0 }}</td>
+            </ng-container>
+
+            <!-- Warden + phone -->
+            <ng-container matColumnDef="warden">
+                <th mat-header-cell *matHeaderCellDef>Warden</th>
+                <td mat-cell *matCellDef="let h">
+                    <div class="flex flex-col">
+                        <span class="text-sm text-gray-900 dark:text-white">{{ h.wardenName || '—' }}</span>
+                        <span class="text-xs text-gray-500">{{ h.wardenPhone || '' }}</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Status pill -->
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef>Status</th>
+                <td mat-cell *matCellDef="let h">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm"
+                          [class]="h.isActive ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'">
+                        <mat-icon class="icon-size-4 mr-1.5">{{ h.isActive ? 'check_circle' : 'cancel' }}</mat-icon>
+                        {{ h.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                </td>
+            </ng-container>
+
+            <!-- Actions -->
+            <ng-container matColumnDef="actions">
+                <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right">Actions</th>
+                <td mat-cell *matCellDef="let h" class="pr-4 sm:pr-6">
+                    <div class="flex items-center justify-end space-x-2">
+                        <button mat-icon-button (click)="edit(h)" matTooltip="Edit"
+                                class="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all duration-200">
+                            <mat-icon class="icon-size-5">edit</mat-icon>
+                        </button>
+                        <button mat-icon-button (click)="remove(h)" matTooltip="Delete"
+                                class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-200">
+                            <mat-icon class="icon-size-5">delete</mat-icon>
+                        </button>
+                    </div>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10"></tr>
+            <tr mat-row *matRowDef="let row; columns: cols"
+                class="hover:bg-amber-50 dark:hover:bg-amber-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700"></tr>
         </table>
+        </div>
         <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No hostels configured yet.</div>
         <mat-paginator [length]="total" [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)"></mat-paginator>
     </div>

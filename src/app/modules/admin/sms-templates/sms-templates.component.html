@@ -19,16 +19,52 @@
         </div>
         <div class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+            <div class="relative overflow-x-auto">
             <table mat-table [dataSource]="rows" class="w-full">
-                <ng-container matColumnDef="title"><th mat-header-cell *matHeaderCellDef>Title</th><td mat-cell *matCellDef="let t" class="font-medium">{{ t.title }}</td></ng-container>
-                <ng-container matColumnDef="message"><th mat-header-cell *matHeaderCellDef>Message</th><td mat-cell *matCellDef="let t" class="text-sm">{{ truncate(t.message) }}</td></ng-container>
-                <ng-container matColumnDef="actions"><th mat-header-cell *matHeaderCellDef class="!text-right">Actions</th><td mat-cell *matCellDef="let t" class="!text-right">
-                    <button mat-icon-button (click)="edit(t)" matTooltip="Edit"><mat-icon class="!w-5 !h-5 !text-base">edit</mat-icon></button>
-                    <button mat-icon-button color="warn" (click)="remove(t)" matTooltip="Delete"><mat-icon class="!w-5 !h-5 !text-base">delete</mat-icon></button>
-                </td></ng-container>
-                <tr mat-header-row *matHeaderRowDef="cols"></tr>
-                <tr mat-row *matRowDef="let row; columns: cols"></tr>
+
+                <!-- Icon -->
+                <ng-container matColumnDef="icon">
+                    <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6"></th>
+                    <td mat-cell *matCellDef="let t" class="pl-4 sm:pl-6">
+                        <div class="flex-shrink-0 h-10 w-10 rounded-full bg-gradient-to-br from-indigo-100 to-blue-200 dark:from-indigo-900 dark:to-blue-800 flex items-center justify-center ring-2 ring-gray-200 dark:ring-gray-600 shadow-md">
+                            <mat-icon class="icon-size-5 text-indigo-600 dark:text-indigo-300">sms</mat-icon>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Title + message preview -->
+                <ng-container matColumnDef="title">
+                    <th mat-header-cell *matHeaderCellDef>Template</th>
+                    <td mat-cell *matCellDef="let t">
+                        <div class="flex flex-col">
+                            <span class="text-sm font-medium text-gray-900 dark:text-white">{{ t.title }}</span>
+                            <span class="text-xs text-gray-500">{{ truncate(t.message) }}</span>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <!-- Actions -->
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right">Actions</th>
+                    <td mat-cell *matCellDef="let t" class="pr-4 sm:pr-6">
+                        <div class="flex items-center justify-end space-x-2">
+                            <button mat-icon-button (click)="edit(t)" matTooltip="Edit"
+                                    class="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all duration-200">
+                                <mat-icon class="icon-size-5">edit</mat-icon>
+                            </button>
+                            <button mat-icon-button (click)="remove(t)" matTooltip="Delete"
+                                    class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-200">
+                                <mat-icon class="icon-size-5">delete</mat-icon>
+                            </button>
+                        </div>
+                    </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10"></tr>
+                <tr mat-row *matRowDef="let row; columns: cols"
+                    class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700"></tr>
             </table>
+            </div>
             <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No SMS templates yet.</div>
         </div>
     </div>

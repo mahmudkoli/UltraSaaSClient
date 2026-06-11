@@ -7,17 +7,44 @@
 
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
+        <div class="relative overflow-x-auto">
         <table mat-table [dataSource]="rows" class="w-full">
-            <ng-container matColumnDef="schedule"><th mat-header-cell *matHeaderCellDef class="whitespace-nowrap">Scheduled</th><td mat-cell *matCellDef="let r" class="whitespace-nowrap text-xs">{{ r.schedule ? (r.schedule | date:'short') : '—' }}</td></ng-container>
-            <ng-container matColumnDef="to"><th mat-header-cell *matHeaderCellDef>To</th><td mat-cell *matCellDef="let r" class="text-sm font-mono">{{ r.to }}</td></ng-container>
-            <ng-container matColumnDef="message"><th mat-header-cell *matHeaderCellDef>Message</th><td mat-cell *matCellDef="let r" class="text-sm">{{ truncate(r.message) }}</td></ng-container>
-            <ng-container matColumnDef="status"><th mat-header-cell *matHeaderCellDef>Status</th><td mat-cell *matCellDef="let r">
-                <span *ngIf="r.isSuccess" class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Sent</span>
-                <span *ngIf="!r.isSuccess" class="inline-block px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800" [title]="r.failReason">Failed</span>
-            </td></ng-container>
-            <tr mat-header-row *matHeaderRowDef="cols"></tr>
-            <tr mat-row *matRowDef="let row; columns: cols"></tr>
+
+            <!-- Recipient + message preview -->
+            <ng-container matColumnDef="to">
+                <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6">Recipient</th>
+                <td mat-cell *matCellDef="let r" class="pl-4 sm:pl-6">
+                    <div class="flex flex-col">
+                        <span class="text-sm font-medium text-gray-900 dark:text-white font-mono">{{ r.to }}</span>
+                        <span class="text-xs text-gray-500">{{ truncate(r.message) }}</span>
+                    </div>
+                </td>
+            </ng-container>
+
+            <!-- Scheduled date -->
+            <ng-container matColumnDef="schedule">
+                <th mat-header-cell *matHeaderCellDef class="whitespace-nowrap">Scheduled</th>
+                <td mat-cell *matCellDef="let r" class="whitespace-nowrap text-sm text-gray-900 dark:text-white">{{ r.schedule ? (r.schedule | date:'short') : '—' }}</td>
+            </ng-container>
+
+            <!-- Delivery status pill -->
+            <ng-container matColumnDef="status">
+                <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6">Status</th>
+                <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium shadow-sm"
+                          [class]="r.isSuccess ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200' : 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'"
+                          [title]="r.isSuccess ? '' : r.failReason">
+                        <mat-icon class="icon-size-4 mr-1.5">{{ r.isSuccess ? 'check_circle' : 'error' }}</mat-icon>
+                        {{ r.isSuccess ? 'Sent' : 'Failed' }}
+                    </span>
+                </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="cols" class="bg-gray-50 dark:bg-gray-700 sticky top-0 z-10"></tr>
+            <tr mat-row *matRowDef="let row; columns: cols"
+                class="hover:bg-blue-50 dark:hover:bg-blue-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700"></tr>
         </table>
+        </div>
         <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No SMS has been sent yet.</div>
         <mat-paginator [length]="total" [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)"></mat-paginator>
     </div>

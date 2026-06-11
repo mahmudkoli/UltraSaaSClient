@@ -27,7 +27,7 @@ export class EventsListComponent implements OnInit, OnDestroy {
     rows: EventDto[] = [];
     total = 0; pageIndex = 0; pageSize = 25; loading = false;
     search = new FormControl('');
-    cols = ['startDate', 'title', 'type', 'location', 'recurring', 'actions'];
+    cols = ['icon', 'title', 'type', 'location', 'status', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     typeLabel(t: number): string { return EVENT_TYPES.find(e => e.v === t)?.l || '—'; }

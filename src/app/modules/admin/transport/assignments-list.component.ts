@@ -28,7 +28,7 @@ export class AssignmentsListComponent implements OnInit, OnDestroy {
     rows: StudentTransportDto[] = [];
     total = 0; pageIndex = 0; pageSize = 25; loading = false;
     search = new FormControl('');
-    cols = ['startDate', 'student', 'route', 'pickup', 'monthlyFee', 'status', 'actions'];
+    cols = ['icon', 'student', 'startDate', 'pickup', 'monthlyFee', 'status', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     statusLabel(s: number): string {

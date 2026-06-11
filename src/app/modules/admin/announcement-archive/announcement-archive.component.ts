@@ -35,7 +35,7 @@ export class AnnouncementArchiveComponent implements OnInit, OnDestroy {
     rows: SentAnnouncementDto[] = [];
     loading = false;
     expandedId: string | null = null;
-    cols = ['sentOn', 'title', 'severity', 'audience', 'delivery', 'actions'];
+    cols = ['title', 'severity', 'audience', 'delivery', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(

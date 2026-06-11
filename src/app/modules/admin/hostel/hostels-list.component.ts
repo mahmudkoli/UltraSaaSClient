@@ -31,7 +31,7 @@ export class HostelsListComponent implements OnInit, OnDestroy {
     pageSize = 25;
     loading = false;
     search = new FormControl('');
-    cols = ['name', 'code', 'occupancy', 'monthlyFee', 'warden', 'actions'];
+    cols = ['icon', 'name', 'occupancy', 'monthlyFee', 'warden', 'status', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(private _svc: HostelsService, private _cdr: ChangeDetectorRef, private _router: Router, private _notify: NotificationService) {}

@@ -31,12 +31,30 @@ export class AllocationsListComponent implements OnInit, OnDestroy {
     pageSize = 25;
     loading = false;
     search = new FormControl('');
-    cols = ['checkInDate', 'studentId', 'hostelId', 'room', 'status', 'monthlyFee', 'actions'];
+    cols = ['icon', 'studentId', 'room', 'checkInDate', 'status', 'monthlyFee', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     statusLabel(s: number): string {
         const map: Record<number, string> = { 1: 'Active', 2: 'CheckedOut', 3: 'Suspended', 4: 'Inactive' };
         return map[s] || `S${s}`;
+    }
+
+    statusPill(s: number): string {
+        switch (s) {
+            case 1: return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+            case 2: return 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200';
+            case 3: return 'bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200';
+            default: return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200';
+        }
+    }
+
+    statusIcon(s: number): string {
+        switch (s) {
+            case 1: return 'check_circle';
+            case 2: return 'logout';
+            case 3: return 'pause_circle';
+            default: return 'cancel';
+        }
     }
 
     constructor(private _svc: StudentHostelsService, private _cdr: ChangeDetectorRef, private _router: Router, private _notify: NotificationService) {}

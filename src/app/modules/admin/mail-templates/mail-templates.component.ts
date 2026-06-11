@@ -25,7 +25,7 @@ export class MailTemplatesComponent implements OnInit, OnDestroy {
     rows: MailTemplateDto[] = [];
     loading = false;
     saving = false;
-    cols = ['title', 'subject', 'actions'];
+    cols = ['icon', 'title', 'actions'];
     form: FormGroup;
     editingId?: string;
     private _destroyed$ = new Subject<void>();

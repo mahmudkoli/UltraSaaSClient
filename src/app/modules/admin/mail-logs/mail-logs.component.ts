@@ -1,5 +1,6 @@
 import { CommonModule, DatePipe } from '@angular/common';
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
+import { MatIconModule } from '@angular/material/icon';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
@@ -14,7 +15,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, DatePipe, MatPaginatorModule, MatProgressBarModule, MatTableModule, ListPageComponent],
+    imports: [CommonModule, DatePipe, MatIconModule, MatPaginatorModule, MatProgressBarModule, MatTableModule, ListPageComponent],
 })
 export class MailLogsComponent implements OnInit, OnDestroy {
     rows: MailLogDto[] = [];
@@ -22,7 +23,7 @@ export class MailLogsComponent implements OnInit, OnDestroy {
     pageIndex = 0;
     pageSize = 25;
     loading = false;
-    cols = ['schedule', 'to', 'subject', 'status'];
+    cols = ['to', 'schedule', 'status'];
     private _destroyed$ = new Subject<void>();
 
     constructor(private _svc: MailLogsService, private _cdr: ChangeDetectorRef, private _notify: NotificationService) {}
