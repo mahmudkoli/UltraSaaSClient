@@ -6,4 +6,7 @@ export const environment = {
   tenantStrategy: 'subdomain' as 'subdomain' | 'manual',
   baseDomain: 'mkcorex.com',
   subdomainPrefix: 'edu-',
+  // The Edu prod deploy IS the demo site (demo-seed on) — show the quick-fill
+  // dropdown. Flip to false when onboarding real schools with real data.
+  demoLogins: true,
 };

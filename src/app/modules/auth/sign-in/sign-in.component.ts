@@ -1,4 +1,4 @@
-import { NgIf } from '@angular/common';
+import { NgForOf, NgIf } from '@angular/common';
 import { Component, OnInit, ViewChild, ViewEncapsulation } from '@angular/core';
 import { FormsModule, NgForm, ReactiveFormsModule, UntypedFormBuilder, UntypedFormGroup, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -7,12 +7,29 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatSelectModule } from '@angular/material/select';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertComponent, FuseAlertType } from '@fuse/components/alert';
 import { AuthService } from 'app/core/auth/auth.service';
 import { TenantService } from 'app/core/tenant/tenant.service';
 import { TenantThemeService } from 'app/core/tenant/tenant-theme.service';
+import { environment } from 'environments/environment';
+
+interface DemoLogin {
+    tenant: string;
+    label: string;
+    email: string;
+    password: string;
+}
+
+// Demo schools seeded on first boot (DatabaseInitializer + MultitenancyConstants).
+// Admin login password is MultitenancyConstants.DefaultPassword.
+const DEMO_LOGINS: DemoLogin[] = [
+    { tenant: 'root',       label: 'Root (platform admin)',         email: 'admin@root.com',       password: '123Pa$$word!' },
+    { tenant: 'greenwood',  label: 'Greenwood International School', email: 'admin@greenwood.edu',  password: '123Pa$$word!' },
+    { tenant: 'techvalley', label: 'Tech Valley College',           email: 'admin@techvalley.edu', password: '123Pa$$word!' },
+];
 
 @Component({
     selector     : 'auth-sign-in',
@@ -20,7 +37,7 @@ import { TenantThemeService } from 'app/core/tenant/tenant-theme.service';
     encapsulation: ViewEncapsulation.None,
     animations   : fuseAnimations,
     standalone   : true,
-    imports      : [RouterLink, FuseAlertComponent, NgIf, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCheckboxModule, MatProgressSpinnerModule],
+    imports      : [RouterLink, FuseAlertComponent, NgIf, NgForOf, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule, MatCheckboxModule, MatProgressSpinnerModule, MatSelectModule],
 })
 export class AuthSignInComponent implements OnInit
 {
@@ -36,6 +53,11 @@ export class AuthSignInComponent implements OnInit
     // Tenant UX state
     showTenantField: boolean = true;
     resolvedTenantName: string | null = null;
+
+    // Demo-tenant quick-fill (gated by environment.demoLogins — off for real-data deploys)
+    readonly demoLoginsEnabled: boolean = environment.demoLogins === true;
+    readonly demoLogins: DemoLogin[] = DEMO_LOGINS;
+    selectedDemo: string = 'root';
 
     constructor(
         private _activatedRoute: ActivatedRoute,
@@ -62,10 +84,30 @@ export class AuthSignInComponent implements OnInit
             rememberMe: [''],
         });
 
+        // Pre-fill the demo-login dropdown from the resolved subdomain so visiting
+        // edu-greenwood.mkcorex.com lands on Greenwood with email + password ready.
+        // Falls back to root when the subdomain doesn't map to a seeded demo.
+        if (this.demoLoginsEnabled) {
+            const matched = autoTenant && DEMO_LOGINS.some(d => d.tenant === autoTenant);
+            this.applyDemoLogin(matched ? autoTenant : 'root');
+        }
+
         // Load and apply tenant theme (cached first, then API)
         if (autoTenant) {
             this._tenantThemeService.loadAndApply();
         }
+    }
+
+    applyDemoLogin(tenantId: string): void
+    {
+        const preset = DEMO_LOGINS.find(d => d.tenant === tenantId);
+        if (!preset) { return; }
+        this.selectedDemo = tenantId;
+        this.signInForm.patchValue({
+            tenant  : preset.tenant,
+            email   : preset.email,
+            password: preset.password,
+        });
     }
 
     /**
