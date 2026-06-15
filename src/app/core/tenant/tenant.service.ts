@@ -23,15 +23,25 @@ export class TenantService {
      * Returns null if on the base domain or localhost without subdomain.
      */
     fromSubdomain(): string | null {
-        const hostname = window.location.hostname; // e.g., acme.ultrasaas.com
+        const hostname = window.location.hostname; // e.g., edu-greenwood.mkcorex.com
         const baseDomain = environment.baseDomain;
 
         if (!hostname.endsWith(baseDomain) || hostname === baseDomain) {
             return null;
         }
 
-        // Strip the base domain to get the subdomain
-        const subdomain = hostname.slice(0, hostname.length - baseDomain.length - 1); // remove '.baseDomain'
+        // Strip the base domain to get the subdomain (e.g. 'edu-greenwood').
+        let subdomain = hostname.slice(0, hostname.length - baseDomain.length - 1); // remove '.baseDomain'
+
+        // Co-hosted deploys prefix the per-product subdomain (edu-<school> /
+        // pos-<tenant>) so one box can host multiple products on one base domain.
+        // Strip the configured prefix so the tenant identifier matches the seeded
+        // tenant (edu-greenwood → greenwood).
+        const prefix = (environment as { subdomainPrefix?: string }).subdomainPrefix;
+        if (prefix && subdomain.startsWith(prefix)) {
+            subdomain = subdomain.slice(prefix.length);
+        }
+
         return subdomain || null;
     }
 
