@@ -64,7 +64,8 @@ export class BookFormComponent implements OnInit {
     save(): void {
         if (this.form.invalid) return;
         this.saving = true;
-        const v = this.form.value;
+        // '' from an empty date input can't bind to DateTime? on the API — send null.
+        const v = { ...this.form.value, publicationDate: this.form.value.publicationDate || null };
         const obs = this.editingId
             ? this._svc.update(this.editingId, { id: this.editingId, ...v })
             : this._svc.create(v);

@@ -69,7 +69,13 @@ export class VehicleFormComponent implements OnInit {
     save(): void {
         if (this.form.invalid) return;
         this.saving = true;
-        const v = this.form.value;
+        // Empty date inputs come through as '' which the API can't bind to DateTime? —
+        // send null instead so an optional expiry can be left blank.
+        const v = {
+            ...this.form.value,
+            insuranceExpiryDate: this.form.value.insuranceExpiryDate || null,
+            fitnessExpiryDate: this.form.value.fitnessExpiryDate || null,
+        };
         const obs = this.editingId ? this._svc.update(this.editingId, { id: this.editingId, ...v }) : this._svc.create(v);
         obs.subscribe({
             next: () => { this.saving = false; this._notify.success('Saved.'); this._router.navigate(['/transport/vehicles']); },
