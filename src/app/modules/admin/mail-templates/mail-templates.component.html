@@ -14,7 +14,7 @@
                 <mat-form-field appearance="outline" class="w-full"><mat-label>Body (HTML or text)</mat-label><textarea matInput formControlName="body" rows="8"></textarea></mat-form-field>
                 <div class="flex gap-2 pt-2">
                     <button mat-stroked-button type="button" (click)="reset()">Reset</button>
-                    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">{{ saving ? 'Saving…' : (editingId ? 'Save' : 'Add') }}</button>
+                    <button mat-flat-button color="primary" type="submit" data-testid="mail-template-save-btn" [disabled]="form.invalid || saving">{{ saving ? 'Saving…' : (editingId ? 'Save' : 'Add') }}</button>
                 </div>
             </form>
         </div>
@@ -53,7 +53,7 @@
                                     class="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all duration-200">
                                 <mat-icon class="icon-size-5">edit</mat-icon>
                             </button>
-                            <button mat-icon-button (click)="remove(t)" matTooltip="Delete"
+                            <button mat-icon-button (click)="remove(t)" data-testid="mail-template-delete" matTooltip="Delete"
                                     class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-200">
                                 <mat-icon class="icon-size-5">delete</mat-icon>
                             </button>
