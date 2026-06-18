@@ -223,7 +223,7 @@ export class StudentListComponent implements OnInit, OnDestroy {
 
 
     addStudent(): void {
-        this._router.navigate(['/student/create']);
+        this._router.navigate(['/students/create']);
     }
 
     addHealthRecord(student: StudentDto): void {
