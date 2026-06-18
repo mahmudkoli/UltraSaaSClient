@@ -11,7 +11,15 @@ import {
     ExportProgress,
     PaginationResponse
 } from './students.types';
-import { MyChildDashboardDto } from './my-child.types';
+import {
+    MyChildDashboardDto,
+    Paginated,
+    StudentAttendanceRow,
+    StudentExamResultRow,
+    StudentTimetableRow,
+    StudentInvoiceRow,
+    StudentEventRow,
+} from './my-child.types';
 
 @Injectable({
     providedIn: 'root'
@@ -84,6 +92,38 @@ export class StudentsService {
      */
     getMyChild(): Observable<MyChildDashboardDto> {
         return this.http.get<MyChildDashboardDto>(`${this.baseUrl}/me`);
+    }
+
+    // ── Phase F7 — student self-service detail views (read-only) ───────────────
+
+    getMyAttendance(opts: { fromDate?: string; toDate?: string; pageNumber?: number; pageSize?: number } = {}):
+        Observable<Paginated<StudentAttendanceRow>> {
+        let params = new HttpParams();
+        if (opts.fromDate) params = params.set('fromDate', opts.fromDate);
+        if (opts.toDate) params = params.set('toDate', opts.toDate);
+        params = params.set('pageNumber', String(opts.pageNumber ?? 1));
+        params = params.set('pageSize', String(opts.pageSize ?? 200));
+        return this.http.get<Paginated<StudentAttendanceRow>>(`${this.baseUrl}/me/attendance`, { params });
+    }
+
+    getMyExamResults(): Observable<StudentExamResultRow[]> {
+        return this.http.get<StudentExamResultRow[]>(`${this.baseUrl}/me/exam-results`);
+    }
+
+    getMyTimetable(): Observable<StudentTimetableRow[]> {
+        return this.http.get<StudentTimetableRow[]>(`${this.baseUrl}/me/timetable`);
+    }
+
+    getMyInvoices(): Observable<StudentInvoiceRow[]> {
+        return this.http.get<StudentInvoiceRow[]>(`${this.baseUrl}/me/invoices`);
+    }
+
+    getMyInvoice(id: string): Observable<StudentInvoiceRow> {
+        return this.http.get<StudentInvoiceRow>(`${this.baseUrl}/me/invoices/${id}`);
+    }
+
+    getMyEvents(): Observable<StudentEventRow[]> {
+        return this.http.get<StudentEventRow[]>(`${this.baseUrl}/me/events`);
     }
 
     /**

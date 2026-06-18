@@ -58,3 +58,94 @@ export function isModuleVisible(navId: string, enabledFeatures: Set<string>): bo
     if (!gate || !gate.requiresFeature) return true;
     return enabledFeatures.has(gate.requiresFeature);
 }
+
+/**
+ * Permission required to see a given nav item, keyed by the item `id` in
+ * `mock-api/common/navigation/data.ts`. Each value is the BE permission string
+ * (`Permissions.<Resource>.<Action>`) that gates the page's primary read
+ * endpoint — taken from that controller's `[MustHavePermission(...)]`.
+ *
+ * Rule: every ADMIN leaf must appear here. Items intentionally ABSENT are
+ * self-service (e.g. `my-profile`) and stay visible to everyone. A student
+ * (empty permission set) therefore sees only the absent/self-service items.
+ *
+ * Keep in sync with `src/app/app.routes.ts` `data.permission` and the BE
+ * `FSHResource` / controller attributes.
+ */
+export const NAV_PERMISSIONS: Record<string, string> = {
+    // Top-level
+    'analytics':                     'Permissions.Dashboard.View',
+
+    // Academic Management
+    'user-management':               'Permissions.Users.View',
+    'student-management':            'Permissions.Students.View',
+    'teacher-management':            'Permissions.Teachers.View',
+    'academic-year-management':      'Permissions.AcademicYears.View',
+    'class-management':              'Permissions.Classes.View',
+    'subject-management':            'Permissions.Subjects.View',
+    'student-class-management':      'Permissions.Students.View',
+    'class-subject-management':      'Permissions.ClassSubjects.View',
+    'grade-bands':                   'Permissions.GradeBands.View',
+
+    // Records Management
+    'student-academics':             'Permissions.Students.View',
+    'student-health':                'Permissions.Students.View',
+    'teacher-qualifications':        'Permissions.Teachers.View',
+    'attendance-management':         'Permissions.Attendances.View',
+    'exam-management':               'Permissions.Exams.View',
+    'exam-result-management':        'Permissions.ExamResults.View',
+    'timetable':                     'Permissions.TimetableEntries.View',
+
+    // HR
+    'leaves':                        'Permissions.Leaves.Search',
+    'payroll':                       'Permissions.PayrollSlips.View',
+
+    // Finance
+    'fee-type-management':           'Permissions.FeeTypes.View',
+    'fee-structure-management':      'Permissions.FeeStructures.View',
+    'fee-structure-detail-management':'Permissions.FeeStructureDetails.View',
+    'fee-invoice-management':        'Permissions.FeeInvoices.View',
+    'fee-reports':                   'Permissions.FeeInvoices.View',
+    'reports':                       'Permissions.Students.View',
+    'sibling-discount-policy':       'Permissions.SiblingDiscountPolicy.View',
+
+    // Library
+    'library-books':                 'Permissions.Books.View',
+    'library-issues':                'Permissions.BookIssues.View',
+
+    // Hostels
+    'hostels':                       'Permissions.Hostels.View',
+    'hostel-allocations':            'Permissions.StudentHostels.View',
+
+    // Transport
+    'transport-routes':              'Permissions.Routes.View',
+    'transport-vehicles':            'Permissions.Vehicles.View',
+    'transport-assignments':         'Permissions.StudentTransports.View',
+
+    // Communication
+    'events':                        'Permissions.Events.View',
+    'announcement-archive':          'Permissions.Tenants.View',
+    'broadcast':                     'Permissions.Tenants.Update',
+    'sms-templates':                 'Permissions.SMSTemplates.View',
+    'mail-templates':                'Permissions.MailTemplates.View',
+    'sms-logs':                      'Permissions.SMSLog.Search',
+    'mail-logs':                     'Permissions.MailLog.Search',
+    'comms-config':                  'Permissions.SMSConfig.View',
+
+    // System Management
+    'admin-dashboard':               'Permissions.Tenants.View',
+    'audit-trail':                   'Permissions.AuditTrails.View',
+    'tenant-management':             'Permissions.Tenants.View',
+    'institute-management':          'Permissions.Institutes.View',
+    'subscription-plans':            'Permissions.Tenants.View',
+    'my-subscription':               'Permissions.Subscription.View',
+};
+
+/**
+ * True if a nav item is visible for a user holding `userPermissions`.
+ * Items NOT in `NAV_PERMISSIONS` are self-service and always visible.
+ */
+export function hasNavPermission(navId: string, userPermissions: Set<string>): boolean {
+    const required = NAV_PERMISSIONS[navId];
+    return !required || userPermissions.has(required);
+}

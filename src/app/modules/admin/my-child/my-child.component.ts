@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTableModule } from '@angular/material/table';
+import { RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { MyChildDashboardDto } from '../../../core/students/my-child.types';
 import { StudentsService } from '../../../core/students/students.service';
@@ -16,7 +17,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
-    imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule, ListPageComponent],
+    imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressBarModule, MatTableModule, RouterLink, ListPageComponent],
 })
 export class MyChildComponent implements OnInit, OnDestroy {
     data?: MyChildDashboardDto;

@@ -10,6 +10,7 @@ import {
 import { UserService } from '../user/user.service';
 import { TenantService } from '../tenant/tenant.service';
 import { CurrencyService } from '../currency/currency.service';
+import { PermissionsService } from './permissions.service';
 
 @Injectable({providedIn: 'root'})
 export class AuthService
@@ -18,6 +19,7 @@ export class AuthService
     private _userService = inject(UserService);
     private _tenantService = inject(TenantService);
     private _currencyService = inject(CurrencyService);
+    private _permissionsService = inject(PermissionsService);
     private readonly baseUrl = environment.apiUrl;
 
     // -----------------------------------------------------------------------------------------------------
@@ -48,6 +50,10 @@ export class AuthService
                 
                 // Initialize user data from token
                 this._userService.initializeUserFromToken();
+
+                // Prime the user's permission set so the nav filter / route guards
+                // resolve correctly on the first protected navigation after login.
+                this._permissionsService.load().subscribe({ error: () => {} });
 
                 // Phase v1-O — prime the tenant's currency descriptor so the
                 // first render of fee/plan/payroll pages shows the right symbol
@@ -94,9 +100,10 @@ export class AuthService
         localStorage.removeItem('refresh_token');
         localStorage.removeItem('refresh_token_expiry');
         localStorage.removeItem('tenant_id');
-        
+
         // Clear user data
         this._userService.user = null;
+        this._permissionsService.clear();
     }
 
     /**

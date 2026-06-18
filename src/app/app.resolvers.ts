@@ -1,5 +1,6 @@
 import { inject } from '@angular/core';
 import { NavigationService } from 'app/core/navigation/navigation.service';
+import { PermissionsService } from 'app/core/auth/permissions.service';
 import { MessagesService } from 'app/layout/common/messages/messages.service';
 import { NotificationsService } from 'app/layout/common/notifications/notifications.service';
 import { QuickChatService } from 'app/layout/common/quick-chat/quick-chat.service';
@@ -10,6 +11,7 @@ export const initialDataResolver = () =>
 {
     const messagesService = inject(MessagesService);
     const navigationService = inject(NavigationService);
+    const permissionsService = inject(PermissionsService);
     const notificationsService = inject(NotificationsService);
     const quickChatService = inject(QuickChatService);
     const shortcutsService = inject(ShortcutsService);
@@ -19,6 +21,9 @@ export const initialDataResolver = () =>
     // auth interceptor) does not block the route from completing — the
     // interceptor already handles the redirect.
     return forkJoin([
+        // Ensure the user's permissions are cached on a full-page reload before
+        // the nav filter runs (the menu and guards both read this set).
+        permissionsService.ensureLoaded().pipe(catchError(() => of(null))),
         navigationService.get().pipe(catchError(() => of(null))),
         messagesService.getAll().pipe(catchError(() => of([]))),
         notificationsService.getAll().pipe(catchError(() => of([]))),
