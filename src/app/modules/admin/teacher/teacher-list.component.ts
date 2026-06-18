@@ -199,7 +199,7 @@ export class TeacherListComponent implements OnInit, OnDestroy {
     }
 
     addTeacher(): void {
-        this._router.navigate(['/teacher/create']);
+        this._router.navigate(['/teachers/create']);
     }
 
     addQualification(teacher: TeacherDto): void {
