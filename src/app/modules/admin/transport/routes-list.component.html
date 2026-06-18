@@ -13,7 +13,7 @@
         </mat-form-field>
         <a mat-stroked-button routerLink="/transport/vehicles" matTooltip="Fleet inventory">Vehicles &rarr;</a>
         <a mat-stroked-button routerLink="/transport/assignments" matTooltip="Student pickups">Assignments &rarr;</a>
-        <button mat-fab color="primary" (click)="add()" matTooltip="New route"><mat-icon>add</mat-icon></button>
+        <button mat-fab color="primary" (click)="add()" data-testid="route-add-btn" matTooltip="New route"><mat-icon>add</mat-icon></button>
     </div>
 
     <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
@@ -77,11 +77,11 @@
                 <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right">Actions</th>
                 <td mat-cell *matCellDef="let r" class="pr-4 sm:pr-6">
                     <div class="flex items-center justify-end space-x-2">
-                        <button mat-icon-button (click)="edit(r)" matTooltip="Edit"
+                        <button mat-icon-button (click)="edit(r)" data-testid="route-edit" matTooltip="Edit"
                                 class="text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all duration-200">
                             <mat-icon class="icon-size-5">edit</mat-icon>
                         </button>
-                        <button mat-icon-button (click)="remove(r)" matTooltip="Delete"
+                        <button mat-icon-button (click)="remove(r)" data-testid="route-delete" matTooltip="Delete"
                                 class="text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all duration-200">
                             <mat-icon class="icon-size-5">delete</mat-icon>
                         </button>

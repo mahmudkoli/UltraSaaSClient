@@ -22,7 +22,7 @@
         <mat-checkbox formControlName="isActive">Active</mat-checkbox>
         <div class="flex justify-end gap-2 pt-2">
             <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
-            <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving">{{ saving ? 'Saving…' : 'Save' }}</button>
+            <button mat-flat-button color="primary" type="submit" data-testid="route-save-btn" [disabled]="form.invalid || saving">{{ saving ? 'Saving…' : 'Save' }}</button>
         </div>
     </form>
 </app-list-page>
