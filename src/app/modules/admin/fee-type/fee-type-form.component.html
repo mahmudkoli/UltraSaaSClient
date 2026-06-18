@@ -86,7 +86,7 @@
 
                 <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 sm:justify-end p-6 border-t border-gray-200 dark:border-gray-700">
                     <button type="button" mat-stroked-button class="w-full sm:w-auto h-12 px-6 rounded-lg" (click)="cancel()"><mat-icon class="icon-size-5 mr-2">close</mat-icon> Cancel</button>
-                    <button type="submit" mat-flat-button color="primary" class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm" [disabled]="form.invalid || isSaving"><mat-icon class="icon-size-5 mr-2">check</mat-icon> {{ getSaveButtonText() }}</button>
+                    <button type="submit" mat-flat-button color="primary" data-testid="fee-type-save-btn" class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm" [disabled]="form.invalid || isSaving"><mat-icon class="icon-size-5 mr-2">check</mat-icon> {{ getSaveButtonText() }}</button>
                 </div>
             </div>
         </form>
