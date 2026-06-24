@@ -55,6 +55,17 @@ test.describe('QA fixes (root admin)', () => {
         await expect(page.locator('body')).not.toContainText('Password=postgres');
     });
 
+    test('ENH-1 — editing a user shows a Roles assignment section', async ({ page }) => {
+        await login(page);
+        await page.goto('/users');
+        await page.waitForLoadState('networkidle');
+        await page.locator('table tr[mat-row]').first().waitFor({ timeout: 20000 });
+        // Edit is a mat-icon-button (routerLink, no href) — target it by its icon.
+        await page.locator('button:has(mat-icon:text-is("edit"))').first().click();
+        await expect(page.getByRole('heading', { name: 'Roles' })).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('mat-checkbox').first()).toBeVisible();
+    });
+
     test('BUG-13 — wrong route slugs redirect to their canonical routes', async ({ page }) => {
         await login(page);
         await page.goto('/student-class');
@@ -83,6 +94,14 @@ test.describe('QA fixes (greenwood admin)', () => {
         await page.waitForLoadState('networkidle');
         await expect(page.locator('th', { hasText: 'Overdue Count' })).toBeVisible({ timeout: 15000 });
         await expect(page.locator('th', { hasText: 'Overdue Amount' })).toBeVisible();
+    });
+
+    test('BUG-3 — class form uses a teacher dropdown, not free text', async ({ page }) => {
+        await loginAsGreenwoodAdmin(page);
+        await page.goto('/classes/create');
+        await page.waitForLoadState('networkidle');
+        await expect(page.locator('mat-select[formcontrolname="classTeacherId"]')).toBeVisible({ timeout: 15000 });
+        await expect(page.locator('input[formcontrolname="classTeacherName"]')).toHaveCount(0);
     });
 });
 

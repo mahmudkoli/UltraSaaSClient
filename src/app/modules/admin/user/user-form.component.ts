@@ -7,6 +7,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
@@ -17,7 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { UserService } from '../../../core/user/user.service';
-import { CreateUserRequest, UpdateUserRequest, UserDetailsDto } from '../../../core/user/user.types';
+import { CreateUserRequest, UpdateUserRequest, UserDetailsDto, UserRoleDto } from '../../../core/user/user.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
 
@@ -37,6 +38,7 @@ import { DateUtils } from '../../../core/utils/date.utils';
         MatIconModule,
         MatInputModule,
         MatNativeDateModule,
+        MatCheckboxModule,
         MatProgressBarModule,
         MatSelectModule,
         MatSlideToggleModule,
@@ -51,6 +53,9 @@ export class UserFormComponent implements OnInit, OnDestroy {
     userId: string | null = null;
     isEditMode = false;
     user: UserDetailsDto | null = null;
+    // ENH-1 — role assignment (edit mode). Each role carries an `enabled` flag
+    // toggled by the checklist; saved via assignUserRoles after the user update.
+    roles: UserRoleDto[] = [];
     
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
@@ -84,10 +89,22 @@ export class UserFormComponent implements OnInit, OnDestroy {
         
         if (this.isEditMode) {
             this.loadUser();
+            this.loadRoles();
             this.setupEditMode();
         } else {
             this.setupCreateMode();
         }
+    }
+
+    /** ENH-1 — load all tenant roles with this user's membership flags. */
+    loadRoles(): void {
+        if (!this.userId) return;
+        this._userService.getUserRoles(this.userId)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (roles) => { this.roles = roles; this._changeDetectorRef.markForCheck(); },
+                error: () => { /* roles section just stays empty */ },
+            });
     }
 
     ngOnDestroy(): void {
@@ -246,13 +263,7 @@ export class UserFormComponent implements OnInit, OnDestroy {
         this._userService.updateUser(request)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
-                next: (response) => {
-                    console.log('User updated successfully with response:', response);
-                    this.isSaving = false;
-                    this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('User updated successfully');
-                    this._router.navigate(['/users']);
-                },
+                next: () => { this.saveRolesThenFinish(); },
                 error: (error) => {
                     console.error('Update user error details:', error);
                     this.isSaving = false;
@@ -260,6 +271,31 @@ export class UserFormComponent implements OnInit, OnDestroy {
                     this._notificationService.error('Error updating user');
                 }
             });
+    }
+
+    /** ENH-1 — persist role membership after the profile update, then return. */
+    private saveRolesThenFinish(): void {
+        if (!this.userId || this.roles.length === 0) {
+            this.finishUpdate();
+            return;
+        }
+        this._userService.assignUserRoles(this.userId, { userRoles: this.roles })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: () => this.finishUpdate(),
+                error: () => {
+                    this.isSaving = false;
+                    this._changeDetectorRef.markForCheck();
+                    this._notificationService.error('User saved, but roles could not be updated.');
+                },
+            });
+    }
+
+    private finishUpdate(): void {
+        this.isSaving = false;
+        this._changeDetectorRef.markForCheck();
+        this._notificationService.success('User updated successfully');
+        this._router.navigate(['/users']);
     }
 
     cancel(): void {

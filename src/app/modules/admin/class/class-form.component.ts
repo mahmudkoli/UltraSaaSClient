@@ -17,6 +17,8 @@ import { AcademicYearsService } from '../../../core/academic-years/academic-year
 import { AcademicYearDto } from '../../../core/academic-years/academic-years.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { EducationLevel } from '../../../core/students/students.types';
+import { TeachersService } from '../../../core/teachers/teachers.service';
+import { TeacherDto } from '../../../core/teachers/teachers.types';
 
 @Component({
     selector: 'class-form',
@@ -44,6 +46,7 @@ export class ClassFormComponent implements OnInit, OnDestroy {
     classId: string | null = null;
 
     academicYears: AcademicYearDto[] = [];
+    teachers: TeacherDto[] = [];
     gradeOptions = Array.from({ length: 12 }, (_, i) => ({ value: i + 1, label: `Grade ${i + 1}` }));
 
     educationLevelOptions = [
@@ -76,6 +79,7 @@ export class ClassFormComponent implements OnInit, OnDestroy {
         private _formBuilder: FormBuilder,
         private _classesService: ClassesService,
         private _academicYearsService: AcademicYearsService,
+        private _teachersService: TeachersService,
         private _router: Router,
         private _route: ActivatedRoute,
         private _changeDetectorRef: ChangeDetectorRef,
@@ -89,6 +93,7 @@ export class ClassFormComponent implements OnInit, OnDestroy {
         this.isEditMode = !!this.classId;
 
         this.loadAcademicYears();
+        this.loadTeachers();
 
         if (this.isEditMode) {
             this.loadClass();
@@ -113,8 +118,28 @@ export class ClassFormComponent implements OnInit, OnDestroy {
             building: ['', [Validators.maxLength(50)]],
             academicYearId: ['', [Validators.required]],
             educationLevel: [''],
-            classTeacherName: ['', [Validators.maxLength(100)]]
+            // Phase v1 QA BUG-3 — class teacher is now picked from the teachers
+            // list (id) rather than free text; the name is derived on save.
+            classTeacherId: ['']
         });
+    }
+
+    loadTeachers(): void {
+        this._teachersService.search({ pageNumber: 1, pageSize: 200 })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (response) => {
+                    this.teachers = response.data;
+                    this._changeDetectorRef.markForCheck();
+                },
+                error: () => {}
+            });
+    }
+
+    teacherName(id: string | null | undefined): string | undefined {
+        const t = this.teachers.find(x => x.id === id);
+        if (!t) return undefined;
+        return `${t.firstName ?? ''} ${t.lastName ?? ''}`.trim() || t.userName;
     }
 
     loadAcademicYears(): void {
@@ -151,7 +176,7 @@ export class ClassFormComponent implements OnInit, OnDestroy {
                         building: classItem.building,
                         academicYearId: classItem.academicYearId,
                         educationLevel: classItem.educationLevel,
-                        classTeacherName: classItem.classTeacherName
+                        classTeacherId: classItem.classTeacherId
                     });
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
@@ -196,7 +221,8 @@ export class ClassFormComponent implements OnInit, OnDestroy {
             floor: formValue.floor || undefined,
             building: formValue.building || undefined,
             educationLevel: formValue.educationLevel ? Number(formValue.educationLevel) : undefined,
-            classTeacherName: formValue.classTeacherName || undefined
+            classTeacherId: formValue.classTeacherId || undefined,
+            classTeacherName: this.teacherName(formValue.classTeacherId)
         };
 
         this._classesService.create(request)
@@ -235,7 +261,8 @@ export class ClassFormComponent implements OnInit, OnDestroy {
             floor: formValue.floor || undefined,
             building: formValue.building || undefined,
             educationLevel: formValue.educationLevel ? Number(formValue.educationLevel) : undefined,
-            classTeacherName: formValue.classTeacherName || undefined
+            classTeacherId: formValue.classTeacherId || undefined,
+            classTeacherName: this.teacherName(formValue.classTeacherId)
         };
 
         this._classesService.update(this.classId, request)
