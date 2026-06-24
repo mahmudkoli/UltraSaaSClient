@@ -6,6 +6,8 @@ import { environment } from '../../../environments/environment';
 export interface AuditTrailDto {
     id: string;
     userId: string;
+    userName?: string;        // resolved server-side (Phase v1 QA H5)
+    userEmail?: string;
     type?: string;            // Create / Update / Delete
     tableName?: string;
     dateTime: string;

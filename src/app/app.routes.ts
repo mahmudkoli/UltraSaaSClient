@@ -142,5 +142,27 @@ export const appRoutes: Route[] = [
             {path: 'fee-structure-details', data: {permission: 'Permissions.FeeStructureDetails.View'}, loadChildren: () => import('app/modules/admin/fee-structure-detail/fee-structure-detail.routes')},
             {path: 'profile', loadChildren: () => import('app/modules/admin/profile/profile.routes')},
         ]
+    },
+
+    // Phase v1 QA BUG-13 — redirect intuitive-but-wrong slugs to their canonical
+    // routes so guessed/bookmarked URLs resolve instead of 404ing. The sidebar
+    // already links to the correct slugs; these only catch manual URL entry.
+    {path: 'student-class', pathMatch: 'full', redirectTo: 'student-classes'},
+    {path: 'health-records', pathMatch: 'full', redirectTo: 'student-health'},
+    {path: 'announcements', pathMatch: 'full', redirectTo: 'announcement-archive'},
+    {path: 'library-books', pathMatch: 'full', redirectTo: 'library/books'},
+
+    // Global 404 (Phase v1 QA C2) — catch-all for unknown URLs so they render a
+    // friendly Not-Found page instead of hanging on the loading screen forever.
+    // Unguarded on purpose: reachable whether or not the user is signed in.
+    {
+        path: '**',
+        component: LayoutComponent,
+        data: {
+            layout: 'empty'
+        },
+        children: [
+            {path: '', loadComponent: () => import('app/modules/not-found/not-found.component').then(m => m.NotFoundComponent)},
+        ]
     }
 ];

@@ -13,6 +13,7 @@ import { CreateTenantRequest, UpdateTenantRequest } from '../../../core/tenants/
 import { TenantsService } from '../../../core/tenants/tenants.service';
 import { CurrencyDescriptor, CurrencyService } from '../../../core/currency/currency.service';
 import { Subject, takeUntil } from 'rxjs';
+import { environment } from 'environments/environment';
 
 @Component({
     selector: 'tenant-form',
@@ -40,6 +41,9 @@ export class TenantFormComponent implements OnInit, OnDestroy {
     /** Phase v1-O — supported currencies. The Currency field is shown on
      * create only (immutable post-create per backend rule). */
     currencies: CurrencyDescriptor[] = [];
+    /** Base domain for the subdomain hint, sourced from environment config
+     * rather than a hardcoded brand domain (Phase v1 QA C4). */
+    baseDomain: string = environment.baseDomain;
     private _destroyed$ = new Subject<void>();
 
 
@@ -117,7 +121,10 @@ export class TenantFormComponent implements OnInit, OnDestroy {
                     systemName: tenant.systemName,
                     technicalAdminEmail: tenant.technicalAdminEmail,
                     subdomain: tenant.subdomain,
-                    connectionString: tenant.connectionString || '',
+                    // Phase v1 QA BUG-11 — do NOT prefill the connection string (it
+                    // carries the DB password). Blank on edit; the backend update
+                    // only changes it when a new non-empty value is supplied.
+                    connectionString: '',
                     isShared: tenant.isShared,
                     planId: tenant.planId || '',
                     billingEmail: tenant.billingEmail || tenant.technicalAdminEmail,

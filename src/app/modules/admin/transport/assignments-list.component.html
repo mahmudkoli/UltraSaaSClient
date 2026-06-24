@@ -93,7 +93,12 @@
                 class="hover:bg-sky-50 dark:hover:bg-sky-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700"></tr>
         </table>
         </div>
-        <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No transport assignments yet.</div>
+        <div *ngIf="rows.length === 0 && !loading" class="flex flex-col items-center justify-center py-16">
+            <mat-icon class="text-gray-300 dark:text-gray-600 mb-4" style="font-size: 64px; width: 64px; height: 64px;">groups</mat-icon>
+            <p class="text-xl font-medium text-gray-500 dark:text-gray-400">No transport assignments yet</p>
+            <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Assign a student to a route to get started.</p>
+            <button mat-flat-button color="primary" class="mt-4" (click)="add()"><mat-icon class="mr-2">add</mat-icon>Assign Student</button>
+        </div>
         <mat-paginator [length]="total" [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)"></mat-paginator>
     </div>
 </app-list-page>

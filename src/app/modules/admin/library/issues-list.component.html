@@ -114,7 +114,12 @@
                 class="hover:bg-emerald-50 dark:hover:bg-emerald-900/10 transition-all duration-300 border-b border-gray-100 dark:border-gray-700"></tr>
         </table>
         </div>
-        <div *ngIf="rows.length === 0 && !loading" class="py-12 text-center text-sm text-gray-500">No book issues yet.</div>
+        <div *ngIf="rows.length === 0 && !loading" class="flex flex-col items-center justify-center py-16">
+            <mat-icon class="text-gray-300 dark:text-gray-600 mb-4" style="font-size: 64px; width: 64px; height: 64px;">import_contacts</mat-icon>
+            <p class="text-xl font-medium text-gray-500 dark:text-gray-400">No book issues yet</p>
+            <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Issue a book to a student to get started.</p>
+            <button mat-flat-button color="primary" class="mt-4" (click)="add()"><mat-icon class="mr-2">add</mat-icon>Issue Book</button>
+        </div>
         <mat-paginator [length]="total" [pageIndex]="pageIndex" [pageSize]="pageSize" [pageSizeOptions]="[10, 25, 50, 100]" (page)="onPage($event)"></mat-paginator>
     </div>
 </app-list-page>

@@ -66,7 +66,7 @@
                 <td mat-cell *matCellDef="let r">
                     <div class="flex flex-col">
                         <span class="text-sm font-medium text-gray-900 dark:text-white">{{ r.tableName || '—' }}</span>
-                        <span class="text-xs text-gray-500 font-mono">{{ short(r.userId, 12) }}</span>
+                        <span class="text-xs text-gray-500 font-mono">{{ r.userName || r.userEmail || short(r.userId, 12) }}</span>
                     </div>
                 </td>
             </ng-container>
@@ -76,7 +76,12 @@
             </ng-container>
             <ng-container matColumnDef="userId">
                 <th mat-header-cell *matHeaderCellDef>User</th>
-                <td mat-cell *matCellDef="let r" class="text-xs font-mono text-gray-500">{{ short(r.userId, 12) }}</td>
+                <td mat-cell *matCellDef="let r" class="text-xs">
+                    <div class="flex flex-col">
+                        <span class="font-medium text-gray-900 dark:text-white">{{ r.userName || '—' }}</span>
+                        <span class="text-gray-500">{{ r.userEmail || short(r.userId, 12) }}</span>
+                    </div>
+                </td>
             </ng-container>
             <ng-container matColumnDef="actions">
                 <th mat-header-cell *matHeaderCellDef class="pr-4 sm:pr-6 !text-right">Diff</th>

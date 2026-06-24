@@ -24,6 +24,7 @@ export interface UpdateHostelRequest extends CreateHostelRequest { id: string; }
 
 export interface StudentHostelDto {
     id: string; studentId: string; hostelId: string;
+    studentName?: string; hostelName?: string;   // resolved server-side (Phase v1 QA H4)
     roomNumber: string; checkInDate: string; checkOutDate?: string;
     status: number; monthlyFee: number;
     bedNumber?: string; floor?: string; block?: string;

@@ -40,7 +40,7 @@
                             <td mat-cell *matCellDef="let r">{{ r.invoiceCount }}</td>
                         </ng-container>
                         <ng-container matColumnDef="overdueCount">
-                            <th mat-header-cell *matHeaderCellDef>Overdue</th>
+                            <th mat-header-cell *matHeaderCellDef>Overdue Count</th>
                             <td mat-cell *matCellDef="let r">
                                 <span class="text-xs px-2 py-0.5 rounded-full"
                                       [ngClass]="r.overdueCount > 0 ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700'">
@@ -49,7 +49,7 @@
                             </td>
                         </ng-container>
                         <ng-container matColumnDef="totalOverdue">
-                            <th mat-header-cell *matHeaderCellDef class="!text-right">Overdue</th>
+                            <th mat-header-cell *matHeaderCellDef class="!text-right">Overdue Amount</th>
                             <td mat-cell *matCellDef="let r" class="!text-right font-semibold text-red-700">{{ r.totalOverdue | tenantCurrency:undefined:0 }}</td>
                         </ng-container>
                         <ng-container matColumnDef="totalOutstanding">

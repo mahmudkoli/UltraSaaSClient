@@ -62,7 +62,7 @@
                             <mat-label>Subdomain</mat-label>
                             <input matInput formControlName="subdomain" placeholder="acme">
                             <mat-icon matSuffix>language</mat-icon>
-                            <mat-hint>Used in {{ '{subdomain}' }}.mkcorex.com</mat-hint>
+                            <mat-hint>Used in {{ '{subdomain}' }}.{{ baseDomain }}</mat-hint>
                         </mat-form-field>
 
                         <mat-form-field appearance="outline" class="w-full">
@@ -98,8 +98,9 @@
 
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Connection string (optional)</mat-label>
-                        <textarea matInput formControlName="connectionString" rows="2" placeholder="Leave empty to use shared database"></textarea>
+                        <textarea matInput formControlName="connectionString" rows="2" [placeholder]="isEditMode ? 'Leave blank to keep the current connection string' : 'Leave empty to use shared database'"></textarea>
                         <mat-icon matSuffix>database</mat-icon>
+                        <mat-hint *ngIf="isEditMode">Hidden for security — enter a value only to replace it.</mat-hint>
                     </mat-form-field>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">

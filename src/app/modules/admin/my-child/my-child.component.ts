@@ -10,6 +10,8 @@ import { MyChildDashboardDto } from '../../../core/students/my-child.types';
 import { StudentsService } from '../../../core/students/students.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
+import { UserService } from '../../../core/user/user.service';
+import { User } from '../../../core/user/user.types';
 
 @Component({
     selector: 'my-child',
@@ -22,6 +24,12 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
 export class MyChildComponent implements OnInit, OnDestroy {
     data?: MyChildDashboardDto;
     loading = true;
+    /** Phase v1 QA C1 — set when the current user has no linked student record
+     * (e.g. an admin/staff account). We then show an admin profile card instead
+     * of the student dashboard, rather than a blank page + error toast. */
+    notStudent = false;
+    currentUser?: User | null;
+    currentRole?: string;
     examCols = ['examName', 'subjectName', 'marks', 'percentage', 'grade', 'date'];
     sibCols = ['name', 'className'];
     feeCols = ['invoiceNumber', 'invoiceDate', 'dueDate', 'total', 'paid', 'balance', 'status'];
@@ -31,6 +39,7 @@ export class MyChildComponent implements OnInit, OnDestroy {
         private _svc: StudentsService,
         private _cdr: ChangeDetectorRef,
         private _notify: NotificationService,
+        private _userService: UserService,
     ) {}
 
     ngOnInit(): void { this.load(); }
@@ -39,9 +48,43 @@ export class MyChildComponent implements OnInit, OnDestroy {
     load(): void {
         this.loading = true;
         this._svc.getMyChild().pipe(takeUntil(this._destroyed$)).subscribe({
-            next: (d) => { this.data = d; this.loading = false; this._cdr.markForCheck(); },
-            error: () => { this.loading = false; this._cdr.markForCheck(); this._notify.error('Could not load your dashboard. (Your account may not be linked to a student record.)'); },
+            next: (d) => { this.data = d; this.notStudent = false; this.loading = false; this._cdr.markForCheck(); },
+            error: () => { this.showAdminFallback(); },
         });
+    }
+
+    /** No student record linked → render an admin/staff identity card built from
+     * the signed-in user (name/email from the user store, role from the JWT). */
+    private showAdminFallback(): void {
+        this.notStudent = true;
+        this.loading = false;
+        this.currentRole = this.readRoleFromToken();
+        this._userService.user$.pipe(takeUntil(this._destroyed$)).subscribe((u) => {
+            this.currentUser = u;
+            this._cdr.markForCheck();
+        });
+        this._cdr.markForCheck();
+    }
+
+    /** Best-effort role extraction from the access-token claims. Returns a single
+     * display string (joins multiple roles) or undefined when unavailable. */
+    private readRoleFromToken(): string | undefined {
+        try {
+            const token = localStorage.getItem('access_token');
+            if (!token) return undefined;
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            const claim = payload['role']
+                ?? payload['http://schemas.microsoft.com/ws/2008/06/identity/claims/role'];
+            if (!claim) return undefined;
+            return Array.isArray(claim) ? claim.join(', ') : claim;
+        } catch {
+            return undefined;
+        }
+    }
+
+    initials(name?: string): string {
+        if (!name) return 'U';
+        return name.split(' ').filter(Boolean).slice(0, 2).map(p => p[0]?.toUpperCase()).join('') || 'U';
     }
 
     attendanceClass(): string {

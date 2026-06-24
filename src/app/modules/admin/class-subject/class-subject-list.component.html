@@ -37,6 +37,7 @@
                     <mat-icon class="text-gray-300 dark:text-gray-600 mb-4" style="font-size: 64px; width: 64px; height: 64px;">hub</mat-icon>
                     <p class="text-xl font-medium text-gray-500 dark:text-gray-400">No class subjects found</p>
                     <p class="text-sm text-gray-400 dark:text-gray-500 mt-1">Assign a subject to a class to get started</p>
+                    <button mat-flat-button color="primary" class="mt-4" (click)="create()"><mat-icon class="mr-2">add</mat-icon>Assign Subject</button>
                 </div>
 
                 <table mat-table [dataSource]="items" class="w-full" *ngIf="items.length > 0">
