@@ -200,6 +200,11 @@
                                                 </mat-icon>
                                                 <span class="ml-2">{{ user.isActive ? 'Deactivate' : 'Activate' }} User</span>
                                             </button>
+                                            <!-- BUG-R8 — admin recovery for locked-out accounts -->
+                                            <button mat-menu-item (click)="unlockUser(user)" class="hover:bg-emerald-50 dark:hover:bg-emerald-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-emerald-600 dark:text-emerald-400">lock_open</mat-icon>
+                                                <span class="ml-2">Unlock Account</span>
+                                            </button>
                                         </mat-menu>
                                     </div>
                                 </td>

@@ -195,6 +195,15 @@ export class UserService
     }
 
     /**
+     * Unlock a locked-out user account (BUG-R8).
+     * POST /api/users/{id}/unlock
+     */
+    unlockUser(id: string): Observable<void>
+    {
+        return this._httpClient.post<void>(`${this.baseUrl}/api/users/${id}/unlock`, {});
+    }
+
+    /**
      * Get user roles
      * GET /api/users/{id}/roles
      */

@@ -227,6 +227,27 @@ export class UserListComponent implements OnInit, OnDestroy {
         });
     }
 
+    /** BUG-R8 — admin recovery for a locked-out account. */
+    unlockUser(user: UserDetailsDto): void {
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Unlock account',
+            message: `Clear the lockout for ${user.email || user.userName}? They will be able to sign in again immediately.`,
+            icon: { show: true, name: 'heroicons_outline:lock-open', color: 'primary' },
+            actions: { confirm: { label: 'Unlock', color: 'primary' } },
+        });
+
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this._userService.unlockUser(user.id)
+                    .pipe(takeUntil(this._unsubscribeAll))
+                    .subscribe({
+                        next: () => this._notificationService.success('Account unlocked'),
+                        error: () => this._notificationService.error('Failed to unlock account'),
+                    });
+            }
+        });
+    }
+
 
 
 
