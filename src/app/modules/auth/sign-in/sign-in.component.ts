@@ -162,14 +162,42 @@ export class AuthSignInComponent implements OnInit
                 },
                 error: (error) => {
                     this.signInForm.enable();
-                    this.signInNgForm.resetForm();
-
+                    // BUG-R6/R7 — do NOT resetForm() here. Wiping the fields on a
+                    // failed login (combined with mat-select not re-emitting on a
+                    // same-value re-select) left users with empty fields and caused
+                    // cascading empty-payload submits that locked the account.
                     this.alert = {
                         type   : 'error',
-                        message: error.message || 'Wrong email or password',
+                        message: this.friendlyAuthError(error),
                     };
                     this.showAlert = true;
                 }
             });
+    }
+
+    /**
+     * BUG-R5/ENH-R6 — turn the raw HttpErrorResponse into a human message.
+     * Prefer a backend-supplied message (e.g. a lockout notice); otherwise map
+     * by status. Never surface "Http failure response for ...".
+     */
+    private friendlyAuthError(error: any): string
+    {
+        if (error?.status === 0) {
+            return 'Cannot reach the server. Please check your connection and try again.';
+        }
+        const body = error?.error;
+        const fromBody = body?.messages?.length ? body.messages.join(' ')
+            : (typeof body?.exception === 'string' ? body.exception
+            : (typeof body === 'string' && body.trim() && !body.trim().startsWith('<') ? body : null));
+        if (fromBody && !/^Http failure/i.test(fromBody)) {
+            return fromBody;
+        }
+        if (error?.status === 423) {
+            return 'Your account is temporarily locked due to repeated failed attempts. Please try again later or contact your administrator.';
+        }
+        if (error?.status === 401 || error?.status === 400) {
+            return 'Invalid email or password.';
+        }
+        return 'Sign-in failed. Please try again.';
     }
 }

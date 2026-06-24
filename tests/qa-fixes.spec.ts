@@ -13,6 +13,23 @@ test.setTimeout(60000);
  *   H8 — fee-reports disambiguated "Overdue" headers
  */
 
+test.describe('QA fixes — sign-in (unauthenticated)', () => {
+    test('BUG-R5 — failed login shows a friendly message, not raw HTTP text', async ({ page }) => {
+        await page.goto('/sign-in');
+        await page.waitForSelector('#email', { timeout: 15000 });
+        // Bogus, non-existent account — cannot lock out any real user.
+        await page.locator('#tenant').fill('root');
+        await page.locator('#email').fill('nobody-xyz@nowhere.test');
+        await page.locator('#password').fill('definitely-wrong-pw');
+        await page.locator('button:has-text("Sign in")').click();
+
+        const alert = page.locator('fuse-alert');
+        await expect(alert).toBeVisible({ timeout: 15000 });
+        await expect(alert).not.toContainText('Http failure');
+        await expect(alert).toContainText(/invalid|locked|failed/i);
+    });
+});
+
 test.describe('QA fixes (root admin)', () => {
     test('C2 — unknown route shows the 404 page (no infinite spinner)', async ({ page }) => {
         await login(page);
