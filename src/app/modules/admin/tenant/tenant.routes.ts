@@ -20,6 +20,12 @@ export default [
                 path: 'wizard',
                 loadComponent: () => import('./tenant-institute-wizard.component').then(m => m.TenantInstituteWizardComponent)
             },
+            // NOTE: this single-segment :id route MUST stay after the literal
+            // 'create'/'wizard' paths above, or it would capture them as an id.
+            {
+                path: ':id',
+                loadComponent: () => import('./tenant-overview.component').then(m => m.TenantOverviewComponent)
+            },
             {
                 path: ':id/edit',
                 loadComponent: () => import('./tenant-form.component').then(m => m.TenantFormComponent)
@@ -50,6 +56,16 @@ export default [
             {
                 path: ':id/theme-settings',
                 loadComponent: () => import('./tenant-theme-settings.component').then(m => m.TenantThemeSettingsComponent)
+            },
+            {
+                // Root-only per-tenant audit log (reuses the audit-trail component, which
+                // reads the :id param and targets that tenant's trail).
+                path: ':id/audit',
+                loadComponent: () => import('../audit-trail/audit-trail.component').then(m => m.AuditTrailComponent)
+            },
+            {
+                path: ':id/clone',
+                loadComponent: () => import('./tenant-clone.component').then(m => m.TenantCloneComponent)
             }
         ]
     }

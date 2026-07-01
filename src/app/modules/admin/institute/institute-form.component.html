@@ -178,32 +178,28 @@
                                         </mat-error>
                                     </mat-form-field>
 
-                                    <!-- Logo URL -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Logo URL</mat-label>
-                                        <input matInput formControlName="logoUrl" placeholder="Enter logo URL">
-                                        <mat-icon matSuffix class="text-secondary">image</mat-icon>
-                                    </mat-form-field>
-
-                                    <!-- Max Students -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Maximum Students</mat-label>
-                                        <input matInput type="number" formControlName="maxStudents" placeholder="Enter max students">
-                                        <mat-icon matSuffix class="text-secondary">people</mat-icon>
-                                        <mat-error *ngIf="instituteForm.get('maxStudents')?.hasError('min')">
-                                            Maximum students must be at least 1
-                                        </mat-error>
-                                    </mat-form-field>
-
-                                    <!-- Max Teachers -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Maximum Teachers</mat-label>
-                                        <input matInput type="number" formControlName="maxTeachers" placeholder="Enter max teachers">
-                                        <mat-icon matSuffix class="text-secondary">group</mat-icon>
-                                        <mat-error *ngIf="instituteForm.get('maxTeachers')?.hasError('min')">
-                                            Maximum teachers must be at least 1
-                                        </mat-error>
-                                    </mat-form-field>
+                                    <!-- Logo upload -->
+                                    <div class="w-full">
+                                        <span class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Institute Logo</span>
+                                        <div class="flex items-center gap-4">
+                                            <div class="flex items-center justify-center w-16 h-16 rounded-lg border border-gray-300 dark:border-gray-600 overflow-hidden bg-gray-50 dark:bg-gray-700 flex-shrink-0">
+                                                <img *ngIf="logoPreview" [src]="logoPreview" alt="Logo preview" class="w-full h-full object-contain">
+                                                <mat-icon *ngIf="!logoPreview" class="text-gray-400">image</mat-icon>
+                                            </div>
+                                            <div class="flex flex-col gap-1">
+                                                <input #logoInput type="file" accept="image/png,image/jpeg" class="hidden" (change)="onLogoSelected($event)">
+                                                <button type="button" mat-stroked-button class="self-start" (click)="logoInput.click()">
+                                                    <mat-icon class="mr-1 text-base">upload</mat-icon>
+                                                    {{ logoPreview ? 'Change logo' : 'Upload logo' }}
+                                                </button>
+                                                <button *ngIf="logoPreview" type="button" mat-button color="warn" class="self-start" (click)="clearLogo()">
+                                                    <mat-icon class="mr-1 text-base">delete</mat-icon>
+                                                    Remove
+                                                </button>
+                                                <span class="text-xs text-gray-500">PNG or JPG, up to 2 MB.</span>
+                                            </div>
+                                        </div>
+                                    </div>
 
                                     <!-- Website -->
                                     <mat-form-field appearance="outline" class="w-full">
@@ -363,6 +359,26 @@
                                         <mat-icon matSuffix class="text-secondary">account_balance</mat-icon>
                                     </mat-form-field>
 
+                                    <!-- Max Students (grouped with the other capacity limits) -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Maximum Students</mat-label>
+                                        <input matInput type="number" formControlName="maxStudents" placeholder="Enter max students">
+                                        <mat-icon matSuffix class="text-secondary">people</mat-icon>
+                                        <mat-error *ngIf="instituteForm.get('maxStudents')?.hasError('min')">
+                                            Maximum students must be at least 1
+                                        </mat-error>
+                                    </mat-form-field>
+
+                                    <!-- Max Teachers -->
+                                    <mat-form-field appearance="outline" class="w-full">
+                                        <mat-label>Maximum Teachers</mat-label>
+                                        <input matInput type="number" formControlName="maxTeachers" placeholder="Enter max teachers">
+                                        <mat-icon matSuffix class="text-secondary">group</mat-icon>
+                                        <mat-error *ngIf="instituteForm.get('maxTeachers')?.hasError('min')">
+                                            Maximum teachers must be at least 1
+                                        </mat-error>
+                                    </mat-form-field>
+
                                     <!-- Max Users -->
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Maximum Users</mat-label>
@@ -377,7 +393,9 @@
                                         <mat-icon matSuffix class="text-secondary">storage</mat-icon>
                                     </mat-form-field>
 
-                                    <!-- Current Stats -->
+                                    <!-- Current Stats — runtime metrics; only meaningful when editing an
+                                         existing institute, so hidden during creation (would always be 0). -->
+                                    <ng-container *ngIf="isEditMode">
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Current Students</mat-label>
                                         <input matInput type="number" formControlName="currentStudentCount" placeholder="0" readonly>
@@ -401,6 +419,7 @@
                                         <input matInput type="number" formControlName="currentStorageUsedMB" placeholder="0" readonly>
                                         <mat-icon matSuffix class="text-secondary">folder</mat-icon>
                                     </mat-form-field>
+                                    </ng-container>
 
                                 </div>
                             </div>
@@ -504,7 +523,7 @@
                                         <div class="space-y-2 text-sm">
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Phone:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('contactPhone')?.value || 'Not provided' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Website:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('website')?.value || 'Not provided' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Logo URL:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('logoUrl')?.value || 'Not provided' }}</span></div>
+                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Logo:</span> <span class="text-gray-900 dark:text-white">{{ logoPreview ? 'Provided' : 'Not provided' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Timezone:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('timeZone')?.value || 'UTC' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Currency:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('currency')?.value || 'USD' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Language:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('language')?.value || 'en' }}</span></div>

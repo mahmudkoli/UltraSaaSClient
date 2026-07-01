@@ -74,6 +74,11 @@ export class TenantsService extends BaseApiService {
         return this.postText(`/api/tenants/${id}/cancel`, request);
     }
 
+    /** #33 — clone a source tenant's permissions + theme onto this (target) tenant. Root-only. */
+    cloneFrom(targetId: string, sourceId: string): Observable<string> {
+        return this.postText(`/api/tenants/${targetId}/clone-from/${sourceId}`, {});
+    }
+
     // ============= PERMISSIONS =============
 
     getAvailablePermissions(): Observable<PermissionDto[]> {

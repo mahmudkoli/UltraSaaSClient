@@ -13,6 +13,10 @@ export default [
                 loadComponent: () => import('./institute-form.component').then(m => m.InstituteFormComponent)
             },
             {
+                path: 'import',
+                loadComponent: () => import('./institute-import.component').then(m => m.InstituteImportComponent)
+            },
+            {
                 path: ':id/edit',
                 loadComponent: () => import('./institute-form.component').then(m => m.InstituteFormComponent)
             },

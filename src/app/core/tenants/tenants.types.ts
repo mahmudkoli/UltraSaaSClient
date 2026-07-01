@@ -141,6 +141,10 @@ export interface CreateTenantWithInstituteResponse {
 
 export interface TenantWithPermissionsDto extends TenantDto {
     permissions?: string[];
+    /** The permissions endpoint returns the admin contact as `adminEmail`
+     * (mapped from FSHTenantInfo.TechnicalAdminEmail), distinct from the
+     * inherited `technicalAdminEmail` which that endpoint does not send. */
+    adminEmail?: string;
 }
 
 export interface UpdateTenantPermissionsRequest {
@@ -157,10 +161,12 @@ export interface PermissionDto {
     riskLevel: 'low' | 'medium' | 'high';
 }
 
+// Field names MUST match the backend SuspendTenantRequest (Id/Reason/SuspendUntil) —
+// the endpoint validates `Id` NotEmpty, so sending `tenantId` 400s.
 export interface SuspendTenantRequest {
-    tenantId: string;
+    id: string;
     reason: string;
-    suspendedUntil?: string;
+    suspendUntil?: string;
 }
 
 export interface ArchiveTenantRequest {

@@ -24,6 +24,9 @@ import { TranslocoModule } from '@ngneat/transloco';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { InstituteDto } from '../../../core/institutes/institutes.types';
 import { InstitutesService } from '../../../core/institutes/institutes.service';
+import { TenantService } from '../../../core/tenant/tenant.service';
+import { TenantsService } from '../../../core/tenants/tenants.service';
+import { TenantDto } from '../../../core/tenants/tenants.types';
 
 @Component({
     selector: 'institute-list',
@@ -65,8 +68,34 @@ export class InstituteListComponent implements OnInit {
     typeControl = new FormControl<'all' | 'school' | 'college' | 'university'>('all');
     statusControl = new FormControl<'all' | 'active' | 'inactive'>('all');
 
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
-    @ViewChild(MatSort) sort!: MatSort;
+    /** Platform/root admin sees a tenant selector + a Tenant column; regular tenant
+     * admins are scoped to their own tenant by the backend and see neither. */
+    isRoot = false;
+    tenants: TenantDto[] = [];
+    tenantFilterControl = new FormControl<string>('all');
+    private _tenantNameById: Record<string, string> = {};
+
+    private _paginator?: MatPaginator;
+    private _sort?: MatSort;
+
+    // Deferred setter-based ViewChild: paginator/sort live inside *ngIf so they aren't
+    // present at ngAfterViewInit; linking on a microtask (next tick) avoids the navigator
+    // showing "0 of 0" AND the NG0100 ExpressionChangedAfterChecked that a same-tick link causes.
+    @ViewChild(MatPaginator) set paginator(value: MatPaginator) {
+        Promise.resolve().then(() => {
+            this._paginator = value;
+            if (value) { this.dataSource.paginator = value; }
+        });
+    }
+    get paginator(): MatPaginator | undefined { return this._paginator; }
+
+    @ViewChild(MatSort) set sort(value: MatSort) {
+        Promise.resolve().then(() => {
+            this._sort = value;
+            if (value) { this.dataSource.sort = value; }
+        });
+    }
+    get sort(): MatSort | undefined { return this._sort; }
 
     get rangeStart(): number {
         const count = this.totalCount;
@@ -82,23 +111,45 @@ export class InstituteListComponent implements OnInit {
     }
 
     get totalCount(): number {
-        return this.dataSource?.data?.length ?? 0;
+        // filteredData reflects the active client filters (search/type/status); data.length
+        // would ignore them.
+        return this.dataSource?.filteredData?.length ?? 0;
     }
 
     constructor(
         private _institutesService: InstitutesService,
         private _router: Router,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _tenantService: TenantService,
+        private _tenantsService: TenantsService
     ) {}
 
     ngOnInit(): void {
+        this.isRoot = this._tenantService.resolve() === 'root';
+        if (this.isRoot) {
+            // Insert a Tenant column (between Institute and Code) and load the tenant
+            // list for the selector + id→name mapping.
+            this.displayedColumns = ['name', 'tenant', 'code', 'type', 'contactInfo', 'isActive', 'setupStatus', 'actions'];
+            this.loadTenants();
+            this.tenantFilterControl.valueChanges.subscribe(() => this.loadInstitutes());
+        }
         this.initFilters();
         this.loadInstitutes();
     }
 
-    ngAfterViewInit(): void {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
+    private loadTenants(): void {
+        this._tenantsService.getAll().subscribe({
+            next: (tenants) => {
+                this.tenants = tenants;
+                this._tenantNameById = {};
+                tenants.forEach(t => this._tenantNameById[t.id] = t.systemName);
+            },
+            error: (error) => console.error('Error loading tenants:', error)
+        });
+    }
+
+    getTenantName(tenantId: string): string {
+        return this._tenantNameById[tenantId] ?? tenantId;
     }
 
     private initFilters(): void {
@@ -134,7 +185,10 @@ export class InstituteListComponent implements OnInit {
 
     loadInstitutes(): void {
         this.loading = true;
-        this._institutesService.getAll().subscribe({
+        const tenantFilter = this.isRoot && this.tenantFilterControl.value && this.tenantFilterControl.value !== 'all'
+            ? this.tenantFilterControl.value
+            : undefined;
+        this._institutesService.getAll(tenantFilter ? { TenantId: tenantFilter } : undefined).subscribe({
             next: (institutes) => {
                 this.institutes = institutes;
                 this.dataSource.data = institutes;
@@ -158,6 +212,10 @@ export class InstituteListComponent implements OnInit {
 
     createInstitute(): void {
         this._router.navigate(['/institute/create']);
+    }
+
+    importCsv(): void {
+        this._router.navigate(['/institute/import']);
     }
 
     editInstitute(institute: InstituteDto): void {

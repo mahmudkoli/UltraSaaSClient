@@ -17,13 +17,14 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatTabsModule } from '@angular/material/tabs';
 import { MatTooltipModule } from '@angular/material/tooltip';
-import { MatMenuModule } from '@angular/material/menu';
 import { FuseNavigationService } from '@fuse/components/navigation';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { TranslocoModule } from '@ngneat/transloco';
 import { NgApexchartsModule } from 'ng-apexcharts';
 import { TenantDto } from '../../../core/tenants/tenants.types';
 import { TenantsService } from '../../../core/tenants/tenants.service';
+import { forkJoin, of, Observable } from 'rxjs';
+import { map, catchError } from 'rxjs/operators';
 
 @Component({
     selector: 'tenant-list',
@@ -49,7 +50,6 @@ import { TenantsService } from '../../../core/tenants/tenants.service';
         MatTableModule,
         MatTabsModule,
         MatTooltipModule,
-        MatMenuModule,
         NgApexchartsModule,
         TranslocoModule,
     ],
@@ -57,14 +57,43 @@ import { TenantsService } from '../../../core/tenants/tenants.service';
 export class TenantListComponent implements OnInit {
     tenants: TenantDto[] = [];
     loading: boolean = false;
-    displayedColumns: string[] = ['name', 'adminEmail', 'url', 'isActive', 'theme', 'validUpto', 'actions'];
+    displayedColumns: string[] = ['select', 'name', 'adminEmail', 'url', 'isActive', 'theme', 'validUpto', 'actions'];
+
+    /** #29 — bulk selection across the (filtered) tenant list. */
+    selection = new Set<string>();
 
     dataSource: MatTableDataSource<TenantDto> = new MatTableDataSource<TenantDto>([]);
     searchControl = new FormControl<string>('');
     statusControl = new FormControl<'all' | 'active' | 'inactive'>('all');
 
-    @ViewChild(MatPaginator) paginator!: MatPaginator;
-    @ViewChild(MatSort) sort!: MatSort;
+    private _paginator?: MatPaginator;
+    private _sort?: MatSort;
+
+    // Paginator/sort live inside *ngIf="dataSource.data.length > 0", so they are not
+    // in the DOM at ngAfterViewInit (data loads async). Setter-based ViewChild links
+    // them once they render — otherwise the navigator is never wired and shows "0 of 0".
+    // The link is DEFERRED to a microtask: assigning during the ViewChild resolution
+    // (same change-detection pass) flips the "Showing X" getters mid-cycle and throws
+    // NG0100 (ExpressionChangedAfterItHasBeenChecked). Linking on the next tick avoids it.
+    @ViewChild(MatPaginator) set paginator(value: MatPaginator) {
+        Promise.resolve().then(() => {
+            this._paginator = value;
+            if (value) { this.dataSource.paginator = value; }
+        });
+    }
+    get paginator(): MatPaginator | undefined {
+        return this._paginator;
+    }
+
+    @ViewChild(MatSort) set sort(value: MatSort) {
+        Promise.resolve().then(() => {
+            this._sort = value;
+            if (value) { this.dataSource.sort = value; }
+        });
+    }
+    get sort(): MatSort | undefined {
+        return this._sort;
+    }
 
     get rangeStart(): number {
         const count = this.totalCount;
@@ -80,7 +109,9 @@ export class TenantListComponent implements OnInit {
     }
 
     get totalCount(): number {
-        return this.dataSource?.data?.length ?? 0;
+        // filteredData reflects the active search/status filter; data.length would
+        // ignore it and keep the count at the unfiltered total.
+        return this.dataSource?.filteredData?.length ?? 0;
     }
 
     constructor(
@@ -123,11 +154,6 @@ export class TenantListComponent implements OnInit {
         this.statusControl.valueChanges.subscribe(() => applyFilter());
     }
 
-    ngAfterViewInit(): void {
-        this.dataSource.paginator = this.paginator;
-        this.dataSource.sort = this.sort;
-    }
-
     loadTenants(): void {
         this.loading = true;
         this._tenantsService.getAll().subscribe({
@@ -160,6 +186,57 @@ export class TenantListComponent implements OnInit {
     createTenantWithInstitute(): void {
         console.log('Creating tenant with institute...');
         this._router.navigate(['/tenant/create-with-institute']);
+    }
+
+    viewTenant(tenant: TenantDto): void {
+        this._router.navigate([`/tenant/${tenant.id}`]);
+    }
+
+    // ----- #29 bulk actions -----
+    isSelected(id: string): boolean { return this.selection.has(id); }
+    toggleSelection(id: string): void { this.selection.has(id) ? this.selection.delete(id) : this.selection.add(id); }
+    get selectedCount(): number { return this.selection.size; }
+    private get visibleIds(): string[] { return (this.dataSource.filteredData ?? []).map(t => t.id); }
+    get allSelected(): boolean { const ids = this.visibleIds; return ids.length > 0 && ids.every(id => this.selection.has(id)); }
+    get someSelected(): boolean { return this.selection.size > 0 && !this.allSelected; }
+    toggleAll(): void {
+        const ids = this.visibleIds;
+        if (this.allSelected) { ids.forEach(id => this.selection.delete(id)); }
+        else { ids.forEach(id => this.selection.add(id)); }
+    }
+    clearSelection(): void { this.selection.clear(); }
+
+    bulkActivate(): void { this.runBulk('activate', 'Activate', id => this._tenantsService.activate(id)); }
+    bulkReactivate(): void { this.runBulk('reactivate', 'Reactivate', id => this._tenantsService.reactivate(id)); }
+    bulkSuspend(): void {
+        // Backend validates Reason against a fixed allowed list (Payment Overdue / Policy
+        // Violation / Security Concern / Maintenance / Legal Hold / Contract Dispute / Other).
+        this.runBulk('suspend', 'Suspend', id => this._tenantsService.suspend(id, { id, reason: 'Other' }));
+    }
+
+    /** Fan out a per-tenant op across the selection, tolerating partial failures. */
+    private runBulk(verb: string, label: string, op: (id: string) => Observable<string>): void {
+        const ids = Array.from(this.selection);
+        if (ids.length === 0) return;
+        this._fuseConfirmationService.open({
+            title: `${label} ${ids.length} tenant(s)?`,
+            message: `This will ${verb} ${ids.length} selected tenant(s).`,
+            actions: { confirm: { label }, cancel: { label: 'Cancel' } }
+        }).afterClosed().subscribe((result) => {
+            if (result !== 'confirmed') return;
+            forkJoin(ids.map(id => op(id).pipe(map(() => ({ ok: true })), catchError(() => of({ ok: false })))))
+                .subscribe((results) => {
+                    const ok = results.filter(r => r.ok).length;
+                    const failed = results.length - ok;
+                    this._fuseConfirmationService.open({
+                        title: 'Bulk action complete',
+                        message: `${ok} succeeded${failed ? `, ${failed} failed (e.g. root or invalid state transitions)` : ''}.`,
+                        actions: { confirm: { label: 'OK' } }
+                    });
+                    this.clearSelection();
+                    this.loadTenants();
+                });
+        });
     }
 
     editTenant(tenant: TenantDto): void {
@@ -277,7 +354,7 @@ export class TenantListComponent implements OnInit {
 
         confirmation.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
-                this._tenantsService.suspend(tenant.id, { tenantId: tenant.id, reason: 'Manual suspension by administrator' }).subscribe({
+                this._tenantsService.suspend(tenant.id, { id: tenant.id, reason: 'Other' }).subscribe({
                     next: () => {
                         this.loadTenants();
                     },
@@ -375,6 +452,21 @@ export class TenantListComponent implements OnInit {
             return `${theme} / ${scheme} / ${layout}`;
         } catch {
             return 'Default';
+        }
+    }
+
+    /** Theme split into [theme, scheme, layout] parts for chip rendering;
+     * returns ['Default'] when no theme is configured. */
+    getThemeParts(tenant: TenantDto): string[] {
+        if (!tenant.themeConfig) return ['Default'];
+        try {
+            const config = JSON.parse(tenant.themeConfig);
+            const theme = (config.theme || 'default').replace('theme-', '');
+            const scheme = config.scheme || 'light';
+            const layout = config.layout || 'classy';
+            return [theme, scheme, layout];
+        } catch {
+            return ['Default'];
         }
     }
 

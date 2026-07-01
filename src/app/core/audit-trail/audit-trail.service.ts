@@ -42,11 +42,14 @@ export class AuditTrailService {
     private baseUrl = `${environment.apiUrl}/api/audittrail`;
     constructor(private http: HttpClient) {}
 
-    search(req: SearchAuditTrailsRequest): Observable<PaginationResponse<AuditTrailDto>> {
-        return this.http.post<PaginationResponse<AuditTrailDto>>(`${this.baseUrl}/search`, req);
+    /** When tenantId is set (root only), targets that tenant's audit trail; otherwise the current tenant's. */
+    search(req: SearchAuditTrailsRequest, tenantId?: string): Observable<PaginationResponse<AuditTrailDto>> {
+        const url = tenantId ? `${this.baseUrl}/tenant/${tenantId}/search` : `${this.baseUrl}/search`;
+        return this.http.post<PaginationResponse<AuditTrailDto>>(url, req);
     }
 
-    listTables(): Observable<string[]> {
-        return this.http.get<string[]>(`${this.baseUrl}/tables`);
+    listTables(tenantId?: string): Observable<string[]> {
+        const url = tenantId ? `${this.baseUrl}/tenant/${tenantId}/tables` : `${this.baseUrl}/tables`;
+        return this.http.get<string[]>(url);
     }
 }

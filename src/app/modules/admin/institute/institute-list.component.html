@@ -26,6 +26,13 @@
                 <input matInput [formControl]="searchControl" placeholder="Search by name, code, or type">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>
             </mat-form-field>
+            <mat-form-field *ngIf="isRoot" class="w-full sm:w-auto sm:min-w-56" appearance="outline" subscriptSizing="dynamic">
+                <mat-label>Tenant</mat-label>
+                <mat-select [formControl]="tenantFilterControl">
+                    <mat-option value="all">All tenants</mat-option>
+                    <mat-option *ngFor="let t of tenants" [value]="t.id">{{ t.systemName }}</mat-option>
+                </mat-select>
+            </mat-form-field>
             <mat-form-field class="w-full sm:w-auto sm:min-w-48" appearance="outline" subscriptSizing="dynamic">
                 <mat-label>Status</mat-label>
                 <mat-select [formControl]="statusControl">
@@ -43,6 +50,13 @@
                     <mat-option value="university">University</mat-option>
                 </mat-select>
             </mat-form-field>
+            <button
+                mat-stroked-button
+                (click)="importCsv()"
+                class="w-full sm:w-auto"
+                matTooltip="Bulk-import institutes from CSV">
+                <mat-icon class="mr-1">upload_file</mat-icon>Import CSV
+            </button>
             <button
                 mat-fab
                 color="primary"
@@ -84,6 +98,20 @@
                                             </div>
                                         </div>
                                     </div>
+                                </td>
+                            </ng-container>
+
+                            <!-- Tenant Column (root/platform admin only) -->
+                            <ng-container matColumnDef="tenant">
+                                <th mat-header-cell *matHeaderCellDef>
+                                    <div class="flex items-center">
+                                        <span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Tenant</span>
+                                    </div>
+                                </th>
+                                <td mat-cell *matCellDef="let institute">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                                        {{ getTenantName(institute.tenantId) }}
+                                    </span>
                                 </td>
                             </ng-container>
 
@@ -248,6 +276,18 @@
                                             <button mat-menu-item (click)="manageBranding(institute)" class="hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200">
                                                 <mat-icon class="icon-size-5 text-purple-600 dark:text-purple-400">palette</mat-icon>
                                                 <span class="ml-2">Manage Branding</span>
+                                            </button>
+                                            <button *ngIf="institute.status !== 'Suspended' && institute.status !== 'Archived'"
+                                                    mat-menu-item (click)="suspendInstitute(institute)"
+                                                    class="border-t border-gray-100 dark:border-gray-700 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-amber-600 dark:text-amber-400">pause_circle</mat-icon>
+                                                <span class="ml-2">Suspend Institute</span>
+                                            </button>
+                                            <button *ngIf="institute.status !== 'Archived'"
+                                                    mat-menu-item (click)="archiveInstitute(institute)"
+                                                    class="hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200">
+                                                <mat-icon class="icon-size-5 text-red-600 dark:text-red-400">archive</mat-icon>
+                                                <span class="ml-2">Archive Institute</span>
                                             </button>
                                         </mat-menu>
                                     </div>

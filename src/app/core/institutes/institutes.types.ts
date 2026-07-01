@@ -105,6 +105,16 @@ export interface InstituteDto {
  * Request to create a new institute with business-level configuration
  * Contains only institute-specific fields - system data is managed at tenant level
  */
+/**
+ * A file selected in the browser, encoded for the backend IFileStorageService
+ * (matches the .NET FileUploadRequest: Name, Extension, base64 Data).
+ */
+export interface FileUploadRequest {
+    name: string;
+    extension: string; // includes the leading dot, e.g. ".png"
+    data: string;      // base64 (no data: prefix)
+}
+
 export interface CreateInstituteRequest {
     // ============= REQUIRED FIELDS =============
     code: string;
@@ -135,6 +145,8 @@ export interface CreateInstituteRequest {
 
     // ============= BRANDING =============
     logoUrl?: string; // Changed from logo
+    /** A newly selected logo image; uploaded server-side and used as the logo. */
+    logoUpload?: FileUploadRequest;
     bannerUrl?: string;
     primaryColor?: string;
 
@@ -174,6 +186,8 @@ export interface UpdateInstituteRequest {
     currency?: string;
     language?: string;
     logoUrl?: string; // Changed from logo
+    /** A newly selected logo image; uploaded server-side and replaces the logo URL. */
+    logoUpload?: FileUploadRequest;
     bannerUrl?: string;
     primaryColor?: string;
 

@@ -50,6 +50,22 @@ export class TenantPermissionsComponent implements OnInit {
     availablePermissions: PermissionDto[] = [];
     selectedPermissions: Set<string> = new Set();
 
+    /**
+     * Count of selected permissions that are within the managed (available) set.
+     * The raw selectedPermissions set can contain claims outside this page's scope
+     * — e.g. the root tenant holds root-only permissions that aren't in the admin
+     * permission registry rendered here — which made the old `available - selected`
+     * math go negative (Selected 185 > Total 168). Counting the intersection keeps
+     * Selected + Available = Total by construction.
+     */
+    get selectedCount(): number {
+        return this.availablePermissions.filter(p => this.selectedPermissions.has(p.name)).length;
+    }
+
+    get availableRemaining(): number {
+        return Math.max(0, this.availablePermissions.length - this.selectedCount);
+    }
+
     constructor(
         private _tenantsService: TenantsService,
         private _router: Router,

@@ -9,6 +9,7 @@ import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { ActivatedRoute } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { AuditTrailDto, AuditTrailService, PaginationResponse } from '../../../core/audit-trail/audit-trail.service';
 import { NotificationService } from '../../../core/services/notification.service';
@@ -38,6 +39,9 @@ export class AuditTrailComponent implements OnInit, OnDestroy {
     form: FormGroup;
     expandedId: string | null = null;
     cols = ['dateTime', 'type', 'tableName', 'primaryKey', 'userId', 'actions'];
+    /** When set (root viewing a specific tenant from Tenant Management), audit
+     * calls target that tenant; otherwise the current tenant's own trail. */
+    tenantId: string | null = null;
     private _destroyed$ = new Subject<void>();
 
     constructor(
@@ -45,6 +49,7 @@ export class AuditTrailComponent implements OnInit, OnDestroy {
         private _fb: FormBuilder,
         private _cdr: ChangeDetectorRef,
         private _notify: NotificationService,
+        private _route: ActivatedRoute,
     ) {
         this.form = this._fb.group({
             tableName: [''],
@@ -56,7 +61,8 @@ export class AuditTrailComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this._svc.listTables().pipe(takeUntil(this._destroyed$)).subscribe({
+        this.tenantId = this._route.snapshot.paramMap.get('id');
+        this._svc.listTables(this.tenantId ?? undefined).pipe(takeUntil(this._destroyed$)).subscribe({
             next: (t) => { this.tables = t; this._cdr.markForCheck(); },
             error: () => {},
         });
@@ -77,7 +83,7 @@ export class AuditTrailComponent implements OnInit, OnDestroy {
             userId: v.userId || undefined,
             fromDate: v.fromDate || undefined,
             toDate: v.toDate || undefined,
-        }).pipe(takeUntil(this._destroyed$)).subscribe({
+        }, this.tenantId ?? undefined).pipe(takeUntil(this._destroyed$)).subscribe({
             next: (res: PaginationResponse<AuditTrailDto>) => {
                 this.rows = res.data;
                 this.totalCount = res.totalCount;

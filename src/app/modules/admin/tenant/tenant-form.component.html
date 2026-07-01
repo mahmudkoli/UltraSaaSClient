@@ -56,6 +56,8 @@
                             <mat-label>System Name</mat-label>
                             <input matInput formControlName="systemName" placeholder="Acme School">
                             <mat-icon matSuffix>business</mat-icon>
+                            <mat-error *ngIf="tenantForm.get('systemName')?.hasError('required')">System name is required</mat-error>
+                            <mat-error *ngIf="tenantForm.get('systemName')?.hasError('maxlength')">Maximum 100 characters</mat-error>
                         </mat-form-field>
 
                         <mat-form-field appearance="outline" class="w-full">
@@ -63,18 +65,24 @@
                             <input matInput formControlName="subdomain" placeholder="acme">
                             <mat-icon matSuffix>language</mat-icon>
                             <mat-hint>Used in {{ '{subdomain}' }}.{{ baseDomain }}</mat-hint>
+                            <mat-error *ngIf="tenantForm.get('subdomain')?.hasError('required')">Subdomain is required</mat-error>
+                            <mat-error *ngIf="tenantForm.get('subdomain')?.hasError('maxlength')">Maximum 255 characters</mat-error>
                         </mat-form-field>
 
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Technical admin email</mat-label>
                             <input matInput formControlName="technicalAdminEmail" type="email" placeholder="admin@acme.com">
                             <mat-icon matSuffix>person</mat-icon>
+                            <mat-error *ngIf="tenantForm.get('technicalAdminEmail')?.hasError('required')">Technical admin email is required</mat-error>
+                            <mat-error *ngIf="tenantForm.get('technicalAdminEmail')?.hasError('email')">Enter a valid email address</mat-error>
                         </mat-form-field>
 
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Billing email</mat-label>
                             <input matInput formControlName="billingEmail" type="email" placeholder="billing@acme.com">
                             <mat-icon matSuffix>receipt</mat-icon>
+                            <mat-error *ngIf="tenantForm.get('billingEmail')?.hasError('required')">Billing email is required</mat-error>
+                            <mat-error *ngIf="tenantForm.get('billingEmail')?.hasError('email')">Enter a valid email address</mat-error>
                         </mat-form-field>
 
                         <!-- Phase v1-O — Currency picker. Sourced from /api/currencies, immutable post-create. -->
@@ -126,11 +134,11 @@
                     <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Status</h3>
                     <p class="text-sm text-gray-500">State below is managed by billing / lifecycle actions (Record Payment, Suspend, Cancel, Archive) and isn't editable here.</p>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-sm">
-                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Payment status:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('paymentStatus')?.value || '—' }}</span></div>
-                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Valid until:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('validUpto')?.value || '—' }}</span></div>
-                        <div><span class="font-medium text-gray-700 dark:text-gray-300">Active:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('isSystemActive')?.value ? 'Yes' : 'No' }}</span></div>
-                        <div *ngIf="tenantForm.get('suspendedUntil')?.value"><span class="font-medium text-gray-700 dark:text-gray-300">Suspended until:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('suspendedUntil')?.value }}</span></div>
-                        <div *ngIf="tenantForm.get('suspensionReason')?.value" class="md:col-span-2 lg:col-span-4"><span class="font-medium text-gray-700 dark:text-gray-300">Suspension reason:</span> <span class="text-gray-900 dark:text-white">{{ tenantForm.get('suspensionReason')?.value }}</span></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300 mr-1">Payment status:</span><span class="text-gray-900 dark:text-white">{{ tenantForm.get('paymentStatus')?.value || '—' }}</span></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300 mr-1">Valid until:</span><span class="text-gray-900 dark:text-white">{{ (tenantForm.get('validUpto')?.value | date:'mediumDate') || '—' }}</span></div>
+                        <div><span class="font-medium text-gray-700 dark:text-gray-300 mr-1">Active:</span><span class="text-gray-900 dark:text-white">{{ tenantForm.get('isSystemActive')?.value ? 'Yes' : 'No' }}</span></div>
+                        <div *ngIf="tenantForm.get('suspendedUntil')?.value"><span class="font-medium text-gray-700 dark:text-gray-300 mr-1">Suspended until:</span><span class="text-gray-900 dark:text-white">{{ tenantForm.get('suspendedUntil')?.value | date:'mediumDate' }}</span></div>
+                        <div *ngIf="tenantForm.get('suspensionReason')?.value" class="md:col-span-2 lg:col-span-4"><span class="font-medium text-gray-700 dark:text-gray-300 mr-1">Suspension reason:</span><span class="text-gray-900 dark:text-white">{{ tenantForm.get('suspensionReason')?.value }}</span></div>
                     </div>
                 </section>
 

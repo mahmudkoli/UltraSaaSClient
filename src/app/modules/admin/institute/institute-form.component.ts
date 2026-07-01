@@ -11,10 +11,11 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatTabsModule } from '@angular/material/tabs';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { TranslocoModule } from '@ngneat/transloco';
-import { InstituteDto, CreateInstituteRequest, UpdateInstituteRequest } from '../../../core/institutes/institutes.types';
+import { InstituteDto, CreateInstituteRequest, UpdateInstituteRequest, FileUploadRequest } from '../../../core/institutes/institutes.types';
 import { InstitutesService } from '../../../core/institutes/institutes.service';
 
 @Component({
@@ -34,6 +35,7 @@ import { InstitutesService } from '../../../core/institutes/institutes.service';
         MatProgressSpinnerModule,
         MatSelectModule,
         MatSlideToggleModule,
+        MatSnackBarModule,
         MatTabsModule,
         TranslocoModule,
     ],
@@ -44,6 +46,11 @@ export class InstituteFormComponent implements OnInit {
     instituteId: string | null = null;
     loading: boolean = false;
     saving: boolean = false;
+
+    /** Logo picked in the browser (base64) — uploaded server-side on save. */
+    logoUpload: FileUploadRequest | null = null;
+    /** Data-URL (new pick) or existing logoUrl, shown as the logo preview. */
+    logoPreview: string | null = null;
 
     // Sample institute types - in a real app, these would come from the backend
     instituteTypes: string[] = [
@@ -62,7 +69,8 @@ export class InstituteFormComponent implements OnInit {
         private _institutesService: InstitutesService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _fuseConfirmationService: FuseConfirmationService
+        private _fuseConfirmationService: FuseConfirmationService,
+        private _snackBar: MatSnackBar
     ) {
         this.instituteForm = this._formBuilder.group({
             // Basic Information
@@ -158,6 +166,8 @@ export class InstituteFormComponent implements OnInit {
                     currentStorageUsedMB: institute.currentStorageUsedMB || 0,
                     website: institute.website || ''
                 });
+                // Seed the logo preview with the saved logo (if any).
+                this.logoPreview = institute.logoUrl || (institute as any).logo || null;
                 // Disable code field in edit mode
                 this.instituteForm.get('code')?.disable();
                 this.loading = false;
@@ -186,6 +196,7 @@ export class InstituteFormComponent implements OnInit {
                 addressLine: formData.addressLine || undefined,
                 contactPhone: formData.contactPhone || undefined,
                 logoUrl: formData.logoUrl || undefined,
+                logoUpload: this.logoUpload || undefined,
                 type: formData.type,
                 maxStudents: formData.maxStudents,
                 maxTeachers: formData.maxTeachers,
@@ -238,6 +249,7 @@ export class InstituteFormComponent implements OnInit {
                 addressLine: formData.addressLine || undefined,
                 contactPhone: formData.contactPhone || undefined,
                 logoUrl: formData.logoUrl || undefined,
+                logoUpload: this.logoUpload || undefined,
                 tenantId: formData.tenantId,
                 type: formData.type,
                 maxStudents: formData.maxStudents,
@@ -290,14 +302,55 @@ export class InstituteFormComponent implements OnInit {
         this._router.navigate(['/institute']);
     }
 
+    onLogoSelected(event: Event): void {
+        const input = event.target as HTMLInputElement;
+        const file = input.files && input.files[0];
+        if (!file) return;
+        if (!file.type.startsWith('image/')) {
+            this._snackBar.open('Please choose an image file (PNG or JPG).', 'Dismiss', { duration: 3000 });
+            return;
+        }
+        if (file.size > 2 * 1024 * 1024) {
+            this._snackBar.open('Logo must be under 2 MB.', 'Dismiss', { duration: 3000 });
+            return;
+        }
+        const reader = new FileReader();
+        reader.onload = () => {
+            const result = reader.result as string;          // data:image/png;base64,AAAA
+            const data = result.substring(result.indexOf(',') + 1);
+            const dot = file.name.lastIndexOf('.');
+            this.logoUpload = {
+                name: (dot > 0 ? file.name.substring(0, dot) : file.name).substring(0, 150),
+                extension: dot >= 0 ? file.name.substring(dot).toLowerCase() : '',
+                data
+            };
+            this.logoPreview = result;
+        };
+        reader.readAsDataURL(file);
+        input.value = ''; // allow re-selecting the same file
+    }
+
+    clearLogo(): void {
+        this.logoUpload = null;
+        this.logoPreview = null;
+        this.instituteForm.patchValue({ logoUrl: '' });
+    }
+
     generateInstituteCode(): void {
         const name = this.instituteForm.get('displayName')?.value;
-        if (name) {
-            const code = name
-                .toUpperCase()
-                .replace(/[^A-Z0-9]/g, '')
-                .substring(0, 8);
-            this.instituteForm.patchValue({ code });
+        if (!name) {
+            this._snackBar.open('Enter a display name first to generate a code.', 'Dismiss', { duration: 3000 });
+            return;
         }
+        const code = name
+            .toUpperCase()
+            .replace(/[^A-Z0-9]/g, '')
+            .substring(0, 8);
+        if (!code) {
+            this._snackBar.open('Could not derive a code — the name has no letters or digits.', 'Dismiss', { duration: 3000 });
+            return;
+        }
+        this.instituteForm.patchValue({ code });
+        this._snackBar.open(`Institute code generated: ${code}`, 'OK', { duration: 2500 });
     }
 } 

@@ -37,7 +37,9 @@ export class TenantFormComponent implements OnInit, OnDestroy {
     tenantId: string | null = null;
     loading: boolean = false;
     saving: boolean = false;
-    themeLabel: string = 'Not configured';
+    // Matches the tenant list's empty-state label (getThemeLabel → 'Default')
+    // so the same tenant doesn't read 'Default' in the list and 'Not configured' here.
+    themeLabel: string = 'Default';
     /** Phase v1-O — supported currencies. The Currency field is shown on
      * create only (immutable post-create per backend rule). */
     currencies: CurrencyDescriptor[] = [];

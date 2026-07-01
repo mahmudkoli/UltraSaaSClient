@@ -64,6 +64,13 @@
                     <span class="text-xs text-gray-500 ml-2">{{ f.description }}</span>
                 </mat-checkbox>
             </div>
+            <!-- #30 — prerequisite warnings (active once featureDependencies is populated) -->
+            <div *ngIf="unmetDependencies.length" class="mt-2 px-3 py-2 rounded-lg bg-amber-50 dark:bg-amber-900/20 text-amber-800 dark:text-amber-200 text-xs space-y-1">
+                <div *ngFor="let d of unmetDependencies" class="flex items-start gap-1">
+                    <mat-icon class="icon-size-4 mt-0.5">warning</mat-icon>
+                    <span><strong>{{ d.flag }}</strong> requires {{ d.missing.join(', ') }} — enable {{ d.missing.length > 1 ? 'them' : 'it' }} too, or this plan may be misconfigured.</span>
+                </div>
+            </div>
             <div class="text-xs text-gray-400 mt-2">Stored as: <code>{{ form.value.featureFlagsJson }}</code></div>
         </div>
 

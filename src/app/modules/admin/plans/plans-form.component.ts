@@ -59,6 +59,23 @@ export class PlansFormComponent implements OnInit, OnDestroy {
         { code: 'CUSTOM_BRAND', description: 'Tenant can customize UI theme (logo / colors stay baseline)' },
     ];
 
+    /**
+     * #30 — feature-flag prerequisites: { flag: [requiredFlags…] }. When inter-dependent
+     * module-gate flags are added to plans, list them here and the editor warns if a flag
+     * is enabled without its prerequisite. Empty today because the only editable flag
+     * (CUSTOM_BRAND) has no prerequisite — the warning mechanism activates automatically
+     * once dependent flags are added. Example: EXAM_MANAGEMENT: ['STUDENT_MANAGEMENT'].
+     */
+    readonly featureDependencies: Record<string, string[]> = {};
+
+    /** Enabled flags whose prerequisite flags are NOT enabled (drives the warning banner). */
+    get unmetDependencies(): { flag: string; missing: string[] }[] {
+        return Object.entries(this.featureDependencies)
+            .filter(([flag]) => this.hasFlag(flag))
+            .map(([flag, reqs]) => ({ flag, missing: reqs.filter((r) => !this.hasFlag(r)) }))
+            .filter((d) => d.missing.length > 0);
+    }
+
     hasFlag(code: string): boolean {
         try {
             const arr = JSON.parse(this.form.value.featureFlagsJson || '[]');

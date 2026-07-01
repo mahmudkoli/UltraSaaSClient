@@ -44,6 +44,9 @@ export class InstitutesService extends BaseApiService {
             if (params.Status) {
                 httpParams = httpParams.set('Status', params.Status);
             }
+            if (params.TenantId) {
+                httpParams = httpParams.set('TenantId', params.TenantId);
+            }
         }
 
         return this.get<InstituteDto[]>('/api/institute', httpParams);

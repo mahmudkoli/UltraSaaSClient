@@ -56,10 +56,29 @@
         <div class="flex flex-col flex-auto min-w-0">
             <div class="flex-auto">
 
+                <!-- Bulk action bar (#29) -->
+                <div *ngIf="selectedCount > 0" class="flex flex-wrap items-center gap-3 px-4 py-2 mb-3 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-700 rounded-xl">
+                    <span class="text-sm font-medium text-blue-800 dark:text-blue-200">{{ selectedCount }} selected</span>
+                    <button mat-stroked-button (click)="bulkActivate()"><mat-icon class="mr-1 text-base">check_circle</mat-icon>Activate</button>
+                    <button mat-stroked-button (click)="bulkReactivate()"><mat-icon class="mr-1 text-base">play_circle</mat-icon>Reactivate</button>
+                    <button mat-stroked-button color="warn" (click)="bulkSuspend()"><mat-icon class="mr-1 text-base">pause_circle</mat-icon>Suspend</button>
+                    <button mat-button (click)="clearSelection()">Clear</button>
+                </div>
+
                 <!-- Table -->
                 <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
                     <div class="relative overflow-x-auto">
                         <table mat-table [dataSource]="dataSource" matSort class="w-full">
+
+                            <!-- Select Column (#29 bulk) -->
+                            <ng-container matColumnDef="select">
+                                <th mat-header-cell *matHeaderCellDef class="pl-4 sm:pl-6">
+                                    <mat-checkbox [checked]="allSelected" [indeterminate]="someSelected" (change)="toggleAll()"></mat-checkbox>
+                                </th>
+                                <td mat-cell *matCellDef="let tenant" class="pl-4 sm:pl-6">
+                                    <mat-checkbox [checked]="isSelected(tenant.id)" (change)="toggleSelection(tenant.id)" (click)="$event.stopPropagation()"></mat-checkbox>
+                                </td>
+                            </ng-container>
 
                             <!-- Name Column -->
                             <ng-container matColumnDef="name">
@@ -74,7 +93,7 @@
                                             <mat-icon class="text-blue-600">business</mat-icon>
                                         </div>
                                         <div>
-                                            <div class="text-sm font-medium text-gray-900 dark:text-white">
+                                            <div class="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline cursor-pointer" (click)="viewTenant(tenant)" matTooltip="View tenant overview">
                                                 {{ tenant.systemName }}
                                             </div>
                                             <div class="text-xs text-gray-500">
@@ -143,8 +162,11 @@
                                     </div>
                                 </th>
                                 <td mat-cell *matCellDef="let tenant">
-                                    <div class="flex items-center space-x-2">
-                                        <span class="text-sm text-gray-900 dark:text-white capitalize">{{ getThemeLabel(tenant) }}</span>
+                                    <div class="flex flex-wrap items-center gap-1">
+                                        <span *ngFor="let part of getThemeParts(tenant)"
+                                              class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200">
+                                            {{ part }}
+                                        </span>
                                     </div>
                                 </td>
                             </ng-container>
@@ -203,21 +225,21 @@
                                             <mat-icon class="icon-size-5">security</mat-icon>
                                         </button>
 
-                                        <!-- Billing Button -->
+                                        <!-- Billing Button (page under construction — dimmed to signal in-development) -->
                                         <button
                                             mat-icon-button
                                             (click)="manageBilling(tenant)"
-                                            class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-200 rounded-full"
-                                            matTooltip="Manage Billing">
+                                            class="text-orange-600 dark:text-orange-400 hover:text-orange-700 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-all duration-200 rounded-full opacity-60"
+                                            matTooltip="Manage Billing (coming soon)">
                                             <mat-icon class="icon-size-5">payment</mat-icon>
                                         </button>
 
-                                        <!-- Usage Button -->
+                                        <!-- Usage Button (page under construction — dimmed to signal in-development) -->
                                         <button
                                             mat-icon-button
                                             (click)="viewUsage(tenant)"
-                                            class="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 rounded-full"
-                                            matTooltip="View Usage">
+                                            class="text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 transition-all duration-200 rounded-full opacity-60"
+                                            matTooltip="View Usage (coming soon)">
                                             <mat-icon class="icon-size-5">analytics</mat-icon>
                                         </button>
 
@@ -230,41 +252,6 @@
                                             <mat-icon class="icon-size-5">palette</mat-icon>
                                         </button>
 
-                                        <!-- More Options Button -->
-                                        <button
-                                            mat-icon-button
-                                            [matMenuTriggerFor]="menu"
-                                            class="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all duration-200 rounded-full"
-                                            matTooltip="More Options">
-                                            <mat-icon class="icon-size-5">more_vert</mat-icon>
-                                        </button>
-                                        <mat-menu #menu="matMenu" class="shadow-xl border border-gray-200 dark:border-gray-700">
-                                            <button mat-menu-item (click)="editTenant(tenant)" class="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-blue-600 dark:text-blue-400">edit</mat-icon>
-                                                <span class="ml-2">Edit Tenant</span>
-                                            </button>
-                                            <button mat-menu-item (click)="manageFeatures(tenant)" class="hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-purple-600 dark:text-purple-400">tune</mat-icon>
-                                                <span class="ml-2">Manage Features</span>
-                                            </button>
-                                            <button mat-menu-item (click)="managePermissions(tenant)" class="hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-indigo-600 dark:text-indigo-400">security</mat-icon>
-                                                <span class="ml-2">Manage Permissions</span>
-                                            </button>
-                                            <button mat-menu-item (click)="manageBilling(tenant)" class="hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-orange-600 dark:text-orange-400">payment</mat-icon>
-                                                <span class="ml-2">Manage Billing</span>
-                                            </button>
-                                            <button mat-menu-item (click)="viewUsage(tenant)" class="hover:bg-green-50 dark:hover:bg-green-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-green-600 dark:text-green-400">analytics</mat-icon>
-                                                <span class="ml-2">View Usage</span>
-                                            </button>
-                                            <button mat-menu-item (click)="manageTheme(tenant)" class="hover:bg-pink-50 dark:hover:bg-pink-900/20 transition-colors duration-200">
-                                                <mat-icon class="icon-size-5 text-pink-600 dark:text-pink-400">palette</mat-icon>
-                                                <span class="ml-2">Theme Settings</span>
-                                            </button>
-                                            <mat-divider></mat-divider>
-                                        </mat-menu>
                                     </div>
                                 </td>
                             </ng-container>
