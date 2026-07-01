@@ -1,11 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
@@ -15,6 +16,10 @@ import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ExamResultsService } from '../../../core/exam-results/exam-results.service';
 import { ExamResultDto, SearchExamResultsRequest, PaginationResponse } from '../../../core/exam-results/exam-results.types';
+import { ExamsService } from '../../../core/exams/exams.service';
+import { ExamDto } from '../../../core/exams/exams.types';
+import { ClassesService } from '../../../core/classes/classes.service';
+import { ClassDto } from '../../../core/classes/classes.types';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
@@ -27,7 +32,7 @@ import { NotificationService } from '../../../core/services/notification.service
     imports: [
         CommonModule, ReactiveFormsModule, RouterModule,
         MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
-        MatPaginatorModule, MatTableModule, MatTooltipModule,
+        MatPaginatorModule, MatSelectModule, MatTableModule, MatTooltipModule,
     ],
 })
 export class ExamResultListComponent implements OnInit, OnDestroy {
@@ -38,12 +43,18 @@ export class ExamResultListComponent implements OnInit, OnDestroy {
     pageSize = 10;
     pageSizeOptions = [5, 10, 25, 50];
     searchControl = new FormControl('');
+    examFilterControl = new FormControl<string | ''>('');
+    classFilterControl = new FormControl<string | ''>('');
+    exams: ExamDto[] = [];
+    classes: ClassDto[] = [];
     displayedColumns: string[] = ['studentName', 'examName', 'subjectName', 'className', 'marksObtained', 'percentage', 'grade', 'actions'];
     Math = Math;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
         private _service: ExamResultsService,
+        private _examsService: ExamsService,
+        private _classesService: ClassesService,
         private _cdr: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
@@ -55,6 +66,18 @@ export class ExamResultListComponent implements OnInit, OnDestroy {
         this.searchControl.valueChanges
             .pipe(takeUntil(this._unsubscribeAll), debounceTime(300), distinctUntilChanged())
             .subscribe(() => { this.currentPage = 0; this.loadData(); });
+        const filterControls: AbstractControl[] = [this.examFilterControl, this.classFilterControl];
+        filterControls.forEach(ctrl => ctrl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(() => { this.currentPage = 0; this.loadData(); }));
+
+        this._examsService.search({ pageNumber: 1, pageSize: 200 })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(r => { this.exams = r.data; this._cdr.markForCheck(); });
+        this._classesService.search({ pageNumber: 1, pageSize: 200 })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(r => { this.classes = r.data; this._cdr.markForCheck(); });
+
         this.loadData();
     }
 
@@ -66,7 +89,9 @@ export class ExamResultListComponent implements OnInit, OnDestroy {
         const request: SearchExamResultsRequest = {
             pageNumber: this.currentPage + 1,
             pageSize: this.pageSize,
-            keyword: this.searchControl.value || undefined
+            keyword: this.searchControl.value || undefined,
+            examId: this.examFilterControl.value || undefined,
+            classId: this.classFilterControl.value || undefined
         };
         this._service.search(request).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response: PaginationResponse<ExamResultDto>) => {

@@ -41,7 +41,8 @@
                 </mat-form-field>
                 <mat-form-field appearance="outline" class="w-full" subscriptSizing="dynamic">
                     <mat-label>Total Marks *</mat-label>
-                    <input matInput type="number" formControlName="totalMarks" data-testid="total-marks">
+                    <input matInput type="number" formControlName="totalMarks" data-testid="total-marks" [readonly]="totalMarksLocked">
+                    <mat-icon matSuffix *ngIf="totalMarksLocked" class="text-gray-400" matTooltip="Set from the selected exam">lock</mat-icon>
                 </mat-form-field>
                 <button mat-flat-button color="primary" type="button" class="h-12" (click)="loadRoster()" [disabled]="isLoadingRoster" data-testid="load-roster-button">
                     <mat-icon>group</mat-icon>&nbsp;{{ isLoadingRoster ? 'Loading...' : 'Load Roster' }}
@@ -128,7 +129,7 @@
         <div *ngIf="!rosterLoaded && !isLoadingRoster" class="bg-white dark:bg-gray-800 rounded-2xl shadow p-12 text-center">
             <mat-icon class="icon-size-16 text-gray-400">grade</mat-icon>
             <h3 class="text-xl font-semibold mt-4">Pick exam + subject + class</h3>
-            <p class="text-sm text-gray-600 mt-2">Click "Load Roster" to see the full class.</p>
+            <p class="text-sm text-gray-600 mt-2">Select Exam, Subject and Class, then click "Load Roster" to enter marks for the whole class.</p>
         </div>
     </div>
 </div>

@@ -15,8 +15,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { AttendancesService } from '../../../core/attendances/attendances.service';
 import { AttendanceDto, AttendanceStatus, CreateAttendanceRequest, UpdateAttendanceRequest } from '../../../core/attendances/attendances.types';
-import { StudentsService } from '../../../core/students/students.service';
-import { StudentDto } from '../../../core/students/students.types';
+import { StudentClassesService } from '../../../core/student-classes/student-classes.service';
 import { ClassesService } from '../../../core/classes/classes.service';
 import { ClassDto } from '../../../core/classes/classes.types';
 import { SubjectsService } from '../../../core/subjects/subjects.service';
@@ -45,9 +44,11 @@ export class AttendanceFormComponent implements OnInit, OnDestroy {
     isSaving = false;
     itemId: string | null = null;
 
-    students: StudentDto[] = [];
+    // Students enrolled in the currently-selected class (Class drives Student).
+    classStudents: { id: string; name: string }[] = [];
     classes: ClassDto[] = [];
     subjects: SubjectDto[] = [];
+    isLoadingStudents = false;
 
     currentUserId: string = '00000000-0000-0000-0000-000000000000';
 
@@ -67,7 +68,7 @@ export class AttendanceFormComponent implements OnInit, OnDestroy {
     constructor(
         private _formBuilder: FormBuilder,
         private _service: AttendancesService,
-        private _studentsService: StudentsService,
+        private _studentClassesService: StudentClassesService,
         private _classesService: ClassesService,
         private _subjectsService: SubjectsService,
         private _router: Router,
@@ -85,12 +86,51 @@ export class AttendanceFormComponent implements OnInit, OnDestroy {
         this.isEditMode = !!this.itemId;
         this._userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe(user => {
             if (user?.id) { this.currentUserId = user.id; }
+            // Auto-fill "Marked By" with the logged-in user (create mode, if untouched).
+            if (user?.name) {
+                const ctrl = this.form.get('markedByName');
+                if (!this.isEditMode && ctrl && !ctrl.value) { ctrl.setValue(user.name); }
+            }
+            this._cdr.markForCheck();
         });
+        // Class drives Student: picking a class loads its roster and clears any
+        // previously-chosen student so you can't record against the wrong class.
+        if (!this.isEditMode) {
+            this.form.get('classId')?.valueChanges
+                .pipe(takeUntil(this._unsubscribeAll))
+                .subscribe((classId: string) => {
+                    this.form.get('studentId')?.setValue('');
+                    this.loadClassStudents(classId);
+                });
+        }
         this.loadDropdowns();
         if (this.isEditMode) { this.loadItem(); }
     }
 
     ngOnDestroy(): void { this._unsubscribeAll.next(null); this._unsubscribeAll.complete(); }
+
+    /** Load the students enrolled in a class into classStudents (via StudentClasses). */
+    loadClassStudents(classId: string): void {
+        if (!classId) { this.classStudents = []; this._cdr.markForCheck(); return; }
+        this.isLoadingStudents = true;
+        this._cdr.markForCheck();
+        this._studentClassesService.search({ pageNumber: 1, pageSize: 500, classId })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (r) => {
+                    this.classStudents = r.data.map(e => ({ id: e.studentId, name: e.studentName }));
+                    this.isLoadingStudents = false;
+                    this._cdr.markForCheck();
+                },
+                error: () => { this.isLoadingStudents = false; this._cdr.markForCheck(); }
+            });
+    }
+
+    /** Check-In/Out only make sense when the student was physically present. */
+    get showTimeFields(): boolean {
+        const s = this.form.get('status')?.value;
+        return s === AttendanceStatus.Present || s === AttendanceStatus.Late || s === AttendanceStatus.HalfDay;
+    }
 
     createForm(): FormGroup {
         return this._formBuilder.group({
@@ -107,9 +147,6 @@ export class AttendanceFormComponent implements OnInit, OnDestroy {
     }
 
     loadDropdowns(): void {
-        this._studentsService.search({ pageNumber: 1, pageSize: 200, isActive: true })
-            .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe({ next: (r) => { this.students = r.data; this._cdr.markForCheck(); }, error: () => {} });
         this._classesService.search({ pageNumber: 1, pageSize: 200 })
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({ next: (r) => { this.classes = r.data; this._cdr.markForCheck(); }, error: () => {} });
@@ -135,6 +172,8 @@ export class AttendanceFormComponent implements OnInit, OnDestroy {
                     checkOutTime: item.checkOutTime,
                     markedByName: item.markedByName
                 });
+                // Populate the roster so the (disabled) student select can display the name.
+                this.loadClassStudents(item.classId);
                 this.form.get('studentId')?.disable();
                 this.form.get('classId')?.disable();
                 this.form.get('subjectId')?.disable();
@@ -187,5 +226,4 @@ export class AttendanceFormComponent implements OnInit, OnDestroy {
     cancel(): void { this._router.navigate(['/attendances']); }
     getPageTitle(): string { return this.isEditMode ? 'Edit Attendance' : 'Mark Attendance'; }
     getSaveButtonText(): string { return this.isSaving ? 'Saving...' : (this.isEditMode ? 'Update' : 'Save'); }
-    getStudentDisplayName(s: StudentDto): string { return `${s.firstName} ${s.lastName}`.trim(); }
 }

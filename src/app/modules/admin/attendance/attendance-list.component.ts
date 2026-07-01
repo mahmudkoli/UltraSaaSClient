@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
@@ -8,6 +8,8 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { MatSelectModule } from '@angular/material/select';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateUtils } from '../../../core/utils/date.utils';
@@ -18,6 +20,10 @@ import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { AttendancesService } from '../../../core/attendances/attendances.service';
 import { AttendanceDto, AttendanceStatus, SearchAttendancesRequest, PaginationResponse } from '../../../core/attendances/attendances.types';
+import { ClassesService } from '../../../core/classes/classes.service';
+import { ClassDto } from '../../../core/classes/classes.types';
+import { SubjectsService } from '../../../core/subjects/subjects.service';
+import { SubjectDto } from '../../../core/subjects/subjects.types';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
@@ -31,7 +37,8 @@ import { NotificationService } from '../../../core/services/notification.service
         CommonModule, ReactiveFormsModule, RouterModule,
         MatButtonModule, MatDatepickerModule, MatNativeDateModule,
         MatFormFieldModule, MatIconModule, MatInputModule,
-        MatPaginatorModule, MatTableModule, MatTooltipModule,
+        MatPaginatorModule, MatSelectModule, MatButtonToggleModule,
+        MatTableModule, MatTooltipModule,
     ],
 })
 export class AttendanceListComponent implements OnInit, OnDestroy {
@@ -44,12 +51,30 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     searchControl = new FormControl('');
     fromDateControl = new FormControl<Date | null>(null);
     toDateControl = new FormControl<Date | null>(null);
-    displayedColumns: string[] = ['studentName', 'className', 'subjectName', 'date', 'status', 'markedByName', 'actions'];
+    statusFilterControl = new FormControl<AttendanceStatus | ''>('');
+    classFilterControl = new FormControl<string | ''>('');
+    subjectFilterControl = new FormControl<string | ''>('');
+    // Quick date-range shortcut currently applied (drives the toggle's highlighted state).
+    activeRange: 'today' | 'week' | 'month' | '' = '';
+    classes: ClassDto[] = [];
+    subjects: SubjectDto[] = [];
+    // Status options for the filter dropdown (value + label), mirrors getStatusName().
+    statusOptions: { value: AttendanceStatus; label: string }[] = [
+        { value: AttendanceStatus.Present, label: 'Present' },
+        { value: AttendanceStatus.Absent, label: 'Absent' },
+        { value: AttendanceStatus.Late, label: 'Late' },
+        { value: AttendanceStatus.HalfDay, label: 'Half Day' },
+        { value: AttendanceStatus.Excused, label: 'Excused' },
+        { value: AttendanceStatus.Medical, label: 'Medical' },
+    ];
+    displayedColumns: string[] = ['studentName', 'status', 'className', 'subjectName', 'date', 'markedByName', 'actions'];
     Math = Math;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
         private _service: AttendancesService,
+        private _classesService: ClassesService,
+        private _subjectsService: SubjectsService,
         private _cdr: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
@@ -62,18 +87,48 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
         this.searchControl.valueChanges
             .pipe(takeUntil(this._unsubscribeAll), debounceTime(300), distinctUntilChanged())
             .subscribe(() => { this.currentPage = 0; this.loadData(); });
-        this.fromDateControl.valueChanges
+        // Any of the dropdown / date filters re-query from page 1.
+        const filterControls: AbstractControl[] = [this.fromDateControl, this.toDateControl, this.statusFilterControl, this.classFilterControl, this.subjectFilterControl];
+        filterControls.forEach(ctrl => ctrl.valueChanges
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(() => { this.currentPage = 0; this.loadData(); });
-        this.toDateControl.valueChanges
+            .subscribe(() => { this.currentPage = 0; this.loadData(); }));
+
+        this._classesService.search({ pageNumber: 1, pageSize: 200 })
             .pipe(takeUntil(this._unsubscribeAll))
-            .subscribe(() => { this.currentPage = 0; this.loadData(); });
+            .subscribe(r => { this.classes = r.data; this._cdr.markForCheck(); });
+        this._subjectsService.search({ pageNumber: 1, pageSize: 200 })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(r => { this.subjects = r.data; this._cdr.markForCheck(); });
+
         this.loadData();
     }
 
     clearDateFilter(): void {
+        this.activeRange = '';
         this.fromDateControl.setValue(null);
         this.toDateControl.setValue(null);
+    }
+
+    /** Quick-select chips: Today / This Week / This Month. Sets both date pickers
+     * in one tap (the common daily-attendance interaction). Toggling the active
+     * range off clears the dates. */
+    setRange(range: 'today' | 'week' | 'month'): void {
+        if (this.activeRange === range) { this.clearDateFilter(); return; }
+        const now = new Date();
+        let from: Date;
+        const to = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        if (range === 'today') {
+            from = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        } else if (range === 'week') {
+            const day = now.getDay(); // 0=Sun
+            from = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day);
+        } else {
+            from = new Date(now.getFullYear(), now.getMonth(), 1);
+        }
+        this.activeRange = range;
+        // setValue with emitEvent false on the first so we only trigger one reload.
+        this.fromDateControl.setValue(from, { emitEvent: false });
+        this.toDateControl.setValue(to);
     }
 
     bulkMark(): void {
@@ -89,6 +144,9 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
             pageNumber: this.currentPage + 1,
             pageSize: this.pageSize,
             keyword: this.searchControl.value || undefined,
+            status: this.statusFilterControl.value || undefined,
+            classId: this.classFilterControl.value || undefined,
+            subjectId: this.subjectFilterControl.value || undefined,
             fromDate: this.fromDateControl.value ? this._dateUtils.formatDateForAPI(this.fromDateControl.value) : undefined,
             toDate: this.toDateControl.value ? this._dateUtils.formatDateForAPI(this.toDateControl.value) : undefined
         };

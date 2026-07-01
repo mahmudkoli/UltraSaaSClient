@@ -20,9 +20,27 @@
                 <input matInput [formControl]="searchControl" placeholder="Search exam results">
                 <mat-icon matSuffix class="text-gray-400">search</mat-icon>
             </mat-form-field>
-            <button mat-stroked-button color="primary" (click)="bulkEntry()" matTooltip="Enter marks for a whole class at once" data-testid="bulk-entry-button"><mat-icon>grid_on</mat-icon>&nbsp;Bulk Entry</button>
-            <button mat-fab color="primary" (click)="add()" matTooltip="Add Result (single)"><mat-icon>add</mat-icon></button>
+            <button mat-stroked-button (click)="add()" matTooltip="Add one result" data-testid="single-entry-button"><mat-icon>person_add</mat-icon>&nbsp;Add Individual</button>
+            <button mat-fab extended color="primary" (click)="bulkEntry()" matTooltip="Enter marks for a whole class at once (recommended)" data-testid="bulk-entry-button"><mat-icon>grid_on</mat-icon>&nbsp;Bulk Entry</button>
         </div>
+    </div>
+
+    <!-- Filter bar: narrow the (potentially huge) results list by exam and class -->
+    <div class="flex flex-wrap items-center gap-3 px-2 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/50">
+        <mat-form-field class="w-full sm:w-64" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Exam</mat-label>
+            <mat-select [formControl]="examFilterControl" data-testid="exam-filter">
+                <mat-option [value]="''">All exams</mat-option>
+                <mat-option *ngFor="let e of exams" [value]="e.id">{{ e.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field class="w-full sm:w-48" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Class</mat-label>
+            <mat-select [formControl]="classFilterControl" data-testid="class-filter">
+                <mat-option [value]="''">All classes</mat-option>
+                <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
     </div>
 
     <div class="flex-auto p-4 sm:p-6">
@@ -53,11 +71,11 @@
                         </td>
                     </ng-container>
                     <ng-container matColumnDef="percentage">
-                        <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">%</span></th>
+                        <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Score %</span></th>
                         <td mat-cell *matCellDef="let item"><span class="text-sm text-gray-900 dark:text-gray-200">{{ item.percentage | number:'1.1-1' }}%</span></td>
                     </ng-container>
                     <ng-container matColumnDef="grade">
-                        <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider">Grade</span></th>
+                        <th mat-header-cell *matHeaderCellDef><span class="text-xs font-medium text-gray-500 uppercase tracking-wider inline-flex items-center gap-1" matTooltip="Auto-calculated from marks obtained">Grade<mat-icon class="icon-size-3 text-gray-400">auto_awesome</mat-icon></span></th>
                         <td mat-cell *matCellDef="let item">
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium" [class]="getGradeClass(item.grade)">{{ getGradeName(item.grade) }}</span>
                         </td>
@@ -79,8 +97,11 @@
             <div *ngIf="!isLoading && results.length === 0" class="flex flex-col items-center justify-center p-12">
                 <div class="w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-700 dark:to-gray-800 rounded-full flex items-center justify-center mb-6 shadow-lg"><mat-icon class="icon-size-16 text-gray-400">grading</mat-icon></div>
                 <h3 class="text-xl font-semibold text-gray-900 dark:text-white mb-3">No exam results found</h3>
-                <p class="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">{{ searchControl.value ? 'Try adjusting your search.' : 'Add your first exam result.' }}</p>
-                <button *ngIf="!searchControl.value" mat-flat-button color="primary" class="h-12 px-6 rounded-xl shadow-lg" (click)="add()"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Result</span></button>
+                <p class="text-sm text-gray-600 dark:text-gray-400 text-center mb-6">
+                    {{ searchControl.value || examFilterControl.value || classFilterControl.value ? 'Try adjusting your search or filters.' : (exams.length === 0 ? 'Create an exam first, then add results against it.' : 'Add your first exam result.') }}
+                </p>
+                <button *ngIf="!searchControl.value && !examFilterControl.value && !classFilterControl.value && exams.length === 0" mat-flat-button color="primary" class="h-12 px-6 rounded-xl shadow-lg" [routerLink]="['/exams/create']"><mat-icon class="icon-size-5 mr-2">quiz</mat-icon><span>Create an Exam</span></button>
+                <button *ngIf="!searchControl.value && !examFilterControl.value && !classFilterControl.value && exams.length > 0" mat-flat-button color="primary" class="h-12 px-6 rounded-xl shadow-lg" (click)="add()"><mat-icon class="icon-size-5 mr-2">add_circle</mat-icon><span>Add Result</span></button>
             </div>
             <div *ngIf="results.length > 0" class="flex items-center justify-between px-4 py-0.5 border-t border-gray-200 dark:border-gray-700">
                 <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">Showing {{ (currentPage * pageSize) + 1 }} to {{ Math.min((currentPage + 1) * pageSize, totalCount) }} of {{ totalCount }}</div>

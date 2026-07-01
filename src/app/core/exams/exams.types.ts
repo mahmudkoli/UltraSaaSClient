@@ -43,6 +43,9 @@ export interface SearchExamsRequest {
     pageSize: number;
     keyword?: string;
     isActive?: boolean;
+    examType?: string;
+    fromDate?: string;
+    toDate?: string;
 }
 
 export { PaginationResponse } from '../students/students.types';

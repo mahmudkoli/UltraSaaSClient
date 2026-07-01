@@ -62,6 +62,7 @@ export interface SearchAttendancesRequest {
     classId?: string;
     subjectId?: string;
     studentId?: string;
+    status?: AttendanceStatus;
     fromDate?: string;
     toDate?: string;
 }

@@ -32,6 +32,30 @@
         </div>
     </div>
 
+    <!-- Filter bar: exam type + date range -->
+    <div class="flex flex-wrap items-center gap-3 px-2 sm:px-4 py-3 border-b border-gray-200 dark:border-gray-700 bg-gray-50/70 dark:bg-gray-800/50">
+        <mat-form-field class="w-full sm:w-48" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Exam Type</mat-label>
+            <mat-select [formControl]="examTypeFilterControl" data-testid="type-filter">
+                <mat-option [value]="''">All types</mat-option>
+                <mat-option *ngFor="let t of examTypeOptions" [value]="t">{{ t }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field class="w-full sm:w-36" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>From</mat-label>
+            <input matInput [matDatepicker]="fromPicker" [formControl]="fromDateControl" data-testid="from-date">
+            <mat-datepicker-toggle matSuffix [for]="fromPicker"></mat-datepicker-toggle>
+            <mat-datepicker #fromPicker></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field class="w-full sm:w-36" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>To</mat-label>
+            <input matInput [matDatepicker]="toPicker" [formControl]="toDateControl" data-testid="to-date">
+            <mat-datepicker-toggle matSuffix [for]="toPicker"></mat-datepicker-toggle>
+            <mat-datepicker #toPicker></mat-datepicker>
+        </mat-form-field>
+        <button *ngIf="fromDateControl.value || toDateControl.value" mat-icon-button (click)="clearDateFilter()" matTooltip="Clear dates"><mat-icon>filter_alt_off</mat-icon></button>
+    </div>
+
     <div class="flex-auto p-4 sm:p-6">
         <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
             <div class="relative overflow-x-auto">

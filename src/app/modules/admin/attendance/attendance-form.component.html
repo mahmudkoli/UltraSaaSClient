@@ -21,62 +21,75 @@
         <form [formGroup]="form" (ngSubmit)="save()">
             <div *ngIf="isLoading" class="flex justify-center items-center py-12"><mat-spinner diameter="40"></mat-spinner></div>
             <div *ngIf="!isLoading" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden">
-                <div class="p-6 space-y-6">
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Student</mat-label>
-                            <mat-select formControlName="studentId" required>
-                                <mat-option *ngFor="let s of students" [value]="s.id">{{ getStudentDisplayName(s) }}</mat-option>
-                            </mat-select>
-                            <mat-error>Student is required</mat-error>
-                        </mat-form-field>
+                <div class="p-6 space-y-8">
+                    <!-- Section: Who -->
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">Who</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Class</mat-label>
+                                <mat-select formControlName="classId" required>
+                                    <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }}</mat-option>
+                                </mat-select>
+                                <mat-error>Class is required</mat-error>
+                            </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Class</mat-label>
-                            <mat-select formControlName="classId" required>
-                                <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }}</mat-option>
-                            </mat-select>
-                            <mat-error>Class is required</mat-error>
-                        </mat-form-field>
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Student</mat-label>
+                                <mat-select formControlName="studentId" required>
+                                    <mat-option *ngFor="let s of classStudents" [value]="s.id">{{ s.name }}</mat-option>
+                                </mat-select>
+                                <mat-hint *ngIf="!form.get('classId')?.value">Select a class first</mat-hint>
+                                <mat-hint *ngIf="form.get('classId')?.value && !isLoadingStudents && classStudents.length === 0">No students enrolled in this class</mat-hint>
+                                <mat-error>Student is required</mat-error>
+                            </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Subject (Optional)</mat-label>
-                            <mat-select formControlName="subjectId">
-                                <mat-option value="">None</mat-option>
-                                <mat-option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</mat-option>
-                            </mat-select>
-                        </mat-form-field>
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Subject (Optional)</mat-label>
+                                <mat-select formControlName="subjectId">
+                                    <mat-option value="">None</mat-option>
+                                    <mat-option *ngFor="let s of subjects" [value]="s.id">{{ s.name }}</mat-option>
+                                </mat-select>
+                            </mat-form-field>
+                        </div>
+                    </div>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Date</mat-label>
-                            <input matInput [matDatepicker]="datePicker" formControlName="date" required>
-                            <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
-                            <mat-datepicker #datePicker></mat-datepicker>
-                            <mat-error>Date is required</mat-error>
-                        </mat-form-field>
+                    <!-- Section: When & Status -->
+                    <div>
+                        <h3 class="text-xs font-semibold uppercase tracking-wider text-gray-500 dark:text-gray-400 mb-3">When &amp; Status</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Date</mat-label>
+                                <input matInput [matDatepicker]="datePicker" formControlName="date" required>
+                                <mat-datepicker-toggle matSuffix [for]="datePicker"></mat-datepicker-toggle>
+                                <mat-datepicker #datePicker></mat-datepicker>
+                                <mat-error>Date is required</mat-error>
+                            </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Status</mat-label>
-                            <mat-select formControlName="status" required>
-                                <mat-option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</mat-option>
-                            </mat-select>
-                            <mat-error>Status is required</mat-error>
-                        </mat-form-field>
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Status</mat-label>
+                                <mat-select formControlName="status" required>
+                                    <mat-option *ngFor="let opt of statusOptions" [value]="opt.value">{{ opt.label }}</mat-option>
+                                </mat-select>
+                                <mat-error>Status is required</mat-error>
+                            </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Marked By</mat-label>
-                            <input matInput formControlName="markedByName" placeholder="Teacher name">
-                        </mat-form-field>
+                            <mat-form-field appearance="outline" class="w-full">
+                                <mat-label>Marked By</mat-label>
+                                <input matInput formControlName="markedByName" placeholder="Teacher name">
+                                <mat-hint>Defaults to you; edit if someone else marked</mat-hint>
+                            </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Check-In Time</mat-label>
-                            <input matInput type="time" formControlName="checkInTime">
-                        </mat-form-field>
+                            <mat-form-field *ngIf="showTimeFields" appearance="outline" class="w-full">
+                                <mat-label>Check-In Time</mat-label>
+                                <input matInput type="time" formControlName="checkInTime">
+                            </mat-form-field>
 
-                        <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Check-Out Time</mat-label>
-                            <input matInput type="time" formControlName="checkOutTime">
-                        </mat-form-field>
+                            <mat-form-field *ngIf="showTimeFields" appearance="outline" class="w-full">
+                                <mat-label>Check-Out Time</mat-label>
+                                <input matInput type="time" formControlName="checkOutTime">
+                            </mat-form-field>
+                        </div>
                     </div>
 
                     <mat-form-field appearance="outline" class="w-full">

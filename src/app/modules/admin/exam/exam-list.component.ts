@@ -1,7 +1,9 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnInit, ViewEncapsulation } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormControl, ReactiveFormsModule } from '@angular/forms';
+import { AbstractControl, FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -17,6 +19,7 @@ import { FuseConfirmationService } from '@fuse/services/confirmation';
 import { ExamsService } from '../../../core/exams/exams.service';
 import { ExamDto, SearchExamsRequest, PaginationResponse } from '../../../core/exams/exams.types';
 import { NotificationService } from '../../../core/services/notification.service';
+import { DateUtils } from '../../../core/utils/date.utils';
 
 @Component({
     selector: 'exam-list',
@@ -27,7 +30,8 @@ import { NotificationService } from '../../../core/services/notification.service
     standalone: true,
     imports: [
         CommonModule, ReactiveFormsModule, RouterModule,
-        MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule,
+        MatButtonModule, MatDatepickerModule, MatNativeDateModule,
+        MatFormFieldModule, MatIconModule, MatInputModule,
         MatPaginatorModule, MatSelectModule, MatTableModule, MatTooltipModule,
     ],
 })
@@ -40,6 +44,17 @@ export class ExamListComponent implements OnInit, OnDestroy {
     pageSizeOptions = [5, 10, 25, 50];
     searchControl = new FormControl('');
     selectedStatus: string = '';
+    examTypeFilterControl = new FormControl<string | ''>('');
+    fromDateControl = new FormControl<Date | null>(null);
+    toDateControl = new FormControl<Date | null>(null);
+    // Same exam-type vocabulary as the create form.
+    examTypeOptions = [
+        'UnitTest', 'MidTerm', 'Final', 'Quiz', 'Assignment', 'Project', 'Practical',
+        'Semester', 'Viva', 'Thesis', 'Dissertation', 'MockTest', 'PracticeTest',
+        'Entrance', 'Competitive', 'SkillAssessment', 'Comprehensive', 'Qualifying',
+        'Placement', 'Certification', 'Online', 'Proctored', 'Oral', 'Written',
+        'Laboratory', 'Field', 'Clinical', 'Portfolio', 'Other'
+    ];
     displayedColumns: string[] = ['name', 'code', 'examType', 'academicYearName', 'startDate', 'endDate', 'totalMarks', 'status', 'actions'];
     Math = Math;
     private _unsubscribeAll: Subject<any> = new Subject<any>();
@@ -50,14 +65,24 @@ export class ExamListComponent implements OnInit, OnDestroy {
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
         private _route: ActivatedRoute,
-        private _notificationService: NotificationService
+        private _notificationService: NotificationService,
+        private _dateUtils: DateUtils
     ) {}
 
     ngOnInit(): void {
         this.searchControl.valueChanges
             .pipe(takeUntil(this._unsubscribeAll), debounceTime(300), distinctUntilChanged())
             .subscribe(() => { this.currentPage = 0; this.loadData(); });
+        const filterControls: AbstractControl[] = [this.examTypeFilterControl, this.fromDateControl, this.toDateControl];
+        filterControls.forEach(ctrl => ctrl.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe(() => { this.currentPage = 0; this.loadData(); }));
         this.loadData();
+    }
+
+    clearDateFilter(): void {
+        this.fromDateControl.setValue(null);
+        this.toDateControl.setValue(null);
     }
 
     ngOnDestroy(): void { this._unsubscribeAll.next(null); this._unsubscribeAll.complete(); }
@@ -69,7 +94,10 @@ export class ExamListComponent implements OnInit, OnDestroy {
             pageNumber: this.currentPage + 1,
             pageSize: this.pageSize,
             keyword: this.searchControl.value || undefined,
-            isActive: this.selectedStatus === '' ? undefined : this.selectedStatus === 'true'
+            isActive: this.selectedStatus === '' ? undefined : this.selectedStatus === 'true',
+            examType: this.examTypeFilterControl.value || undefined,
+            fromDate: this.fromDateControl.value ? this._dateUtils.formatDateForAPI(this.fromDateControl.value) : undefined,
+            toDate: this.toDateControl.value ? this._dateUtils.formatDateForAPI(this.toDateControl.value) : undefined
         };
         this._service.search(request).pipe(takeUntil(this._unsubscribeAll)).subscribe({
             next: (response: PaginationResponse<ExamDto>) => {

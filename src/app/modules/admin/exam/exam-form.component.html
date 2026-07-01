@@ -70,12 +70,14 @@
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Total Marks</mat-label>
                             <input matInput type="number" formControlName="totalMarks" min="1">
+                            <mat-hint>Default: 100</mat-hint>
                             <mat-error>Total marks must be greater than 0</mat-error>
                         </mat-form-field>
 
                         <mat-form-field appearance="outline" class="w-full">
                             <mat-label>Passing Marks</mat-label>
                             <input matInput type="number" formControlName="passingMarks" min="1">
+                            <mat-hint>Default: 40</mat-hint>
                             <mat-error>Passing marks must be greater than 0</mat-error>
                         </mat-form-field>
                     </div>
@@ -85,6 +87,7 @@
                     <mat-form-field appearance="outline" class="w-full">
                         <mat-label>Description</mat-label>
                         <textarea matInput rows="3" formControlName="description" placeholder="Optional description" maxlength="500"></textarea>
+                        <mat-hint align="end">{{ form.get('description')?.value?.length || 0 }}/500</mat-hint>
                     </mat-form-field>
                 </div>
 

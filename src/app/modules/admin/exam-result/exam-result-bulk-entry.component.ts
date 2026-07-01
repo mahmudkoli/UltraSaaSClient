@@ -70,6 +70,8 @@ export class ExamResultBulkEntryComponent implements OnInit, OnDestroy {
     isSaving = false;
     currentUserId = '00000000-0000-0000-0000-000000000000';
     currentUserName = '';
+    // True once an exam is chosen — Total Marks then comes from the exam and is locked.
+    totalMarksLocked = false;
 
     examTypeOptions = [
         { value: ExamType.UnitTest, label: 'Unit Test' },
@@ -128,6 +130,24 @@ export class ExamResultBulkEntryComponent implements OnInit, OnDestroy {
                 },
                 error: () => { /* no bands configured -> legacy fallback */ }
             });
+        // Selecting an exam fills Type / Date / Total Marks from the exam record and
+        // locks Total Marks so the grid can't diverge from the exam definition.
+        this.filterForm.get('examId')?.valueChanges
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe((examId: string) => this.applyExamDefaults(examId));
+    }
+
+    applyExamDefaults(examId: string): void {
+        const exam = this.exams.find(e => e.id === examId);
+        if (!exam) { this.totalMarksLocked = false; this._cdr.markForCheck(); return; }
+        const patch: any = {};
+        const mappedType = (ExamType as any)[exam.examType];
+        if (mappedType !== undefined) { patch.examType = mappedType; }
+        if (exam.startDate) { patch.examDate = new Date(exam.startDate); }
+        if (exam.totalMarks != null) { patch.totalMarks = exam.totalMarks; }
+        this.filterForm.patchValue(patch);
+        this.totalMarksLocked = true;
+        this._cdr.markForCheck();
     }
 
     ngOnDestroy(): void { this._unsubscribeAll.next(); this._unsubscribeAll.complete(); }

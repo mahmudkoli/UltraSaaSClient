@@ -54,6 +54,7 @@ export class ExamResultFormComponent implements OnInit, OnDestroy {
     classes: ClassDto[] = [];
 
     currentUserId: string = '00000000-0000-0000-0000-000000000000';
+    currentUserName = '';
 
     examTypeOptions = [
         { value: ExamType.UnitTest, label: 'Unit Test' },
@@ -111,9 +112,51 @@ export class ExamResultFormComponent implements OnInit, OnDestroy {
         this.isEditMode = !!this.itemId;
         this._userService.user$.pipe(takeUntil(this._unsubscribeAll)).subscribe(user => {
             if (user?.id) { this.currentUserId = user.id; }
+            // Auto-fill "Evaluated By" with the logged-in user's name on a fresh
+            // form (create mode only, and only if the user hasn't typed anything).
+            if (user?.name) {
+                this.currentUserName = user.name;
+                const evalCtrl = this.form.get('evaluatedBy');
+                if (!this.isEditMode && evalCtrl && !evalCtrl.value) {
+                    evalCtrl.setValue(user.name);
+                }
+            }
+            this._cdr.markForCheck();
         });
+        // Selecting an Exam pre-fills Type / Total Marks / Exam Date from the exam
+        // record so the evaluator doesn't re-enter (and can't diverge from) data
+        // that already exists on the exam. Create mode only — these are disabled in edit.
+        if (!this.isEditMode) {
+            this.form.get('examId')?.valueChanges
+                .pipe(takeUntil(this._unsubscribeAll))
+                .subscribe((examId: string) => this.applyExamDefaults(examId));
+        }
         this.loadDropdowns();
         if (this.isEditMode) { this.loadItem(); }
+    }
+
+    /** Pull Type / Total Marks / Exam Date off the selected exam. Guards against
+     * an unknown exam id and maps the exam's string examType to the ExamType enum. */
+    applyExamDefaults(examId: string): void {
+        const exam = this.exams.find(e => e.id === examId);
+        if (!exam) return;
+        const patch: any = {};
+        const mappedType = (ExamType as any)[exam.examType];
+        if (mappedType !== undefined) { patch.examType = mappedType; }
+        if (exam.totalMarks != null) { patch.totalMarks = exam.totalMarks; }
+        if (exam.startDate) { patch.examDate = new Date(exam.startDate); }
+        this.form.patchValue(patch);
+        this._cdr.markForCheck();
+    }
+
+    /** Live percentage preview for the marks entry (grade itself is computed
+     * server-side from tenant grade bands, so we only preview the %). */
+    get percentagePreview(): number | null {
+        const obtained = Number(this.form.get('marksObtained')?.value);
+        const total = Number(this.form.get('totalMarks')?.value);
+        if (this.form.get('isAbsent')?.value) return null;
+        if (!total || total <= 0 || isNaN(obtained)) return null;
+        return Math.round((obtained / total) * 1000) / 10;
     }
 
     ngOnDestroy(): void { this._unsubscribeAll.next(null); this._unsubscribeAll.complete(); }
