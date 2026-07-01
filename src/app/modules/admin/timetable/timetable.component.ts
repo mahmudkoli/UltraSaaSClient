@@ -50,6 +50,9 @@ export class TimetableComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
+        // Auto-apply: reload the grid whenever a filter changes (no explicit Apply button).
+        this.filterForm.valueChanges.pipe(takeUntil(this._destroyed$)).subscribe(() => this.load());
+
         this._classes.search({ pageNumber: 1, pageSize: 200 }).pipe(takeUntil(this._destroyed$)).subscribe({
             next: (r) => { this.classes = r.data; this._cdr.markForCheck(); },
             error: () => {},
@@ -59,8 +62,8 @@ export class TimetableComponent implements OnInit, OnDestroy {
                 this.years = r.data;
                 const active = r.data.find(y => y.isActive) || r.data[0];
                 if (active) {
+                    // patchValue fires valueChanges above, which triggers load().
                     this.filterForm.patchValue({ academicYearId: active.id });
-                    this.load();
                 }
                 this._cdr.markForCheck();
             },

@@ -5,31 +5,22 @@
     iconGradient="from-violet-500 to-purple-600"
     pageGradient="from-gray-50 via-violet-50/30 to-purple-50/30">
 
-    <div pageActions class="flex flex-col w-full sm:w-auto sm:flex-row sm:items-center sm:justify-end gap-3">
+    <div pageActions class="flex flex-col w-full sm:w-auto sm:flex-row sm:flex-wrap sm:items-center sm:justify-end gap-3" [formGroup]="filterForm">
+        <mat-form-field class="w-full sm:w-44" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Academic year</mat-label>
+            <mat-select formControlName="academicYearId">
+                <mat-option *ngFor="let y of years" [value]="y.id">{{ y.name }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field class="w-full sm:w-48" appearance="outline" subscriptSizing="dynamic">
+            <mat-label>Class (optional)</mat-label>
+            <mat-select formControlName="classId">
+                <mat-option value="">All classes</mat-option>
+                <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }} {{ c.section }}</mat-option>
+            </mat-select>
+        </mat-form-field>
         <button mat-fab color="primary" (click)="add()" matTooltip="Add timetable entry"><mat-icon>add</mat-icon></button>
     </div>
-
-    <!-- Filters -->
-    <form [formGroup]="filterForm" (ngSubmit)="load()" class="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-200 dark:border-gray-700 p-4 mb-4">
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Academic year</mat-label>
-                <mat-select formControlName="academicYearId">
-                    <mat-option *ngFor="let y of years" [value]="y.id">{{ y.name }}</mat-option>
-                </mat-select>
-            </mat-form-field>
-            <mat-form-field appearance="outline" subscriptSizing="dynamic">
-                <mat-label>Class (optional)</mat-label>
-                <mat-select formControlName="classId">
-                    <mat-option value="">All classes</mat-option>
-                    <mat-option *ngFor="let c of classes" [value]="c.id">{{ c.name }} {{ c.section }}</mat-option>
-                </mat-select>
-            </mat-form-field>
-            <div class="flex items-end">
-                <button mat-flat-button color="primary" type="submit">Apply</button>
-            </div>
-        </div>
-    </form>
 
     <div *ngIf="loading"><mat-progress-bar mode="indeterminate"></mat-progress-bar></div>
 
