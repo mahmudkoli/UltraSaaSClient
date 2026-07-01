@@ -8,6 +8,7 @@ import { MatMenuModule } from '@angular/material/menu';
 import { Router } from '@angular/router';
 import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
+import { UserAvatarComponent } from 'app/layout/common/user-avatar/user-avatar.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -17,7 +18,7 @@ import { Subject, takeUntil } from 'rxjs';
     changeDetection: ChangeDetectionStrategy.OnPush,
     exportAs       : 'user',
     standalone     : true,
-    imports        : [MatButtonModule, MatMenuModule, NgIf, MatIconModule, NgClass, MatDividerModule],
+    imports        : [MatButtonModule, MatMenuModule, NgIf, MatIconModule, NgClass, MatDividerModule, UserAvatarComponent],
 })
 export class UserComponent implements OnInit, OnDestroy
 {

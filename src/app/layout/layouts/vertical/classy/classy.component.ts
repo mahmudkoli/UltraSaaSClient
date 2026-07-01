@@ -13,6 +13,7 @@ import { UserService } from 'app/core/user/user.service';
 import { User } from 'app/core/user/user.types';
 import { NotificationsComponent } from 'app/layout/common/notifications/notifications.component';
 import { UserComponent } from 'app/layout/common/user/user.component';
+import { UserAvatarComponent } from 'app/layout/common/user-avatar/user-avatar.component';
 import { Subject, takeUntil } from 'rxjs';
 
 @Component({
@@ -20,7 +21,7 @@ import { Subject, takeUntil } from 'rxjs';
     templateUrl  : './classy.component.html',
     encapsulation: ViewEncapsulation.None,
     standalone   : true,
-    imports      : [FuseLoadingBarComponent, FuseVerticalNavigationComponent, UserComponent, NotificationsComponent, NgIf, MatIconModule, MatButtonModule, FuseFullscreenComponent, RouterOutlet],
+    imports      : [FuseLoadingBarComponent, FuseVerticalNavigationComponent, UserComponent, NotificationsComponent, NgIf, MatIconModule, MatButtonModule, FuseFullscreenComponent, RouterOutlet, UserAvatarComponent],
 })
 export class ClassyLayoutComponent implements OnInit, OnDestroy
 {
