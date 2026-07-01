@@ -109,7 +109,10 @@ export class StudentListComponent implements OnInit, OnDestroy {
             pageNumber: this.currentPage + 1, // API uses 1-based indexing
             pageSize: this.pageSize,
             orderBy: ['userProfile.firstName'], // Try navigation property path
-            keyword: this.searchControl.value || undefined
+            // Same fix as teachers (BUG-T1): the backend name filter is `Name`, not
+            // `keyword`. `keyword` never matches the UserProfile name, so search
+            // returned zero results.
+            name: this.searchControl.value || undefined
         };
 
         // Add status filtering like user search

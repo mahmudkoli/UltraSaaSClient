@@ -107,7 +107,11 @@ export class TeacherListComponent implements OnInit, OnDestroy {
             pageNumber: this.currentPage + 1, // API uses 1-based indexing
             pageSize: this.pageSize,
             orderBy: ['userProfile.firstName'], // Try navigation property path
-            keyword: this.searchControl.value || undefined
+            // Backend filters teachers by the dedicated `Name` field
+            // ((FirstName + " " + LastName).Contains). `keyword` only searches the
+            // Teacher entity's first-level string columns and never reaches the
+            // UserProfile name, so it always returned zero matches. (BUG-T1)
+            name: this.searchControl.value || undefined
         };
 
         // Add status filtering like user search

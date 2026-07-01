@@ -238,6 +238,8 @@ export interface SearchStudentsRequest {
     orderBy?: string[];
     advancedSearch?: Search;
     keyword?: string;
+    // Server-side name filter — matches (FirstName + " " + LastName).Contains on UserProfile.
+    name?: string;
     id?: string;
     isActive?: boolean;
 }
