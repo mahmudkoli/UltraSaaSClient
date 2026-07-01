@@ -10,6 +10,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatSelectModule } from '@angular/material/select';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatBadgeModule } from '@angular/material/badge';
 import { MatTableModule } from '@angular/material/table';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { DateUtils } from '../../../core/utils/date.utils';
@@ -37,7 +38,7 @@ import { NotificationService } from '../../../core/services/notification.service
         CommonModule, ReactiveFormsModule, RouterModule,
         MatButtonModule, MatDatepickerModule, MatNativeDateModule,
         MatFormFieldModule, MatIconModule, MatInputModule,
-        MatPaginatorModule, MatSelectModule, MatButtonToggleModule,
+        MatPaginatorModule, MatSelectModule, MatButtonToggleModule, MatBadgeModule,
         MatTableModule, MatTooltipModule,
     ],
 })
@@ -56,6 +57,8 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
     subjectFilterControl = new FormControl<string | ''>('');
     // Quick date-range shortcut currently applied (drives the toggle's highlighted state).
     activeRange: 'today' | 'week' | 'month' | '' = '';
+    // Filters live in a collapsible panel so the header row stays compact.
+    showFilters = false;
     classes: ClassDto[] = [];
     subjects: SubjectDto[] = [];
     // Status options for the filter dropdown (value + label), mirrors getStatusName().
@@ -107,6 +110,24 @@ export class AttendanceListComponent implements OnInit, OnDestroy {
         this.activeRange = '';
         this.fromDateControl.setValue(null);
         this.toDateControl.setValue(null);
+    }
+
+    /** Number of filters currently applied — shown as a badge on the Filters button. */
+    get activeFilterCount(): number {
+        return [
+            this.statusFilterControl.value,
+            this.classFilterControl.value,
+            this.subjectFilterControl.value,
+            this.fromDateControl.value,
+            this.toDateControl.value,
+        ].filter(v => v !== '' && v !== null && v !== undefined).length;
+    }
+
+    clearAllFilters(): void {
+        this.statusFilterControl.setValue('');
+        this.classFilterControl.setValue('');
+        this.subjectFilterControl.setValue('');
+        this.clearDateFilter();
     }
 
     /** Quick-select chips: Today / This Week / This Month. Sets both date pickers
