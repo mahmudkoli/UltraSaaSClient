@@ -52,7 +52,7 @@ export class NavigationService
                 //   1. feature gate  — tenant's plan must enable the module
                 //      (fail-open: no plan resolved → full menu by feature)
                 //   2. permission gate — user must hold the item's permission
-                //      (a bare student/teacher has none → only self-service items)
+                //      (a user with no admin permissions has none → only self-service items)
                 const enabled = sub?.plan ? parseFeatureFlags(sub.plan.featureFlagsJson) : null;
 
                 // A leaf is visible if it passes the feature gate (groups only)

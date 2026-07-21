@@ -16,13 +16,13 @@ import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
-import { TeacherQualificationsService } from '../../../core/teacher-qualifications/teacher-qualifications.service';
-import { TeacherQualificationDto, SearchTeacherQualificationsRequest } from '../../../core/teacher-qualifications/teacher-qualifications.types';
+import { EmployeeQualificationsService } from '../../../core/employee-qualifications/employee-qualifications.service';
+import { EmployeeQualificationDto, SearchEmployeeQualificationsRequest } from '../../../core/employee-qualifications/employee-qualifications.types';
 import { NotificationService } from '../../../core/services/notification.service';
 
 @Component({
-    selector: 'teacher-qualifications-list',
-    templateUrl: './teacher-qualifications-list.component.html',
+    selector: 'employee-qualifications-list',
+    templateUrl: './employee-qualifications-list.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     standalone: true,
@@ -43,8 +43,8 @@ import { NotificationService } from '../../../core/services/notification.service
         MatTooltipModule,
     ],
 })
-export class TeacherQualificationsListComponent implements OnInit, OnDestroy {
-    qualifications: TeacherQualificationDto[] = [];
+export class EmployeeQualificationsListComponent implements OnInit, OnDestroy {
+    qualifications: EmployeeQualificationDto[] = [];
     isLoading = false;
     totalCount = 0;
     currentPage = 0;
@@ -55,7 +55,7 @@ export class TeacherQualificationsListComponent implements OnInit, OnDestroy {
     searchControl = new FormControl('');
     
     // Table columns
-    displayedColumns = ['teacher', 'degree', 'institution', 'specialization', 'experience', 'certifications', 'actions'];
+    displayedColumns = ['employee', 'degree', 'institution', 'specialization', 'experience', 'certifications', 'actions'];
     
     // Make Math available in template
     Math = Math;
@@ -66,7 +66,7 @@ export class TeacherQualificationsListComponent implements OnInit, OnDestroy {
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
         private _activatedRoute: ActivatedRoute,
-        private _teacherQualificationsService: TeacherQualificationsService,
+        private _employeeQualificationsService: EmployeeQualificationsService,
         private _fuseConfirmationService: FuseConfirmationService,
         private _notificationService: NotificationService
     ) {}
@@ -97,14 +97,14 @@ export class TeacherQualificationsListComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this._changeDetectorRef.markForCheck();
 
-        const request: SearchTeacherQualificationsRequest = {
+        const request: SearchEmployeeQualificationsRequest = {
             pageNumber: this.currentPage + 1,
             pageSize: this.pageSize,
             keyword: this.searchControl.value || '',
             orderBy: ['highestQualification', 'yearOfPassing']
         };
 
-        this._teacherQualificationsService.search(request)
+        this._employeeQualificationsService.search(request)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
@@ -114,8 +114,8 @@ export class TeacherQualificationsListComponent implements OnInit, OnDestroy {
                     this._changeDetectorRef.markForCheck();
                 },
                 error: (error) => {
-                    console.error('Error loading teacher qualifications:', error);
-                    this._notificationService.error('Failed to load teacher qualifications');
+                    console.error('Error loading employee qualifications:', error);
+                    this._notificationService.error('Failed to load employee qualifications');
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 }
@@ -132,14 +132,14 @@ export class TeacherQualificationsListComponent implements OnInit, OnDestroy {
         this._router.navigate(['create'], { relativeTo: this._activatedRoute });
     }
 
-    editQualification(qualification: TeacherQualificationDto): void {
+    editQualification(qualification: EmployeeQualificationDto): void {
         this._router.navigate(['edit', qualification.id], { relativeTo: this._activatedRoute });
     }
 
-    deleteQualification(qualification: TeacherQualificationDto): void {
+    deleteQualification(qualification: EmployeeQualificationDto): void {
         const confirmation = this._fuseConfirmationService.open({
-            title: 'Delete Teacher Qualification',
-            message: `Are you sure you want to delete the ${qualification.highestQualification || 'qualification'} record for ${qualification.teacherName}?`,
+            title: 'Delete Employee Qualification',
+            message: `Are you sure you want to delete the ${qualification.highestQualification || 'qualification'} record for ${qualification.employeeName}?`,
             actions: {
                 confirm: {
                     label: 'Delete'
@@ -149,16 +149,16 @@ export class TeacherQualificationsListComponent implements OnInit, OnDestroy {
 
         confirmation.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
-                this._teacherQualificationsService.delete(qualification.id)
+                this._employeeQualificationsService.delete(qualification.id)
                     .pipe(takeUntil(this._unsubscribeAll))
                     .subscribe({
                         next: () => {
-                            this._notificationService.success('Teacher qualification deleted successfully');
+                            this._notificationService.success('Employee qualification deleted successfully');
                             this.loadQualifications();
                         },
                         error: (error) => {
-                            console.error('Error deleting teacher qualification:', error);
-                            this._notificationService.error('Failed to delete teacher qualification');
+                            console.error('Error deleting employee qualification:', error);
+                            this._notificationService.error('Failed to delete employee qualification');
                         }
                     });
             }

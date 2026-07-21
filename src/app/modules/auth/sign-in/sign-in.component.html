@@ -35,7 +35,7 @@
                     <mat-select [value]="selectedDemo" (selectionChange)="applyDemoLogin($event.value)">
                         <mat-option *ngFor="let d of demoLogins" [value]="d.tenant">{{ d.label }}</mat-option>
                     </mat-select>
-                    <mat-hint>Pick a demo school to auto-fill credentials</mat-hint>
+                    <mat-hint>Pick a demo tenant to auto-fill credentials</mat-hint>
                 </mat-form-field>
 
                 <!-- Tenant field (visible) -->
@@ -161,28 +161,28 @@
         <!-- Content -->
         <div class="z-10 relative w-full max-w-2xl">
             <div class="text-7xl font-bold leading-none text-gray-100">
-                <div>Ultra</div>
-                <div class="text-primary-400">Edu</div>
+                <div>MK Corex</div>
+                <div class="text-primary-400">HRM</div>
             </div>
             <div class="mt-6 text-lg tracking-tight leading-6 text-gray-400">
-                Complete institution management platform. Manage students, teachers, academics, attendance, exams, fees, and more — all in one place.
+                Complete HR management platform. Manage employees, attendance, leave, and payroll — all in one place.
             </div>
             <div class="flex flex-col mt-8 space-y-4">
                 <div class="flex items-center space-x-3">
-                    <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:academic-cap'"></mat-icon>
-                    <span class="text-gray-300">Student & Teacher Management</span>
+                    <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:identification'"></mat-icon>
+                    <span class="text-gray-300">Employee Management</span>
                 </div>
                 <div class="flex items-center space-x-3">
                     <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:clipboard-document-check'"></mat-icon>
-                    <span class="text-gray-300">Attendance, Exams & Results</span>
+                    <span class="text-gray-300">Attendance & Leave</span>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:currency-dollar'"></mat-icon>
-                    <span class="text-gray-300">Fee Management & Invoicing</span>
+                    <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:banknotes'"></mat-icon>
+                    <span class="text-gray-300">Payroll & Payslips</span>
                 </div>
                 <div class="flex items-center space-x-3">
                     <mat-icon class="text-primary-400 icon-size-6" [svgIcon]="'heroicons_outline:chart-bar'"></mat-icon>
-                    <span class="text-gray-300">Analytics & Dashboard</span>
+                    <span class="text-gray-300">Reports & Dashboard</span>
                 </div>
             </div>
         </div>

@@ -3,38 +3,38 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { 
-    TeacherDto, 
-    CreateTeacherRequest, 
-    UpdateTeacherRequest, 
-    SearchTeachersRequest,
-    GenerateRandomTeacherRequest,
+    EmployeeDto, 
+    CreateEmployeeRequest, 
+    UpdateEmployeeRequest, 
+    SearchEmployeesRequest,
+    GenerateRandomEmployeeRequest,
     GenerationProgress,
     PaginationResponse 
-} from './teachers.types';
+} from './employees.types';
 
 @Injectable({
     providedIn: 'root'
 })
-export class TeachersService {
-    private readonly baseUrl = `${environment.apiUrl}/api/v1/teachers`;
+export class EmployeesService {
+    private readonly baseUrl = `${environment.apiUrl}/api/v1/employees`;
     private generationProgressSubject = new BehaviorSubject<GenerationProgress | null>(null);
     public generationProgress$ = this.generationProgressSubject.asObservable();
 
     constructor(private http: HttpClient) {}
 
-    search(request: SearchTeachersRequest): Observable<PaginationResponse<TeacherDto>> {
-        return this.http.post<PaginationResponse<TeacherDto>>(`${this.baseUrl}/search`, request);
+    search(request: SearchEmployeesRequest): Observable<PaginationResponse<EmployeeDto>> {
+        return this.http.post<PaginationResponse<EmployeeDto>>(`${this.baseUrl}/search`, request);
     }
 
-    getById(id: string): Observable<TeacherDto> {
-        return this.http.get<TeacherDto>(`${this.baseUrl}/${id}`);
+    getById(id: string): Observable<EmployeeDto> {
+        return this.http.get<EmployeeDto>(`${this.baseUrl}/${id}`);
     }
 
-    create(request: CreateTeacherRequest): Observable<string> {
+    create(request: CreateEmployeeRequest): Observable<string> {
         return this.http.post(this.baseUrl, request, { responseType: 'text' });
     }
 
-    update(id: string, request: UpdateTeacherRequest): Observable<string> {
+    update(id: string, request: UpdateEmployeeRequest): Observable<string> {
         return this.http.put(`${this.baseUrl}/${id}`, request, { responseType: 'text' });
     }
 
@@ -43,15 +43,15 @@ export class TeachersService {
     }
 
     /**
-     * Generate random teachers for testing
+     * Generate random employees for testing
      * Useful for populating demo data
      */
-    generateRandom(request: GenerateRandomTeacherRequest = {}): Observable<string> {
+    generateRandom(request: GenerateRandomEmployeeRequest = {}): Observable<string> {
         // Update progress
         this.generationProgressSubject.next({
             status: 'generating',
             progress: 0,
-            message: 'Generating random teachers...',
+            message: 'Generating random employees...',
             generatedCount: 0,
             totalCount: request.nSeed || 10
         });
@@ -66,7 +66,7 @@ export class TeachersService {
                 this.generationProgressSubject.next({
                     ...current,
                     progress: newProgress,
-                    message: `Generated ${generatedCount} of ${current.totalCount} teachers...`,
+                    message: `Generated ${generatedCount} of ${current.totalCount} employees...`,
                     generatedCount
                 });
             }
@@ -81,7 +81,7 @@ export class TeachersService {
                     this.generationProgressSubject.next({
                         status: 'completed',
                         progress: 100,
-                        message: 'Random teachers generated successfully!',
+                        message: 'Random employees generated successfully!',
                         generatedCount: current?.totalCount || 10,
                         totalCount: current?.totalCount || 10
                     });
@@ -94,7 +94,7 @@ export class TeachersService {
                     this.generationProgressSubject.next({
                         status: 'error',
                         progress: 0,
-                        message: 'Failed to generate teachers. Please try again.',
+                        message: 'Failed to generate employees. Please try again.',
                         generatedCount: 0,
                         totalCount: 0
                     });
@@ -105,7 +105,7 @@ export class TeachersService {
     }
 
     /**
-     * Delete all randomly generated teachers
+     * Delete all randomly generated employees
      * Useful for cleaning up test data
      */
     deleteRandom(): Observable<string> {

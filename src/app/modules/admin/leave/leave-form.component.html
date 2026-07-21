@@ -16,8 +16,8 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <mat-form-field appearance="outline" class="w-full">
                     <mat-label>Staff member</mat-label>
-                    <mat-select formControlName="teacherId">
-                        <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</mat-option>
+                    <mat-select formControlName="employeeId">
+                        <mat-option *ngFor="let t of employees" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</mat-option>
                     </mat-select>
                 </mat-form-field>
 

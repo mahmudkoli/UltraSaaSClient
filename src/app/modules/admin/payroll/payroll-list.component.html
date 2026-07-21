@@ -1,6 +1,6 @@
 <app-list-page
     title="Payroll Slips"
-    subtitle="Monthly salary slips per teacher. Click Download to print."
+    subtitle="Monthly salary slips per employee. Click Download to print."
     icon="receipt_long"
     iconGradient="from-emerald-500 to-green-600"
     pageGradient="from-gray-50 via-emerald-50/30 to-green-50/30">
@@ -28,11 +28,11 @@
             </ng-container>
 
             <!-- Employee + slip # -->
-            <ng-container matColumnDef="teacherName">
+            <ng-container matColumnDef="employeeName">
                 <th mat-header-cell *matHeaderCellDef>Employee</th>
                 <td mat-cell *matCellDef="let s">
                     <div class="flex flex-col">
-                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ s.teacherName }}</span>
+                        <span class="text-sm font-medium text-gray-900 dark:text-white">{{ s.employeeName }}</span>
                         <span class="text-xs text-gray-500 font-mono">{{ s.serialNumber }}</span>
                     </div>
                 </td>

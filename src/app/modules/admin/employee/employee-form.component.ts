@@ -17,15 +17,15 @@ import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertService } from '@fuse/components/alert';
-import { TeachersService } from '../../../core/teachers/teachers.service';
-import { TeacherDto, CreateTeacherRequest, UpdateTeacherRequest, Designation, Department, EmploymentStatus, EmploymentType, WorkShift } from '../../../core/teachers/teachers.types';
+import { EmployeesService } from '../../../core/employees/employees.service';
+import { EmployeeDto, CreateEmployeeRequest, UpdateEmployeeRequest, Designation, Department, EmploymentStatus, EmploymentType, WorkShift } from '../../../core/employees/employees.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
 import { passwordMatchValidator } from '../../../core/validators/password-match.validator';
 
 @Component({
-    selector: 'teacher-form',
-    templateUrl: './teacher-form.component.html',
+    selector: 'employee-form',
+    templateUrl: './employee-form.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     animations: fuseAnimations,
@@ -45,9 +45,9 @@ import { passwordMatchValidator } from '../../../core/validators/password-match.
         MatProgressSpinnerModule
     ],
 })
-export class TeacherFormComponent implements OnInit, OnDestroy {
-    teacherForm: FormGroup;
-    teacher: TeacherDto | null = null;
+export class EmployeeFormComponent implements OnInit, OnDestroy {
+    employeeForm: FormGroup;
+    employee: EmployeeDto | null = null;
     isEditMode = false;
     isLoading = false;
     isSaving = false;
@@ -88,7 +88,7 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
 
     constructor(
         private _formBuilder: FormBuilder,
-        private _teachersService: TeachersService,
+        private _employeesService: EmployeesService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseAlertService: FuseAlertService,
         private _router: Router,
@@ -96,7 +96,7 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
         private _notificationService: NotificationService,
         private _dateUtils: DateUtils
     ) {
-        this.teacherForm = this._formBuilder.group({
+        this.employeeForm = this._formBuilder.group({
             basicInfo: this._formBuilder.group({
                 firstName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(75)]],
                 lastName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(75)]],
@@ -113,8 +113,6 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             professionalInfo: this._formBuilder.group({
                 designation: [''],
                 department: [''],
-                subject: ['', Validators.maxLength(200)],
-                specialization: ['', Validators.maxLength(200)],
                 employeeId: ['', Validators.maxLength(50)],
                 employeeCode: ['', Validators.maxLength(50)],
                 joiningDate: [''],
@@ -130,15 +128,11 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             
             experienceInfo: this._formBuilder.group({
                 totalExperience: [''],
-                teachingExperience: [''],
                 previousEmployers: ['', Validators.maxLength(500)],
                 previousPositions: ['', Validators.maxLength(500)],
-                previousSchools: ['', Validators.maxLength(500)],
                 experienceDetails: ['', Validators.maxLength(1000)],
                 achievements: ['', Validators.maxLength(1000)],
                 awards: ['', Validators.maxLength(1000)],
-                publications: ['', Validators.maxLength(1000)],
-                researchWork: ['', Validators.maxLength(1000)]
             }),
             
             salaryInfo: this._formBuilder.group({
@@ -167,14 +161,6 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
                 responsibilities: ['', Validators.maxLength(1000)],
                 committees: ['', Validators.maxLength(500)],
                 projects: ['', Validators.maxLength(500)]
-            }),
-            
-            teachingInfo: this._formBuilder.group({
-                isClassTeacher: [false],
-                assignedClasses: ['', Validators.maxLength(200)],
-                assignedSubjects: ['', Validators.maxLength(200)],
-                maxStudents: [''],
-                currentStudents: ['']
             }),
             
             performanceInfo: this._formBuilder.group({
@@ -208,23 +194,23 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        const teacherId = this._route.snapshot.paramMap.get('id');
+        const employeeId = this._route.snapshot.paramMap.get('id');
         
-        if (teacherId && teacherId !== 'create') {
+        if (employeeId && employeeId !== 'create') {
             this.isEditMode = true;
-            this.loadTeacher(teacherId);
+            this.loadEmployee(employeeId);
             // Remove password validation in edit mode
-            this.teacherForm.get('basicInfo.password')?.clearValidators();
-            this.teacherForm.get('basicInfo.confirmPassword')?.clearValidators();
-            this.teacherForm.get('basicInfo.password')?.updateValueAndValidity();
-            this.teacherForm.get('basicInfo.confirmPassword')?.updateValueAndValidity();
+            this.employeeForm.get('basicInfo.password')?.clearValidators();
+            this.employeeForm.get('basicInfo.confirmPassword')?.clearValidators();
+            this.employeeForm.get('basicInfo.password')?.updateValueAndValidity();
+            this.employeeForm.get('basicInfo.confirmPassword')?.updateValueAndValidity();
         } else {
             this.isEditMode = false;
             // Password is required in create mode
-            this.teacherForm.get('basicInfo.password')?.setValidators([Validators.required, Validators.minLength(6)]);
-            this.teacherForm.get('basicInfo.confirmPassword')?.setValidators([Validators.required]);
-            this.teacherForm.get('basicInfo.password')?.updateValueAndValidity();
-            this.teacherForm.get('basicInfo.confirmPassword')?.updateValueAndValidity();
+            this.employeeForm.get('basicInfo.password')?.setValidators([Validators.required, Validators.minLength(6)]);
+            this.employeeForm.get('basicInfo.confirmPassword')?.setValidators([Validators.required]);
+            this.employeeForm.get('basicInfo.password')?.updateValueAndValidity();
+            this.employeeForm.get('basicInfo.confirmPassword')?.updateValueAndValidity();
         }
     }
 
@@ -233,133 +219,120 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
-    loadTeacher(id: string): void {
+    loadEmployee(id: string): void {
         this.isLoading = true;
         this._changeDetectorRef.markForCheck();
 
-        this._teachersService.getById(id)
+        this._employeesService.getById(id)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
-                next: (teacher: TeacherDto) => {
-                    this.teacher = teacher;
-                    this.patchForm(teacher);
+                next: (employee: EmployeeDto) => {
+                    this.employee = employee;
+                    this.patchForm(employee);
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 },
                 error: (error) => {
-                    console.error('Error loading teacher:', error);
+                    console.error('Error loading employee:', error);
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.error('Error loading teacher');
+                    this._notificationService.error('Error loading employee');
                 }
             });
     }
 
-    patchForm(teacher: TeacherDto): void {
-        this.teacherForm.patchValue({
+    patchForm(employee: EmployeeDto): void {
+        this.employeeForm.patchValue({
             basicInfo: {
-                firstName: teacher.firstName,
-                lastName: teacher.lastName,
-                userName: teacher.userName,
-                email: teacher.email || '',
-                phoneNumber: teacher.phoneNumber || '',
-                address: teacher.address || '',
-                gender: teacher.gender || '',
-                dateOfBirth: teacher.dateOfBirth ? new Date(teacher.dateOfBirth) : '',
+                firstName: employee.firstName,
+                lastName: employee.lastName,
+                userName: employee.userName,
+                email: employee.email || '',
+                phoneNumber: employee.phoneNumber || '',
+                address: employee.address || '',
+                gender: employee.gender || '',
+                dateOfBirth: employee.dateOfBirth ? new Date(employee.dateOfBirth) : '',
                 password: '',
                 confirmPassword: ''
             },
             professionalInfo: {
-                designation: teacher.designation || '',
-                department: teacher.department || '',
-                subject: teacher.subject || '',
-                specialization: teacher.specialization || '',
-                employeeId: teacher.employeeId || '',
-                employeeCode: teacher.employeeCode || '',
-                joiningDate: teacher.joiningDate ? new Date(teacher.joiningDate) : '',
-                confirmationDate: teacher.confirmationDate ? new Date(teacher.confirmationDate) : '',
-                resignationDate: teacher.resignationDate ? new Date(teacher.resignationDate) : '',
-                lastWorkingDate: teacher.lastWorkingDate ? new Date(teacher.lastWorkingDate) : '',
-                employmentStatus: teacher.employmentStatus || '',
-                employmentType: teacher.employmentType || '',
-                workLocation: teacher.workLocation || '',
-                workShift: teacher.workShift || '',
-                workingHours: teacher.workingHours || ''
+                designation: employee.designation || '',
+                department: employee.department || '',
+                employeeId: employee.employeeId || '',
+                employeeCode: employee.employeeCode || '',
+                joiningDate: employee.joiningDate ? new Date(employee.joiningDate) : '',
+                confirmationDate: employee.confirmationDate ? new Date(employee.confirmationDate) : '',
+                resignationDate: employee.resignationDate ? new Date(employee.resignationDate) : '',
+                lastWorkingDate: employee.lastWorkingDate ? new Date(employee.lastWorkingDate) : '',
+                employmentStatus: employee.employmentStatus || '',
+                employmentType: employee.employmentType || '',
+                workLocation: employee.workLocation || '',
+                workShift: employee.workShift || '',
+                workingHours: employee.workingHours || ''
             },
             experienceInfo: {
-                totalExperience: teacher.totalExperience || '',
-                teachingExperience: teacher.teachingExperience || '',
-                previousEmployers: teacher.previousEmployers || '',
-                previousPositions: teacher.previousPositions || '',
-                previousSchools: teacher.previousSchools || '',
-                experienceDetails: teacher.experienceDetails || '',
-                achievements: teacher.achievements || '',
-                awards: teacher.awards || '',
-                publications: teacher.publications || '',
-                researchWork: teacher.researchWork || ''
+                totalExperience: employee.totalExperience || '',
+                previousEmployers: employee.previousEmployers || '',
+                previousPositions: employee.previousPositions || '',
+                experienceDetails: employee.experienceDetails || '',
+                achievements: employee.achievements || '',
+                awards: employee.awards || '',
             },
             salaryInfo: {
-                basicSalary: teacher.basicSalary || '',
-                grossSalary: teacher.grossSalary || '',
-                netSalary: teacher.netSalary || '',
-                salaryStructure: teacher.salaryStructure || '',
-                allowances: teacher.allowances || '',
-                benefits: teacher.benefits || ''
+                basicSalary: employee.basicSalary || '',
+                grossSalary: employee.grossSalary || '',
+                netSalary: employee.netSalary || '',
+                salaryStructure: employee.salaryStructure || '',
+                allowances: employee.allowances || '',
+                benefits: employee.benefits || ''
             },
             financialInfo: {
-                bankName: teacher.bankName || '',
-                bankAccountNumber: teacher.bankAccountNumber || '',
-                ifsCode: teacher.ifsCode || '',
-                panNumber: teacher.panNumber || '',
-                aadharNumber: teacher.aadharNumber || '',
-                pfNumber: teacher.pfNumber || '',
-                esiNumber: teacher.esiNumber || ''
+                bankName: employee.bankName || '',
+                bankAccountNumber: employee.bankAccountNumber || '',
+                ifsCode: employee.ifsCode || '',
+                panNumber: employee.panNumber || '',
+                aadharNumber: employee.aadharNumber || '',
+                pfNumber: employee.pfNumber || '',
+                esiNumber: employee.esiNumber || ''
             },
             organizationalInfo: {
-                reportingTo: teacher.reportingTo || '',
-                subordinates: teacher.subordinates || '',
-                roles: teacher.roles || '',
-                responsibilities: teacher.responsibilities || '',
-                committees: teacher.committees || '',
-                projects: teacher.projects || ''
-            },
-            teachingInfo: {
-                isClassTeacher: teacher.isClassTeacher || false,
-                assignedClasses: teacher.assignedClasses || '',
-                assignedSubjects: teacher.assignedSubjects || '',
-                maxStudents: teacher.maxStudents || '',
-                currentStudents: teacher.currentStudents || ''
+                reportingTo: employee.reportingTo || '',
+                subordinates: employee.subordinates || '',
+                roles: employee.roles || '',
+                responsibilities: employee.responsibilities || '',
+                committees: employee.committees || '',
+                projects: employee.projects || ''
             },
             performanceInfo: {
-                performanceRating: teacher.performanceRating || '',
-                lastAppraisalDate: teacher.lastAppraisalDate ? new Date(teacher.lastAppraisalDate) : '',
-                appraisalComments: teacher.appraisalComments || '',
-                improvementAreas: teacher.improvementAreas || '',
-                trainingNeeds: teacher.trainingNeeds || '',
-                careerGoals: teacher.careerGoals || '',
-                isProbationPeriod: teacher.isProbationPeriod || false,
-                probationEndDate: teacher.probationEndDate ? new Date(teacher.probationEndDate) : ''
+                performanceRating: employee.performanceRating || '',
+                lastAppraisalDate: employee.lastAppraisalDate ? new Date(employee.lastAppraisalDate) : '',
+                appraisalComments: employee.appraisalComments || '',
+                improvementAreas: employee.improvementAreas || '',
+                trainingNeeds: employee.trainingNeeds || '',
+                careerGoals: employee.careerGoals || '',
+                isProbationPeriod: employee.isProbationPeriod || false,
+                probationEndDate: employee.probationEndDate ? new Date(employee.probationEndDate) : ''
             },
             emergencyContact: {
-                emergencyContact: teacher.emergencyContact || '',
-                emergencyPhone: teacher.emergencyPhone || '',
-                emergencyEmail: teacher.emergencyEmail || '',
-                emergencyAddress: teacher.emergencyAddress || '',
-                emergencyRelationship: teacher.emergencyRelationship || ''
+                emergencyContact: employee.emergencyContact || '',
+                emergencyPhone: employee.emergencyPhone || '',
+                emergencyEmail: employee.emergencyEmail || '',
+                emergencyAddress: employee.emergencyAddress || '',
+                emergencyRelationship: employee.emergencyRelationship || ''
             },
             personalInfo: {
-                languagesKnown: teacher.languagesKnown || '',
-                hobbies: teacher.hobbies || '',
-                specialSkills: teacher.specialSkills || '',
-                interests: teacher.interests || '',
-                remarks: teacher.remarks || '',
-                notes: teacher.notes || ''
+                languagesKnown: employee.languagesKnown || '',
+                hobbies: employee.hobbies || '',
+                specialSkills: employee.specialSkills || '',
+                interests: employee.interests || '',
+                remarks: employee.remarks || '',
+                notes: employee.notes || ''
             }
         });
     }
 
     save(): void {
-        if (this.teacherForm.invalid) {
+        if (this.employeeForm.invalid) {
             return;
         }
 
@@ -367,16 +340,16 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
         this._changeDetectorRef.markForCheck();
 
         if (this.isEditMode) {
-            this.updateTeacher();
+            this.updateEmployee();
         } else {
-            this.createTeacher();
+            this.createEmployee();
         }
     }
 
-    createTeacher(): void {
-        const formValue = this.teacherForm.value;
+    createEmployee(): void {
+        const formValue = this.employeeForm.value;
 
-        const createRequest: CreateTeacherRequest = {
+        const createRequest: CreateEmployeeRequest = {
             firstName: formValue.basicInfo.firstName,
             lastName: formValue.basicInfo.lastName,
             email: formValue.basicInfo.email || undefined,
@@ -387,8 +360,6 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             dateOfBirth: formValue.basicInfo.dateOfBirth ? this._dateUtils.formatDateForAPI(formValue.basicInfo.dateOfBirth) : undefined,
             designation: formValue.professionalInfo.designation || undefined,
             department: formValue.professionalInfo.department || undefined,
-            subject: formValue.professionalInfo.subject || undefined,
-            specialization: formValue.professionalInfo.specialization || undefined,
             employeeId: formValue.professionalInfo.employeeId || undefined,
             employeeCode: formValue.professionalInfo.employeeCode || undefined,
             joiningDate: formValue.professionalInfo.joiningDate ? this._dateUtils.formatDateForAPI(formValue.professionalInfo.joiningDate) : undefined,
@@ -399,15 +370,11 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             workShift: formValue.professionalInfo.workShift || undefined,
             workingHours: formValue.professionalInfo.workingHours || undefined,
             totalExperience: formValue.experienceInfo.totalExperience || undefined,
-            teachingExperience: formValue.experienceInfo.teachingExperience || undefined,
             previousEmployers: formValue.experienceInfo.previousEmployers || undefined,
             previousPositions: formValue.experienceInfo.previousPositions || undefined,
-            previousSchools: formValue.experienceInfo.previousSchools || undefined,
             experienceDetails: formValue.experienceInfo.experienceDetails || undefined,
             achievements: formValue.experienceInfo.achievements || undefined,
             awards: formValue.experienceInfo.awards || undefined,
-            publications: formValue.experienceInfo.publications || undefined,
-            researchWork: formValue.experienceInfo.researchWork || undefined,
             basicSalary: formValue.salaryInfo.basicSalary || undefined,
             grossSalary: formValue.salaryInfo.grossSalary || undefined,
             netSalary: formValue.salaryInfo.netSalary || undefined,
@@ -427,11 +394,6 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             responsibilities: formValue.organizationalInfo.responsibilities || undefined,
             committees: formValue.organizationalInfo.committees || undefined,
             projects: formValue.organizationalInfo.projects || undefined,
-            isClassTeacher: formValue.teachingInfo.isClassTeacher || undefined,
-            assignedClasses: formValue.teachingInfo.assignedClasses || undefined,
-            assignedSubjects: formValue.teachingInfo.assignedSubjects || undefined,
-            maxStudents: formValue.teachingInfo.maxStudents || undefined,
-            currentStudents: formValue.teachingInfo.currentStudents || undefined,
             languagesKnown: formValue.personalInfo.languagesKnown || undefined,
             hobbies: formValue.personalInfo.hobbies || undefined,
             specialSkills: formValue.personalInfo.specialSkills || undefined,
@@ -441,31 +403,31 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             password: formValue.basicInfo.password
         };
 
-        this._teachersService.create(createRequest)
+        this._employeesService.create(createRequest)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('Teacher created successfully');
-                    this._router.navigate(['/teachers']);
+                    this._notificationService.success('Employee created successfully');
+                    this._router.navigate(['/employees']);
                 },
                 error: (error) => {
-                    console.error('Create teacher error details:', error);
+                    console.error('Create employee error details:', error);
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.error('Error creating teacher');
+                    this._notificationService.error('Error creating employee');
                 }
             });
     }
 
-    updateTeacher(): void {
-        if (!this.teacher?.id) return;
+    updateEmployee(): void {
+        if (!this.employee?.id) return;
 
-        const formValue = this.teacherForm.value;
+        const formValue = this.employeeForm.value;
 
-        const updateRequest: UpdateTeacherRequest = {
-            id: this.teacher.id,
+        const updateRequest: UpdateEmployeeRequest = {
+            id: this.employee.id,
             firstName: formValue.basicInfo.firstName,
             lastName: formValue.basicInfo.lastName,
             email: formValue.basicInfo.email || undefined,
@@ -476,8 +438,6 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             dateOfBirth: formValue.basicInfo.dateOfBirth ? this._dateUtils.formatDateForAPI(formValue.basicInfo.dateOfBirth) : undefined,
             designation: formValue.professionalInfo.designation || undefined,
             department: formValue.professionalInfo.department || undefined,
-            subject: formValue.professionalInfo.subject || undefined,
-            specialization: formValue.professionalInfo.specialization || undefined,
             employeeId: formValue.professionalInfo.employeeId || undefined,
             employeeCode: formValue.professionalInfo.employeeCode || undefined,
             joiningDate: formValue.professionalInfo.joiningDate ? this._dateUtils.formatDateForAPI(formValue.professionalInfo.joiningDate) : undefined,
@@ -488,15 +448,11 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             workShift: formValue.professionalInfo.workShift || undefined,
             workingHours: formValue.professionalInfo.workingHours || undefined,
             totalExperience: formValue.experienceInfo.totalExperience || undefined,
-            teachingExperience: formValue.experienceInfo.teachingExperience || undefined,
             previousEmployers: formValue.experienceInfo.previousEmployers || undefined,
             previousPositions: formValue.experienceInfo.previousPositions || undefined,
-            previousSchools: formValue.experienceInfo.previousSchools || undefined,
             experienceDetails: formValue.experienceInfo.experienceDetails || undefined,
             achievements: formValue.experienceInfo.achievements || undefined,
             awards: formValue.experienceInfo.awards || undefined,
-            publications: formValue.experienceInfo.publications || undefined,
-            researchWork: formValue.experienceInfo.researchWork || undefined,
             basicSalary: formValue.salaryInfo.basicSalary || undefined,
             grossSalary: formValue.salaryInfo.grossSalary || undefined,
             netSalary: formValue.salaryInfo.netSalary || undefined,
@@ -516,11 +472,6 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             responsibilities: formValue.organizationalInfo.responsibilities || undefined,
             committees: formValue.organizationalInfo.committees || undefined,
             projects: formValue.organizationalInfo.projects || undefined,
-            isClassTeacher: formValue.teachingInfo.isClassTeacher || undefined,
-            assignedClasses: formValue.teachingInfo.assignedClasses || undefined,
-            assignedSubjects: formValue.teachingInfo.assignedSubjects || undefined,
-            maxStudents: formValue.teachingInfo.maxStudents || undefined,
-            currentStudents: formValue.teachingInfo.currentStudents || undefined,
             performanceRating: formValue.performanceInfo.performanceRating || undefined,
             lastAppraisalDate: formValue.performanceInfo.lastAppraisalDate ? this._dateUtils.formatDateForAPI(formValue.performanceInfo.lastAppraisalDate) : undefined,
             appraisalComments: formValue.performanceInfo.appraisalComments || undefined,
@@ -537,34 +488,34 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             notes: formValue.personalInfo.notes || undefined
         };
 
-        this._teachersService.update(this.teacher.id, updateRequest)
+        this._employeesService.update(this.employee.id, updateRequest)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('Teacher updated successfully');
-                    this._router.navigate(['/teachers']);
+                    this._notificationService.success('Employee updated successfully');
+                    this._router.navigate(['/employees']);
                 },
                 error: (error) => {
-                    console.error('Update teacher error details:', error);
+                    console.error('Update employee error details:', error);
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.error('Error updating teacher');
+                    this._notificationService.error('Error updating employee');
                 }
             });
     }
 
     cancel(): void {
-        this._router.navigate(['/teachers']);
+        this._router.navigate(['/employees']);
     }
 
     getPageTitle(): string {
-        return this.isEditMode ? 'Edit Teacher' : 'Create Teacher';
+        return this.isEditMode ? 'Edit Employee' : 'Create Employee';
     }
 
     getSaveButtonText(): string {
-        return this.isSaving ? 'Saving...' : (this.isEditMode ? 'Update Teacher' : 'Create Teacher');
+        return this.isSaving ? 'Saving...' : (this.isEditMode ? 'Update Employee' : 'Create Employee');
     }
 
     private passwordMatchValidator(form: FormGroup): { [key: string]: any } | null {
@@ -584,7 +535,7 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
     isFormValid(): boolean {
         if (this.isEditMode) {
             // In edit mode, ignore password fields for validation
-            const formValue = this.teacherForm.value;
+            const formValue = this.employeeForm.value;
             const requiredFields = ['basicInfo.firstName', 'basicInfo.lastName', 'basicInfo.userName', 'basicInfo.phoneNumber'];
             
             for (const field of requiredFields) {
@@ -596,7 +547,7 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             return true;
         }
         
-        return this.teacherForm.valid;
+        return this.employeeForm.valid;
     }
 
     getDesignationLabel(designation: Designation): string {
@@ -604,9 +555,9 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             [Designation.Principal]: 'Principal',
             [Designation.VicePrincipal]: 'Vice Principal',
             [Designation.HeadOfDepartment]: 'Head Of Department',
-            [Designation.SeniorTeacher]: 'Senior Teacher',
-            [Designation.Teacher]: 'Teacher',
-            [Designation.AssistantTeacher]: 'Assistant Teacher',
+            [Designation.SeniorEmployee]: 'Senior Employee',
+            [Designation.Employee]: 'Employee',
+            [Designation.AssistantEmployee]: 'Assistant Employee',
             [Designation.Lecturer]: 'Lecturer',
             [Designation.SeniorLecturer]: 'Senior Lecturer',
             [Designation.AssistantProfessor]: 'Assistant Professor',
@@ -619,10 +570,10 @@ export class TeacherFormComponent implements OnInit, OnDestroy {
             [Designation.LabAssistant]: 'Lab Assistant',
             [Designation.Librarian]: 'Librarian',
             [Designation.AssistantLibrarian]: 'Assistant Librarian',
-            [Designation.SportsTeacher]: 'Sports Teacher',
-            [Designation.MusicTeacher]: 'Music Teacher',
-            [Designation.ArtTeacher]: 'Art Teacher',
-            [Designation.ComputerTeacher]: 'Computer Teacher',
+            [Designation.SportsEmployee]: 'Sports Employee',
+            [Designation.MusicEmployee]: 'Music Employee',
+            [Designation.ArtEmployee]: 'Art Employee',
+            [Designation.ComputerEmployee]: 'Computer Employee',
             [Designation.Counselor]: 'Counselor',
             [Designation.Administrator]: 'Administrator',
             [Designation.AccountsOfficer]: 'Accounts Officer',

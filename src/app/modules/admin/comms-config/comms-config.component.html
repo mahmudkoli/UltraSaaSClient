@@ -23,8 +23,8 @@
                         <mat-form-field appearance="outline" class="w-full"><mat-label>SMTP host</mat-label><input matInput formControlName="host" placeholder="smtp.gmail.com"></mat-form-field>
                         <mat-form-field appearance="outline" class="w-full"><mat-label>Port</mat-label><input matInput type="number" formControlName="port"></mat-form-field>
                     </div>
-                    <mat-form-field appearance="outline" class="w-full"><mat-label>Display name</mat-label><input matInput formControlName="displayName" placeholder="UltraEdu"></mat-form-field>
-                    <mat-form-field appearance="outline" class="w-full"><mat-label>From address</mat-label><input matInput type="email" formControlName="from" placeholder="no-reply@school.edu"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>Display name</mat-label><input matInput formControlName="displayName" placeholder="MK Corex HRM"></mat-form-field>
+                    <mat-form-field appearance="outline" class="w-full"><mat-label>From address</mat-label><input matInput type="email" formControlName="from" placeholder="no-reply@company.com"></mat-form-field>
                     <mat-form-field appearance="outline" class="w-full"><mat-label>SMTP username</mat-label><input matInput formControlName="userName"></mat-form-field>
                     <mat-form-field appearance="outline" class="w-full"><mat-label>SMTP password</mat-label><input matInput type="password" formControlName="password"></mat-form-field>
                     <div class="flex justify-end pt-2"><button mat-flat-button color="primary" type="submit" [disabled]="mailForm.invalid || savingMail">{{ savingMail ? 'Saving…' : 'Save Mail' }}</button></div>

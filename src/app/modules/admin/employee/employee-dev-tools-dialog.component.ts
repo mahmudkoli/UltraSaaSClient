@@ -10,11 +10,11 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { TeachersService } from '../../../core/teachers/teachers.service';
-import { GenerationProgress } from '../../../core/teachers/teachers.types';
+import { EmployeesService } from '../../../core/employees/employees.service';
+import { GenerationProgress } from '../../../core/employees/employees.types';
 
 @Component({
-    selector: 'teacher-dev-tools-dialog',
+    selector: 'employee-dev-tools-dialog',
     template: `
         <div class="flex flex-col max-w-md w-full">
             <!-- Header -->
@@ -25,7 +25,7 @@ import { GenerationProgress } from '../../../core/teachers/teachers.types';
                     </div>
                     <div>
                         <h2 class="text-lg font-semibold text-gray-900">Developer Tools</h2>
-                        <p class="text-sm text-gray-500">Generate and manage test teacher data</p>
+                        <p class="text-sm text-gray-500">Generate and manage test employee data</p>
                     </div>
                 </div>
                 <button mat-icon-button [mat-dialog-close]>
@@ -34,21 +34,21 @@ import { GenerationProgress } from '../../../core/teachers/teachers.types';
             </div>
 
             <div class="p-6 space-y-6">
-                <!-- Generate Random Teachers -->
+                <!-- Generate Random Employees -->
                 <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">
                     <div class="flex items-center space-x-3 mb-4">
                         <mat-icon class="text-blue-600">group_add</mat-icon>
                         <div>
-                            <h3 class="text-sm font-medium text-gray-900">Generate Random Teachers</h3>
-                            <p class="text-xs text-gray-500">Create test teacher data for development</p>
+                            <h3 class="text-sm font-medium text-gray-900">Generate Random Employees</h3>
+                            <p class="text-xs text-gray-500">Create test employee data for development</p>
                         </div>
                     </div>
                     
                     <form [formGroup]="generationForm" class="space-y-3">
                         <mat-form-field appearance="outline" class="w-full">
-                            <mat-label>Number of Teachers</mat-label>
+                            <mat-label>Number of Employees</mat-label>
                             <input matInput formControlName="nSeed" type="number" min="1" max="100">
-                            <mat-hint>Generate between 1-100 teachers</mat-hint>
+                            <mat-hint>Generate between 1-100 employees</mat-hint>
                         </mat-form-field>
                         
                         <button 
@@ -56,11 +56,11 @@ import { GenerationProgress } from '../../../core/teachers/teachers.types';
                             mat-raised-button 
                             color="primary"
                             [disabled]="isGenerating || generationForm.invalid"
-                            (click)="generateRandomTeachers()"
+                            (click)="generateRandomEmployees()"
                             class="w-full">
                             <mat-icon *ngIf="!isGenerating">person_add</mat-icon>
                             <mat-icon *ngIf="isGenerating" class="animate-spin">sync</mat-icon>
-                            {{ isGenerating ? 'Generating...' : 'Generate Teachers' }}
+                            {{ isGenerating ? 'Generating...' : 'Generate Employees' }}
                         </button>
                     </form>
                 </div>
@@ -78,7 +78,7 @@ import { GenerationProgress } from '../../../core/teachers/teachers.types';
                     </mat-progress-bar>
                     
                     <div *ngIf="generationProgress.generatedCount !== undefined" class="mt-2 text-xs text-gray-600">
-                        Generated {{ generationProgress.generatedCount }} of {{ generationProgress.totalCount }} teachers
+                        Generated {{ generationProgress.generatedCount }} of {{ generationProgress.totalCount }} employees
                     </div>
                 </div>
 
@@ -88,7 +88,7 @@ import { GenerationProgress } from '../../../core/teachers/teachers.types';
                         <mat-icon class="text-red-600">delete_sweep</mat-icon>
                         <div>
                             <h3 class="text-sm font-medium text-gray-900">Cleanup Test Data</h3>
-                            <p class="text-xs text-gray-500">Remove all randomly generated teachers</p>
+                            <p class="text-xs text-gray-500">Remove all randomly generated employees</p>
                         </div>
                     </div>
                     
@@ -97,11 +97,11 @@ import { GenerationProgress } from '../../../core/teachers/teachers.types';
                         mat-raised-button 
                         color="warn"
                         [disabled]="isDeleting"
-                        (click)="deleteRandomTeachers()"
+                        (click)="deleteRandomEmployees()"
                         class="w-full">
                         <mat-icon *ngIf="!isDeleting">delete_sweep</mat-icon>
                         <mat-icon *ngIf="isDeleting" class="animate-spin">sync</mat-icon>
-                        {{ isDeleting ? 'Deleting...' : 'Delete Random Teachers' }}
+                        {{ isDeleting ? 'Deleting...' : 'Delete Random Employees' }}
                     </button>
                 </div>
 
@@ -136,7 +136,7 @@ import { GenerationProgress } from '../../../core/teachers/teachers.types';
         MatProgressBarModule,
     ],
 })
-export class TeacherDevToolsDialogComponent implements OnInit, OnDestroy {
+export class EmployeeDevToolsDialogComponent implements OnInit, OnDestroy {
     generationForm: FormGroup;
     generationProgress: GenerationProgress | null = null;
     isGenerating = false;
@@ -146,10 +146,10 @@ export class TeacherDevToolsDialogComponent implements OnInit, OnDestroy {
 
     constructor(
         private _formBuilder: FormBuilder,
-        private _teachersService: TeachersService,
+        private _employeesService: EmployeesService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _snackBar: MatSnackBar,
-        public dialogRef: MatDialogRef<TeacherDevToolsDialogComponent>
+        public dialogRef: MatDialogRef<EmployeeDevToolsDialogComponent>
     ) {
         this.generationForm = this._formBuilder.group({
             nSeed: [10, [Validators.required, Validators.min(1), Validators.max(100)]]
@@ -158,7 +158,7 @@ export class TeacherDevToolsDialogComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         // Subscribe to generation progress
-        this._teachersService.generationProgress$
+        this._employeesService.generationProgress$
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(progress => {
                 this.generationProgress = progress;
@@ -170,18 +170,18 @@ export class TeacherDevToolsDialogComponent implements OnInit, OnDestroy {
     ngOnDestroy(): void {
         this._unsubscribeAll.next(null);
         this._unsubscribeAll.complete();
-        this._teachersService.resetGenerationProgress();
+        this._employeesService.resetGenerationProgress();
     }
 
-    generateRandomTeachers(): void {
+    generateRandomEmployees(): void {
         if (this.generationForm.valid) {
             const request = this.generationForm.value;
 
-            this._teachersService.generateRandom(request)
+            this._employeesService.generateRandom(request)
                 .pipe(takeUntil(this._unsubscribeAll))
                 .subscribe({
                     next: (response) => {
-                        this._snackBar.open('Random teachers generated successfully!', 'Close', {
+                        this._snackBar.open('Random employees generated successfully!', 'Close', {
                             duration: 3000,
                             panelClass: ['success-snackbar']
                         });
@@ -193,7 +193,7 @@ export class TeacherDevToolsDialogComponent implements OnInit, OnDestroy {
                     },
                     error: (error) => {
                         console.error('Generation failed:', error);
-                        this._snackBar.open('Failed to generate teachers. Please try again.', 'Close', {
+                        this._snackBar.open('Failed to generate employees. Please try again.', 'Close', {
                             duration: 5000,
                             panelClass: ['error-snackbar']
                         });
@@ -202,16 +202,16 @@ export class TeacherDevToolsDialogComponent implements OnInit, OnDestroy {
         }
     }
 
-    deleteRandomTeachers(): void {
+    deleteRandomEmployees(): void {
         this.isDeleting = true;
         this._changeDetectorRef.markForCheck();
 
-        this._teachersService.deleteRandom()
+        this._employeesService.deleteRandom()
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
                     this.isDeleting = false;
-                    this._snackBar.open('Random teachers deleted successfully!', 'Close', {
+                    this._snackBar.open('Random employees deleted successfully!', 'Close', {
                         duration: 3000,
                         panelClass: ['success-snackbar']
                     });
@@ -226,7 +226,7 @@ export class TeacherDevToolsDialogComponent implements OnInit, OnDestroy {
                 error: (error) => {
                     this.isDeleting = false;
                     console.error('Deletion failed:', error);
-                    this._snackBar.open('Failed to delete teachers. Please try again.', 'Close', {
+                    this._snackBar.open('Failed to delete employees. Please try again.', 'Close', {
                         duration: 5000,
                         panelClass: ['error-snackbar']
                     });

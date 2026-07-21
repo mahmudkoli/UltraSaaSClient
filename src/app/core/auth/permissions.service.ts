@@ -61,7 +61,7 @@ export class PermissionsService
         return this._snapshot?.has(permission) ?? false;
     }
 
-    /** True when the user holds at least one permission (i.e. is not a bare student/teacher). */
+    /** True when the user holds at least one permission (i.e. is not a user with no admin permissions). */
     get hasAny(): boolean
     {
         return (this._snapshot?.size ?? 0) > 0;

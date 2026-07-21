@@ -18,14 +18,14 @@ import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseConfirmationService } from '@fuse/services/confirmation';
-import { TeachersService } from '../../../core/teachers/teachers.service';
-import { TeacherDto, SearchTeachersRequest, PaginationResponse, Designation } from '../../../core/teachers/teachers.types';
+import { EmployeesService } from '../../../core/employees/employees.service';
+import { EmployeeDto, SearchEmployeesRequest, PaginationResponse, Designation } from '../../../core/employees/employees.types';
 import { NotificationService } from '../../../core/services/notification.service';
-import { TeacherDevToolsDialogComponent } from './teacher-dev-tools-dialog.component';
+import { EmployeeDevToolsDialogComponent } from './employee-dev-tools-dialog.component';
 
 @Component({
-    selector: 'teacher-list',
-    templateUrl: './teacher-list.component.html',
+    selector: 'employee-list',
+    templateUrl: './employee-list.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     animations: fuseAnimations,
@@ -47,8 +47,8 @@ import { TeacherDevToolsDialogComponent } from './teacher-dev-tools-dialog.compo
         MatTooltipModule,
     ],
 })
-export class TeacherListComponent implements OnInit, OnDestroy {
-    teachers: TeacherDto[] = [];
+export class EmployeeListComponent implements OnInit, OnDestroy {
+    employees: EmployeeDto[] = [];
     isLoading = false;
     totalCount = 0;
     currentPage = 0;
@@ -68,7 +68,7 @@ export class TeacherListComponent implements OnInit, OnDestroy {
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
-        private _teachersService: TeachersService,
+        private _employeesService: EmployeesService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
@@ -87,11 +87,11 @@ export class TeacherListComponent implements OnInit, OnDestroy {
             )
             .subscribe(() => {
                 this.currentPage = 0; // Reset to first page when searching
-                this.loadTeachers();
+                this.loadEmployees();
             });
 
         // Load initial data
-        this.loadTeachers();
+        this.loadEmployees();
     }
 
     ngOnDestroy(): void {
@@ -99,17 +99,17 @@ export class TeacherListComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
-    loadTeachers(): void {
+    loadEmployees(): void {
         this.isLoading = true;
         this._changeDetectorRef.markForCheck();
 
-        const request: SearchTeachersRequest = {
+        const request: SearchEmployeesRequest = {
             pageNumber: this.currentPage + 1, // API uses 1-based indexing
             pageSize: this.pageSize,
             orderBy: ['userProfile.firstName'], // Try navigation property path
-            // Backend filters teachers by the dedicated `Name` field
+            // Backend filters employees by the dedicated `Name` field
             // ((FirstName + " " + LastName).Contains). `keyword` only searches the
-            // Teacher entity's first-level string columns and never reaches the
+            // Employee entity's first-level string columns and never reaches the
             // UserProfile name, so it always returned zero matches. (BUG-T1)
             name: this.searchControl.value || undefined
         };
@@ -119,23 +119,23 @@ export class TeacherListComponent implements OnInit, OnDestroy {
             request.isActive = this.statusFilterControl.value === 'true';
         }
 
-        console.log('Loading teachers with request:', request);
+        console.log('Loading employees with request:', request);
 
-        this._teachersService.search(request)
+        this._employeesService.search(request)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
-                next: (response: PaginationResponse<TeacherDto>) => {
-                    this.teachers = response.data;
+                next: (response: PaginationResponse<EmployeeDto>) => {
+                    this.employees = response.data;
                     this.totalCount = response.totalCount;
                     this.currentPage = response.currentPage - 1; // Convert to 0-based for Material paginator
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 },
                 error: (error) => {
-                    console.error('Error loading teachers:', error);
+                    console.error('Error loading employees:', error);
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.error('Error loading teachers');
+                    this._notificationService.error('Error loading employees');
                 }
             });
     }
@@ -143,28 +143,28 @@ export class TeacherListComponent implements OnInit, OnDestroy {
 
 
     onStatusFilterChange(): void {
-        this.loadTeachers();
+        this.loadEmployees();
     }
 
     onPageChange(event: PageEvent): void {
         this.currentPage = event.pageIndex;
         this.pageSize = event.pageSize;
-        this.loadTeachers();
+        this.loadEmployees();
     }
 
     onSortChange(sort: Sort): void {
-        // Note: Sorting not implemented for teachers
-        console.log('Sorting not implemented for teachers');
+        // Note: Sorting not implemented for employees
+        console.log('Sorting not implemented for employees');
     }
 
-    editTeacher(teacher: TeacherDto): void {
-        this._router.navigate([teacher.id, 'edit'], { relativeTo: this._route });
+    editEmployee(employee: EmployeeDto): void {
+        this._router.navigate([employee.id, 'edit'], { relativeTo: this._route });
     }
 
-    deleteTeacher(teacher: TeacherDto): void {
+    deleteEmployee(employee: EmployeeDto): void {
         const dialogRef = this._fuseConfirmationService.open({
-            title: 'Delete Teacher',
-            message: `Are you sure you want to delete ${teacher.firstName} ${teacher.lastName}?`,
+            title: 'Delete Employee',
+            message: `Are you sure you want to delete ${employee.firstName} ${employee.lastName}?`,
             icon: {
                 show: true,
                 name: 'heroicons_outline:exclamation-triangle',
@@ -186,40 +186,40 @@ export class TeacherListComponent implements OnInit, OnDestroy {
 
         dialogRef.afterClosed().subscribe((result) => {
             if (result === 'confirmed') {
-                this._teachersService.delete(teacher.id)
+                this._employeesService.delete(employee.id)
                     .pipe(takeUntil(this._unsubscribeAll))
                     .subscribe({
                         next: () => {
-                            this._notificationService.success('Teacher deleted successfully');
-                            this.loadTeachers();
+                            this._notificationService.success('Employee deleted successfully');
+                            this.loadEmployees();
                         },
                         error: (error) => {
-                            console.error('Error deleting teacher:', error);
-                            this._notificationService.error('Error deleting teacher');
+                            console.error('Error deleting employee:', error);
+                            this._notificationService.error('Error deleting employee');
                         }
                     });
             }
         });
     }
 
-    addTeacher(): void {
-        this._router.navigate(['/teachers/create']);
+    addEmployee(): void {
+        this._router.navigate(['/employees/create']);
     }
 
-    addQualification(teacher: TeacherDto): void {
-        this._router.navigate(['/teacher-qualifications/create'], { 
+    addQualification(employee: EmployeeDto): void {
+        this._router.navigate(['/employee-qualifications/create'], { 
             queryParams: { 
-                teacherId: teacher.id, 
-                teacherName: `${teacher.firstName} ${teacher.lastName}` 
+                employeeId: employee.id, 
+                employeeName: `${employee.firstName} ${employee.lastName}` 
             }
         });
     }
 
     /**
-     * Get full name of teacher
+     * Get full name of employee
      */
-    getFullName(teacher: TeacherDto): string {
-        return `${teacher.firstName || ''} ${teacher.lastName || ''}`.trim() || 'N/A';
+    getFullName(employee: EmployeeDto): string {
+        return `${employee.firstName || ''} ${employee.lastName || ''}`.trim() || 'N/A';
     }
 
     /**
@@ -234,9 +234,9 @@ export class TeacherListComponent implements OnInit, OnDestroy {
             [Designation.Principal]: 'Principal',
             [Designation.VicePrincipal]: 'Vice Principal',
             [Designation.HeadOfDepartment]: 'Head Of Department',
-            [Designation.SeniorTeacher]: 'Senior Teacher',
-            [Designation.Teacher]: 'Teacher',
-            [Designation.AssistantTeacher]: 'Assistant Teacher',
+            [Designation.SeniorEmployee]: 'Senior Employee',
+            [Designation.Employee]: 'Employee',
+            [Designation.AssistantEmployee]: 'Assistant Employee',
             [Designation.Lecturer]: 'Lecturer',
             [Designation.SeniorLecturer]: 'Senior Lecturer',
             [Designation.AssistantProfessor]: 'Assistant Professor',
@@ -249,10 +249,10 @@ export class TeacherListComponent implements OnInit, OnDestroy {
             [Designation.LabAssistant]: 'Lab Assistant',
             [Designation.Librarian]: 'Librarian',
             [Designation.AssistantLibrarian]: 'Assistant Librarian',
-            [Designation.SportsTeacher]: 'Sports Teacher',
-            [Designation.MusicTeacher]: 'Music Teacher',
-            [Designation.ArtTeacher]: 'Art Teacher',
-            [Designation.ComputerTeacher]: 'Computer Teacher',
+            [Designation.SportsEmployee]: 'Sports Employee',
+            [Designation.MusicEmployee]: 'Music Employee',
+            [Designation.ArtEmployee]: 'Art Employee',
+            [Designation.ComputerEmployee]: 'Computer Employee',
             [Designation.Counselor]: 'Counselor',
             [Designation.Administrator]: 'Administrator',
             [Designation.AccountsOfficer]: 'Accounts Officer',
@@ -267,7 +267,7 @@ export class TeacherListComponent implements OnInit, OnDestroy {
     }
 
     openDevTools(): void {
-        const dialogRef = this._matDialog.open(TeacherDevToolsDialogComponent, {
+        const dialogRef = this._matDialog.open(EmployeeDevToolsDialogComponent, {
             width: '600px',
             panelClass: 'dev-tools-dialog'
         });
@@ -275,7 +275,7 @@ export class TeacherListComponent implements OnInit, OnDestroy {
         dialogRef.afterClosed().subscribe((result) => {
             if (result) {
                 // Refresh the list after generation/deletion
-                this.loadTeachers();
+                this.loadEmployees();
             }
         });
     }

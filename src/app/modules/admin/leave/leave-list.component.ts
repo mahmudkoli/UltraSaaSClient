@@ -25,7 +25,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 export class LeaveListComponent implements OnInit, OnDestroy {
     leaves: LeaveDto[] = [];
     loading = false;
-    cols = ['icon', 'teacherName', 'dates', 'reason', 'status', 'decision', 'actions'];
+    cols = ['icon', 'employeeName', 'dates', 'reason', 'status', 'decision', 'actions'];
     private _destroyed$ = new Subject<void>();
 
     constructor(
@@ -85,7 +85,7 @@ export class LeaveListComponent implements OnInit, OnDestroy {
     decide(row: LeaveDto, action: 'approve' | 'reject'): void {
         const ref = this._confirm.open({
             title: action === 'approve' ? 'Approve Leave' : 'Reject Leave',
-            message: `${action === 'approve' ? 'Approve' : 'Reject'} ${row.teacherName}'s ${row.type} leave (${row.days} day${row.days > 1 ? 's' : ''})?`,
+            message: `${action === 'approve' ? 'Approve' : 'Reject'} ${row.employeeName}'s ${row.type} leave (${row.days} day${row.days > 1 ? 's' : ''})?`,
             actions: { confirm: { show: true, label: action === 'approve' ? 'Approve' : 'Reject', color: action === 'approve' ? 'primary' : 'warn' }, cancel: { show: true, label: 'Cancel' } },
             icon: { show: true, name: action === 'approve' ? 'heroicons_outline:check-badge' : 'heroicons_outline:x-circle', color: action === 'approve' ? 'success' : 'warn' },
             dismissible: true,

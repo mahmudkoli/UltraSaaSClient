@@ -14,19 +14,19 @@ import { fuseAnimations } from '@fuse/animations';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 
-import { TeacherQualificationsService } from '../../../core/teacher-qualifications/teacher-qualifications.service';
-import { TeachersService } from '../../../core/teachers/teachers.service';
+import { EmployeeQualificationsService } from '../../../core/employee-qualifications/employee-qualifications.service';
+import { EmployeesService } from '../../../core/employees/employees.service';
 import { NotificationService } from '../../../core/services/notification.service';
 import { 
-    TeacherQualificationDto, 
-    CreateTeacherQualificationRequest, 
-    UpdateTeacherQualificationRequest 
-} from '../../../core/teacher-qualifications/teacher-qualifications.types';
-import { TeacherDto } from '../../../core/teachers/teachers.types';
+    EmployeeQualificationDto, 
+    CreateEmployeeQualificationRequest, 
+    UpdateEmployeeQualificationRequest 
+} from '../../../core/employee-qualifications/employee-qualifications.types';
+import { EmployeeDto } from '../../../core/employees/employees.types';
 
 @Component({
-    selector: 'teacher-qualifications-form',
-    templateUrl: './teacher-qualifications-form.component.html',
+    selector: 'employee-qualifications-form',
+    templateUrl: './employee-qualifications-form.component.html',
     encapsulation: ViewEncapsulation.None,
     changeDetection: ChangeDetectionStrategy.OnPush,
     animations: fuseAnimations,
@@ -44,14 +44,14 @@ import { TeacherDto } from '../../../core/teachers/teachers.types';
         MatSnackBarModule
     ]
 })
-export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
+export class EmployeeQualificationsFormComponent implements OnInit, OnDestroy {
     qualificationForm: FormGroup;
     isLoading = false;
     isSaving = false;
     qualificationId: string | null = null;
     isEditMode = false;
-    qualification: TeacherQualificationDto | null = null;
-    teachers: TeacherDto[] = [];
+    qualification: EmployeeQualificationDto | null = null;
+    employees: EmployeeDto[] = [];
     selectedTabIndex = 0;
     currentYear = new Date().getFullYear();
 
@@ -92,8 +92,8 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
 
     constructor(
         private _formBuilder: FormBuilder,
-        private _teacherQualificationsService: TeacherQualificationsService,
-        private _teachersService: TeachersService,
+        private _employeeQualificationsService: EmployeeQualificationsService,
+        private _employeesService: EmployeesService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _router: Router,
         private _route: ActivatedRoute,
@@ -101,7 +101,7 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
     ) {
         this.qualificationForm = this._formBuilder.group({
             basicInfo: this._formBuilder.group({
-                teacherId: ['', Validators.required],
+                employeeId: ['', Validators.required],
                 highestQualification: ['', Validators.required],
                 university: [''],
                 college: [''],
@@ -136,21 +136,21 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
         this.qualificationId = this._route.snapshot.paramMap.get('id');
         this.isEditMode = !!this.qualificationId;
 
-        // Load teachers for dropdown
-        this.loadTeachers();
+        // Load employees for dropdown
+        this.loadEmployees();
 
         // Load qualification data if editing
         if (this.isEditMode && this.qualificationId) {
             this.loadQualification();
         } else {
-            // Check for pre-filled teacher data from query params
-            const teacherId = this._route.snapshot.queryParamMap.get('teacherId');
-            const teacherName = this._route.snapshot.queryParamMap.get('teacherName');
+            // Check for pre-filled employee data from query params
+            const employeeId = this._route.snapshot.queryParamMap.get('employeeId');
+            const employeeName = this._route.snapshot.queryParamMap.get('employeeName');
             
-            if (teacherId && teacherName) {
-                // Pre-fill the teacher selection
+            if (employeeId && employeeName) {
+                // Pre-fill the employee selection
                 setTimeout(() => {
-                    this.qualificationForm.get('basicInfo.teacherId')?.setValue(teacherId);
+                    this.qualificationForm.get('basicInfo.employeeId')?.setValue(employeeId);
                     this.selectedTabIndex = 0; // Switch to basic info tab
                 }, 100);
             }
@@ -162,20 +162,20 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
-    loadTeachers(): void {
-        this._teachersService.search({
+    loadEmployees(): void {
+        this._employeesService.search({
             pageNumber: 1,
             pageSize: 1000,
             keyword: ''
         }).pipe(takeUntil(this._unsubscribeAll))
         .subscribe({
             next: (response) => {
-                this.teachers = response.data;
+                this.employees = response.data;
                 this._changeDetectorRef.markForCheck();
             },
             error: (error) => {
-                console.error('Error loading teachers:', error);
-                this._notificationService.error('Error loading teachers');
+                console.error('Error loading employees:', error);
+                this._notificationService.error('Error loading employees');
             }
         });
     }
@@ -186,7 +186,7 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
         this.isLoading = true;
         this._changeDetectorRef.markForCheck();
 
-        this._teacherQualificationsService.getById(this.qualificationId)
+        this._employeeQualificationsService.getById(this.qualificationId)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (qualification) => {
@@ -209,7 +209,7 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
 
         this.qualificationForm.patchValue({
             basicInfo: {
-                teacherId: this.qualification.teacherId,
+                employeeId: this.qualification.employeeId,
                 highestQualification: this.qualification.highestQualification,
                 university: this.qualification.university,
                 college: this.qualification.college,
@@ -257,8 +257,8 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
     createQualification(): void {
         const formValue = this.qualificationForm.value;
 
-        const createRequest: CreateTeacherQualificationRequest = {
-            teacherId: formValue.basicInfo.teacherId,
+        const createRequest: CreateEmployeeQualificationRequest = {
+            employeeId: formValue.basicInfo.employeeId,
             highestQualification: formValue.basicInfo.highestQualification || undefined,
             university: formValue.basicInfo.university || undefined,
             college: formValue.basicInfo.college || undefined,
@@ -266,14 +266,14 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
             percentage: formValue.basicInfo.percentage || undefined
         };
 
-        this._teacherQualificationsService.create(createRequest)
+        this._employeeQualificationsService.create(createRequest)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('Teacher qualification created successfully');
-                    this._router.navigate(['/teacher-qualifications']);
+                    this._notificationService.success('Employee qualification created successfully');
+                    this._router.navigate(['/employee-qualifications']);
                 },
                 error: (error) => {
                     console.error('Create qualification record error details:', error);
@@ -289,9 +289,9 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
 
         const formValue = this.qualificationForm.value;
 
-        const updateRequest: UpdateTeacherQualificationRequest = {
+        const updateRequest: UpdateEmployeeQualificationRequest = {
             id: this.qualification.id,
-            teacherId: formValue.basicInfo.teacherId,
+            employeeId: formValue.basicInfo.employeeId,
             highestQualification: formValue.basicInfo.highestQualification || undefined,
             university: formValue.basicInfo.university || undefined,
             college: formValue.basicInfo.college || undefined,
@@ -299,14 +299,14 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
             percentage: formValue.basicInfo.percentage || undefined
         };
 
-        this._teacherQualificationsService.update(this.qualification.id, updateRequest)
+        this._employeeQualificationsService.update(this.qualification.id, updateRequest)
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({
                 next: (response) => {
                     this.isSaving = false;
                     this._changeDetectorRef.markForCheck();
-                    this._notificationService.success('Teacher qualification updated successfully');
-                    this._router.navigate(['/teacher-qualifications']);
+                    this._notificationService.success('Employee qualification updated successfully');
+                    this._router.navigate(['/employee-qualifications']);
                 },
                 error: (error) => {
                     console.error('Update qualification record error details:', error);
@@ -318,19 +318,19 @@ export class TeacherQualificationsFormComponent implements OnInit, OnDestroy {
     }
 
     cancel(): void {
-        this._router.navigate(['/teacher-qualifications']);
+        this._router.navigate(['/employee-qualifications']);
     }
 
     getPageTitle(): string {
-        return this.isEditMode ? 'Edit Teacher Qualification' : 'Create Teacher Qualification';
+        return this.isEditMode ? 'Edit Employee Qualification' : 'Create Employee Qualification';
     }
 
     getSaveButtonText(): string {
         return this.isSaving ? 'Saving...' : (this.isEditMode ? 'Update Qualification' : 'Create Qualification');
     }
 
-    getTeacherName(teacherId: string): string {
-        const teacher = this.teachers.find(t => t.id === teacherId);
-        return teacher ? `${teacher.firstName} ${teacher.lastName}` : '';
+    getEmployeeName(employeeId: string): string {
+        const employee = this.employees.find(t => t.id === employeeId);
+        return employee ? `${employee.firstName} ${employee.lastName}` : '';
     }
 } 

@@ -16,7 +16,7 @@
                     {{ getPageTitle() }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {{ isEditMode ? 'Update teacher qualification information' : 'Add teacher qualification record to the system' }}
+                    {{ isEditMode ? 'Update employee qualification information' : 'Add employee qualification record to the system' }}
                 </p>
             </div>
         </div>
@@ -54,16 +54,16 @@
                         <mat-tab label="Basic Information">
                             <div class="p-6 space-y-6" formGroupName="basicInfo">
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <!-- Teacher -->
+                                    <!-- Employee -->
                                     <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Teacher</mat-label>
-                                        <mat-select formControlName="teacherId" required>
-                                            <mat-option *ngFor="let teacher of teachers" [value]="teacher.id">
-                                                {{ teacher.firstName }} {{ teacher.lastName }} ({{ teacher.userName }})
+                                        <mat-label>Employee</mat-label>
+                                        <mat-select formControlName="employeeId" required>
+                                            <mat-option *ngFor="let employee of employees" [value]="employee.id">
+                                                {{ employee.firstName }} {{ employee.lastName }} ({{ employee.userName }})
                                             </mat-option>
                                         </mat-select>
-                                        <mat-error *ngIf="qualificationForm.get('basicInfo.teacherId')?.hasError('required')">
-                                            Teacher selection is required
+                                        <mat-error *ngIf="qualificationForm.get('basicInfo.employeeId')?.hasError('required')">
+                                            Employee selection is required
                                         </mat-error>
                                     </mat-form-field>
 
@@ -120,8 +120,8 @@
                             </div>
                         </mat-tab>
 
-                        <!-- Academic Details Tab -->
-                        <mat-tab label="Academic Details">
+                        <!-- Education Tab -->
+                        <mat-tab label="Education">
                             <div class="p-6 space-y-6" formGroupName="academicDetails">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                     <!-- Qualification Details -->

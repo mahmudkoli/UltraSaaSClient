@@ -9,8 +9,8 @@ import { MatSelectModule } from '@angular/material/select';
 import { Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { PayrollService } from '../../../core/payroll/payroll.service';
-import { TeachersService } from '../../../core/teachers/teachers.service';
-import { TeacherDto } from '../../../core/teachers/teachers.types';
+import { EmployeesService } from '../../../core/employees/employees.service';
+import { EmployeeDto } from '../../../core/employees/employees.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
 import { TenantCurrencyPipe } from '../../../shared/pipes/currency.pipe';
@@ -24,7 +24,7 @@ import { TenantCurrencyPipe } from '../../../shared/pipes/currency.pipe';
 })
 export class PayrollFormComponent implements OnInit, OnDestroy {
     form: FormGroup;
-    teachers: TeacherDto[] = [];
+    employees: EmployeeDto[] = [];
     saving = false;
     months = [1,2,3,4,5,6,7,8,9,10,11,12];
     monthNames = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -34,7 +34,7 @@ export class PayrollFormComponent implements OnInit, OnDestroy {
     constructor(
         private _fb: FormBuilder,
         private _svc: PayrollService,
-        private _teachersSvc: TeachersService,
+        private _employeesSvc: EmployeesService,
         private _router: Router,
         private _cdr: ChangeDetectorRef,
         private _notify: NotificationService,
@@ -42,7 +42,7 @@ export class PayrollFormComponent implements OnInit, OnDestroy {
         const now = new Date();
         this.years = [now.getFullYear() - 1, now.getFullYear(), now.getFullYear() + 1];
         this.form = this._fb.group({
-            teacherId: ['', Validators.required],
+            employeeId: ['', Validators.required],
             periodYear: [now.getFullYear(), Validators.required],
             periodMonth: [now.getMonth() + 1, Validators.required],
             basic: [0, [Validators.required, Validators.min(0)]],
@@ -63,8 +63,8 @@ export class PayrollFormComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this._teachersSvc.search({ pageNumber: 1, pageSize: 500 } as any).pipe(takeUntil(this._destroyed$)).subscribe({
-            next: (resp) => { this.teachers = resp.data; this._cdr.markForCheck(); },
+        this._employeesSvc.search({ pageNumber: 1, pageSize: 500 } as any).pipe(takeUntil(this._destroyed$)).subscribe({
+            next: (resp) => { this.employees = resp.data; this._cdr.markForCheck(); },
         });
     }
 

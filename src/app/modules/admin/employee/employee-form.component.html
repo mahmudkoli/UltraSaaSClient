@@ -9,14 +9,14 @@
     <div class="flex flex-col sm:flex-row space-y-16 sm:space-y-0 flex-0 sm:items-center sm:justify-between p-2 sm:py-3 sm:px-4 border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 shadow-sm">
         <div class="flex items-center space-x-4">
             <div class="flex items-center justify-center w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-200">
-                <mat-icon class="text-white">school</mat-icon>
+                <mat-icon class="text-white">badge</mat-icon>
             </div>
             <div>
                 <h2 class="text-3xl font-bold tracking-tight leading-7 sm:leading-10 truncate bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-300 bg-clip-text text-transparent">
-                    {{ isEditMode ? 'Edit Teacher' : 'Create Teacher' }}
+                    {{ isEditMode ? 'Edit Employee' : 'Create Employee' }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {{ isEditMode ? 'Update teacher information' : 'Add a new teacher to the system' }}
+                    {{ isEditMode ? 'Update employee information' : 'Add a new employee to the system' }}
                 </p>
             </div>
         </div>
@@ -40,7 +40,7 @@
                 <div *ngIf="isLoading" class="flex items-center justify-center p-12">
                     <div class="flex flex-col items-center space-y-4">
                         <div class="w-16 h-16 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                        <p class="text-gray-600 dark:text-gray-400">Loading teacher information...</p>
+                        <p class="text-gray-600 dark:text-gray-400">Loading employee information...</p>
                     </div>
                 </div>
 
@@ -51,12 +51,12 @@
                     <div *ngIf="!isEditMode" class="flex items-start gap-3 px-5 py-3 bg-blue-50 border-b border-blue-200 text-sm text-blue-900" data-testid="required-hint-banner">
                         <mat-icon class="icon-size-5 text-blue-600 flex-shrink-0 mt-0.5">info</mat-icon>
                         <div>
-                            <strong>Only "Basic Information" is required to create the teacher.</strong> Other tabs can be filled now or updated later from the edit screen.
+                            <strong>Only "Basic Information" is required to create the employee.</strong> Other tabs can be filled now or updated later from the edit screen.
                         </div>
                     </div>
 
-                    <form [formGroup]="teacherForm" (ngSubmit)="save()">
-                        <mat-tab-group class="teacher-form-tabs" animationDuration="300ms">
+                    <form [formGroup]="employeeForm" (ngSubmit)="save()">
+                        <mat-tab-group class="employee-form-tabs" animationDuration="300ms">
 
                         <!-- Basic Information Tab (contains all required fields) -->
                         <mat-tab label="Basic Information *">
@@ -66,10 +66,10 @@
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>First Name</mat-label>
                                         <input matInput formControlName="firstName" required>
-                                        <mat-error *ngIf="teacherForm.get('basicInfo.firstName')?.hasError('required')">
+                                        <mat-error *ngIf="employeeForm.get('basicInfo.firstName')?.hasError('required')">
                                             First name is required
                                         </mat-error>
-                                        <mat-error *ngIf="teacherForm.get('basicInfo.firstName')?.hasError('maxlength')">
+                                        <mat-error *ngIf="employeeForm.get('basicInfo.firstName')?.hasError('maxlength')">
                                             Maximum 75 characters allowed
                                         </mat-error>
                                     </mat-form-field>
@@ -78,7 +78,7 @@
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Last Name</mat-label>
                                         <input matInput formControlName="lastName" required>
-                                        <mat-error *ngIf="teacherForm.get('basicInfo.lastName')?.hasError('required')">
+                                        <mat-error *ngIf="employeeForm.get('basicInfo.lastName')?.hasError('required')">
                                             Last name is required
                                         </mat-error>
                                     </mat-form-field>
@@ -87,7 +87,7 @@
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Username</mat-label>
                                         <input matInput formControlName="userName" required>
-                                        <mat-error *ngIf="teacherForm.get('basicInfo.userName')?.hasError('required')">
+                                        <mat-error *ngIf="employeeForm.get('basicInfo.userName')?.hasError('required')">
                                             Username is required
                                         </mat-error>
                                     </mat-form-field>
@@ -96,7 +96,7 @@
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Email</mat-label>
                                         <input matInput type="email" formControlName="email">
-                                        <mat-error *ngIf="teacherForm.get('basicInfo.email')?.hasError('email')">
+                                        <mat-error *ngIf="employeeForm.get('basicInfo.email')?.hasError('email')">
                                             Please enter a valid email
                                         </mat-error>
                                     </mat-form-field>
@@ -105,7 +105,7 @@
                                     <mat-form-field appearance="outline" class="w-full">
                                         <mat-label>Phone Number</mat-label>
                                         <input matInput formControlName="phoneNumber" required>
-                                        <mat-error *ngIf="teacherForm.get('basicInfo.phoneNumber')?.hasError('required')">
+                                        <mat-error *ngIf="employeeForm.get('basicInfo.phoneNumber')?.hasError('required')">
                                             Phone number is required
                                         </mat-error>
                                     </mat-form-field>
@@ -143,10 +143,10 @@
                                         <mat-form-field appearance="outline" class="w-full">
                                             <mat-label>Password</mat-label>
                                             <input matInput type="password" formControlName="password" required>
-                                            <mat-error *ngIf="teacherForm.get('basicInfo.password')?.hasError('required')">
+                                            <mat-error *ngIf="employeeForm.get('basicInfo.password')?.hasError('required')">
                                                 Password is required
                                             </mat-error>
-                                            <mat-error *ngIf="teacherForm.get('basicInfo.password')?.hasError('minlength')">
+                                            <mat-error *ngIf="employeeForm.get('basicInfo.password')?.hasError('minlength')">
                                                 Password must be at least 6 characters
                                             </mat-error>
                                         </mat-form-field>
@@ -155,10 +155,10 @@
                                         <mat-form-field appearance="outline" class="w-full">
                                             <mat-label>Confirm Password</mat-label>
                                             <input matInput type="password" formControlName="confirmPassword" required>
-                                            <mat-error *ngIf="teacherForm.get('basicInfo.confirmPassword')?.hasError('required')">
+                                            <mat-error *ngIf="employeeForm.get('basicInfo.confirmPassword')?.hasError('required')">
                                                 Please confirm your password
                                             </mat-error>
-                                            <mat-error *ngIf="teacherForm.hasError('passwordMismatch')">
+                                            <mat-error *ngIf="employeeForm.hasError('passwordMismatch')">
                                                 Passwords do not match
                                             </mat-error>
                                         </mat-form-field>
@@ -189,18 +189,6 @@
                                                 {{ dept.label }}
                                             </mat-option>
                                         </mat-select>
-                                    </mat-form-field>
-
-                                    <!-- Subject -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Subject</mat-label>
-                                        <input matInput formControlName="subject">
-                                    </mat-form-field>
-
-                                    <!-- Specialization -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Specialization</mat-label>
-                                        <input matInput formControlName="specialization">
                                     </mat-form-field>
 
                                     <!-- Employee ID -->
@@ -280,41 +268,6 @@
                         <!-- For brevity, I'll add the key tabs -->
 
                         <!-- Teaching Information Tab -->
-                        <mat-tab label="Teaching Information">
-                            <div class="p-6 space-y-6" formGroupName="teachingInfo">
-                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                    <!-- Is Class Teacher -->
-                                    <mat-checkbox formControlName="isClassTeacher" class="w-full">
-                                        Is Class Teacher
-                                    </mat-checkbox>
-
-                                    <!-- Assigned Classes -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Assigned Classes</mat-label>
-                                        <input matInput formControlName="assignedClasses">
-                                    </mat-form-field>
-
-                                    <!-- Assigned Subjects -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Assigned Subjects</mat-label>
-                                        <input matInput formControlName="assignedSubjects">
-                                    </mat-form-field>
-
-                                    <!-- Max Students -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Max Students</mat-label>
-                                        <input matInput type="number" formControlName="maxStudents">
-                                    </mat-form-field>
-
-                                    <!-- Current Students -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Current Students</mat-label>
-                                        <input matInput type="number" formControlName="currentStudents">
-                                    </mat-form-field>
-                                </div>
-                            </div>
-                        </mat-tab>
-
                         <!-- Personal Information Tab -->
                         <mat-tab label="Personal Information">
                             <div class="p-6 space-y-6" formGroupName="personalInfo">
@@ -372,11 +325,11 @@
                             </button>
                             <button
                                 type="submit"
-                                data-testid="teacher-save-btn"
+                                data-testid="employee-save-btn"
                                 mat-flat-button
                                 color="primary"
                                 class="w-full sm:w-auto h-12 px-6 rounded-lg shadow-sm hover:shadow-md transition-all duration-200"
-                                [disabled]="teacherForm.invalid || isSaving">
+                                [disabled]="employeeForm.invalid || isSaving">
                                 <mat-icon class="icon-size-5 mr-2">check</mat-icon>
                                 <span>{{ getSaveButtonText() }}</span>
                             </button>

@@ -44,7 +44,7 @@ import { MatIconModule } from '@angular/material/icon';
 })
 export class AnalyticsDashboardComponent {
     tiles = [
-        { title: 'Employees', subtitle: 'Manage staff records', icon: 'heroicons_outline:identification', link: '/teachers' },
+        { title: 'Employees', subtitle: 'Manage staff records', icon: 'heroicons_outline:identification', link: '/employees' },
         { title: 'Leaves', subtitle: 'Leave applications & approvals', icon: 'heroicons_outline:calendar', link: '/leaves' },
         { title: 'Payroll', subtitle: 'Payslips & runs', icon: 'heroicons_outline:banknotes', link: '/payroll' },
         { title: 'Users', subtitle: 'Accounts & roles', icon: 'heroicons_outline:users', link: '/users' },

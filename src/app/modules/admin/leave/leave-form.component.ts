@@ -10,8 +10,8 @@ import { Router, RouterLink } from '@angular/router';
 import { Subject, takeUntil } from 'rxjs';
 import { LeavesService } from '../../../core/leaves/leaves.service';
 import { LeaveType } from '../../../core/leaves/leaves.types';
-import { TeachersService } from '../../../core/teachers/teachers.service';
-import { TeacherDto } from '../../../core/teachers/teachers.types';
+import { EmployeesService } from '../../../core/employees/employees.service';
+import { EmployeeDto } from '../../../core/employees/employees.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { ListPageComponent } from '../../../shared/components/list-page.component';
 
@@ -24,7 +24,7 @@ import { ListPageComponent } from '../../../shared/components/list-page.componen
 })
 export class LeaveFormComponent implements OnInit, OnDestroy {
     form: FormGroup;
-    teachers: TeacherDto[] = [];
+    employees: EmployeeDto[] = [];
     saving = false;
     types: LeaveType[] = ['Casual', 'Sick', 'Earned', 'Maternity', 'Paternity', 'Unpaid', 'Compensatory', 'Other'];
     private _destroyed$ = new Subject<void>();
@@ -32,14 +32,14 @@ export class LeaveFormComponent implements OnInit, OnDestroy {
     constructor(
         private _fb: FormBuilder,
         private _svc: LeavesService,
-        private _teachersSvc: TeachersService,
+        private _employeesSvc: EmployeesService,
         private _router: Router,
         private _cdr: ChangeDetectorRef,
         private _notify: NotificationService,
     ) {
         const today = new Date().toISOString().slice(0, 10);
         this.form = this._fb.group({
-            teacherId: ['', Validators.required],
+            employeeId: ['', Validators.required],
             type: ['Casual' as LeaveType, Validators.required],
             fromDate: [today, Validators.required],
             toDate: [today, Validators.required],
@@ -48,8 +48,8 @@ export class LeaveFormComponent implements OnInit, OnDestroy {
     }
 
     ngOnInit(): void {
-        this._teachersSvc.search({ pageNumber: 1, pageSize: 500 } as any).pipe(takeUntil(this._destroyed$)).subscribe({
-            next: (resp) => { this.teachers = resp.data; this._cdr.markForCheck(); },
+        this._employeesSvc.search({ pageNumber: 1, pageSize: 500 } as any).pipe(takeUntil(this._destroyed$)).subscribe({
+            next: (resp) => { this.employees = resp.data; this._cdr.markForCheck(); },
         });
     }
 
@@ -60,7 +60,7 @@ export class LeaveFormComponent implements OnInit, OnDestroy {
         this.saving = true;
         const v = this.form.value;
         this._svc.apply({
-            teacherId: v.teacherId,
+            employeeId: v.employeeId,
             type: v.type,
             fromDate: new Date(v.fromDate).toISOString(),
             toDate: new Date(v.toDate).toISOString(),

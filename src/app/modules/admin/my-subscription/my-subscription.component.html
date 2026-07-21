@@ -1,6 +1,6 @@
 <app-list-page
     title="My Subscription"
-    subtitle="Your school's UltraEdu subscription — plan, validity, payment history, and tax invoices."
+    subtitle="Your organization's MK Corex HRM subscription — plan, validity, payment history, and tax invoices."
     icon="card_membership"
     iconGradient="from-blue-500 to-indigo-600"
     pageGradient="from-gray-50 via-blue-50/30 to-indigo-50/30">
@@ -144,7 +144,7 @@
             <h3 class="font-semibold text-red-900 dark:text-red-100">Subscription Suspended</h3>
             <p class="text-sm text-red-700 dark:text-red-200 mt-2">{{ sub.suspensionReason || 'Service restricted to read-only.' }}</p>
             <p class="text-sm text-red-600 dark:text-red-300 mt-2" *ngIf="sub.technicalAdminEmail">
-                Contact your school admin: <a [href]="'mailto:' + sub.technicalAdminEmail" class="underline font-medium">{{ sub.technicalAdminEmail }}</a>
+                Contact your organization admin: <a [href]="'mailto:' + sub.technicalAdminEmail" class="underline font-medium">{{ sub.technicalAdminEmail }}</a>
             </p>
         </div>
     </div>

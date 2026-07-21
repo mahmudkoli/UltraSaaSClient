@@ -20,20 +20,14 @@ export interface ModuleGate {
 }
 
 export const MODULE_GATES: ModuleGate[] = [
-    // Always-on baseline modules (every plan includes these for v1).
+    // Always-on baseline modules (every plan includes these).
     { id: 'my-profile',           requiresFeature: null },
     { id: 'analytics',            requiresFeature: null },
-    { id: 'academic-management',  requiresFeature: null },
-    { id: 'records-management',   requiresFeature: null },
-    { id: 'finance-management',   requiresFeature: null },
+    { id: 'hr-management',        requiresFeature: null },
     { id: 'system-management',    requiresFeature: null },
 
     // Module blocks that can be turned off per plan. Codes match
     // `FSHFeatures.Module*` on the BE.
-    { id: 'hr-management',        requiresFeature: 'MODULE_HR' },
-    { id: 'library-management',   requiresFeature: 'MODULE_LIBRARY' },
-    { id: 'hostel-management',    requiresFeature: 'MODULE_HOSTELS' },
-    { id: 'transport-management', requiresFeature: 'MODULE_TRANSPORT' },
     { id: 'communication',        requiresFeature: 'MODULE_COMMUNICATION' },
 ];
 
@@ -76,56 +70,14 @@ export const NAV_PERMISSIONS: Record<string, string> = {
     // Top-level
     'analytics':                     'Permissions.Dashboard.View',
 
-    // Academic Management
-    'user-management':               'Permissions.Users.View',
-    'student-management':            'Permissions.Students.View',
-    'teacher-management':            'Permissions.Teachers.View',
-    'academic-year-management':      'Permissions.AcademicYears.View',
-    'class-management':              'Permissions.Classes.View',
-    'subject-management':            'Permissions.Subjects.View',
-    'student-class-management':      'Permissions.Students.View',
-    'class-subject-management':      'Permissions.ClassSubjects.View',
-    'grade-bands':                   'Permissions.GradeBands.View',
-
-    // Records Management
-    'student-academics':             'Permissions.Students.View',
-    'student-health':                'Permissions.Students.View',
-    'teacher-qualifications':        'Permissions.Teachers.View',
-    'attendance-management':         'Permissions.Attendances.View',
-    'exam-management':               'Permissions.Exams.View',
-    'exam-result-management':        'Permissions.ExamResults.View',
-    'timetable':                     'Permissions.TimetableEntries.View',
-
     // HR
+    'employee-management':           'Permissions.Employees.View',
+    'employee-qualifications':       'Permissions.Employees.View',
     'leaves':                        'Permissions.Leaves.Search',
     'payroll':                       'Permissions.PayrollSlips.View',
 
-    // Finance
-    'fee-type-management':           'Permissions.FeeTypes.View',
-    'fee-structure-management':      'Permissions.FeeStructures.View',
-    'fee-structure-detail-management':'Permissions.FeeStructureDetails.View',
-    'fee-invoice-management':        'Permissions.FeeInvoices.View',
-    'fee-reports':                   'Permissions.FeeInvoices.View',
-    'reports':                       'Permissions.Students.View',
-    'sibling-discount-policy':       'Permissions.SiblingDiscountPolicy.View',
-
-    // Library
-    'library-books':                 'Permissions.Books.View',
-    'library-issues':                'Permissions.BookIssues.View',
-
-    // Hostels
-    'hostels':                       'Permissions.Hostels.View',
-    'hostel-allocations':            'Permissions.StudentHostels.View',
-
-    // Transport
-    'transport-routes':              'Permissions.Routes.View',
-    'transport-vehicles':            'Permissions.Vehicles.View',
-    'transport-assignments':         'Permissions.StudentTransports.View',
-
     // Communication
-    'events':                        'Permissions.Events.View',
     'announcement-archive':          'Permissions.Tenants.View',
-    'broadcast':                     'Permissions.Tenants.Update',
     'sms-templates':                 'Permissions.SMSTemplates.View',
     'mail-templates':                'Permissions.MailTemplates.View',
     'sms-logs':                      'Permissions.SMSLog.Search',
@@ -133,6 +85,7 @@ export const NAV_PERMISSIONS: Record<string, string> = {
     'comms-config':                  'Permissions.SMSConfig.View',
 
     // System Management
+    'user-management':               'Permissions.Users.View',
     'admin-dashboard':               'Permissions.Tenants.View',
     'audit-trail':                   'Permissions.AuditTrails.View',
     'tenant-management':             'Permissions.Tenants.View',

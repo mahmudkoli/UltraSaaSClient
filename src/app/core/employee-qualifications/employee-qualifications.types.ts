@@ -1,7 +1,7 @@
-export interface TeacherQualificationDto {
+export interface EmployeeQualificationDto {
     id: string;
-    teacherId: string;
-    teacherName?: string;
+    employeeId: string;
+    employeeName?: string;
     highestQualification?: string;
     qualificationDetails?: string;
     university?: string;
@@ -25,8 +25,8 @@ export interface TeacherQualificationDto {
     languagesKnown?: string;
 }
 
-export interface CreateTeacherQualificationRequest {
-    teacherId: string;
+export interface CreateEmployeeQualificationRequest {
+    employeeId: string;
     highestQualification?: string;
     university?: string;
     college?: string;
@@ -34,9 +34,9 @@ export interface CreateTeacherQualificationRequest {
     percentage?: number;
 }
 
-export interface UpdateTeacherQualificationRequest {
+export interface UpdateEmployeeQualificationRequest {
     id: string;
-    teacherId: string;
+    employeeId: string;
     highestQualification?: string;
     university?: string;
     college?: string;
@@ -44,7 +44,7 @@ export interface UpdateTeacherQualificationRequest {
     percentage?: number;
 }
 
-export interface SearchTeacherQualificationsRequest {
+export interface SearchEmployeeQualificationsRequest {
     pageNumber: number;
     pageSize: number;
     orderBy?: string[];
@@ -67,7 +67,7 @@ export interface PaginationResponse<T> {
     hasNextPage: boolean;
 }
 
-// Teacher Qualification Analytics
+// Employee Qualification Analytics
 export interface QualificationAnalytics {
     totalRecords: number;
     qualificationDistribution: QualificationLevel[];

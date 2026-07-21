@@ -91,8 +91,8 @@ export const appRoutes: Route[] = [
             // (renamed to `employees` in a later FE sprint).
             {path: 'analytics', data: {permission: 'Permissions.Dashboard.View'}, loadChildren: () => import('app/modules/admin/analytics/analytics.routes')},
             {path: 'users', data: {permission: 'Permissions.Users.View'}, loadChildren: () => import('app/modules/admin/user/user.routes')},
-            {path: 'teachers', data: {permission: 'Permissions.Teachers.View'}, loadChildren: () => import('app/modules/admin/teacher/teacher.routes')},
-            {path: 'teacher-qualifications', data: {permission: 'Permissions.Teachers.View'}, loadChildren: () => import('app/modules/admin/teacher-qualifications/teacher-qualifications.routes')},
+            {path: 'employees', data: {permission: 'Permissions.Employees.View'}, loadChildren: () => import('app/modules/admin/employee/employee.routes')},
+            {path: 'employee-qualifications', data: {permission: 'Permissions.Employees.View'}, loadChildren: () => import('app/modules/admin/employee-qualifications/employee-qualifications.routes')},
             {path: 'leaves', data: {permission: 'Permissions.Leaves.Search'}, loadChildren: () => import('app/modules/admin/leave/leave.routes')},
             {path: 'payroll', data: {permission: 'Permissions.PayrollSlips.View'}, loadChildren: () => import('app/modules/admin/payroll/payroll.routes')},
             {path: 'audit-trail', data: {permission: 'Permissions.AuditTrails.View'}, loadChildren: () => import('app/modules/admin/audit-trail/audit-trail.routes')},

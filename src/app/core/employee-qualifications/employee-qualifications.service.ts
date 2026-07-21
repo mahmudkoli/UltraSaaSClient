@@ -4,10 +4,10 @@ import { Observable } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { 
-    TeacherQualificationDto,
-    CreateTeacherQualificationRequest,
-    UpdateTeacherQualificationRequest,
-    SearchTeacherQualificationsRequest,
+    EmployeeQualificationDto,
+    CreateEmployeeQualificationRequest,
+    UpdateEmployeeQualificationRequest,
+    SearchEmployeeQualificationsRequest,
     PaginationResponse,
     QualificationAnalytics,
     QualificationLevel,
@@ -16,46 +16,46 @@ import {
     SubjectStats,
     CertificationStats,
     QualificationTrend
-} from './teacher-qualifications.types';
+} from './employee-qualifications.types';
 
 @Injectable({
     providedIn: 'root'
 })
-export class TeacherQualificationsService {
-    private readonly baseUrl = `${environment.apiUrl}/api/v1/teacherqualifications`;
+export class EmployeeQualificationsService {
+    private readonly baseUrl = `${environment.apiUrl}/api/v1/employeequalifications`;
 
     constructor(private http: HttpClient) {}
 
     /**
-     * Search teacher qualification records
+     * Search employee qualification records
      */
-    search(request: SearchTeacherQualificationsRequest): Observable<PaginationResponse<TeacherQualificationDto>> {
-        return this.http.post<PaginationResponse<TeacherQualificationDto>>(`${this.baseUrl}/search`, request);
+    search(request: SearchEmployeeQualificationsRequest): Observable<PaginationResponse<EmployeeQualificationDto>> {
+        return this.http.post<PaginationResponse<EmployeeQualificationDto>>(`${this.baseUrl}/search`, request);
     }
 
     /**
-     * Get teacher qualification record by ID
+     * Get employee qualification record by ID
      */
-    getById(id: string): Observable<TeacherQualificationDto> {
-        return this.http.get<TeacherQualificationDto>(`${this.baseUrl}/${id}`);
+    getById(id: string): Observable<EmployeeQualificationDto> {
+        return this.http.get<EmployeeQualificationDto>(`${this.baseUrl}/${id}`);
     }
 
     /**
-     * Create new teacher qualification record
+     * Create new employee qualification record
      */
-    create(request: CreateTeacherQualificationRequest): Observable<string> {
+    create(request: CreateEmployeeQualificationRequest): Observable<string> {
         return this.http.post(this.baseUrl, request, { responseType: 'text' });
     }
 
     /**
-     * Update teacher qualification record
+     * Update employee qualification record
      */
-    update(id: string, request: UpdateTeacherQualificationRequest): Observable<string> {
+    update(id: string, request: UpdateEmployeeQualificationRequest): Observable<string> {
         return this.http.put(`${this.baseUrl}/${id}`, request, { responseType: 'text' });
     }
 
     /**
-     * Delete teacher qualification record
+     * Delete employee qualification record
      */
     delete(id: string): Observable<string> {
         return this.http.delete<string>(`${this.baseUrl}/${id}`);
@@ -76,7 +76,7 @@ export class TeacherQualificationsService {
     /**
      * Compute qualification analytics
      */
-    private computeQualificationAnalytics(records: TeacherQualificationDto[]): QualificationAnalytics {
+    private computeQualificationAnalytics(records: EmployeeQualificationDto[]): QualificationAnalytics {
         if (records.length === 0) {
             return {
                 totalRecords: 0,

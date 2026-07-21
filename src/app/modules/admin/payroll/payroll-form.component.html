@@ -1,6 +1,6 @@
 <app-list-page
     title="Generate Payroll Slip"
-    subtitle="One slip per teacher per period. Slip number is auto-allocated."
+    subtitle="One slip per employee per period. Slip number is auto-allocated."
     icon="receipt_long"
     iconGradient="from-emerald-500 to-green-600"
     pageGradient="from-gray-50 via-emerald-50/30 to-green-50/30">
@@ -17,8 +17,8 @@
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
             <mat-form-field appearance="outline" class="w-full">
                 <mat-label>Employee</mat-label>
-                <mat-select formControlName="teacherId">
-                    <mat-option *ngFor="let t of teachers" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</mat-option>
+                <mat-select formControlName="employeeId">
+                    <mat-option *ngFor="let t of employees" [value]="t.id">{{ t.firstName }} {{ t.lastName }}</mat-option>
                 </mat-select>
             </mat-form-field>
             <mat-form-field appearance="outline" class="w-full">

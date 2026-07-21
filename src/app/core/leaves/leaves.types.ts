@@ -3,8 +3,8 @@ export type LeaveStatus = 'Pending' | 'Approved' | 'Rejected' | 'Cancelled';
 
 export interface LeaveDto {
     id: string;
-    teacherId: string;
-    teacherName: string;
+    employeeId: string;
+    employeeName: string;
     designation?: string;
     type: LeaveType;
     fromDate: string;
@@ -19,7 +19,7 @@ export interface LeaveDto {
 }
 
 export interface ApplyLeaveRequest {
-    teacherId: string;
+    employeeId: string;
     type: LeaveType;
     fromDate: string;
     toDate: string;
@@ -29,7 +29,7 @@ export interface ApplyLeaveRequest {
 export interface SearchLeavesRequest {
     pageNumber: number;
     pageSize: number;
-    teacherId?: string;
+    employeeId?: string;
     status?: LeaveStatus;
     type?: LeaveType;
     from?: string;

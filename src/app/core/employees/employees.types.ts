@@ -3,9 +3,9 @@ export enum Designation {
     Principal = 1,
     VicePrincipal = 2,
     HeadOfDepartment = 3,
-    SeniorTeacher = 4,
-    Teacher = 5,
-    AssistantTeacher = 6,
+    SeniorEmployee = 4,
+    Employee = 5,
+    AssistantEmployee = 6,
     Lecturer = 7,
     SeniorLecturer = 8,
     AssistantProfessor = 9,
@@ -18,10 +18,10 @@ export enum Designation {
     LabAssistant = 16,
     Librarian = 17,
     AssistantLibrarian = 18,
-    SportsTeacher = 19,
-    MusicTeacher = 20,
-    ArtTeacher = 21,
-    ComputerTeacher = 22,
+    SportsEmployee = 19,
+    MusicEmployee = 20,
+    ArtEmployee = 21,
+    ComputerEmployee = 22,
     Counselor = 23,
     Administrator = 24,
     AccountsOfficer = 25,
@@ -88,7 +88,7 @@ export enum PerformanceRating {
     Unsatisfactory = 6
 }
 
-export interface TeacherDto {
+export interface EmployeeDto {
     id: string;
     firstName: string;
     lastName: string;
@@ -104,8 +104,6 @@ export interface TeacherDto {
     // Professional Information
     designation?: Designation;
     department?: Department;
-    subject?: string;
-    specialization?: string;
     employeeId?: string;
     employeeCode?: string;
     joiningDate?: string;
@@ -120,15 +118,11 @@ export interface TeacherDto {
     
     // Experience Information
     totalExperience?: number;
-    teachingExperience?: number;
     previousEmployers?: string;
     previousPositions?: string;
-    previousSchools?: string;
     experienceDetails?: string;
     achievements?: string;
     awards?: string;
-    publications?: string;
-    researchWork?: string;
     
     // Salary Information
     basicSalary?: number;
@@ -156,11 +150,6 @@ export interface TeacherDto {
     projects?: string;
     
     // Teaching Information
-    isClassTeacher?: boolean;
-    assignedClasses?: string;
-    assignedSubjects?: string;
-    maxStudents?: number;
-    currentStudents?: number;
     
     // Performance Information
     performanceRating?: PerformanceRating;
@@ -205,7 +194,7 @@ export interface TeacherDto {
     deactivationDate?: string;
 }
 
-export interface CreateTeacherRequest {
+export interface CreateEmployeeRequest {
     firstName: string;
     lastName: string;
     email?: string;
@@ -219,8 +208,6 @@ export interface CreateTeacherRequest {
     // Professional Information
     designation?: Designation;
     department?: Department;
-    subject?: string;
-    specialization?: string;
     employeeId?: string;
     employeeCode?: string;
     joiningDate?: string;
@@ -233,15 +220,11 @@ export interface CreateTeacherRequest {
     
     // Experience Information
     totalExperience?: number;
-    teachingExperience?: number;
     previousEmployers?: string;
     previousPositions?: string;
-    previousSchools?: string;
     experienceDetails?: string;
     achievements?: string;
     awards?: string;
-    publications?: string;
-    researchWork?: string;
     
     // Salary Information
     basicSalary?: number;
@@ -269,11 +252,6 @@ export interface CreateTeacherRequest {
     projects?: string;
     
     // Teaching Information
-    isClassTeacher?: boolean;
-    assignedClasses?: string;
-    assignedSubjects?: string;
-    maxStudents?: number;
-    currentStudents?: number;
     
     // Personal Information
     languagesKnown?: string;
@@ -286,7 +264,7 @@ export interface CreateTeacherRequest {
     password: string;
 }
 
-export interface UpdateTeacherRequest {
+export interface UpdateEmployeeRequest {
     id: string;
     firstName: string;
     lastName: string;
@@ -302,8 +280,6 @@ export interface UpdateTeacherRequest {
     // Professional Information
     designation?: Designation;
     department?: Department;
-    subject?: string;
-    specialization?: string;
     employeeId?: string;
     employeeCode?: string;
     joiningDate?: string;
@@ -318,15 +294,11 @@ export interface UpdateTeacherRequest {
     
     // Experience Information
     totalExperience?: number;
-    teachingExperience?: number;
     previousEmployers?: string;
     previousPositions?: string;
-    previousSchools?: string;
     experienceDetails?: string;
     achievements?: string;
     awards?: string;
-    publications?: string;
-    researchWork?: string;
     
     // Salary Information
     basicSalary?: number;
@@ -354,11 +326,6 @@ export interface UpdateTeacherRequest {
     projects?: string;
     
     // Teaching Information
-    isClassTeacher?: boolean;
-    assignedClasses?: string;
-    assignedSubjects?: string;
-    maxStudents?: number;
-    currentStudents?: number;
     
     // Performance Information
     performanceRating?: PerformanceRating;
@@ -379,7 +346,7 @@ export interface UpdateTeacherRequest {
     notes?: string;
 }
 
-export interface SearchTeachersRequest {
+export interface SearchEmployeesRequest {
     pageNumber: number;
     pageSize: number;
     orderBy?: string[];
@@ -391,8 +358,8 @@ export interface SearchTeachersRequest {
     isActive?: boolean;
 }
 
-// New interfaces for teacher random generation
-export interface GenerateRandomTeacherRequest {
+// New interfaces for employee random generation
+export interface GenerateRandomEmployeeRequest {
     nSeed?: number;
 }
 

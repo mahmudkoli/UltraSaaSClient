@@ -1,8 +1,8 @@
 export interface PayrollSlipDto {
     id: string;
     serialNumber: string;
-    teacherId: string;
-    teacherName: string;
+    employeeId: string;
+    employeeName: string;
     designation?: string;
     department?: string;
     periodYear: number;
@@ -33,7 +33,7 @@ export interface PayrollSlipDto {
 }
 
 export interface GeneratePayrollSlipRequest {
-    teacherId: string;
+    employeeId: string;
     periodYear: number;
     periodMonth: number;
     basic: number;
@@ -55,7 +55,7 @@ export interface GeneratePayrollSlipRequest {
 export interface SearchPayrollSlipsRequest {
     pageNumber: number;
     pageSize: number;
-    teacherId?: string;
+    employeeId?: string;
     year?: number;
     month?: number;
 }
