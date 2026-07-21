@@ -122,8 +122,7 @@ export interface CreateTenantWithInstituteRequest {
     instituteState?: string;
     institutePostalCode?: string;
     instituteWebsite?: string;
-    maxStudents?: number;
-    maxTeachers?: number;
+    maxEmployees?: number;
     timeZone?: string;
     currency?: string;
     language?: string;

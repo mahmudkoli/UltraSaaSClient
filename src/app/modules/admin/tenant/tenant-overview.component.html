@@ -127,7 +127,7 @@
                         <div class="flex justify-between gap-3"><span class="text-gray-600 dark:text-gray-400">Name</span><span class="font-medium text-gray-900 dark:text-white truncate">{{ institute.name || institute.displayName }}</span></div>
                         <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Code</span><span class="font-mono text-gray-900 dark:text-white">{{ institute.code }}</span></div>
                         <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Status</span><span class="font-medium text-gray-900 dark:text-white capitalize">{{ institute.status }}</span></div>
-                        <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Students / Teachers</span><span class="font-medium text-gray-900 dark:text-white">{{ institute.currentStudentCount || 0 }} / {{ institute.currentTeacherCount || 0 }}</span></div>
+                        <div class="flex justify-between"><span class="text-gray-600 dark:text-gray-400">Employees</span><span class="font-medium text-gray-900 dark:text-white">{{ institute.currentEmployeeCount || 0 }}</span></div>
                     </div>
                     <button mat-button color="primary" class="mt-3 -ml-2" (click)="viewInstitute()"><mat-icon class="mr-1 text-base">open_in_new</mat-icon>Open institute</button>
                 </ng-container>

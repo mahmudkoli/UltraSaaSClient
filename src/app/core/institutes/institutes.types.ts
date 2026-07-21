@@ -24,19 +24,15 @@ export interface InstituteDto {
     postalCode?: string;
 
     // ============= CAPACITY LIMITS =============
-    maxStudents: number;
-    maxTeachers: number;
+    maxEmployees: number;
     maxUsers: number;
     maxStorageGB: number;
-    maxStaff: number;
-    maxClassrooms: number;
-    maxCourses: number;
 
     // ============= CONFIGURATION =============
     timeZone?: string;
     currency?: string;
     language?: string;
-    academicYearFormat: string;
+    fiscalYearFormat: string;
 
     // ============= BRANDING =============
     logoUrl?: string; // Changed from logo
@@ -55,21 +51,14 @@ export interface InstituteDto {
     setupCompletedBy?: string;
 
     // ============= STATISTICS =============
-    currentStudentCount: number;
-    currentTeacherCount: number;
-    currentStaffCount: number;
+    currentEmployeeCount: number;
     currentStorageUsedMB: number;
     lastActivityDate?: string;
 
     // ============= ADDITIONAL STATISTICS =============
-    currentStudents: number; // Alias for currentStudentCount
-    currentTeachers: number; // Alias for currentTeacherCount
-    currentStaff: number; // Alias for currentStaffCount
+    currentEmployees: number; // Alias for currentEmployeeCount
     currentStorageUsed: number; // Alias for currentStorageUsedMB
     storageLimit: number;
-    activeClassrooms: number;
-    activeCourses: number;
-    totalEnrollments: number;
 
     // ============= AUDIT =============
     createdOn: string;
@@ -80,10 +69,9 @@ export interface InstituteDto {
     // ============= COMPUTED PROPERTIES =============
     isSetupComplete: boolean;
     isOperational: boolean;
-    hasReachedStudentLimit: boolean;
-    hasReachedTeacherLimit: boolean;
+    hasReachedEmployeeLimit: boolean;
     hasReachedStorageLimit: boolean;
-    studentCapacityPercentage: number;
+    employeeCapacityPercentage: number;
     storageUsagePercentage: number;
 
     // ============= BACKWARD COMPATIBILITY =============
@@ -135,8 +123,7 @@ export interface CreateInstituteRequest {
     postalCode?: string;
 
     // ============= CAPACITY LIMITS =============
-    maxStudents?: number;
-    maxTeachers?: number;
+    maxEmployees?: number;
 
     // ============= CONFIGURATION =============
     timeZone?: string; // Auto-set based on country if not provided
@@ -180,8 +167,7 @@ export interface UpdateInstituteRequest {
     country?: string;
     postalCode?: string;
     type?: string;
-    maxStudents?: number;
-    maxTeachers?: number;
+    maxEmployees?: number;
     timeZone?: string;
     currency?: string;
     language?: string;
@@ -247,9 +233,7 @@ export interface UpdateInstituteBrandingRequest {
  */
 export interface UpdateInstituteStatisticsRequest {
     id: string;
-    currentStudentCount: number;
-    currentTeacherCount: number;
-    currentStaffCount: number;
+    currentEmployeeCount: number;
     currentStorageUsedMB: number;
 }
 
@@ -269,12 +253,7 @@ export interface InstituteUsageDto {
     instituteId: string;
     displayName: string;
     capacityUsage: {
-        students: {
-            current: number;
-            max: number;
-            percentage: number;
-        };
-        teachers: {
+        employees: {
             current: number;
             max: number;
             percentage: number;
@@ -293,11 +272,11 @@ export interface InstituteUsageDto {
  * Institute types and enums
  */
 export enum InstituteType {
-    PreSchool = 'PreSchool',
-    School = 'School',
-    College = 'College',
-    University = 'University',
-    TrainingCenter = 'TrainingCenter'
+    Startup = 'Startup',
+    Company = 'Company',
+    Enterprise = 'Enterprise',
+    NonProfit = 'NonProfit',
+    Government = 'Government'
 }
 
 export enum InstituteStatus {
@@ -317,9 +296,7 @@ export interface InstituteDashboardSummary {
     suspended: number;
     byType: Record<InstituteType, number>;
     byCountry: Record<string, number>;
-    totalStudents: number;
-    totalTeachers: number;
-    totalStaff: number;
+    totalEmployees: number;
     storageUsageGB: number;
 }
 
@@ -327,13 +304,9 @@ export interface InstituteDashboardSummary {
 
 export interface UpdateInstituteCapacityRequest {
     id: string;
-    maxStudents?: number;
-    maxTeachers?: number;
+    maxEmployees?: number;
     maxUsers?: number;
     maxStorageGB?: number;
-    maxStaff?: number;
-    maxClassrooms?: number;
-    maxCourses?: number;
     storageLimit?: number;
 }
 

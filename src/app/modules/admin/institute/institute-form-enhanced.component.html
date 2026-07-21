@@ -174,16 +174,16 @@
                                 <mat-hint>This will set default timezone and currency</mat-hint>
                             </mat-form-field>
 
-                            <!-- Academic Year Format -->
+                            <!-- Fiscal Year Format -->
                             <mat-form-field appearance="outline" class="w-full">
-                                <mat-label>Academic Year Format</mat-label>
-                                <mat-select formControlName="academicYearFormat" required>
-                                    <mat-option *ngFor="let format of academicYearFormats" [value]="format.value">
+                                <mat-label>Fiscal Year Format</mat-label>
+                                <mat-select formControlName="fiscalYearFormat" required>
+                                    <mat-option *ngFor="let format of fiscalYearFormats" [value]="format.value">
                                         {{ format.label }}
                                     </mat-option>
                                 </mat-select>
                                 <mat-icon matPrefix>calendar_today</mat-icon>
-                                <mat-hint>Academic session structure</mat-hint>
+                                <mat-hint>Fiscal year structure</mat-hint>
                             </mat-form-field>
 
                         </form>
@@ -338,48 +338,25 @@
 
                         <form [formGroup]="capacityForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-                            <!-- Max Students -->
+                            <!-- Max Employees -->
                             <div class="w-full">
                                 <mat-form-field appearance="outline" class="w-full">
-                                    <mat-label>Maximum Students</mat-label>
+                                    <mat-label>Maximum Employees</mat-label>
                                     <input
                                         matInput
                                         type="number"
-                                        formControlName="maxStudents"
-                                        placeholder="500"
+                                        formControlName="maxEmployees"
+                                        placeholder="100"
                                         required>
-                                    <mat-icon matPrefix>school</mat-icon>
-                                    <mat-hint>Total student capacity</mat-hint>
-                                    <mat-error>{{ getErrorMessage('capacityForm', 'maxStudents') }}</mat-error>
+                                    <mat-icon matPrefix>groups</mat-icon>
+                                    <mat-hint>Total employee headcount capacity</mat-hint>
+                                    <mat-error>{{ getErrorMessage('capacityForm', 'maxEmployees') }}</mat-error>
                                 </mat-form-field>
                                 <!-- Visual indicator -->
                                 <div class="mt-2 flex items-center justify-between text-xs text-gray-500">
-                                    <span>Recommended: 500-5000</span>
+                                    <span>Recommended: 50-5000</span>
                                     <span class="font-medium text-indigo-600">
-                                        {{ capacityForm.get('maxStudents')?.value || 0 }} students
-                                    </span>
-                                </div>
-                            </div>
-
-                            <!-- Max Teachers -->
-                            <div class="w-full">
-                                <mat-form-field appearance="outline" class="w-full">
-                                    <mat-label>Maximum Teachers</mat-label>
-                                    <input
-                                        matInput
-                                        type="number"
-                                        formControlName="maxTeachers"
-                                        placeholder="50"
-                                        required>
-                                    <mat-icon matPrefix>person</mat-icon>
-                                    <mat-hint>Total teacher capacity</mat-hint>
-                                    <mat-error>{{ getErrorMessage('capacityForm', 'maxTeachers') }}</mat-error>
-                                </mat-form-field>
-                                <!-- Visual indicator -->
-                                <div class="mt-2 flex items-center justify-between text-xs text-gray-500">
-                                    <span>Recommended: 20-200</span>
-                                    <span class="font-medium text-indigo-600">
-                                        {{ capacityForm.get('maxTeachers')?.value || 0 }} teachers
+                                        {{ capacityForm.get('maxEmployees')?.value || 0 }} employees
                                     </span>
                                 </div>
                             </div>
@@ -392,13 +369,13 @@
                                         matInput
                                         type="number"
                                         formControlName="maxUsers"
-                                        placeholder="600">
+                                        placeholder="150">
                                     <mat-icon matPrefix>group</mat-icon>
-                                    <mat-hint>Combined students, teachers, and staff</mat-hint>
+                                    <mat-hint>Employee + admin/service accounts</mat-hint>
                                 </mat-form-field>
                                 <!-- Auto-calculation hint -->
                                 <div class="mt-2 text-xs text-gray-500">
-                                    Auto-calculated: {{ (capacityForm.get('maxStudents')?.value || 0) + (capacityForm.get('maxTeachers')?.value || 0) + 50 }} users
+                                    Auto-calculated: {{ (capacityForm.get('maxEmployees')?.value || 0) + 50 }} users
                                 </div>
                             </div>
 
@@ -430,12 +407,8 @@
                             <h3 class="font-medium text-indigo-900 dark:text-indigo-100 mb-2">Capacity Summary</h3>
                             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
                                 <div>
-                                    <span class="text-gray-600 dark:text-gray-400">Students:</span>
-                                    <span class="ml-2 font-semibold">{{ capacityForm.get('maxStudents')?.value || 0 }}</span>
-                                </div>
-                                <div>
-                                    <span class="text-gray-600 dark:text-gray-400">Teachers:</span>
-                                    <span class="ml-2 font-semibold">{{ capacityForm.get('maxTeachers')?.value || 0 }}</span>
+                                    <span class="text-gray-600 dark:text-gray-400">Employees:</span>
+                                    <span class="ml-2 font-semibold">{{ capacityForm.get('maxEmployees')?.value || 0 }}</span>
                                 </div>
                                 <div>
                                     <span class="text-gray-600 dark:text-gray-400">Total Users:</span>

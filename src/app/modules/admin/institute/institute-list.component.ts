@@ -458,8 +458,8 @@ export class InstituteListComponent implements OnInit {
     }
 
     getCapacityStatus(institute: InstituteDto): string {
-        if (!institute.maxStudents) return 'Not Set';
-        const percentage = (institute.currentStudents / institute.maxStudents) * 100;
+        if (!institute.maxEmployees) return 'Not Set';
+        const percentage = (institute.currentEmployeeCount / institute.maxEmployees) * 100;
         if (percentage >= 95) return 'Full';
         if (percentage >= 80) return 'High';
         if (percentage >= 60) return 'Medium';
@@ -467,8 +467,8 @@ export class InstituteListComponent implements OnInit {
     }
 
     getCapacityColor(institute: InstituteDto): string {
-        if (!institute.maxStudents) return 'text-gray-500';
-        const percentage = (institute.currentStudents / institute.maxStudents) * 100;
+        if (!institute.maxEmployees) return 'text-gray-500';
+        const percentage = (institute.currentEmployeeCount / institute.maxEmployees) * 100;
         if (percentage >= 95) return 'text-red-600';
         if (percentage >= 80) return 'text-amber-600';
         if (percentage >= 60) return 'text-blue-600';

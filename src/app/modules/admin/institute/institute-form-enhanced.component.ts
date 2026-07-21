@@ -74,10 +74,11 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
 
     // Data for dropdowns
     instituteTypes = [
-        { value: 'School', label: 'School', icon: 'school' },
-        { value: 'College', label: 'College', icon: 'account_balance' },
-        { value: 'University', label: 'University', icon: 'location_city' },
-        { value: 'TrainingCenter', label: 'Training Center', icon: 'fitness_center' },
+        { value: 'Startup', label: 'Startup', icon: 'rocket_launch' },
+        { value: 'Company', label: 'Company', icon: 'business' },
+        { value: 'Enterprise', label: 'Enterprise', icon: 'domain' },
+        { value: 'NonProfit', label: 'Non-Profit', icon: 'volunteer_activism' },
+        { value: 'Government', label: 'Government', icon: 'account_balance' },
         { value: 'CoachingInstitute', label: 'Coaching Institute', icon: 'psychology' },
         { value: 'ResearchInstitute', label: 'Research Institute', icon: 'science' },
         { value: 'TechnicalInstitute', label: 'Technical Institute', icon: 'engineering' },
@@ -110,12 +111,11 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
         { code: 'ru', name: 'Russian' }
     ];
 
-    academicYearFormats = [
-        { value: 'Sep-Jun', label: 'September to June' },
+    fiscalYearFormats = [
+        { value: 'Jul-Jun', label: 'July to June' },
         { value: 'Jan-Dec', label: 'January to December' },
         { value: 'Apr-Mar', label: 'April to March' },
-        { value: 'Jul-Jun', label: 'July to June' },
-        { value: 'Aug-May', label: 'August to May' }
+        { value: 'Oct-Sep', label: 'October to September' }
     ];
 
     // Validation messages
@@ -144,15 +144,10 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
         website: {
             pattern: 'Please enter a valid URL (e.g., https://example.com)'
         },
-        maxStudents: {
-            required: 'Maximum students is required',
+        maxEmployees: {
+            required: 'Maximum employees is required',
             min: 'Must be at least 1',
             max: 'Cannot exceed 100,000'
-        },
-        maxTeachers: {
-            required: 'Maximum teachers is required',
-            min: 'Must be at least 1',
-            max: 'Cannot exceed 10,000'
         }
     };
 
@@ -207,7 +202,7 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
             type: ['', [Validators.required]],
             tenantId: ['', [Validators.required]],
             country: ['', [Validators.required]],
-            academicYearFormat: ['Sep-Jun', [Validators.required]]
+            fiscalYearFormat: ['Jul-Jun', [Validators.required]]
         });
 
         // Contact Information
@@ -232,17 +227,12 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
 
         // Capacity Settings
         this.capacityForm = this._formBuilder.group({
-            maxStudents: [500, [
+            maxEmployees: [100, [
                 Validators.required,
                 Validators.min(1),
                 Validators.max(100000)
             ]],
-            maxTeachers: [50, [
-                Validators.required,
-                Validators.min(1),
-                Validators.max(10000)
-            ]],
-            maxUsers: [600, [
+            maxUsers: [150, [
                 Validators.min(1),
                 Validators.max(110000)
             ]],
@@ -309,34 +299,18 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe(type => {
                 switch(type) {
-                    case 'School':
-                        this.capacityForm.patchValue({
-                            maxStudents: 1000,
-                            maxTeachers: 50,
-                            maxStorageGB: 50
-                        });
+                    case 'Startup':
+                        this.capacityForm.patchValue({ maxEmployees: 50, maxStorageGB: 20 });
                         break;
-                    case 'College':
-                        this.capacityForm.patchValue({
-                            maxStudents: 5000,
-                            maxTeachers: 200,
-                            maxStorageGB: 200
-                        });
+                    case 'Company':
+                        this.capacityForm.patchValue({ maxEmployees: 250, maxStorageGB: 100 });
                         break;
-                    case 'University':
-                        this.capacityForm.patchValue({
-                            maxStudents: 20000,
-                            maxTeachers: 1000,
-                            maxStorageGB: 1000
-                        });
+                    case 'Enterprise':
+                        this.capacityForm.patchValue({ maxEmployees: 5000, maxStorageGB: 500 });
                         break;
-                    case 'TrainingCenter':
-                    case 'CoachingInstitute':
-                        this.capacityForm.patchValue({
-                            maxStudents: 500,
-                            maxTeachers: 20,
-                            maxStorageGB: 20
-                        });
+                    case 'NonProfit':
+                    case 'Government':
+                        this.capacityForm.patchValue({ maxEmployees: 500, maxStorageGB: 50 });
                         break;
                 }
             });
@@ -392,7 +366,7 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
                     type: institute.type,
                     tenantId: institute.tenantId,
                     country: institute.country || 'US',
-                    academicYearFormat: institute.academicYearFormat || 'Sep-Jun'
+                    fiscalYearFormat: institute.fiscalYearFormat || 'Jul-Jun'
                 });
 
                 this.contactForm.patchValue({
@@ -406,8 +380,7 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
                 });
 
                 this.capacityForm.patchValue({
-                    maxStudents: institute.maxStudents,
-                    maxTeachers: institute.maxTeachers,
+                    maxEmployees: institute.maxEmployees,
                     maxUsers: institute.maxUsers,
                     maxStorageGB: institute.maxStorageGB
                 });
@@ -534,8 +507,7 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
             city: formData.city || undefined,
             state: formData.state || undefined,
             postalCode: formData.postalCode || undefined,
-            maxStudents: formData.maxStudents,
-            maxTeachers: formData.maxTeachers,
+            maxEmployees: formData.maxEmployees,
             timeZone: formData.timeZone,
             currency: formData.currency,
             language: formData.language,
@@ -580,8 +552,7 @@ export class InstituteFormEnhancedComponent implements OnInit, OnDestroy {
             address: formData.addressLine,
             phone: formData.contactPhone,
             type: formData.type,
-            maxStudents: formData.maxStudents,
-            maxTeachers: formData.maxTeachers,
+            maxEmployees: formData.maxEmployees,
             timeZone: formData.timeZone,
             currency: formData.currency,
             language: formData.language,

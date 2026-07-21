@@ -54,14 +54,11 @@ export class InstituteFormComponent implements OnInit {
 
     // Sample institute types - in a real app, these would come from the backend
     instituteTypes: string[] = [
-        'School',
-        'College',
-        'University',
-        'Training Center',
-        'Coaching Institute',
-        'Research Institute',
-        'Technical Institute',
-        'Vocational Institute'
+        'Startup',
+        'Company',
+        'Enterprise',
+        'NonProfit',
+        'Government'
     ];
 
     constructor(
@@ -85,13 +82,10 @@ export class InstituteFormComponent implements OnInit {
             type: ['', [Validators.required]],
 
             // Capacity Settings
-            maxStudents: [500, [Validators.required, Validators.min(1), Validators.max(100000)]],
-            maxTeachers: [50, [Validators.required, Validators.min(1), Validators.max(10000)]],
-            maxUsers: [600, [Validators.min(1), Validators.max(110000)]],
+            maxEmployees: [100, [Validators.required, Validators.min(1), Validators.max(100000)]],
+            maxUsers: [150, [Validators.min(1), Validators.max(110000)]],
             maxStorageGB: [100, [Validators.min(1), Validators.max(10000)]],
-            currentStudentCount: [0, [Validators.min(0)]],
-            currentTeacherCount: [0, [Validators.min(0)]],
-            currentStaffCount: [0, [Validators.min(0)]],
+            currentEmployeeCount: [0, [Validators.min(0)]],
             currentStorageUsedMB: [0, [Validators.min(0)]],
 
             // Localization
@@ -115,7 +109,7 @@ export class InstituteFormComponent implements OnInit {
             enableReporting: [true],
 
             // Academic Settings
-            academicYearFormat: ['Sep-Jun', [Validators.required]],
+            fiscalYearFormat: ['Jul-Jun', [Validators.required]],
             establishedYear: [new Date().getFullYear(), [Validators.min(1800), Validators.max(new Date().getFullYear())]],
             accreditationNumber: [''],
             boardAffiliation: ['']
@@ -146,8 +140,7 @@ export class InstituteFormComponent implements OnInit {
                     logoUrl: institute.logoUrl || (institute as any).logo || '',
                     tenantId: institute.tenantId,
                     type: institute.type,
-                    maxStudents: institute.maxStudents,
-                    maxTeachers: institute.maxTeachers,
+                    maxEmployees: institute.maxEmployees,
                     maxUsers: institute.maxUsers,
                     maxStorageGB: institute.maxStorageGB,
                     timeZone: institute.timeZone || 'UTC',
@@ -159,10 +152,8 @@ export class InstituteFormComponent implements OnInit {
                     postalCode: institute.postalCode || '',
                     bannerUrl: institute.bannerUrl || '',
                     primaryColor: institute.primaryColor || '#1976d2',
-                    academicYearFormat: institute.academicYearFormat || 'Sep-Jun',
-                    currentStudentCount: institute.currentStudentCount || 0,
-                    currentTeacherCount: institute.currentTeacherCount || 0,
-                    currentStaffCount: institute.currentStaffCount || 0,
+                    fiscalYearFormat: institute.fiscalYearFormat || 'Jul-Jun',
+                    currentEmployeeCount: institute.currentEmployeeCount || 0,
                     currentStorageUsedMB: institute.currentStorageUsedMB || 0,
                     website: institute.website || ''
                 });
@@ -198,8 +189,7 @@ export class InstituteFormComponent implements OnInit {
                 logoUrl: formData.logoUrl || undefined,
                 logoUpload: this.logoUpload || undefined,
                 type: formData.type,
-                maxStudents: formData.maxStudents,
-                maxTeachers: formData.maxTeachers,
+                maxEmployees: formData.maxEmployees,
                 timeZone: formData.timeZone || undefined,
                 currency: formData.currency || undefined,
                 language: formData.language || undefined,
@@ -252,8 +242,7 @@ export class InstituteFormComponent implements OnInit {
                 logoUpload: this.logoUpload || undefined,
                 tenantId: formData.tenantId,
                 type: formData.type,
-                maxStudents: formData.maxStudents,
-                maxTeachers: formData.maxTeachers,
+                maxEmployees: formData.maxEmployees,
                 country: formData.country || undefined,
                 city: formData.city || undefined,
                 state: formData.state || undefined,

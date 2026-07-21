@@ -16,7 +16,7 @@
                     {{ isEditMode ? 'Edit Institute' : 'Create Institute' }}
                 </h2>
                 <p class="mt-1 text-sm text-gray-600 dark:text-gray-400">
-                    {{ isEditMode ? 'Update institute configuration' : 'Create a new educational institute' }}
+                    {{ isEditMode ? 'Update organization configuration' : 'Create a new organization' }}
                 </p>
             </div>
         </div>
@@ -313,27 +313,27 @@
                             </div>
                         </mat-tab>
 
-                        <!-- Academic & Capacity Tab -->
+                        <!-- Capacity Tab -->
                         <mat-tab>
                             <ng-template mat-tab-label>
                                 <div class="flex items-center space-x-2">
                                     <div class="flex items-center justify-center w-6 h-6 bg-purple-100 dark:bg-purple-900 text-purple-600 dark:text-purple-400 rounded-full text-xs font-semibold">
                                         4
                                     </div>
-                                    <span>Academic & Capacity</span>
+                                    <span>Capacity</span>
                                 </div>
                             </ng-template>
                             <div class="p-6 space-y-6">
                                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                                    <!-- Academic Year Format -->
+                                    <!-- Fiscal Year Format -->
                                     <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Academic Year Format</mat-label>
-                                        <mat-select formControlName="academicYearFormat">
+                                        <mat-label>Fiscal Year Format</mat-label>
+                                        <mat-select formControlName="fiscalYearFormat">
+                                            <mat-option value="Jul-Jun">July - June</mat-option>
                                             <mat-option value="Jan-Dec">January - December</mat-option>
                                             <mat-option value="Apr-Mar">April - March</mat-option>
-                                            <mat-option value="Sep-Jun">September - June</mat-option>
-                                            <mat-option value="Jul-Jun">July - June</mat-option>
+                                            <mat-option value="Oct-Sep">October - September</mat-option>
                                         </mat-select>
                                         <mat-icon matSuffix class="text-secondary">calendar_today</mat-icon>
                                     </mat-form-field>
@@ -359,23 +359,13 @@
                                         <mat-icon matSuffix class="text-secondary">account_balance</mat-icon>
                                     </mat-form-field>
 
-                                    <!-- Max Students (grouped with the other capacity limits) -->
+                                    <!-- Max Employees (grouped with the other capacity limits) -->
                                     <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Maximum Students</mat-label>
-                                        <input matInput type="number" formControlName="maxStudents" placeholder="Enter max students">
-                                        <mat-icon matSuffix class="text-secondary">people</mat-icon>
-                                        <mat-error *ngIf="instituteForm.get('maxStudents')?.hasError('min')">
-                                            Maximum students must be at least 1
-                                        </mat-error>
-                                    </mat-form-field>
-
-                                    <!-- Max Teachers -->
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Maximum Teachers</mat-label>
-                                        <input matInput type="number" formControlName="maxTeachers" placeholder="Enter max teachers">
-                                        <mat-icon matSuffix class="text-secondary">group</mat-icon>
-                                        <mat-error *ngIf="instituteForm.get('maxTeachers')?.hasError('min')">
-                                            Maximum teachers must be at least 1
+                                        <mat-label>Maximum Employees</mat-label>
+                                        <input matInput type="number" formControlName="maxEmployees" placeholder="Enter max employees">
+                                        <mat-icon matSuffix class="text-secondary">groups</mat-icon>
+                                        <mat-error *ngIf="instituteForm.get('maxEmployees')?.hasError('min')">
+                                            Maximum employees must be at least 1
                                         </mat-error>
                                     </mat-form-field>
 
@@ -397,21 +387,9 @@
                                          existing institute, so hidden during creation (would always be 0). -->
                                     <ng-container *ngIf="isEditMode">
                                     <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Current Students</mat-label>
-                                        <input matInput type="number" formControlName="currentStudentCount" placeholder="0" readonly>
-                                        <mat-icon matSuffix class="text-secondary">people</mat-icon>
-                                    </mat-form-field>
-
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Current Teachers</mat-label>
-                                        <input matInput type="number" formControlName="currentTeacherCount" placeholder="0" readonly>
-                                        <mat-icon matSuffix class="text-secondary">group</mat-icon>
-                                    </mat-form-field>
-
-                                    <mat-form-field appearance="outline" class="w-full">
-                                        <mat-label>Current Staff</mat-label>
-                                        <input matInput type="number" formControlName="currentStaffCount" placeholder="0" readonly>
-                                        <mat-icon matSuffix class="text-secondary">badge</mat-icon>
+                                        <mat-label>Current Employees</mat-label>
+                                        <input matInput type="number" formControlName="currentEmployeeCount" placeholder="0" readonly>
+                                        <mat-icon matSuffix class="text-secondary">groups</mat-icon>
                                     </mat-form-field>
 
                                     <mat-form-field appearance="outline" class="w-full">
@@ -549,19 +527,18 @@
                                         </div>
                                     </mat-card>
 
-                                    <!-- Academic & Capacity -->
+                                    <!-- Capacity -->
                                     <mat-card class="p-4">
                                         <h3 class="text-lg font-semibold mb-4 text-purple-600 dark:text-purple-400 flex items-center">
                                             <mat-icon class="mr-2">account_balance</mat-icon>
-                                            Academic & Capacity
+                                            Capacity
                                         </h3>
                                         <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Academic Year:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('academicYearFormat')?.value || 'Sep-Jun' }}</span></div>
+                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Fiscal Year:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('fiscalYearFormat')?.value || 'Jul-Jun' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Established:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('establishedYear')?.value || 'Not specified' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Accreditation:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('accreditationNumber')?.value || 'Not specified' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Board Affiliation:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('boardAffiliation')?.value || 'Not specified' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Students:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('maxStudents')?.value || '500' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Teachers:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('maxTeachers')?.value || '50' }}</span></div>
+                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Employees:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('maxEmployees')?.value || '100' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Users:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('maxUsers')?.value || '600' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Max Storage:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('maxStorageGB')?.value || '100' }} GB</span></div>
                                         </div>
@@ -574,9 +551,7 @@
                                             Current Statistics
                                         </h3>
                                         <div class="space-y-2 text-sm">
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Students:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('currentStudentCount')?.value || '0' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Teachers:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('currentTeacherCount')?.value || '0' }}</span></div>
-                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Staff:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('currentStaffCount')?.value || '0' }}</span></div>
+                                            <div><span class="font-medium text-gray-700 dark:text-gray-300">Employees:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('currentEmployeeCount')?.value || '0' }}</span></div>
                                             <div><span class="font-medium text-gray-700 dark:text-gray-300">Storage Used:</span> <span class="text-gray-900 dark:text-white">{{ instituteForm.get('currentStorageUsedMB')?.value || '0' }} MB</span></div>
                                         </div>
                                     </mat-card>

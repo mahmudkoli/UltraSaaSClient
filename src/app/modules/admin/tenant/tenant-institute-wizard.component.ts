@@ -242,13 +242,12 @@ export class TenantInstituteWizardComponent implements OnInit, OnDestroy {
             state: [''],
             addressLine: [''],
             postalCode: [''],
-            maxStudents: [500, [Validators.required, Validators.min(1)]],
-            maxTeachers: [50, [Validators.required, Validators.min(1)]],
+            maxEmployees: [100, [Validators.required, Validators.min(1)]],
             maxStorageGB: [100, [Validators.min(1)]],
             timeZone: ['America/New_York', Validators.required],
             currency: ['USD', Validators.required],
             language: ['en', Validators.required],
-            academicYearFormat: ['Sep-Jun', Validators.required],
+            fiscalYearFormat: ['Jul-Jun', Validators.required],
             logoUrl: [''],
             primaryColor: ['#1976d2']
         });
@@ -615,8 +614,7 @@ export class TenantInstituteWizardComponent implements OnInit, OnDestroy {
             state: instituteData.state || undefined,
             addressLine: instituteData.addressLine || undefined,
             postalCode: instituteData.postalCode || undefined,
-            maxStudents: instituteData.maxStudents,
-            maxTeachers: instituteData.maxTeachers,
+            maxEmployees: instituteData.maxEmployees,
             timeZone: instituteData.timeZone,
             currency: instituteData.currency,
             language: instituteData.language,
@@ -725,8 +723,7 @@ export class TenantInstituteWizardComponent implements OnInit, OnDestroy {
             type: this.instituteForm.get('type')?.value,
             contactEmail: this.instituteForm.get('contactEmail')?.value,
             country: this.instituteForm.get('country')?.value,
-            maxStudents: this.instituteForm.get('maxStudents')?.value,
-            maxTeachers: this.instituteForm.get('maxTeachers')?.value,
+            maxEmployees: this.instituteForm.get('maxEmployees')?.value,
             maxStorageGB: this.instituteForm.get('maxStorageGB')?.value
         };
     }
