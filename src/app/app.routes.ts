@@ -70,18 +70,6 @@ export const appRoutes: Route[] = [
         ]
     },
 
-    // Public (no-auth) routes — Phase v1-I2 fee-invoice WhatsApp share viewer
-    {
-        path: 'public',
-        component: LayoutComponent,
-        data: {
-            layout: 'empty'
-        },
-        children: [
-            {path: 'invoice', loadChildren: () => import('app/modules/public/invoice/public-invoice.routes')},
-        ]
-    },
-
     // Admin routes
     {
         path: '',
@@ -94,17 +82,19 @@ export const appRoutes: Route[] = [
         children: [
             // `data.permission` mirrors `NAV_PERMISSIONS` (modules-config.ts) and the
             // BE `[MustHavePermission]` on each page. Routes without it are
-            // self-service (my-profile, profile) and open to any authenticated user.
-            {path: 'example', loadChildren: () => import('app/modules/admin/example/example.routes')},
+            // self-service (profile) and open to any authenticated user.
+            //
+            // MK Corex HRM (develop-v3): Edu-only feature routes (students,
+            // academic, finance, library, hostel, transport, events, timetable,
+            // exams) were removed in the F0 frontend strip. HR + platform routes
+            // remain. `teachers`/`teacher-qualifications` are the Employee UI
+            // (renamed to `employees` in a later FE sprint).
             {path: 'analytics', data: {permission: 'Permissions.Dashboard.View'}, loadChildren: () => import('app/modules/admin/analytics/analytics.routes')},
             {path: 'users', data: {permission: 'Permissions.Users.View'}, loadChildren: () => import('app/modules/admin/user/user.routes')},
-            {path: 'students', data: {permission: 'Permissions.Students.View'}, loadChildren: () => import('app/modules/admin/student/student.routes')},
             {path: 'teachers', data: {permission: 'Permissions.Teachers.View'}, loadChildren: () => import('app/modules/admin/teacher/teacher.routes')},
+            {path: 'teacher-qualifications', data: {permission: 'Permissions.Teachers.View'}, loadChildren: () => import('app/modules/admin/teacher-qualifications/teacher-qualifications.routes')},
             {path: 'leaves', data: {permission: 'Permissions.Leaves.Search'}, loadChildren: () => import('app/modules/admin/leave/leave.routes')},
             {path: 'payroll', data: {permission: 'Permissions.PayrollSlips.View'}, loadChildren: () => import('app/modules/admin/payroll/payroll.routes')},
-            {path: 'reports', data: {permission: 'Permissions.Students.View'}, loadChildren: () => import('app/modules/admin/reports/reports.routes')},
-            {path: 'grade-bands', data: {permission: 'Permissions.GradeBands.View'}, loadChildren: () => import('app/modules/admin/grade-bands/grade-bands.routes')},
-            {path: 'sibling-discount-policy', data: {permission: 'Permissions.SiblingDiscountPolicy.View'}, loadChildren: () => import('app/modules/admin/sibling-discount-policy/sibling-discount-policy.routes')},
             {path: 'audit-trail', data: {permission: 'Permissions.AuditTrails.View'}, loadChildren: () => import('app/modules/admin/audit-trail/audit-trail.routes')},
             {path: 'announcement-archive', data: {permission: 'Permissions.Tenants.View'}, loadChildren: () => import('app/modules/admin/announcement-archive/announcement-archive.routes')},
             {path: 'sms-templates', data: {permission: 'Permissions.SMSTemplates.View'}, loadChildren: () => import('app/modules/admin/sms-templates/sms-templates.routes')},
@@ -112,45 +102,18 @@ export const appRoutes: Route[] = [
             {path: 'sms-logs', data: {permission: 'Permissions.SMSLog.Search'}, loadChildren: () => import('app/modules/admin/sms-logs/sms-logs.routes')},
             {path: 'mail-logs', data: {permission: 'Permissions.MailLog.Search'}, loadChildren: () => import('app/modules/admin/mail-logs/mail-logs.routes')},
             {path: 'comms-config', data: {permission: 'Permissions.SMSConfig.View'}, loadChildren: () => import('app/modules/admin/comms-config/comms-config.routes')},
-            {path: 'library', data: {permission: 'Permissions.Books.View'}, loadChildren: () => import('app/modules/admin/library/library.routes')},
-            {path: 'hostels', data: {permission: 'Permissions.Hostels.View'}, loadChildren: () => import('app/modules/admin/hostel/hostel.routes')},
-            {path: 'transport', data: {permission: 'Permissions.Routes.View'}, loadChildren: () => import('app/modules/admin/transport/transport.routes')},
-            {path: 'events', data: {permission: 'Permissions.Events.View'}, loadChildren: () => import('app/modules/admin/events/events.routes')},
-            {path: 'timetable', data: {permission: 'Permissions.TimetableEntries.View'}, loadChildren: () => import('app/modules/admin/timetable/timetable.routes')},
-            {path: 'broadcast', data: {permission: 'Permissions.Tenants.Update'}, loadChildren: () => import('app/modules/admin/broadcast/broadcast.routes')},
-            {path: 'my-profile', loadChildren: () => import('app/modules/admin/my-child/my-child.routes')},
-            {path: 'student-academics', data: {permission: 'Permissions.Students.View'}, loadChildren: () => import('app/modules/admin/student-academics/student-academics.routes')},
-            {path: 'student-health', data: {permission: 'Permissions.Students.View'}, loadChildren: () => import('app/modules/admin/student-health/student-health.routes')},
-            {path: 'teacher-qualifications', data: {permission: 'Permissions.Teachers.View'}, loadChildren: () => import('app/modules/admin/teacher-qualifications/teacher-qualifications.routes')},
             {path: 'tenant', data: {permission: 'Permissions.Tenants.View'}, loadChildren: () => import('app/modules/admin/tenant/tenant.routes')},
             {path: 'admin-dashboard', data: {permission: 'Permissions.Tenants.View'}, loadChildren: () => import('app/modules/admin/admin-dashboard/admin-dashboard.routes')},
             {path: 'plans', data: {permission: 'Permissions.Tenants.View'}, loadChildren: () => import('app/modules/admin/plans/plans.routes')},
             {path: 'subscription', data: {permission: 'Permissions.Subscription.View'}, loadChildren: () => import('app/modules/admin/my-subscription/my-subscription.routes')},
             {path: 'institute', data: {permission: 'Permissions.Institutes.View'}, loadChildren: () => import('app/modules/admin/institute/institute.routes')},
-            {path: 'academic-years', data: {permission: 'Permissions.AcademicYears.View'}, loadChildren: () => import('app/modules/admin/academic-year/academic-year.routes')},
-            {path: 'classes', data: {permission: 'Permissions.Classes.View'}, loadChildren: () => import('app/modules/admin/class/class.routes')},
-            {path: 'subjects', data: {permission: 'Permissions.Subjects.View'}, loadChildren: () => import('app/modules/admin/subject/subject.routes')},
-            {path: 'student-classes', data: {permission: 'Permissions.Students.View'}, loadChildren: () => import('app/modules/admin/student-class/student-class.routes')},
-            {path: 'attendances', data: {permission: 'Permissions.Attendances.View'}, loadChildren: () => import('app/modules/admin/attendance/attendance.routes')},
-            {path: 'exams', data: {permission: 'Permissions.Exams.View'}, loadChildren: () => import('app/modules/admin/exam/exam.routes')},
-            {path: 'exam-results', data: {permission: 'Permissions.ExamResults.View'}, loadChildren: () => import('app/modules/admin/exam-result/exam-result.routes')},
-            {path: 'fee-types', data: {permission: 'Permissions.FeeTypes.View'}, loadChildren: () => import('app/modules/admin/fee-type/fee-type.routes')},
-            {path: 'fee-structures', data: {permission: 'Permissions.FeeStructures.View'}, loadChildren: () => import('app/modules/admin/fee-structure/fee-structure.routes')},
-            {path: 'fee-invoices', data: {permission: 'Permissions.FeeInvoices.View'}, loadChildren: () => import('app/modules/admin/fee-invoice/fee-invoice.routes')},
-            {path: 'fee-reports', data: {permission: 'Permissions.FeeInvoices.View'}, loadChildren: () => import('app/modules/admin/fee-reports/fee-reports.routes')},
-            {path: 'class-subjects', data: {permission: 'Permissions.ClassSubjects.View'}, loadChildren: () => import('app/modules/admin/class-subject/class-subject.routes')},
-            {path: 'fee-structure-details', data: {permission: 'Permissions.FeeStructureDetails.View'}, loadChildren: () => import('app/modules/admin/fee-structure-detail/fee-structure-detail.routes')},
             {path: 'profile', loadChildren: () => import('app/modules/admin/profile/profile.routes')},
         ]
     },
 
-    // Phase v1 QA BUG-13 — redirect intuitive-but-wrong slugs to their canonical
-    // routes so guessed/bookmarked URLs resolve instead of 404ing. The sidebar
-    // already links to the correct slugs; these only catch manual URL entry.
-    {path: 'student-class', pathMatch: 'full', redirectTo: 'student-classes'},
-    {path: 'health-records', pathMatch: 'full', redirectTo: 'student-health'},
+    // Redirect intuitive-but-wrong slugs to their canonical routes so
+    // guessed/bookmarked URLs resolve instead of 404ing.
     {path: 'announcements', pathMatch: 'full', redirectTo: 'announcement-archive'},
-    {path: 'library-books', pathMatch: 'full', redirectTo: 'library/books'},
 
     // Global 404 (Phase v1 QA C2) — catch-all for unknown URLs so they render a
     // friendly Not-Found page instead of hanging on the loading screen forever.
