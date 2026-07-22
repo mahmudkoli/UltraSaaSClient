@@ -29,6 +29,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
             { id: 'employee-management',    title: 'Employees',              type: 'basic', icon: 'heroicons_outline:identification', link: '/employees' },
             { id: 'employee-qualifications', title: 'Qualifications',        type: 'basic', icon: 'heroicons_outline:trophy',         link: '/employee-qualifications' },
             { id: 'org-chart',              title: 'Org Chart',              type: 'basic', icon: 'heroicons_outline:share',          link: '/org-chart' },
+            { id: 'attendances',            title: 'Attendance',             type: 'basic', icon: 'heroicons_outline:clipboard-document-check', link: '/attendances' },
             { id: 'leaves',                 title: 'Leaves',                 type: 'basic', icon: 'heroicons_outline:calendar',       link: '/leaves' },
             { id: 'payroll',                title: 'Payroll',                type: 'basic', icon: 'heroicons_outline:banknotes',      link: '/payroll' }
         ]

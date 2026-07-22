@@ -1,0 +1,80 @@
+<app-list-page
+    [title]="isEditMode ? 'Edit Attendance' : 'Mark Attendance'"
+    subtitle="One record per employee per day."
+    icon="fact_check"
+    iconGradient="from-cyan-500 to-blue-600"
+    pageGradient="from-gray-50 via-cyan-50/30 to-blue-50/30">
+
+    <ng-container pageActions>
+        <button mat-stroked-button (click)="cancel()"><mat-icon>arrow_back</mat-icon> Back</button>
+    </ng-container>
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <div class="max-w-3xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+        <form [formGroup]="form" (ngSubmit)="save()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Employee</mat-label>
+                <mat-select formControlName="employeeId" required>
+                    <mat-option *ngFor="let e of employees" [value]="e.id">{{ e.firstName }} {{ e.lastName }}</mat-option>
+                </mat-select>
+                <mat-hint *ngIf="isEditMode">Fixed on an existing record</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Date</mat-label>
+                <input matInput [matDatepicker]="dp" formControlName="date" required>
+                <mat-datepicker-toggle matSuffix [for]="dp"></mat-datepicker-toggle>
+                <mat-datepicker #dp></mat-datepicker>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Status</mat-label>
+                <mat-select formControlName="status" required>
+                    <mat-option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Source</mat-label>
+                <mat-select formControlName="source" required>
+                    <mat-option *ngFor="let s of sourceOptions" [value]="s.value">{{ s.label }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>In Time</mat-label>
+                <input matInput type="time" formControlName="inTime">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Out Time</mat-label>
+                <input matInput type="time" formControlName="outTime">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Overtime (minutes)</mat-label>
+                <input matInput type="number" formControlName="overtimeMinutes" min="0">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full md:col-span-2">
+                <mat-label>Remarks</mat-label>
+                <textarea matInput formControlName="remarks" rows="2"></textarea>
+            </mat-form-field>
+
+            <mat-checkbox *ngIf="isEditMode" formControlName="regularise" color="primary" class="md:col-span-2">
+                Mark as regularised (records this as a corrected entry)
+            </mat-checkbox>
+
+            <div class="flex items-center justify-end gap-3 pt-2 md:col-span-2">
+                <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+                    <mat-icon *ngIf="!isSaving">save</mat-icon>
+                    {{ isSaving ? 'Saving…' : (isEditMode ? 'Save' : 'Mark') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</app-list-page>

@@ -1,0 +1,103 @@
+<app-list-page
+    title="Attendance"
+    subtitle="Daily employee attendance — mark, filter, and regularise."
+    icon="fact_check"
+    iconGradient="from-cyan-500 to-blue-600"
+    pageGradient="from-gray-50 via-cyan-50/30 to-blue-50/30">
+
+    <ng-container pageActions>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-52">
+            <mat-label>Employee</mat-label>
+            <mat-select [formControl]="employeeFilter">
+                <mat-option [value]="''">All</mat-option>
+                <mat-option *ngFor="let e of employees" [value]="e.id">{{ e.firstName }} {{ e.lastName }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-40">
+            <mat-label>Status</mat-label>
+            <mat-select [formControl]="statusFilter">
+                <mat-option [value]="''">All</mat-option>
+                <mat-option *ngFor="let s of statusOptions" [value]="s.value">{{ s.label }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-40">
+            <mat-label>From</mat-label>
+            <input matInput [matDatepicker]="fromP" [formControl]="fromFilter">
+            <mat-datepicker-toggle matSuffix [for]="fromP"></mat-datepicker-toggle>
+            <mat-datepicker #fromP></mat-datepicker>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-40">
+            <mat-label>To</mat-label>
+            <input matInput [matDatepicker]="toP" [formControl]="toFilter">
+            <mat-datepicker-toggle matSuffix [for]="toP"></mat-datepicker-toggle>
+            <mat-datepicker #toP></mat-datepicker>
+        </mat-form-field>
+        <button mat-fab color="primary" (click)="create()" matTooltip="Mark Attendance" class="shadow-lg">
+            <mat-icon>add</mat-icon>
+        </button>
+    </ng-container>
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div class="overflow-x-auto">
+            <table mat-table [dataSource]="items" class="min-w-full bg-transparent">
+                <ng-container matColumnDef="employee">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">Employee</th>
+                    <td mat-cell *matCellDef="let row" class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{{ row.employeeName }}</td>
+                </ng-container>
+                <ng-container matColumnDef="date">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">Date</th>
+                    <td mat-cell *matCellDef="let row" class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ row.date | date:'mediumDate' }}</td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">Status</th>
+                    <td mat-cell *matCellDef="let row" class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" [ngClass]="statusClass(row.status)">
+                            {{ statusLabels[row.status] }}
+                        </span>
+                        <span *ngIf="row.isRegularised" class="ml-1 text-xs text-indigo-500" matTooltip="Regularised">✎</span>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="times">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">In / Out</th>
+                    <td mat-cell *matCellDef="let row" class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">
+                        <span *ngIf="row.inTime">{{ row.inTime | date:'shortTime' }}</span><span *ngIf="row.inTime || row.outTime"> – </span><span *ngIf="row.outTime">{{ row.outTime | date:'shortTime' }}</span>
+                        <span *ngIf="!row.inTime && !row.outTime">—</span>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="overtime">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">OT (min)</th>
+                    <td mat-cell *matCellDef="let row" class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ row.overtimeMinutes || 0 }}</td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-right">Actions</th>
+                    <td mat-cell *matCellDef="let row" class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end space-x-2">
+                            <button mat-icon-button (click)="edit(row)" matTooltip="Edit / Regularise" class="text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"><mat-icon>edit</mat-icon></button>
+                            <button mat-icon-button (click)="remove(row)" matTooltip="Delete" class="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"><mat-icon>delete</mat-icon></button>
+                        </div>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"></tr>
+            </table>
+        </div>
+
+        <div *ngIf="!isLoading && items.length === 0" class="text-center py-16">
+            <div class="text-6xl mb-4">🗓️</div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Attendance Records</h3>
+            <p class="text-gray-500 dark:text-gray-400 mb-6">Mark attendance for an employee to get started.</p>
+            <button mat-raised-button color="primary" (click)="create()"><mat-icon>add</mat-icon> Mark Attendance</button>
+        </div>
+
+        <div *ngIf="items.length > 0" class="flex items-center justify-between px-4 py-0.5 border-t border-gray-200 dark:border-gray-700">
+            <div class="text-sm text-gray-600 dark:text-gray-400 font-medium">
+                Showing {{ (currentPage * pageSize) + 1 }} to {{ Math.min((currentPage + 1) * pageSize, totalCount) }} of {{ totalCount }} records
+            </div>
+            <mat-paginator [length]="totalCount" [pageSize]="pageSize" [pageIndex]="currentPage" [pageSizeOptions]="pageSizeOptions" (page)="onPageChange($event)" showFirstLastButtons></mat-paginator>
+        </div>
+    </div>
+</app-list-page>
