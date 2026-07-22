@@ -36,14 +36,22 @@ export enum Department {
     Other = 16
 }
 
+// These MUST mirror the BE enums exactly (members + 1-based ordinals) — the API
+// transports the ordinal (values are stored as strings server-side).
 export enum EmploymentStatus {
     Active = 1,
     Inactive = 2,
-    Resigned = 3,
+    Suspended = 3,
     Terminated = 4,
-    Retired = 5,
-    OnLeave = 6,
-    Suspended = 7
+    Resigned = 5,
+    Retired = 6,
+    OnLeave = 7,
+    Probation = 8,
+    Contract = 9,
+    PartTime = 10,
+    FullTime = 11,
+    Temporary = 12,
+    Permanent = 13
 }
 
 export enum EmploymentType {
@@ -51,9 +59,23 @@ export enum EmploymentType {
     PartTime = 2,
     Contract = 3,
     Temporary = 4,
-    Intern = 5,
-    Consultant = 6,
-    Volunteer = 7
+    Permanent = 5,
+    Probation = 6,
+    Internship = 7,
+    Trainee = 8,
+    Visiting = 9,
+    Adjunct = 10,
+    Guest = 11,
+    Substitute = 12,
+    Casual = 13,
+    Seasonal = 14,
+    ProjectBased = 15,
+    Hourly = 16,
+    Daily = 17,
+    Weekly = 18,
+    Monthly = 19,
+    Yearly = 20,
+    Other = 21
 }
 
 export enum WorkShift {
@@ -61,17 +83,35 @@ export enum WorkShift {
     Afternoon = 2,
     Evening = 3,
     Night = 4,
-    Split = 5,
-    Flexible = 6
+    Day = 5,
+    Rotational = 6,
+    Flexible = 7,
+    Fixed = 8,
+    Split = 9,
+    OnCall = 10,
+    Remote = 11,
+    Hybrid = 12,
+    Weekend = 13,
+    Holiday = 14,
+    Other = 15
 }
 
 export enum PerformanceRating {
-    Excellent = 1,
-    VeryGood = 2,
-    Good = 3,
-    Satisfactory = 4,
-    NeedsImprovement = 5,
-    Unsatisfactory = 6
+    Outstanding = 1,
+    Excellent = 2,
+    VeryGood = 3,
+    Good = 4,
+    Satisfactory = 5,
+    Average = 6,
+    BelowAverage = 7,
+    Poor = 8,
+    Unsatisfactory = 9,
+    NeedsImprovement = 10,
+    Exceptional = 11,
+    Superior = 12,
+    Adequate = 13,
+    Marginal = 14,
+    Inadequate = 15
 }
 
 export interface EmployeeDto {

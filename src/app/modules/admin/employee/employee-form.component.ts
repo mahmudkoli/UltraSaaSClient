@@ -761,41 +761,21 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
         return labels[department] || 'Unknown';
     }
 
+    // Labels are the humanised enum member name (e.g. OnLeave -> "On Leave"),
+    // so every BE member is covered without maintaining parallel maps.
+    private humanizeEnum(name: string | undefined): string {
+        return name ? name.replace(/([a-z0-9])([A-Z])/g, '$1 $2') : 'Unknown';
+    }
+
     getEmploymentStatusLabel(status: EmploymentStatus): string {
-        const labels = {
-            [EmploymentStatus.Active]: 'Active',
-            [EmploymentStatus.Inactive]: 'Inactive',
-            [EmploymentStatus.Resigned]: 'Resigned',
-            [EmploymentStatus.Terminated]: 'Terminated',
-            [EmploymentStatus.Retired]: 'Retired',
-            [EmploymentStatus.OnLeave]: 'On Leave',
-            [EmploymentStatus.Suspended]: 'Suspended'
-        };
-        return labels[status] || 'Unknown';
+        return this.humanizeEnum(EmploymentStatus[status]);
     }
 
     getEmploymentTypeLabel(type: EmploymentType): string {
-        const labels = {
-            [EmploymentType.FullTime]: 'Full Time',
-            [EmploymentType.PartTime]: 'Part Time',
-            [EmploymentType.Contract]: 'Contract',
-            [EmploymentType.Temporary]: 'Temporary',
-            [EmploymentType.Intern]: 'Intern',
-            [EmploymentType.Consultant]: 'Consultant',
-            [EmploymentType.Volunteer]: 'Volunteer'
-        };
-        return labels[type] || 'Unknown';
+        return this.humanizeEnum(EmploymentType[type]);
     }
 
     getWorkShiftLabel(shift: WorkShift): string {
-        const labels = {
-            [WorkShift.Morning]: 'Morning',
-            [WorkShift.Afternoon]: 'Afternoon',
-            [WorkShift.Evening]: 'Evening',
-            [WorkShift.Night]: 'Night',
-            [WorkShift.Split]: 'Split',
-            [WorkShift.Flexible]: 'Flexible'
-        };
-        return labels[shift] || 'Unknown';
+        return this.humanizeEnum(WorkShift[shift]);
     }
 } 
