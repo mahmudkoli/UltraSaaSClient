@@ -75,6 +75,19 @@ export class AttendanceSummaryComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
+    downloadCsv(): void {
+        this._service.registerCsv(+this.yearControl.value!, +this.monthControl.value!)
+            .pipe(takeUntil(this._unsubscribeAll)).subscribe({
+                next: (blob) => {
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = `AttendanceRegister-${this.yearControl.value}-${this.monthControl.value}.csv`; a.click();
+                    URL.revokeObjectURL(url);
+                },
+                error: () => this._notificationService.error('Failed to download register'),
+            });
+    }
+
     load(): void {
         this.isLoading = true;
         this._changeDetectorRef.markForCheck();

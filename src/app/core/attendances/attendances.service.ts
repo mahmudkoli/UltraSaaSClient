@@ -48,4 +48,9 @@ export class AttendancesService {
         if (employeeId) params = params.set('employeeId', employeeId);
         return this.http.get<AttendanceSummaryDto[]>(`${this.baseUrl}/summary`, { params });
     }
+
+    registerCsv(year: number, month: number): Observable<Blob> {
+        const params = new HttpParams().set('year', year).set('month', month);
+        return this.http.get(`${environment.apiUrl}/api/v1/reports/attendance-register`, { params, responseType: 'blob' });
+    }
 }

@@ -25,6 +25,7 @@
                 <mat-option *ngFor="let e of employees" [value]="e.id">{{ e.firstName }} {{ e.lastName }}</mat-option>
             </mat-select>
         </mat-form-field>
+        <button mat-stroked-button (click)="downloadCsv()" class="self-center"><mat-icon>download</mat-icon> CSV</button>
     </ng-container>
 
     <div class="relative">
