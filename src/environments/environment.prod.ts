@@ -1,7 +1,7 @@
 export const environment = {
   production: true,
   apiUrl: 'https://edu-api.mkcorex.com',
-  appName: 'Ultra Edu by MKCoreX',
+  appName: 'MK Corex HRM',
   version: '1.0.0',
   tenantStrategy: 'subdomain' as 'subdomain' | 'manual',
   baseDomain: 'mkcorex.com',
