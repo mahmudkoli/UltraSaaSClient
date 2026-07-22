@@ -96,6 +96,7 @@ export const appRoutes: Route[] = [
             {path: 'org-chart', data: {permission: 'Permissions.Employees.View'}, loadChildren: () => import('app/modules/admin/org-chart/org-chart.routes')},
             {path: 'attendances', data: {permission: 'Permissions.Attendances.View'}, loadChildren: () => import('app/modules/admin/attendances/attendances.routes')},
             {path: 'leaves', data: {permission: 'Permissions.Leaves.Search'}, loadChildren: () => import('app/modules/admin/leave/leave.routes')},
+            {path: 'leave-balances', data: {permission: 'Permissions.LeaveBalances.View'}, loadChildren: () => import('app/modules/admin/leave-balances/leave-balances.routes')},
             {path: 'payroll', data: {permission: 'Permissions.PayrollSlips.View'}, loadChildren: () => import('app/modules/admin/payroll/payroll.routes')},
             {path: 'departments', data: {permission: 'Permissions.Departments.View'}, loadChildren: () => import('app/modules/admin/departments/departments.routes')},
             {path: 'designations', data: {permission: 'Permissions.Designations.View'}, loadChildren: () => import('app/modules/admin/designations/designations.routes')},

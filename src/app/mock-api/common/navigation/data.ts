@@ -31,6 +31,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
             { id: 'org-chart',              title: 'Org Chart',              type: 'basic', icon: 'heroicons_outline:share',          link: '/org-chart' },
             { id: 'attendances',            title: 'Attendance',             type: 'basic', icon: 'heroicons_outline:clipboard-document-check', link: '/attendances' },
             { id: 'leaves',                 title: 'Leaves',                 type: 'basic', icon: 'heroicons_outline:calendar',       link: '/leaves' },
+            { id: 'leave-balances',         title: 'Leave Balances',         type: 'basic', icon: 'heroicons_outline:scale',          link: '/leave-balances' },
             { id: 'payroll',                title: 'Payroll',                type: 'basic', icon: 'heroicons_outline:banknotes',      link: '/payroll' }
         ]
     },

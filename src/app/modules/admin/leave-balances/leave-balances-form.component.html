@@ -1,0 +1,47 @@
+<app-list-page
+    [title]="isAdjust ? 'Adjust Leave Balance' : 'Set Leave Balance'"
+    subtitle="Yearly entitlement per employee and leave type. Taken is tracked automatically on approval."
+    icon="account_balance_wallet"
+    iconGradient="from-teal-500 to-emerald-600"
+    pageGradient="from-gray-50 via-teal-50/30 to-emerald-50/30">
+
+    <ng-container pageActions>
+        <button mat-stroked-button (click)="cancel()"><mat-icon>arrow_back</mat-icon> Back</button>
+    </ng-container>
+
+    <div class="max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+        <form [formGroup]="form" (ngSubmit)="save()" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Employee</mat-label>
+                <mat-select formControlName="employeeId" required>
+                    <mat-option *ngFor="let e of employees" [value]="e.id">{{ e.firstName }} {{ e.lastName }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Leave Type</mat-label>
+                <mat-select formControlName="leaveTypeId" required>
+                    <mat-option *ngFor="let t of leaveTypes" [value]="t.id">{{ t.name }}</mat-option>
+                </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Year</mat-label>
+                <input matInput type="number" formControlName="year" required>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Entitled days</mat-label>
+                <input matInput type="number" formControlName="entitled" min="0" required>
+            </mat-form-field>
+
+            <div class="flex items-center justify-end gap-3 pt-2 md:col-span-2">
+                <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+                    <mat-icon *ngIf="!isSaving">save</mat-icon>
+                    {{ isSaving ? 'Saving…' : 'Save' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</app-list-page>
