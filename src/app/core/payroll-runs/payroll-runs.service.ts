@@ -34,4 +34,8 @@ export class PayrollRunsService {
     payslipPdf(slipId: string): Observable<Blob> {
         return this.http.get(`${environment.apiUrl}/api/v1/payrollslips/${slipId}/pdf`, { responseType: 'blob' });
     }
+
+    bankAdvice(runId: string): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/${runId}/bank-advice`, { responseType: 'blob' });
+    }
 }

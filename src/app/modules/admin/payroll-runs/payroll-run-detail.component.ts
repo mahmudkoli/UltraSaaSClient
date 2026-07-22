@@ -117,5 +117,19 @@ export class PayrollRunDetailComponent implements OnInit, OnDestroy {
         });
     }
 
+    downloadBankAdvice(): void {
+        this._service.bankAdvice(this._id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `BankAdvice-${this.run?.periodYear}-${this.run?.periodMonth}.csv`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+            error: () => this._notification.error('Failed to download bank advice'),
+        });
+    }
+
     back(): void { this._router.navigate(['/payroll-runs']); }
 }
