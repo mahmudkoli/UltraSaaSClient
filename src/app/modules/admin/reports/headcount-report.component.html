@@ -1,0 +1,48 @@
+<app-list-page
+    title="Headcount Report"
+    subtitle="Employee distribution by status, designation, and department."
+    icon="groups"
+    iconGradient="from-fuchsia-500 to-purple-600"
+    pageGradient="from-gray-50 via-fuchsia-50/30 to-purple-50/30">
+
+    <div class="relative"><mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar></div>
+
+    <ng-container *ngIf="report">
+        <div class="grid grid-cols-3 gap-4 mb-6">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+                <div class="text-xs text-gray-500 uppercase tracking-wide">Total</div>
+                <div class="mt-1 text-3xl font-bold text-gray-900 dark:text-gray-100">{{ report.total }}</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+                <div class="text-xs text-gray-500 uppercase tracking-wide">Active</div>
+                <div class="mt-1 text-3xl font-bold text-green-700 dark:text-green-400">{{ report.active }}</div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+                <div class="text-xs text-gray-500 uppercase tracking-wide">Inactive</div>
+                <div class="mt-1 text-3xl font-bold text-gray-500">{{ report.inactive }}</div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div *ngFor="let group of [
+                    { title: 'By Status', items: report.byStatus, color: 'bg-indigo-500' },
+                    { title: 'By Designation', items: report.byDesignation, color: 'bg-violet-500' },
+                    { title: 'By Department', items: report.byDepartment, color: 'bg-sky-500' }]"
+                 class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-5">
+                <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">{{ group.title }}</h3>
+                <div class="flex flex-col gap-3">
+                    <div *ngFor="let item of group.items">
+                        <div class="flex justify-between text-sm mb-1">
+                            <span class="text-gray-800 dark:text-gray-200">{{ item.label }}</span>
+                            <span class="text-gray-500">{{ item.count }} · {{ pct(item.count) }}%</span>
+                        </div>
+                        <div class="h-2 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden">
+                            <div class="h-2 rounded-full {{ group.color }}" [style.width.%]="pct(item.count)"></div>
+                        </div>
+                    </div>
+                    <div *ngIf="group.items.length === 0" class="text-sm text-gray-400">No data.</div>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+</app-list-page>

@@ -76,6 +76,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
             { id: 'statutory-config',     title: 'Statutory Config',     type: 'basic', icon: 'heroicons_outline:scale',                    link: '/statutory-config' },
             { id: 'user-management',      title: 'User Management',      type: 'basic', icon: 'heroicons_outline:users',                    link: '/users' },
             { id: 'admin-dashboard',      title: 'Admin Dashboard',      type: 'basic', icon: 'heroicons_outline:squares-2x2',             link: '/admin-dashboard' },
+            { id: 'reports',              title: 'Reports',              type: 'basic', icon: 'heroicons_outline:chart-pie',               link: '/reports' },
             { id: 'audit-trail',          title: 'Audit Trail',          type: 'basic', icon: 'heroicons_outline:clipboard-document-list', link: '/audit-trail' },
             { id: 'tenant-management',    title: 'Tenant Management',    type: 'basic', icon: 'heroicons_outline:building-office',         link: '/tenant' },
             { id: 'institute-management', title: 'Institute Management', type: 'basic', icon: 'heroicons_outline:academic-cap',            link: '/institute' },

@@ -101,6 +101,7 @@ export const NAV_PERMISSIONS: Record<string, string> = {
     // System Management
     'user-management':               'Permissions.Users.View',
     'admin-dashboard':               'Permissions.Tenants.View',
+    'reports':                       'Permissions.Employees.View',
     'audit-trail':                   'Permissions.AuditTrails.View',
     'tenant-management':             'Permissions.Tenants.View',
     'institute-management':          'Permissions.Institutes.View',
