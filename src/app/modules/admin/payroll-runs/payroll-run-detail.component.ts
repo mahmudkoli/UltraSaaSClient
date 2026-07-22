@@ -131,5 +131,17 @@ export class PayrollRunDetailComponent implements OnInit, OnDestroy {
         });
     }
 
+    downloadRegister(): void {
+        this._service.register(this._id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url; a.download = `PayrollRegister-${this.run?.periodYear}-${this.run?.periodMonth}.csv`; a.click();
+                URL.revokeObjectURL(url);
+            },
+            error: () => this._notification.error('Failed to download register'),
+        });
+    }
+
     back(): void { this._router.navigate(['/payroll-runs']); }
 }

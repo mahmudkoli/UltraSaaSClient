@@ -7,6 +7,7 @@
 
     <ng-container pageActions>
         <button mat-stroked-button (click)="back()"><mat-icon>arrow_back</mat-icon> Back</button>
+        <button *ngIf="run && run.employeeCount > 0" mat-stroked-button (click)="downloadRegister()"><mat-icon>grid_on</mat-icon> Register</button>
         <button *ngIf="run && run.employeeCount > 0" mat-stroked-button (click)="downloadBankAdvice()"><mat-icon>table_view</mat-icon> Bank Advice</button>
         <ng-container *ngIf="run && run.status !== 'Finalised'">
             <button mat-stroked-button (click)="regenerate()" [disabled]="isBusy"><mat-icon>refresh</mat-icon> Regenerate</button>

@@ -38,4 +38,8 @@ export class PayrollRunsService {
     bankAdvice(runId: string): Observable<Blob> {
         return this.http.get(`${this.baseUrl}/${runId}/bank-advice`, { responseType: 'blob' });
     }
+
+    register(runId: string): Observable<Blob> {
+        return this.http.get(`${this.baseUrl}/${runId}/register`, { responseType: 'blob' });
+    }
 }
