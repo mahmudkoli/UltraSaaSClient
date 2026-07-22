@@ -91,6 +91,7 @@ export const NAV_PERMISSIONS: Record<string, string> = {
     'designations':                  'Permissions.Designations.View',
     'locations':                     'Permissions.Locations.View',
     'cost-centres':                  'Permissions.CostCentres.View',
+    'leave-types':                   'Permissions.LeaveTypes.View',
 
     // System Management
     'user-management':               'Permissions.Users.View',
