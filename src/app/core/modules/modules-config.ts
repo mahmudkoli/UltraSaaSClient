@@ -75,6 +75,7 @@ export const NAV_PERMISSIONS: Record<string, string> = {
     'employee-qualifications':       'Permissions.Employees.View',
     'org-chart':                     'Permissions.Employees.View',
     'attendances':                   'Permissions.Attendances.View',
+    'attendance-summary':            'Permissions.Attendances.View',
     'leaves':                        'Permissions.Leaves.Search',
     'leave-balances':                'Permissions.LeaveBalances.View',
     'payroll':                       'Permissions.PayrollSlips.View',

@@ -4,12 +4,14 @@ import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
     AttendanceDto,
+    AttendanceSummaryDto,
     CreateAttendanceRequest,
     UpdateAttendanceRequest,
     RegulariseAttendanceRequest,
     SearchAttendancesRequest,
     PaginationResponse,
 } from './attendances.types';
+import { HttpParams } from '@angular/common/http';
 
 @Injectable({ providedIn: 'root' })
 export class AttendancesService {
@@ -39,5 +41,11 @@ export class AttendancesService {
 
     delete(id: string): Observable<string> {
         return this.http.delete(`${this.baseUrl}/${id}`, { responseType: 'text' });
+    }
+
+    summary(year: number, month: number, employeeId?: string): Observable<AttendanceSummaryDto[]> {
+        let params = new HttpParams().set('year', year).set('month', month);
+        if (employeeId) params = params.set('employeeId', employeeId);
+        return this.http.get<AttendanceSummaryDto[]>(`${this.baseUrl}/summary`, { params });
     }
 }

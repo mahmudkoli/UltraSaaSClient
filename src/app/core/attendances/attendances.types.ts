@@ -80,6 +80,22 @@ export interface PaginationResponse<T> {
     hasNextPage: boolean;
 }
 
+export interface AttendanceSummaryDto {
+    employeeId: string;
+    employeeName: string;
+    year: number;
+    month: number;
+    recordedDays: number;
+    presentDays: number;
+    absentDays: number;
+    lateDays: number;
+    halfDays: number;
+    otherDays: number;
+    totalOvertimeMinutes: number;
+    paidLeaveDays: number;
+    unpaidLeaveDays: number;
+}
+
 export const ATTENDANCE_STATUS_LABELS: Record<number, string> = {
     1: 'Present', 2: 'Absent', 3: 'Late', 4: 'Half Day',
     5: 'Excused', 6: 'Medical', 7: 'Holiday', 8: 'Weekend'

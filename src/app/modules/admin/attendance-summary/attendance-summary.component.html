@@ -1,0 +1,84 @@
+<app-list-page
+    title="Attendance Summary"
+    subtitle="Monthly rollup per employee — attendance counts, overtime, and paid/unpaid leave (payroll input)."
+    icon="summarize"
+    iconGradient="from-blue-500 to-indigo-600"
+    pageGradient="from-gray-50 via-blue-50/30 to-indigo-50/30">
+
+    <ng-container pageActions>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-40">
+            <mat-label>Month</mat-label>
+            <mat-select [formControl]="monthControl">
+                <mat-option *ngFor="let m of months" [value]="m.v">{{ m.n }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-28">
+            <mat-label>Year</mat-label>
+            <mat-select [formControl]="yearControl">
+                <mat-option *ngFor="let y of years" [value]="y">{{ y }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-48">
+            <mat-label>Employee</mat-label>
+            <mat-select [formControl]="employeeControl">
+                <mat-option [value]="''">All</mat-option>
+                <mat-option *ngFor="let e of employees" [value]="e.id">{{ e.firstName }} {{ e.lastName }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+    </ng-container>
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div class="overflow-x-auto">
+            <table mat-table [dataSource]="rows" class="min-w-full bg-transparent">
+                <ng-container matColumnDef="employee">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-3 text-left">Employee</th>
+                    <td mat-cell *matCellDef="let r" class="px-6 py-3 text-sm font-medium text-gray-900 dark:text-gray-100">{{ r.employeeName }}</td>
+                </ng-container>
+                <ng-container matColumnDef="recorded">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-center">Recorded</th>
+                    <td mat-cell *matCellDef="let r" class="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-400">{{ r.recordedDays }}</td>
+                </ng-container>
+                <ng-container matColumnDef="present">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-center">Present</th>
+                    <td mat-cell *matCellDef="let r" class="px-4 py-3 text-sm text-center text-green-600 dark:text-green-400">{{ r.presentDays }}</td>
+                </ng-container>
+                <ng-container matColumnDef="absent">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-center">Absent</th>
+                    <td mat-cell *matCellDef="let r" class="px-4 py-3 text-sm text-center text-red-600 dark:text-red-400">{{ r.absentDays }}</td>
+                </ng-container>
+                <ng-container matColumnDef="late">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-center">Late</th>
+                    <td mat-cell *matCellDef="let r" class="px-4 py-3 text-sm text-center text-amber-600 dark:text-amber-400">{{ r.lateDays }}</td>
+                </ng-container>
+                <ng-container matColumnDef="half">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-center">Half</th>
+                    <td mat-cell *matCellDef="let r" class="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-400">{{ r.halfDays }}</td>
+                </ng-container>
+                <ng-container matColumnDef="ot">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-center">OT (min)</th>
+                    <td mat-cell *matCellDef="let r" class="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-400">{{ r.totalOvertimeMinutes }}</td>
+                </ng-container>
+                <ng-container matColumnDef="paidLeave">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-center">Paid Leave</th>
+                    <td mat-cell *matCellDef="let r" class="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-400">{{ r.paidLeaveDays }}</td>
+                </ng-container>
+                <ng-container matColumnDef="unpaidLeave">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-center">Unpaid Leave</th>
+                    <td mat-cell *matCellDef="let r" class="px-4 py-3 text-sm text-center text-gray-600 dark:text-gray-400">{{ r.unpaidLeaveDays }}</td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"></tr>
+            </table>
+        </div>
+
+        <div *ngIf="!isLoading && rows.length === 0" class="text-center py-16">
+            <div class="text-6xl mb-4">📅</div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No data for this period</h3>
+            <p class="text-gray-500 dark:text-gray-400">No attendance or approved leave recorded for the selected month.</p>
+        </div>
+    </div>
+</app-list-page>
