@@ -105,6 +105,7 @@ export const appRoutes: Route[] = [
             {path: 'cost-centres', data: {permission: 'Permissions.CostCentres.View'}, loadChildren: () => import('app/modules/admin/cost-centres/cost-centres.routes')},
             {path: 'leave-types', data: {permission: 'Permissions.LeaveTypes.View'}, loadChildren: () => import('app/modules/admin/leave-types/leave-types.routes')},
             {path: 'salary-structures', data: {permission: 'Permissions.SalaryStructures.View'}, loadChildren: () => import('app/modules/admin/salary-structures/salary-structures.routes')},
+            {path: 'statutory-config', data: {permission: 'Permissions.StatutoryConfig.View'}, loadChildren: () => import('app/modules/admin/statutory-config/statutory-config.routes')},
             {path: 'audit-trail', data: {permission: 'Permissions.AuditTrails.View'}, loadChildren: () => import('app/modules/admin/audit-trail/audit-trail.routes')},
             {path: 'announcement-archive', data: {permission: 'Permissions.Tenants.View'}, loadChildren: () => import('app/modules/admin/announcement-archive/announcement-archive.routes')},
             {path: 'sms-templates', data: {permission: 'Permissions.SMSTemplates.View'}, loadChildren: () => import('app/modules/admin/sms-templates/sms-templates.routes')},

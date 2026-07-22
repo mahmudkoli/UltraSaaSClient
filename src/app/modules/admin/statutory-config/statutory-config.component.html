@@ -1,0 +1,89 @@
+<app-list-page
+    title="Statutory Config (Bangladesh)"
+    subtitle="Payroll rates & thresholds — tenant × fiscal year. The engine reads these; no rate is hard-coded."
+    icon="gavel"
+    iconGradient="from-slate-500 to-gray-700"
+    pageGradient="from-gray-50 via-slate-50/30 to-gray-100/30">
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <!-- Placeholder warning -->
+    <div *ngIf="form.get('isPlaceholder')?.value"
+         class="mb-4 flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+        <mat-icon class="text-amber-600 dark:text-amber-400">warning</mat-icon>
+        <div class="text-sm text-amber-800 dark:text-amber-200">
+            <strong>Placeholder values.</strong> These figures are NOT yet confirmed against the NBR Finance Act.
+            Verify every rate/threshold before running real payroll, then untick “Placeholder”.
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Config form -->
+        <form [formGroup]="form" (ngSubmit)="save()" class="lg:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6 flex flex-col gap-4">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <mat-form-field appearance="outline"><mat-label>Fiscal Year</mat-label><input matInput formControlName="fiscalYear" placeholder="2025-26"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Effective From</mat-label><input matInput type="date" formControlName="effectiveFrom"></mat-form-field>
+                <div class="flex items-center"><mat-checkbox formControlName="isPlaceholder" color="warn">Placeholder (unconfirmed)</mat-checkbox></div>
+            </div>
+
+            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mt-2">Income tax</h3>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <mat-form-field appearance="outline"><mat-label>General threshold (BDT)</mat-label><input matInput type="number" formControlName="generalTaxThreshold"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Women/senior extra</mat-label><input matInput type="number" formControlName="womenSeniorExtraThreshold"></mat-form-field>
+            </div>
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Tax slabs (JSON: [&#123;"width":100000,"rate":5&#125;, …], null width = top band)</mat-label>
+                <textarea matInput formControlName="taxSlabsJson" rows="3" class="font-mono text-xs"></textarea>
+            </mat-form-field>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <mat-form-field appearance="outline"><mat-label>Rebate % of income</mat-label><input matInput type="number" formControlName="rebateIncomePct"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Rebate % of investment</mat-label><input matInput type="number" formControlName="rebateInvestmentPct"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Rebate cap</mat-label><input matInput type="number" formControlName="rebateCap"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Min tax (existing)</mat-label><input matInput type="number" formControlName="minimumTaxExisting"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Min tax (new)</mat-label><input matInput type="number" formControlName="minimumTaxNew"></mat-form-field>
+            </div>
+
+            <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mt-2">PF · Gratuity · Bonus · Caps</h3>
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                <mat-form-field appearance="outline"><mat-label>PF employee %</mat-label><input matInput type="number" formControlName="pfEmployeeRate"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>PF employer %</mat-label><input matInput type="number" formControlName="pfEmployerRate"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>PF eligibility (months)</mat-label><input matInput type="number" formControlName="pfEligibilityMonths"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Gratuity days/yr</mat-label><input matInput type="number" formControlName="gratuityDaysPerYear"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Gratuity days/yr (&gt;10y)</mat-label><input matInput type="number" formControlName="gratuityDaysPerYearOver10"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Festival bonus count</mat-label><input matInput type="number" formControlName="festivalBonusCount"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Festival bonus months</mat-label><input matInput type="number" formControlName="festivalBonusMonths"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Deduction cap %</mat-label><input matInput type="number" formControlName="deductionCapPct"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Overtime multiplier</mat-label><input matInput type="number" formControlName="overtimeMultiplier"></mat-form-field>
+            </div>
+
+            <div class="flex justify-end pt-2">
+                <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+                    <mat-icon *ngIf="!isSaving">save</mat-icon>{{ isSaving ? 'Saving…' : (exists ? 'Update Config' : 'Create Config') }}
+                </button>
+            </div>
+        </form>
+
+        <!-- Estimate calculator -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+            <h3 class="text-base font-semibold text-gray-900 dark:text-gray-100 mb-3">Deduction estimator</h3>
+            <p class="text-xs text-gray-500 dark:text-gray-400 mb-4">Monthly PF + income-tax withholding for a salary, using the saved config.</p>
+            <form [formGroup]="estForm" class="flex flex-col gap-3">
+                <mat-form-field appearance="outline"><mat-label>Monthly Basic</mat-label><input matInput type="number" formControlName="monthlyBasic"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Monthly taxable earnings</mat-label><input matInput type="number" formControlName="monthlyTaxableEarnings"></mat-form-field>
+                <mat-form-field appearance="outline"><mat-label>Annual eligible investment</mat-label><input matInput type="number" formControlName="annualEligibleInvestment"></mat-form-field>
+                <button mat-stroked-button type="button" (click)="runEstimate()"><mat-icon>calculate</mat-icon> Estimate</button>
+            </form>
+
+            <div *ngIf="estimate" class="mt-4 flex flex-col gap-2 text-sm">
+                <div class="flex justify-between"><span class="text-gray-500">Annual taxable</span><span class="font-medium">{{ estimate.annualTaxableIncome | number }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Annual tax</span><span class="font-medium">{{ estimate.annualNetTax | number }}</span></div>
+                <div class="flex justify-between border-t border-gray-200 dark:border-gray-700 pt-2"><span class="text-gray-500">Monthly TDS</span><span class="font-semibold text-red-600 dark:text-red-400">{{ estimate.monthlyTds | number }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Monthly PF (employee)</span><span class="font-semibold text-red-600 dark:text-red-400">{{ estimate.monthlyPfEmployee | number }}</span></div>
+                <div class="flex justify-between"><span class="text-gray-500">Monthly PF (employer)</span><span class="font-medium">{{ estimate.monthlyPfEmployer | number }}</span></div>
+                <div *ngIf="estimate.isPlaceholderConfig" class="text-xs text-amber-600 dark:text-amber-400 mt-1">⚠ Based on placeholder rates.</div>
+            </div>
+        </div>
+    </div>
+</app-list-page>
