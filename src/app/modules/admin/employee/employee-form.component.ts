@@ -18,7 +18,12 @@ import { takeUntil } from 'rxjs/operators';
 import { fuseAnimations } from '@fuse/animations';
 import { FuseAlertService } from '@fuse/components/alert';
 import { EmployeesService } from '../../../core/employees/employees.service';
-import { EmployeeDto, CreateEmployeeRequest, UpdateEmployeeRequest, Designation, Department, EmploymentStatus, EmploymentType, WorkShift } from '../../../core/employees/employees.types';
+import { EmployeeDto, CreateEmployeeRequest, UpdateEmployeeRequest, Designation, Department, EmploymentStatus, EmploymentType, WorkShift, EmployeeDocumentDto } from '../../../core/employees/employees.types';
+import { FuseConfirmationService } from '@fuse/services/confirmation';
+import { LocationsService } from '../../../core/locations/locations.service';
+import { LocationDto } from '../../../core/locations/locations.types';
+import { CostCentresService } from '../../../core/cost-centres/cost-centres.service';
+import { CostCentreDto } from '../../../core/cost-centres/cost-centres.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
 import { passwordMatchValidator } from '../../../core/validators/password-match.validator';
@@ -84,18 +89,38 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
         { value: 'Other', label: 'Other' }
     ];
 
+    // Org-config lookups (S1.2 entities) + BD mobile financial services.
+    locations: LocationDto[] = [];
+    costCentres: CostCentreDto[] = [];
+    managers: EmployeeDto[] = [];
+    mfsProviderOptions = ['bKash', 'Nagad', 'Rocket', 'Upay'];
+
+    // Documents (edit mode only — needs an existing employee)
+    documents: EmployeeDocumentDto[] = [];
+    docForm: FormGroup;
+    isAddingDoc = false;
+
     private _unsubscribeAll: Subject<any> = new Subject<any>();
 
     constructor(
         private _formBuilder: FormBuilder,
         private _employeesService: EmployeesService,
+        private _locationsService: LocationsService,
+        private _costCentresService: CostCentresService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseAlertService: FuseAlertService,
+        private _fuseConfirmationService: FuseConfirmationService,
         private _router: Router,
         private _route: ActivatedRoute,
         private _notificationService: NotificationService,
         private _dateUtils: DateUtils
     ) {
+        this.docForm = this._formBuilder.group({
+            title: ['', [Validators.required, Validators.maxLength(200)]],
+            documentType: ['', [Validators.required, Validators.maxLength(100)]],
+            fileUrl: ['', [Validators.required, Validators.maxLength(500)]],
+            expiryDate: ['']
+        });
         this.employeeForm = this._formBuilder.group({
             basicInfo: this._formBuilder.group({
                 firstName: ['', [Validators.required, Validators.minLength(1), Validators.maxLength(75)]],
@@ -153,6 +178,15 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
                 pfNumber: ['', Validators.maxLength(20)],
                 esiNumber: ['', Validators.maxLength(20)]
             }),
+
+            // Org assignment + mobile-financial-service payout (S1.3)
+            orgAssignment: this._formBuilder.group({
+                reportsToId: [''],
+                locationId: [''],
+                costCentreId: [''],
+                mfsProvider: [''],
+                mfsAccountNumber: ['', Validators.maxLength(30)]
+            }),
             
             organizationalInfo: this._formBuilder.group({
                 reportingTo: ['', Validators.maxLength(100)],
@@ -195,7 +229,9 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
 
     ngOnInit(): void {
         const employeeId = this._route.snapshot.paramMap.get('id');
-        
+
+        this.loadLookups();
+
         if (employeeId && employeeId !== 'create') {
             this.isEditMode = true;
             this.loadEmployee(employeeId);
@@ -219,6 +255,25 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
         this._unsubscribeAll.complete();
     }
 
+    loadLookups(): void {
+        this._locationsService.search({ pageNumber: 1, pageSize: 500, isActive: true })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({ next: (r) => { this.locations = r.data || []; this._changeDetectorRef.markForCheck(); }, error: () => {} });
+
+        this._costCentresService.search({ pageNumber: 1, pageSize: 500, isActive: true })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({ next: (r) => { this.costCentres = r.data || []; this._changeDetectorRef.markForCheck(); }, error: () => {} });
+
+        this._employeesService.search({ pageNumber: 1, pageSize: 1000, keyword: '' })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({ next: (r) => { this.managers = r.data || []; this._changeDetectorRef.markForCheck(); }, error: () => {} });
+    }
+
+    /** Managers a given employee may report to — everyone except themselves. */
+    get managerOptions(): EmployeeDto[] {
+        return this.managers.filter(m => !this.employee || m.id !== this.employee.id);
+    }
+
     loadEmployee(id: string): void {
         this.isLoading = true;
         this._changeDetectorRef.markForCheck();
@@ -229,6 +284,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
                 next: (employee: EmployeeDto) => {
                     this.employee = employee;
                     this.patchForm(employee);
+                    this.loadDocuments();
                     this.isLoading = false;
                     this._changeDetectorRef.markForCheck();
                 },
@@ -294,6 +350,13 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
                 aadharNumber: employee.aadharNumber || '',
                 pfNumber: employee.pfNumber || '',
                 esiNumber: employee.esiNumber || ''
+            },
+            orgAssignment: {
+                reportsToId: employee.reportsToId || '',
+                locationId: employee.locationId || '',
+                costCentreId: employee.costCentreId || '',
+                mfsProvider: employee.mfsProvider || '',
+                mfsAccountNumber: employee.mfsAccountNumber || ''
             },
             organizationalInfo: {
                 reportingTo: employee.reportingTo || '',
@@ -388,6 +451,11 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
             aadharNumber: formValue.financialInfo.aadharNumber || undefined,
             pfNumber: formValue.financialInfo.pfNumber || undefined,
             esiNumber: formValue.financialInfo.esiNumber || undefined,
+            reportsToId: formValue.orgAssignment.reportsToId || undefined,
+            locationId: formValue.orgAssignment.locationId || undefined,
+            costCentreId: formValue.orgAssignment.costCentreId || undefined,
+            mfsProvider: formValue.orgAssignment.mfsProvider || undefined,
+            mfsAccountNumber: formValue.orgAssignment.mfsAccountNumber || undefined,
             reportingTo: formValue.organizationalInfo.reportingTo || undefined,
             subordinates: formValue.organizationalInfo.subordinates || undefined,
             roles: formValue.organizationalInfo.roles || undefined,
@@ -466,6 +534,11 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
             aadharNumber: formValue.financialInfo.aadharNumber || undefined,
             pfNumber: formValue.financialInfo.pfNumber || undefined,
             esiNumber: formValue.financialInfo.esiNumber || undefined,
+            reportsToId: formValue.orgAssignment.reportsToId || undefined,
+            locationId: formValue.orgAssignment.locationId || undefined,
+            costCentreId: formValue.orgAssignment.costCentreId || undefined,
+            mfsProvider: formValue.orgAssignment.mfsProvider || undefined,
+            mfsAccountNumber: formValue.orgAssignment.mfsAccountNumber || undefined,
             reportingTo: formValue.organizationalInfo.reportingTo || undefined,
             subordinates: formValue.organizationalInfo.subordinates || undefined,
             roles: formValue.organizationalInfo.roles || undefined,
@@ -504,6 +577,65 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
                     this._notificationService.error('Error updating employee');
                 }
             });
+    }
+
+    loadDocuments(): void {
+        if (!this.employee?.id) return;
+        this._employeesService.getDocuments(this.employee.id)
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({
+                next: (docs) => { this.documents = docs || []; this._changeDetectorRef.markForCheck(); },
+                error: () => {},
+            });
+    }
+
+    addDocument(): void {
+        if (!this.employee?.id || this.docForm.invalid) {
+            this.docForm.markAllAsTouched();
+            return;
+        }
+        this.isAddingDoc = true;
+        this._changeDetectorRef.markForCheck();
+        const v = this.docForm.value;
+        this._employeesService.addDocument(this.employee.id, {
+            employeeId: this.employee.id,
+            title: v.title,
+            documentType: v.documentType,
+            fileUrl: v.fileUrl,
+            expiryDate: v.expiryDate ? this._dateUtils.formatDateForAPI(v.expiryDate) : undefined,
+        }).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: () => {
+                this.isAddingDoc = false;
+                this.docForm.reset();
+                this._notificationService.success('Document added');
+                this.loadDocuments();
+                this._changeDetectorRef.markForCheck();
+            },
+            error: () => {
+                this.isAddingDoc = false;
+                this._notificationService.error('Failed to add document');
+                this._changeDetectorRef.markForCheck();
+            },
+        });
+    }
+
+    removeDocument(doc: EmployeeDocumentDto): void {
+        if (!this.employee?.id) return;
+        const confirmation = this._fuseConfirmationService.open({
+            title: 'Delete Document',
+            message: `Delete "${doc.title}"?`,
+            actions: { confirm: { label: 'Delete' } },
+        });
+        confirmation.afterClosed().subscribe((result) => {
+            if (result === 'confirmed') {
+                this._employeesService.deleteDocument(this.employee!.id, doc.id)
+                    .pipe(takeUntil(this._unsubscribeAll))
+                    .subscribe({
+                        next: () => { this._notificationService.success('Document deleted'); this.loadDocuments(); },
+                        error: () => this._notificationService.error('Failed to delete document'),
+                    });
+            }
+        });
     }
 
     cancel(): void {

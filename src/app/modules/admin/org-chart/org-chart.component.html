@@ -1,0 +1,63 @@
+<app-list-page
+    title="Org Chart"
+    subtitle="Employee reporting structure, built from each employee's manager."
+    icon="account_tree"
+    iconGradient="from-indigo-500 to-blue-600"
+    pageGradient="from-gray-50 via-indigo-50/30 to-blue-50/30">
+
+    <ng-container pageActions>
+        <span class="text-sm text-gray-600 dark:text-gray-400 font-medium self-center" *ngIf="!isLoading">{{ totalCount }} employees</span>
+        <button mat-icon-button (click)="load()" matTooltip="Refresh"><mat-icon>refresh</mat-icon></button>
+    </ng-container>
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-4 sm:p-6">
+        <div *ngIf="!isLoading && roots.length === 0" class="text-center py-16">
+            <div class="text-6xl mb-4">🗂️</div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No employees yet</h3>
+            <p class="text-gray-500 dark:text-gray-400">Add employees and set their "Reports To" to build the chart.</p>
+        </div>
+
+        <ul class="org-tree flex flex-col gap-2">
+            <ng-container *ngFor="let root of roots">
+                <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: root, depth: 0 }"></ng-container>
+            </ng-container>
+        </ul>
+
+        <ng-template #nodeTpl let-node let-depth="depth">
+            <li>
+                <div class="flex items-center gap-3 py-2 px-3 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
+                     [style.margin-left.px]="depth * 28">
+                    <div class="flex items-center justify-center w-9 h-9 rounded-full bg-gradient-to-br from-indigo-500 to-blue-600 text-white text-xs font-semibold flex-shrink-0">
+                        {{ initials(node.employeeName) }}
+                    </div>
+                    <div class="min-w-0">
+                        <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {{ node.employeeName }}
+                            <span *ngIf="node.employeeCode" class="text-xs text-gray-400">· {{ node.employeeCode }}</span>
+                        </div>
+                        <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                            <span *ngIf="node.designation">{{ node.designation }}</span>
+                            <span *ngIf="node.designation && node.department"> — </span>
+                            <span *ngIf="node.department">{{ node.department }}</span>
+                            <span *ngIf="!node.designation && !node.department">—</span>
+                        </div>
+                    </div>
+                    <span *ngIf="node.reports?.length"
+                          class="ml-auto inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium text-indigo-700 bg-indigo-100 dark:text-indigo-300 dark:bg-indigo-900/30">
+                        {{ node.reports.length }} report{{ node.reports.length === 1 ? '' : 's' }}
+                    </span>
+                </div>
+                <ul *ngIf="node.reports?.length" class="border-l border-gray-200 dark:border-gray-700 flex flex-col gap-1"
+                    [style.margin-left.px]="depth * 28 + 18">
+                    <ng-container *ngFor="let child of node.reports">
+                        <ng-container *ngTemplateOutlet="nodeTpl; context: { $implicit: child, depth: depth + 1 }"></ng-container>
+                    </ng-container>
+                </ul>
+            </li>
+        </ng-template>
+    </div>
+</app-list-page>

@@ -2,14 +2,17 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { 
-    EmployeeDto, 
-    CreateEmployeeRequest, 
-    UpdateEmployeeRequest, 
+import {
+    EmployeeDto,
+    CreateEmployeeRequest,
+    UpdateEmployeeRequest,
     SearchEmployeesRequest,
     GenerateRandomEmployeeRequest,
     GenerationProgress,
-    PaginationResponse 
+    PaginationResponse,
+    EmployeeOrgChartNode,
+    EmployeeDocumentDto,
+    AddEmployeeDocumentRequest
 } from './employees.types';
 
 @Injectable({
@@ -40,6 +43,24 @@ export class EmployeesService {
 
     delete(id: string): Observable<string> {
         return this.http.delete<string>(`${this.baseUrl}/${id}`);
+    }
+
+    /** Reporting tree built from ReportsTo links (S1.3). */
+    getOrgChart(): Observable<EmployeeOrgChartNode[]> {
+        return this.http.get<EmployeeOrgChartNode[]>(`${this.baseUrl}/org-chart`);
+    }
+
+    /** Employee documents (expiry-ordered). */
+    getDocuments(employeeId: string): Observable<EmployeeDocumentDto[]> {
+        return this.http.get<EmployeeDocumentDto[]>(`${this.baseUrl}/${employeeId}/documents`);
+    }
+
+    addDocument(employeeId: string, request: AddEmployeeDocumentRequest): Observable<string> {
+        return this.http.post(`${this.baseUrl}/${employeeId}/documents`, request, { responseType: 'text' });
+    }
+
+    deleteDocument(employeeId: string, documentId: string): Observable<string> {
+        return this.http.delete(`${this.baseUrl}/${employeeId}/documents/${documentId}`, { responseType: 'text' });
     }
 
     /**

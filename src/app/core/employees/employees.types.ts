@@ -126,7 +126,16 @@ export interface EmployeeDto {
     aadharNumber?: string;
     pfNumber?: string;
     esiNumber?: string;
-    
+
+    // Mobile financial service (BD: bKash / Nagad / Rocket)
+    mfsProvider?: string;
+    mfsAccountNumber?: string;
+
+    // Org assignment (S1.2/S1.3 org-config entity refs)
+    reportsToId?: string;
+    locationId?: string;
+    costCentreId?: string;
+
     // Organizational Information
     reportingTo?: string;
     subordinates?: string;
@@ -134,9 +143,9 @@ export interface EmployeeDto {
     responsibilities?: string;
     committees?: string;
     projects?: string;
-    
+
     // Teaching Information
-    
+
     // Performance Information
     performanceRating?: PerformanceRating;
     lastAppraisalDate?: string;
@@ -228,7 +237,16 @@ export interface CreateEmployeeRequest {
     aadharNumber?: string;
     pfNumber?: string;
     esiNumber?: string;
-    
+
+    // Mobile financial service (BD: bKash / Nagad / Rocket)
+    mfsProvider?: string;
+    mfsAccountNumber?: string;
+
+    // Org assignment (S1.2/S1.3 org-config entity refs)
+    reportsToId?: string;
+    locationId?: string;
+    costCentreId?: string;
+
     // Organizational Information
     reportingTo?: string;
     subordinates?: string;
@@ -236,9 +254,9 @@ export interface CreateEmployeeRequest {
     responsibilities?: string;
     committees?: string;
     projects?: string;
-    
+
     // Teaching Information
-    
+
     // Personal Information
     languagesKnown?: string;
     hobbies?: string;
@@ -246,7 +264,7 @@ export interface CreateEmployeeRequest {
     interests?: string;
     remarks?: string;
     notes?: string;
-    
+
     password: string;
 }
 
@@ -302,7 +320,16 @@ export interface UpdateEmployeeRequest {
     aadharNumber?: string;
     pfNumber?: string;
     esiNumber?: string;
-    
+
+    // Mobile financial service (BD: bKash / Nagad / Rocket)
+    mfsProvider?: string;
+    mfsAccountNumber?: string;
+
+    // Org assignment (S1.2/S1.3 org-config entity refs)
+    reportsToId?: string;
+    locationId?: string;
+    costCentreId?: string;
+
     // Organizational Information
     reportingTo?: string;
     subordinates?: string;
@@ -310,9 +337,9 @@ export interface UpdateEmployeeRequest {
     responsibilities?: string;
     committees?: string;
     projects?: string;
-    
+
     // Teaching Information
-    
+
     // Performance Information
     performanceRating?: PerformanceRating;
     lastAppraisalDate?: string;
@@ -377,3 +404,33 @@ export interface PaginationResponse<T> {
     hasPreviousPage: boolean;
     hasNextPage: boolean;
 } 
+// --- Org chart (S1.3) ---
+export interface EmployeeOrgChartNode {
+    id: string;
+    employeeName: string;
+    employeeCode?: string;
+    designation?: string;
+    department?: string;
+    reportsToId?: string;
+    reports: EmployeeOrgChartNode[];
+}
+
+// --- Employee documents (S1.3) ---
+export interface EmployeeDocumentDto {
+    id: string;
+    employeeId: string;
+    title: string;
+    documentType: string;
+    fileUrl: string;
+    expiryDate?: string;
+    isActive: boolean;
+    createdOn: string;
+}
+
+export interface AddEmployeeDocumentRequest {
+    employeeId: string;
+    title: string;
+    documentType: string;
+    fileUrl: string;
+    expiryDate?: string;
+}

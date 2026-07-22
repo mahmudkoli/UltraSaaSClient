@@ -264,10 +264,136 @@
                             </div>
                         </mat-tab>
 
-                        <!-- Additional tabs would go here for Experience, Salary, Financial, etc. -->
-                        <!-- For brevity, I'll add the key tabs -->
+                        <!-- Organization & Payout Tab (S1.3) -->
+                        <mat-tab label="Organization & Payout">
+                            <div class="p-6 space-y-8">
+                                <div formGroupName="orgAssignment">
+                                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">Org assignment</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Reports To (Manager)</mat-label>
+                                            <mat-select formControlName="reportsToId">
+                                                <mat-option [value]="''">— None —</mat-option>
+                                                <mat-option *ngFor="let m of managerOptions" [value]="m.id">
+                                                    {{ m.firstName }} {{ m.lastName }}
+                                                </mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
 
-                        <!-- Teaching Information Tab -->
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Location / Branch</mat-label>
+                                            <mat-select formControlName="locationId">
+                                                <mat-option [value]="''">— None —</mat-option>
+                                                <mat-option *ngFor="let l of locations" [value]="l.id">{{ l.name }}</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Cost Centre</mat-label>
+                                            <mat-select formControlName="costCentreId">
+                                                <mat-option [value]="''">— None —</mat-option>
+                                                <mat-option *ngFor="let c of costCentres" [value]="c.id">{{ c.name }}</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+
+                                <div formGroupName="financialInfo">
+                                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">Bank account</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Bank Name</mat-label>
+                                            <input matInput formControlName="bankName">
+                                        </mat-form-field>
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Bank Account Number</mat-label>
+                                            <input matInput formControlName="bankAccountNumber">
+                                        </mat-form-field>
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Routing / IFSC</mat-label>
+                                            <input matInput formControlName="ifsCode">
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+
+                                <div formGroupName="orgAssignment">
+                                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">Mobile financial service</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>MFS Provider</mat-label>
+                                            <mat-select formControlName="mfsProvider">
+                                                <mat-option [value]="''">— None —</mat-option>
+                                                <mat-option *ngFor="let p of mfsProviderOptions" [value]="p">{{ p }}</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>MFS Account Number</mat-label>
+                                            <input matInput formControlName="mfsAccountNumber" placeholder="e.g. 01XXXXXXXXX">
+                                        </mat-form-field>
+                                    </div>
+                                </div>
+                            </div>
+                        </mat-tab>
+
+                        <!-- Documents Tab (S1.3, edit mode only) -->
+                        <mat-tab label="Documents" *ngIf="isEditMode">
+                            <div class="p-6 space-y-6">
+                                <!-- Existing documents -->
+                                <div class="bg-gray-50 dark:bg-gray-700/40 rounded-xl border border-gray-200 dark:border-gray-700 divide-y divide-gray-200 dark:divide-gray-700">
+                                    <div *ngIf="documents.length === 0" class="p-6 text-center text-sm text-gray-500 dark:text-gray-400">
+                                        No documents yet. Add appointment letters, NID, certificates, etc. below.
+                                    </div>
+                                    <div *ngFor="let doc of documents" class="flex items-center gap-3 p-4">
+                                        <mat-icon class="text-gray-400">description</mat-icon>
+                                        <div class="min-w-0 flex-auto">
+                                            <div class="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
+                                                {{ doc.title }}
+                                                <span class="text-xs text-gray-400">· {{ doc.documentType }}</span>
+                                            </div>
+                                            <div class="text-xs text-gray-500 dark:text-gray-400 truncate">
+                                                <a [href]="doc.fileUrl" target="_blank" class="text-blue-600 hover:underline">{{ doc.fileUrl }}</a>
+                                                <span *ngIf="doc.expiryDate"> · expires {{ doc.expiryDate | date:'mediumDate' }}</span>
+                                            </div>
+                                        </div>
+                                        <button mat-icon-button type="button" (click)="removeDocument(doc)" matTooltip="Delete"
+                                                class="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20">
+                                            <mat-icon>delete</mat-icon>
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <!-- Add document -->
+                                <div [formGroup]="docForm" class="bg-white dark:bg-gray-800 rounded-xl border border-dashed border-gray-300 dark:border-gray-600 p-4">
+                                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">Add document</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Title</mat-label>
+                                            <input matInput formControlName="title" placeholder="e.g. Appointment Letter">
+                                        </mat-form-field>
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Type</mat-label>
+                                            <input matInput formControlName="documentType" placeholder="e.g. Appointment / NID">
+                                        </mat-form-field>
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>File URL</mat-label>
+                                            <input matInput formControlName="fileUrl" placeholder="/files/...">
+                                        </mat-form-field>
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Expiry (optional)</mat-label>
+                                            <input matInput [matDatepicker]="docExpiry" formControlName="expiryDate">
+                                            <mat-datepicker-toggle matSuffix [for]="docExpiry"></mat-datepicker-toggle>
+                                            <mat-datepicker #docExpiry></mat-datepicker>
+                                        </mat-form-field>
+                                    </div>
+                                    <div class="flex justify-end mt-2">
+                                        <button mat-flat-button color="primary" type="button" (click)="addDocument()" [disabled]="isAddingDoc">
+                                            <mat-icon>add</mat-icon> {{ isAddingDoc ? 'Adding…' : 'Add Document' }}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </mat-tab>
+
                         <!-- Personal Information Tab -->
                         <mat-tab label="Personal Information">
                             <div class="p-6 space-y-6" formGroupName="personalInfo">
