@@ -29,4 +29,9 @@ export class PayrollRunsService {
     delete(id: string): Observable<string> {
         return this.http.delete(`${this.baseUrl}/${id}`, { responseType: 'text' });
     }
+
+    // Payslip PDF is served by the PayrollSlips controller (per-slip).
+    payslipPdf(slipId: string): Observable<Blob> {
+        return this.http.get(`${environment.apiUrl}/api/v1/payrollslips/${slipId}/pdf`, { responseType: 'blob' });
+    }
 }

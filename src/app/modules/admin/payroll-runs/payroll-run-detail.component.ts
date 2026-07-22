@@ -29,7 +29,7 @@ export class PayrollRunDetailComponent implements OnInit, OnDestroy {
     run?: PayrollRunDto;
     isLoading = false;
     isBusy = false;
-    displayedColumns = ['employee', 'basic', 'allowances', 'pf', 'tax', 'otherDed', 'gross', 'net', 'days'];
+    displayedColumns = ['employee', 'basic', 'allowances', 'pf', 'tax', 'otherDed', 'gross', 'net', 'days', 'pdf'];
     months = ['', 'January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 
     private _id!: string;
@@ -100,6 +100,20 @@ export class PayrollRunDetailComponent implements OnInit, OnDestroy {
                 next: () => { this._notification.success('Draft deleted'); this.back(); },
                 error: () => this._notification.error('Failed to delete'),
             });
+        });
+    }
+
+    downloadSlip(slip: { id: string; employeeName: string }): void {
+        this._service.payslipPdf(slip.id).pipe(takeUntil(this._unsubscribeAll)).subscribe({
+            next: (blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `PaySlip-${slip.employeeName}-${this.run?.periodYear}-${this.run?.periodMonth}.pdf`;
+                a.click();
+                URL.revokeObjectURL(url);
+            },
+            error: () => this._notification.error('Failed to download payslip'),
         });
     }
 
