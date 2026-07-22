@@ -135,6 +135,8 @@ export interface EmployeeDto {
     reportsToId?: string;
     locationId?: string;
     costCentreId?: string;
+    departmentId?: string;
+    designationId?: string;
 
     // Organizational Information
     reportingTo?: string;
@@ -246,6 +248,8 @@ export interface CreateEmployeeRequest {
     reportsToId?: string;
     locationId?: string;
     costCentreId?: string;
+    departmentId?: string;
+    designationId?: string;
 
     // Organizational Information
     reportingTo?: string;
@@ -329,6 +333,8 @@ export interface UpdateEmployeeRequest {
     reportsToId?: string;
     locationId?: string;
     costCentreId?: string;
+    departmentId?: string;
+    designationId?: string;
 
     // Organizational Information
     reportingTo?: string;

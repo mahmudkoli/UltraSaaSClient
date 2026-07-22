@@ -271,6 +271,22 @@
                                     <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">Org assignment</h3>
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                                         <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Department</mat-label>
+                                            <mat-select formControlName="departmentId">
+                                                <mat-option [value]="''">— None —</mat-option>
+                                                <mat-option *ngFor="let d of departments" [value]="d.id">{{ d.name }}</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+
+                                        <mat-form-field appearance="outline" class="w-full">
+                                            <mat-label>Designation</mat-label>
+                                            <mat-select formControlName="designationId">
+                                                <mat-option [value]="''">— None —</mat-option>
+                                                <mat-option *ngFor="let d of designations" [value]="d.id">{{ d.name }}</mat-option>
+                                            </mat-select>
+                                        </mat-form-field>
+
+                                        <mat-form-field appearance="outline" class="w-full">
                                             <mat-label>Reports To (Manager)</mat-label>
                                             <mat-select formControlName="reportsToId">
                                                 <mat-option [value]="''">— None —</mat-option>
@@ -296,6 +312,7 @@
                                             </mat-select>
                                         </mat-form-field>
                                     </div>
+                                    <p class="text-xs text-gray-400 mt-2">Department &amp; Designation are the tenant-configurable org entities (managed under System Management). The legacy enum fields on the Professional tab remain during the transition.</p>
                                 </div>
 
                                 <div formGroupName="financialInfo">

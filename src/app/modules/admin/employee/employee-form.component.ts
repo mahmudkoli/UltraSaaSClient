@@ -24,6 +24,10 @@ import { LocationsService } from '../../../core/locations/locations.service';
 import { LocationDto } from '../../../core/locations/locations.types';
 import { CostCentresService } from '../../../core/cost-centres/cost-centres.service';
 import { CostCentreDto } from '../../../core/cost-centres/cost-centres.types';
+import { DepartmentsService } from '../../../core/departments/departments.service';
+import { DepartmentDto } from '../../../core/departments/departments.types';
+import { DesignationsService } from '../../../core/designations/designations.service';
+import { DesignationDto } from '../../../core/designations/designations.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
 import { passwordMatchValidator } from '../../../core/validators/password-match.validator';
@@ -92,6 +96,8 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
     // Org-config lookups (S1.2 entities) + BD mobile financial services.
     locations: LocationDto[] = [];
     costCentres: CostCentreDto[] = [];
+    departments: DepartmentDto[] = [];
+    designations: DesignationDto[] = [];
     managers: EmployeeDto[] = [];
     mfsProviderOptions = ['bKash', 'Nagad', 'Rocket', 'Upay'];
 
@@ -107,6 +113,8 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
         private _employeesService: EmployeesService,
         private _locationsService: LocationsService,
         private _costCentresService: CostCentresService,
+        private _departmentsService: DepartmentsService,
+        private _designationsService: DesignationsService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseAlertService: FuseAlertService,
         private _fuseConfirmationService: FuseConfirmationService,
@@ -184,6 +192,8 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
                 reportsToId: [''],
                 locationId: [''],
                 costCentreId: [''],
+                departmentId: [''],
+                designationId: [''],
                 mfsProvider: [''],
                 mfsAccountNumber: ['', Validators.maxLength(30)]
             }),
@@ -263,6 +273,14 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
         this._costCentresService.search({ pageNumber: 1, pageSize: 500, isActive: true })
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({ next: (r) => { this.costCentres = r.data || []; this._changeDetectorRef.markForCheck(); }, error: () => {} });
+
+        this._departmentsService.search({ pageNumber: 1, pageSize: 500, isActive: true })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({ next: (r) => { this.departments = r.data || []; this._changeDetectorRef.markForCheck(); }, error: () => {} });
+
+        this._designationsService.search({ pageNumber: 1, pageSize: 500, isActive: true })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({ next: (r) => { this.designations = r.data || []; this._changeDetectorRef.markForCheck(); }, error: () => {} });
 
         this._employeesService.search({ pageNumber: 1, pageSize: 1000, keyword: '' })
             .pipe(takeUntil(this._unsubscribeAll))
@@ -355,6 +373,8 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
                 reportsToId: employee.reportsToId || '',
                 locationId: employee.locationId || '',
                 costCentreId: employee.costCentreId || '',
+                departmentId: employee.departmentId || '',
+                designationId: employee.designationId || '',
                 mfsProvider: employee.mfsProvider || '',
                 mfsAccountNumber: employee.mfsAccountNumber || ''
             },
@@ -454,6 +474,8 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
             reportsToId: formValue.orgAssignment.reportsToId || undefined,
             locationId: formValue.orgAssignment.locationId || undefined,
             costCentreId: formValue.orgAssignment.costCentreId || undefined,
+            departmentId: formValue.orgAssignment.departmentId || undefined,
+            designationId: formValue.orgAssignment.designationId || undefined,
             mfsProvider: formValue.orgAssignment.mfsProvider || undefined,
             mfsAccountNumber: formValue.orgAssignment.mfsAccountNumber || undefined,
             reportingTo: formValue.organizationalInfo.reportingTo || undefined,
@@ -537,6 +559,8 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
             reportsToId: formValue.orgAssignment.reportsToId || undefined,
             locationId: formValue.orgAssignment.locationId || undefined,
             costCentreId: formValue.orgAssignment.costCentreId || undefined,
+            departmentId: formValue.orgAssignment.departmentId || undefined,
+            designationId: formValue.orgAssignment.designationId || undefined,
             mfsProvider: formValue.orgAssignment.mfsProvider || undefined,
             mfsAccountNumber: formValue.orgAssignment.mfsAccountNumber || undefined,
             reportingTo: formValue.organizationalInfo.reportingTo || undefined,
