@@ -120,6 +120,7 @@ export const appRoutes: Route[] = [
             {path: 'subscription', data: {permission: 'Permissions.Subscription.View'}, loadChildren: () => import('app/modules/admin/my-subscription/my-subscription.routes')},
             {path: 'institute', data: {permission: 'Permissions.Institutes.View'}, loadChildren: () => import('app/modules/admin/institute/institute.routes')},
             {path: 'profile', loadChildren: () => import('app/modules/admin/profile/profile.routes')},
+            {path: 'ess', loadChildren: () => import('app/modules/admin/ess/ess.routes')},
         ]
     },
 

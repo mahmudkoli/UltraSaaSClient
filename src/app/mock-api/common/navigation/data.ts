@@ -21,6 +21,16 @@ export const defaultNavigation: FuseNavigationItem[] = [
         link : '/analytics'
     },
     {
+        id      : 'self-service',
+        title   : 'Self Service',
+        type    : 'collapsable',
+        icon    : 'heroicons_outline:user-circle',
+        children: [
+            { id: 'my-payslips',       title: 'My Payslips', type: 'basic', icon: 'heroicons_outline:document-text', link: '/ess/payslips' },
+            { id: 'my-leave-balances', title: 'My Leave',    type: 'basic', icon: 'heroicons_outline:calendar-days', link: '/ess/leave-balances' }
+        ]
+    },
+    {
         id      : 'hr-management',
         title   : 'HR',
         type    : 'collapsable',
