@@ -52,6 +52,10 @@ export const defaultNavigation: FuseNavigationItem[] = [
         type    : 'collapsable',
         icon    : 'heroicons_outline:cog-6-tooth',
         children: [
+            { id: 'departments',          title: 'Departments',          type: 'basic', icon: 'heroicons_outline:building-office-2',       link: '/departments' },
+            { id: 'designations',         title: 'Designations',         type: 'basic', icon: 'heroicons_outline:identification',         link: '/designations' },
+            { id: 'locations',            title: 'Locations',            type: 'basic', icon: 'heroicons_outline:map-pin',                 link: '/locations' },
+            { id: 'cost-centres',         title: 'Cost Centres',         type: 'basic', icon: 'heroicons_outline:banknotes',               link: '/cost-centres' },
             { id: 'user-management',      title: 'User Management',      type: 'basic', icon: 'heroicons_outline:users',                    link: '/users' },
             { id: 'admin-dashboard',      title: 'Admin Dashboard',      type: 'basic', icon: 'heroicons_outline:squares-2x2',             link: '/admin-dashboard' },
             { id: 'audit-trail',          title: 'Audit Trail',          type: 'basic', icon: 'heroicons_outline:clipboard-document-list', link: '/audit-trail' },

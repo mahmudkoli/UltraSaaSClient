@@ -1,0 +1,52 @@
+<app-list-page
+    [title]="isEditMode ? 'Edit Designation' : 'Create Designation'"
+    subtitle="Designations define job titles / grades. Level 1 = most senior."
+    icon="badge"
+    iconGradient="from-violet-500 to-purple-600"
+    pageGradient="from-gray-50 via-violet-50/30 to-purple-50/30">
+
+    <ng-container pageActions>
+        <button mat-stroked-button (click)="cancel()"><mat-icon>arrow_back</mat-icon> Back</button>
+    </ng-container>
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <div class="max-w-2xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+        <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Name</mat-label>
+                <input matInput formControlName="name" placeholder="e.g. General Manager" required>
+                <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
+                <mat-error *ngIf="form.get('name')?.hasError('maxlength')">Name is too long</mat-error>
+            </mat-form-field>
+
+            <div class="flex flex-col sm:flex-row gap-4">
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Code</mat-label>
+                    <input matInput formControlName="code" placeholder="Optional, e.g. GM">
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Level (1 = most senior)</mat-label>
+                    <input matInput type="number" formControlName="level" min="0" placeholder="Optional">
+                </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="3" placeholder="Optional"></textarea>
+            </mat-form-field>
+
+            <mat-checkbox *ngIf="isEditMode" formControlName="isActive" color="primary">Active</mat-checkbox>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+                    <mat-icon *ngIf="!isSaving">save</mat-icon>
+                    {{ isSaving ? 'Saving…' : (isEditMode ? 'Update' : 'Create') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</app-list-page>

@@ -84,6 +84,12 @@ export const NAV_PERMISSIONS: Record<string, string> = {
     'mail-logs':                     'Permissions.MailLog.Search',
     'comms-config':                  'Permissions.SMSConfig.View',
 
+    // Org config (HRM S1.2)
+    'departments':                   'Permissions.Departments.View',
+    'designations':                  'Permissions.Designations.View',
+    'locations':                     'Permissions.Locations.View',
+    'cost-centres':                  'Permissions.CostCentres.View',
+
     // System Management
     'user-management':               'Permissions.Users.View',
     'admin-dashboard':               'Permissions.Tenants.View',
