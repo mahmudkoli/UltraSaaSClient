@@ -61,6 +61,7 @@ export const defaultNavigation: FuseNavigationItem[] = [
             { id: 'locations',            title: 'Locations',            type: 'basic', icon: 'heroicons_outline:map-pin',                 link: '/locations' },
             { id: 'cost-centres',         title: 'Cost Centres',         type: 'basic', icon: 'heroicons_outline:banknotes',               link: '/cost-centres' },
             { id: 'leave-types',          title: 'Leave Types',          type: 'basic', icon: 'heroicons_outline:calendar-days',           link: '/leave-types' },
+            { id: 'salary-structures',    title: 'Salary Structures',    type: 'basic', icon: 'heroicons_outline:currency-bangladeshi',    link: '/salary-structures' },
             { id: 'user-management',      title: 'User Management',      type: 'basic', icon: 'heroicons_outline:users',                    link: '/users' },
             { id: 'admin-dashboard',      title: 'Admin Dashboard',      type: 'basic', icon: 'heroicons_outline:squares-2x2',             link: '/admin-dashboard' },
             { id: 'audit-trail',          title: 'Audit Trail',          type: 'basic', icon: 'heroicons_outline:clipboard-document-list', link: '/audit-trail' },

@@ -1,0 +1,92 @@
+<app-list-page
+    [title]="isEditMode ? 'Edit Salary Structure' : 'Create Salary Structure'"
+    subtitle="Basic pay plus earning / deduction components. % components are of Basic."
+    icon="payments"
+    iconGradient="from-lime-500 to-green-600"
+    pageGradient="from-gray-50 via-lime-50/30 to-green-50/30">
+
+    <ng-container pageActions>
+        <button mat-stroked-button (click)="cancel()"><mat-icon>arrow_back</mat-icon> Back</button>
+    </ng-container>
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <div class="max-w-4xl bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-200 dark:border-gray-700 p-6">
+        <form [formGroup]="form" (ngSubmit)="save()" class="flex flex-col gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <mat-form-field appearance="outline" class="w-full md:col-span-2">
+                    <mat-label>Name</mat-label>
+                    <input matInput formControlName="name" placeholder="e.g. Officer Grade" required>
+                    <mat-error *ngIf="form.get('name')?.hasError('required')">Name is required</mat-error>
+                </mat-form-field>
+                <mat-form-field appearance="outline" class="w-full">
+                    <mat-label>Basic (BDT)</mat-label>
+                    <input matInput type="number" formControlName="basic" min="0" required>
+                </mat-form-field>
+            </div>
+
+            <mat-form-field appearance="outline" class="w-full">
+                <mat-label>Description</mat-label>
+                <textarea matInput formControlName="description" rows="2" placeholder="Optional"></textarea>
+            </mat-form-field>
+
+            <mat-checkbox *ngIf="isEditMode" formControlName="isActive" color="primary">Active</mat-checkbox>
+
+            <!-- Components -->
+            <div class="mt-2">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Components</h3>
+                    <button mat-stroked-button type="button" (click)="addComponent()"><mat-icon>add</mat-icon> Add component</button>
+                </div>
+
+                <div formArrayName="components" class="flex flex-col gap-3">
+                    <div *ngFor="let c of components.controls; let i = index" [formGroupName]="i"
+                         class="grid grid-cols-1 md:grid-cols-12 gap-3 items-start p-3 rounded-xl border border-gray-200 dark:border-gray-700">
+                        <mat-form-field appearance="outline" class="w-full md:col-span-3" subscriptSizing="dynamic">
+                            <mat-label>Name</mat-label>
+                            <input matInput formControlName="name">
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="w-full md:col-span-2" subscriptSizing="dynamic">
+                            <mat-label>Type</mat-label>
+                            <mat-select formControlName="type">
+                                <mat-option *ngFor="let t of typeOptions" [value]="t.value">{{ t.label }}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="w-full md:col-span-3" subscriptSizing="dynamic">
+                            <mat-label>Calculation</mat-label>
+                            <mat-select formControlName="calculationType">
+                                <mat-option *ngFor="let o of calcOptions" [value]="o.value">{{ o.label }}</mat-option>
+                            </mat-select>
+                        </mat-form-field>
+                        <mat-form-field appearance="outline" class="w-full md:col-span-2" subscriptSizing="dynamic">
+                            <mat-label>Value</mat-label>
+                            <input matInput type="number" formControlName="value" min="0">
+                        </mat-form-field>
+                        <div class="md:col-span-2 flex items-center gap-2 pt-2">
+                            <mat-checkbox formControlName="isTaxable" color="primary" matTooltip="Taxable">Tax</mat-checkbox>
+                            <button mat-icon-button type="button" color="warn" (click)="removeComponent(i)" matTooltip="Remove"><mat-icon>delete</mat-icon></button>
+                        </div>
+                    </div>
+                    <div *ngIf="components.length === 0" class="text-sm text-gray-400 py-2">No components — Basic only.</div>
+                </div>
+            </div>
+
+            <!-- Live preview -->
+            <div class="flex flex-wrap gap-6 justify-end mt-2 p-4 rounded-xl bg-gray-50 dark:bg-gray-700/40 text-sm">
+                <div>Gross: <span class="font-semibold text-gray-900 dark:text-gray-100">{{ gross | number }}</span></div>
+                <div>Deductions: <span class="font-semibold text-red-600 dark:text-red-400">{{ deductions | number }}</span></div>
+                <div>Net: <span class="font-semibold text-green-700 dark:text-green-400">{{ net | number }}</span></div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-2">
+                <button mat-stroked-button type="button" (click)="cancel()">Cancel</button>
+                <button mat-flat-button color="primary" type="submit" [disabled]="isSaving">
+                    <mat-icon *ngIf="!isSaving">save</mat-icon>
+                    {{ isSaving ? 'Saving…' : (isEditMode ? 'Update' : 'Create') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</app-list-page>
