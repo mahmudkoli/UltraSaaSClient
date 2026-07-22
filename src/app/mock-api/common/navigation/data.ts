@@ -33,7 +33,8 @@ export const defaultNavigation: FuseNavigationItem[] = [
             { id: 'attendance-summary',     title: 'Attendance Summary',     type: 'basic', icon: 'heroicons_outline:chart-pie',       link: '/attendance-summary' },
             { id: 'leaves',                 title: 'Leaves',                 type: 'basic', icon: 'heroicons_outline:calendar',       link: '/leaves' },
             { id: 'leave-balances',         title: 'Leave Balances',         type: 'basic', icon: 'heroicons_outline:scale',          link: '/leave-balances' },
-            { id: 'payroll',                title: 'Payroll',                type: 'basic', icon: 'heroicons_outline:banknotes',      link: '/payroll' }
+            { id: 'payroll',                title: 'Payslips',               type: 'basic', icon: 'heroicons_outline:banknotes',      link: '/payroll' },
+            { id: 'payroll-runs',           title: 'Payroll Runs',           type: 'basic', icon: 'heroicons_outline:calculator',     link: '/payroll-runs' }
         ]
     },
     {

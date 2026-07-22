@@ -1,0 +1,79 @@
+<app-list-page
+    title="Payroll Runs"
+    subtitle="Generate monthly payroll from salary structures + statutory config, review, and finalise."
+    icon="request_quote"
+    iconGradient="from-green-600 to-emerald-700"
+    pageGradient="from-gray-50 via-green-50/30 to-emerald-50/30">
+
+    <ng-container pageActions>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-40">
+            <mat-label>Month</mat-label>
+            <mat-select [formControl]="monthControl">
+                <mat-option *ngFor="let m of months" [value]="m.v">{{ m.n }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <mat-form-field appearance="outline" subscriptSizing="dynamic" class="w-full sm:w-28">
+            <mat-label>Year</mat-label>
+            <mat-select [formControl]="yearControl">
+                <mat-option *ngFor="let y of years" [value]="y">{{ y }}</mat-option>
+            </mat-select>
+        </mat-form-field>
+        <button mat-flat-button color="primary" (click)="generate()" [disabled]="isGenerating" class="shadow-lg self-center">
+            <mat-icon>{{ isGenerating ? 'hourglass_empty' : 'play_arrow' }}</mat-icon>
+            {{ isGenerating ? 'Generating…' : 'Generate' }}
+        </button>
+    </ng-container>
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+        <div class="overflow-x-auto">
+            <table mat-table [dataSource]="runs" class="min-w-full bg-transparent">
+                <ng-container matColumnDef="period">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">Period</th>
+                    <td mat-cell *matCellDef="let r" class="px-6 py-4 text-sm font-medium text-gray-900 dark:text-gray-100">{{ monthName(r.periodMonth) }} {{ r.periodYear }}</td>
+                </ng-container>
+                <ng-container matColumnDef="status">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">Status</th>
+                    <td mat-cell *matCellDef="let r" class="px-6 py-4">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                              [ngClass]="r.status === 'Finalised' ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/30' : 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30'">
+                            {{ r.status }}
+                        </span>
+                    </td>
+                </ng-container>
+                <ng-container matColumnDef="employees">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">Employees</th>
+                    <td mat-cell *matCellDef="let r" class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ r.employeeCount }}</td>
+                </ng-container>
+                <ng-container matColumnDef="gross">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">Gross (BDT)</th>
+                    <td mat-cell *matCellDef="let r" class="px-6 py-4 text-sm text-gray-600 dark:text-gray-400">{{ r.totalGross | number }}</td>
+                </ng-container>
+                <ng-container matColumnDef="net">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-left">Net (BDT)</th>
+                    <td mat-cell *matCellDef="let r" class="px-6 py-4 text-sm font-medium text-green-700 dark:text-green-400">{{ r.totalNet | number }}</td>
+                </ng-container>
+                <ng-container matColumnDef="actions">
+                    <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold text-gray-900 dark:text-gray-100 px-6 py-4 text-right">Actions</th>
+                    <td mat-cell *matCellDef="let r" class="px-6 py-4 text-right">
+                        <div class="flex items-center justify-end space-x-2">
+                            <button mat-icon-button (click)="view(r)" matTooltip="View" class="text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20"><mat-icon>visibility</mat-icon></button>
+                            <button *ngIf="r.status !== 'Finalised'" mat-icon-button (click)="remove(r)" matTooltip="Delete draft" class="text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20"><mat-icon>delete</mat-icon></button>
+                        </div>
+                    </td>
+                </ng-container>
+                <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" class="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 cursor-pointer" (click)="view(row)"></tr>
+            </table>
+        </div>
+
+        <div *ngIf="!isLoading && runs.length === 0" class="text-center py-16">
+            <div class="text-6xl mb-4">🧾</div>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">No Payroll Runs</h3>
+            <p class="text-gray-500 dark:text-gray-400">Pick a month/year and click Generate. Employees need an assigned salary structure.</p>
+        </div>
+    </div>
+</app-list-page>

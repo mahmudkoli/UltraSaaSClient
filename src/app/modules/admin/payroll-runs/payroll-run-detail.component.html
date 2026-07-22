@@ -1,0 +1,68 @@
+<app-list-page
+    [title]="run ? (months[run.periodMonth] + ' ' + run.periodYear + ' Payroll') : 'Payroll Run'"
+    subtitle="Per-employee payslips computed from salary structures + statutory config."
+    icon="request_quote"
+    iconGradient="from-green-600 to-emerald-700"
+    pageGradient="from-gray-50 via-green-50/30 to-emerald-50/30">
+
+    <ng-container pageActions>
+        <button mat-stroked-button (click)="back()"><mat-icon>arrow_back</mat-icon> Back</button>
+        <ng-container *ngIf="run && run.status !== 'Finalised'">
+            <button mat-stroked-button (click)="regenerate()" [disabled]="isBusy"><mat-icon>refresh</mat-icon> Regenerate</button>
+            <button mat-flat-button color="primary" (click)="finalise()" [disabled]="isBusy || run.employeeCount === 0"><mat-icon>lock</mat-icon> Finalise</button>
+            <button mat-icon-button color="warn" (click)="remove()" [disabled]="isBusy" matTooltip="Delete draft"><mat-icon>delete</mat-icon></button>
+        </ng-container>
+    </ng-container>
+
+    <div class="relative">
+        <mat-progress-bar *ngIf="isLoading || isBusy" mode="indeterminate" class="z-20"></mat-progress-bar>
+    </div>
+
+    <ng-container *ngIf="run">
+        <!-- Summary cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-4">
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4">
+                <div class="text-xs text-gray-500 uppercase tracking-wide">Status</div>
+                <div class="mt-1"><span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                    [ngClass]="run.status === 'Finalised' ? 'text-green-700 bg-green-100 dark:text-green-300 dark:bg-green-900/30' : 'text-amber-700 bg-amber-100 dark:text-amber-300 dark:bg-amber-900/30'">{{ run.status }}</span></div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"><div class="text-xs text-gray-500 uppercase tracking-wide">Employees</div><div class="mt-1 text-xl font-semibold text-gray-900 dark:text-gray-100">{{ run.employeeCount }}</div></div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"><div class="text-xs text-gray-500 uppercase tracking-wide">Gross</div><div class="mt-1 text-xl font-semibold text-gray-900 dark:text-gray-100">{{ run.totalGross | number }}</div></div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"><div class="text-xs text-gray-500 uppercase tracking-wide">Deductions</div><div class="mt-1 text-xl font-semibold text-red-600 dark:text-red-400">{{ run.totalDeductions | number }}</div></div>
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4"><div class="text-xs text-gray-500 uppercase tracking-wide">Net</div><div class="mt-1 text-xl font-semibold text-green-700 dark:text-green-400">{{ run.totalNet | number }}</div></div>
+        </div>
+
+        <div *ngIf="hasPlaceholder" class="mb-4 flex items-start gap-3 p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800">
+            <mat-icon class="text-amber-600 dark:text-amber-400">warning</mat-icon>
+            <div class="text-sm text-amber-800 dark:text-amber-200">Computed with <strong>placeholder statutory rates</strong>. Confirm the Statutory Config against the NBR Finance Act before using these figures for real disbursement.</div>
+        </div>
+
+        <!-- Slips -->
+        <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-200 dark:border-gray-700">
+            <div class="overflow-x-auto">
+                <table mat-table [dataSource]="run.slips" class="min-w-full bg-transparent">
+                    <ng-container matColumnDef="employee">
+                        <th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-left">Employee</th>
+                        <td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm">
+                            <div class="font-medium text-gray-900 dark:text-gray-100">{{ s.employeeName }}</div>
+                            <div class="text-xs text-gray-500">{{ s.designation || '—' }}</div>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="basic"><th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-right">Basic</th><td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm text-right">{{ s.basic | number }}</td></ng-container>
+                    <ng-container matColumnDef="allowances"><th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-right">Allowances</th><td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm text-right">{{ s.allowances | number }}</td></ng-container>
+                    <ng-container matColumnDef="pf"><th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-right">PF</th><td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">{{ s.providentFund | number }}</td></ng-container>
+                    <ng-container matColumnDef="tax"><th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-right">Tax</th><td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm text-right text-red-600 dark:text-red-400">{{ s.tax | number }}</td></ng-container>
+                    <ng-container matColumnDef="otherDed"><th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-right">Other Ded.</th><td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm text-right">{{ s.otherDeduction | number }}</td></ng-container>
+                    <ng-container matColumnDef="gross"><th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-right">Gross</th><td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm text-right">{{ s.grossSalary | number }}</td></ng-container>
+                    <ng-container matColumnDef="net"><th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-right">Net</th><td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm text-right font-semibold text-green-700 dark:text-green-400">{{ s.netSalary | number }}</td></ng-container>
+                    <ng-container matColumnDef="days"><th mat-header-cell *matHeaderCellDef class="bg-gray-50 dark:bg-gray-700 font-semibold px-4 py-3 text-right" matTooltip="Recorded / paid leave / unpaid leave">Days (R/P/U)</th><td mat-cell *matCellDef="let s" class="px-4 py-3 text-sm text-right text-gray-500">{{ s.workingDays }}/{{ s.leavesTaken }}/{{ s.leavesUnpaid }}</td></ng-container>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+            </div>
+            <div *ngIf="run.slips.length === 0" class="text-center py-12 text-gray-500 dark:text-gray-400">
+                No slips — no active employees have a salary structure assigned.
+            </div>
+        </div>
+    </ng-container>
+</app-list-page>

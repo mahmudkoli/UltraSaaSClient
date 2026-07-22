@@ -79,6 +79,7 @@ export const NAV_PERMISSIONS: Record<string, string> = {
     'leaves':                        'Permissions.Leaves.Search',
     'leave-balances':                'Permissions.LeaveBalances.View',
     'payroll':                       'Permissions.PayrollSlips.View',
+    'payroll-runs':                  'Permissions.PayrollRuns.View',
 
     // Communication
     'announcement-archive':          'Permissions.Tenants.View',

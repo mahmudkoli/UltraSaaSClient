@@ -99,6 +99,7 @@ export const appRoutes: Route[] = [
             {path: 'leaves', data: {permission: 'Permissions.Leaves.Search'}, loadChildren: () => import('app/modules/admin/leave/leave.routes')},
             {path: 'leave-balances', data: {permission: 'Permissions.LeaveBalances.View'}, loadChildren: () => import('app/modules/admin/leave-balances/leave-balances.routes')},
             {path: 'payroll', data: {permission: 'Permissions.PayrollSlips.View'}, loadChildren: () => import('app/modules/admin/payroll/payroll.routes')},
+            {path: 'payroll-runs', data: {permission: 'Permissions.PayrollRuns.View'}, loadChildren: () => import('app/modules/admin/payroll-runs/payroll-runs.routes')},
             {path: 'departments', data: {permission: 'Permissions.Departments.View'}, loadChildren: () => import('app/modules/admin/departments/departments.routes')},
             {path: 'designations', data: {permission: 'Permissions.Designations.View'}, loadChildren: () => import('app/modules/admin/designations/designations.routes')},
             {path: 'locations', data: {permission: 'Permissions.Locations.View'}, loadChildren: () => import('app/modules/admin/locations/locations.routes')},

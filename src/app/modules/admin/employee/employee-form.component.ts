@@ -28,6 +28,8 @@ import { DepartmentsService } from '../../../core/departments/departments.servic
 import { DepartmentDto } from '../../../core/departments/departments.types';
 import { DesignationsService } from '../../../core/designations/designations.service';
 import { DesignationDto } from '../../../core/designations/designations.types';
+import { SalaryStructuresService } from '../../../core/salary-structures/salary-structures.service';
+import { SalaryStructureDto } from '../../../core/salary-structures/salary-structures.types';
 import { NotificationService } from '../../../core/services/notification.service';
 import { DateUtils } from '../../../core/utils/date.utils';
 import { passwordMatchValidator } from '../../../core/validators/password-match.validator';
@@ -98,6 +100,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
     costCentres: CostCentreDto[] = [];
     departments: DepartmentDto[] = [];
     designations: DesignationDto[] = [];
+    salaryStructures: SalaryStructureDto[] = [];
     managers: EmployeeDto[] = [];
     mfsProviderOptions = ['bKash', 'Nagad', 'Rocket', 'Upay'];
 
@@ -115,6 +118,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
         private _costCentresService: CostCentresService,
         private _departmentsService: DepartmentsService,
         private _designationsService: DesignationsService,
+        private _salaryStructuresService: SalaryStructuresService,
         private _changeDetectorRef: ChangeDetectorRef,
         private _fuseAlertService: FuseAlertService,
         private _fuseConfirmationService: FuseConfirmationService,
@@ -194,6 +198,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
                 costCentreId: [''],
                 departmentId: [''],
                 designationId: [''],
+                salaryStructureId: [''],
                 mfsProvider: [''],
                 mfsAccountNumber: ['', Validators.maxLength(30)]
             }),
@@ -281,6 +286,10 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
         this._designationsService.search({ pageNumber: 1, pageSize: 500, isActive: true })
             .pipe(takeUntil(this._unsubscribeAll))
             .subscribe({ next: (r) => { this.designations = r.data || []; this._changeDetectorRef.markForCheck(); }, error: () => {} });
+
+        this._salaryStructuresService.search({ pageNumber: 1, pageSize: 500, isActive: true })
+            .pipe(takeUntil(this._unsubscribeAll))
+            .subscribe({ next: (r) => { this.salaryStructures = r.data || []; this._changeDetectorRef.markForCheck(); }, error: () => {} });
 
         this._employeesService.search({ pageNumber: 1, pageSize: 1000, keyword: '' })
             .pipe(takeUntil(this._unsubscribeAll))
@@ -375,6 +384,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
                 costCentreId: employee.costCentreId || '',
                 departmentId: employee.departmentId || '',
                 designationId: employee.designationId || '',
+                salaryStructureId: employee.salaryStructureId || '',
                 mfsProvider: employee.mfsProvider || '',
                 mfsAccountNumber: employee.mfsAccountNumber || ''
             },
@@ -476,6 +486,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
             costCentreId: formValue.orgAssignment.costCentreId || undefined,
             departmentId: formValue.orgAssignment.departmentId || undefined,
             designationId: formValue.orgAssignment.designationId || undefined,
+            salaryStructureId: formValue.orgAssignment.salaryStructureId || undefined,
             mfsProvider: formValue.orgAssignment.mfsProvider || undefined,
             mfsAccountNumber: formValue.orgAssignment.mfsAccountNumber || undefined,
             reportingTo: formValue.organizationalInfo.reportingTo || undefined,
@@ -561,6 +572,7 @@ export class EmployeeFormComponent implements OnInit, OnDestroy {
             costCentreId: formValue.orgAssignment.costCentreId || undefined,
             departmentId: formValue.orgAssignment.departmentId || undefined,
             designationId: formValue.orgAssignment.designationId || undefined,
+            salaryStructureId: formValue.orgAssignment.salaryStructureId || undefined,
             mfsProvider: formValue.orgAssignment.mfsProvider || undefined,
             mfsAccountNumber: formValue.orgAssignment.mfsAccountNumber || undefined,
             reportingTo: formValue.organizationalInfo.reportingTo || undefined,
