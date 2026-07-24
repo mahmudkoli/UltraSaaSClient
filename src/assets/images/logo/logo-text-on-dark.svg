@@ -5,7 +5,7 @@
   <rect x="23" y="9" width="1.5" height="11" rx="0.75" fill="#818CF8"/>
   <circle cx="23.75" cy="21" r="1.5" fill="#818CF8"/>
   <!-- Text -->
-  <text x="34" y="21" font-family="Inter, system-ui, sans-serif" font-size="16" font-weight="700" fill="white">
-    <tspan fill="#A5B4FC">Ultra</tspan><tspan fill="white">Edu</tspan>
+  <text x="34" y="21" font-family="Inter, system-ui, sans-serif" font-size="15" font-weight="700" fill="white">
+    <tspan fill="white">MK Corex </tspan><tspan fill="#A5B4FC">HRM</tspan>
   </text>
 </svg>
