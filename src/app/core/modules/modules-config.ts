@@ -19,16 +19,28 @@ export interface ModuleGate {
     requiresFeature: string | null;
 }
 
+// HRM tiering (BRD §12). Core HR (employees / org-config / attendance / leave /
+// ESS / communication) is baseline — always visible. The tier differentiators
+// are gated at the LEAF level because payroll + reports leaves live INSIDE the
+// otherwise-core `hr-management` / `system-management` groups. `isModuleVisible`
+// is evaluated per-item during the recursive nav filter, so leaf ids gate fine.
 export const MODULE_GATES: ModuleGate[] = [
-    // Always-on baseline modules (every plan includes these).
+    // Always-on baseline groups (every plan includes these).
     { id: 'my-profile',           requiresFeature: null },
     { id: 'analytics',            requiresFeature: null },
+    { id: 'self-service',         requiresFeature: null },
     { id: 'hr-management',        requiresFeature: null },
+    { id: 'communication',        requiresFeature: null },
     { id: 'system-management',    requiresFeature: null },
 
-    // Module blocks that can be turned off per plan. Codes match
-    // `FSHFeatures.Module*` on the BE.
-    { id: 'communication',        requiresFeature: 'MODULE_COMMUNICATION' },
+    // Pro+ : Payroll (payslips + runs in HR; salary/statutory config in System).
+    { id: 'payroll',              requiresFeature: 'MODULE_PAYROLL' },
+    { id: 'payroll-runs',         requiresFeature: 'MODULE_PAYROLL' },
+    { id: 'salary-structures',    requiresFeature: 'MODULE_PAYROLL' },
+    { id: 'statutory-config',     requiresFeature: 'MODULE_PAYROLL' },
+
+    // Pro+ : Reports (headcount / attendance / payroll registers).
+    { id: 'reports',              requiresFeature: 'MODULE_REPORTS' },
 ];
 
 /**
