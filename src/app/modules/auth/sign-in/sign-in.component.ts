@@ -26,9 +26,9 @@ interface DemoLogin {
 // Demo schools seeded on first boot (DatabaseInitializer + MultitenancyConstants).
 // Admin login password is MultitenancyConstants.DefaultPassword.
 const DEMO_LOGINS: DemoLogin[] = [
-    { tenant: 'root',       label: 'Root (platform admin)',         email: 'admin@root.com',       password: '123Pa$$word!' },
-    { tenant: 'greenwood',  label: 'Greenwood International School', email: 'admin@greenwood.edu',  password: '123Pa$$word!' },
-    { tenant: 'techvalley', label: 'Tech Valley College',           email: 'admin@techvalley.edu', password: '123Pa$$word!' },
+    { tenant: 'root',       label: 'Root (platform admin)',          email: 'admin@root.com',       password: '123Pa$$word!' },
+    { tenant: 'greenwood',  label: 'Greenwood Textiles Ltd (Starter)', email: 'admin@greenwood.com',  password: '123Pa$$word!' },
+    { tenant: 'techvalley', label: 'TechValley Software Ltd (Pro)',   email: 'admin@techvalley.com', password: '123Pa$$word!' },
 ];
 
 @Component({
